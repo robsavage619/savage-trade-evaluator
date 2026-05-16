@@ -24,6 +24,34 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-07: Per-coach hitter operationalization — also ~0 contribution
+
+**Question.** R-06 found the team-aggregate hitter dev-fit feature was silent. Hypothesis (D-19): the Ch 5 thesis lives at a per-coach level — when Tim Hyers moves LAD-asst → BOS-head → TEX-head, his coaching signal moves with him; a team-aggregate gets diluted across coach turnover. Does a per-coach trailing-3yr xwOBA-jump feature recover the signal?
+
+**Setup.** New feature `coach_hitter_xwoba_jump_3yr`: for each (team, season) the trailing-3yr mean xwOBA jump for hitters this team acquired, but the aggregation is **per-COAT (hitting coach)**, not per-team. The feature follows the coach across team moves. Shifted forward 1 season → pre-trade-year knowledge. Matched-subset A/B via `scripts/ablation_coach_feature.py`. 702 test rows (rows with all 8 features non-null).
+
+**Result.**
+
+| Variant | Test MAE | Test CRPS | tau_team | vs predict-zero CRPS (1.0566) |
+|---|---|---|---|---|
+| 7 features (no per-coach) | 1.1846 | 1.0893 | 0.2453 | −3.09% |
+| 8 features (with per-coach) | 1.1838 | 1.0899 | 0.2523 | −3.15% |
+| **Δ from adding per-coach** | **−0.0008** | **+0.0006** | **+0.0070** | **~0** |
+
+Hyers spot-check (sanity): his coach trailing-3yr xwOBA-jump record reads as -0.04 to -0.03 across BOS→TEX years. Negative even for a coach with a strong reputation — because BOS acquired established stars (Betts, Devers, J.D. Martinez) whose xwOBA was already near ceiling and naturally regressed. Per-coach aggregation doesn't escape the regression-to-mean confound that R-06 identified at team level.
+
+**Interpretation.** Per-coach hitter dev-fit also contributes ~zero predictive signal on the matched subset. Two reads:
+1. The MVP Machine Ch 5 thesis may be **structurally untestable** at our current data granularity — the signal-to-noise on hitter xwOBA jumps is too low to detect at any team- or coach-level aggregation given our N (~700 test rows).
+2. The "who they acquired" confound (BOS acquires stars, not reclamation projects) dominates "who's coaching them" — selection-on-gains is corrupting both team and per-coach aggregations the same way.
+
+Also notable: both fits' CRPS is **worse** than predict-zero on this subset (-3.15% / -3.09%), unlike the 911-row subset where the 7-feature fit was +1.07%. The 702-row subset (post-2015 trades with documented hitting-coach assignment + acquisition history) has a *lower* predict-zero CRPS (1.057 vs 1.105) — these trades are nearer zero on average, harder to beat. Same sample-shrinkage confound R-06 named, recurring at a different cut.
+
+**Affects.** Supports a new **D-20**: hitting-side dev-fit features (team-aggregate or per-coach, trailing-3yr xwOBA-jump operationalization) are below noise floor. The pitcher signal IS detectable (R-05); the hitter signal is not, at this data scale + aggregation. Suggests:
+- **Phase 3.5 should focus on pitching-side richer features (R-08 candidate: per-player coupling).** The signal lives where the data is denser.
+- Hitting-side may need either (a) much more data (decades) or (b) a fundamentally different feature shape — player-level swing-change data we don't have from public sources.
+
+---
+
 ## [2026-05-16] R-06: Hitter dev-fit ablation — feature contributes ~0 on matched subset
 
 **Question.** Phase 3 V0 (6 features, pitcher dev-fit only) beat predict-zero by +3.33% CRPS. Phase 3 V1 (7 features adding hitter dev-fit) dropped to +1.05%. Is the hitter feature actively degrading the model, or is the difference a sample-shrinkage confound from the smaller test set?

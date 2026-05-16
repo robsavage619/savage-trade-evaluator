@@ -96,9 +96,7 @@ def compute_all() -> int:
             standings_df["season"] = standings_df["season"] + 1  # shift to "prior year"
             standings_df["prior_year_pyth_pct"] = standings_df["win_pct"]
             standings_df = standings_df.drop(columns=["win_pct"])
-            team_season = team_season.merge(
-                standings_df, on=["bref_code", "season"], how="left"
-            )
+            team_season = team_season.merge(standings_df, on=["bref_code", "season"], how="left")
         else:
             team_season["prior_year_wins"] = None
             team_season["prior_year_losses"] = None
@@ -138,9 +136,7 @@ def compute_all() -> int:
             dev_history = dev_history[["bref_code", "season", "k_jump_3yr"]].rename(
                 columns={"k_jump_3yr": "org_pitcher_k_jump_3yr"}
             )
-            team_season = team_season.merge(
-                dev_history, on=["bref_code", "season"], how="left"
-            )
+            team_season = team_season.merge(dev_history, on=["bref_code", "season"], how="left")
         else:
             team_season["org_pitcher_k_jump_3yr"] = None
 
@@ -175,11 +171,83 @@ def compute_all() -> int:
             hit_history = hit_history[["bref_code", "season", "xwoba_jump_3yr"]].rename(
                 columns={"xwoba_jump_3yr": "org_hitter_xwoba_jump_3yr"}
             )
-            team_season = team_season.merge(
-                hit_history, on=["bref_code", "season"], how="left"
-            )
+            team_season = team_season.merge(hit_history, on=["bref_code", "season"], how="left")
         else:
             team_season["org_hitter_xwoba_jump_3yr"] = None
+
+        # === MVP Machine Ch 5 thesis — per-coach version (R-07) ===
+        # The team-aggregate hitter feature was ~zero contribution (R-06 ablation).
+        # Hypothesis: hitting dev-fit lives at the per-coach level, not per-team.
+        # When Tim Hyers moved LAD-asst → BOS-head → TEX-head, his coaching
+        # signal moved with him; a team-aggregate diluted across staff turnover.
+        #
+        # Feature: for each (team t, season s), find the hitting coach (COAT)
+        # in place at season s-1, then compute that coach's trailing-3yr mean
+        # of (xwoba_t_plus_1 - xwoba_t_minus_1) for hitters acquired during their
+        # tenure ANYWHERE (across teams they've coached).
+        coach_assignments = conn.execute(
+            """
+            SELECT c.team_id, t.bref_code, c.season, c.person_name
+            FROM coaches c
+            JOIN teams t ON t.mlb_team_id = c.team_id
+            WHERE c.job_code = 'COAT' AND c.person_name IS NOT NULL
+            """
+        ).df()
+
+        # per-trade xwoba jump joined to the receiving team's COAT at trade-season
+        hitter_trades = conn.execute(
+            """
+            SELECT w.to_team_bref AS bref_code, w.trade_season,
+                   w.xwoba_t_plus_1 - w.xwoba_t_minus_1 AS xwoba_jump,
+                   c.person_name AS coach_name
+            FROM trade_player_xwoba_window w
+            JOIN teams t ON t.bref_code = w.to_team_bref
+            JOIN coaches c ON c.team_id = t.mlb_team_id
+                          AND c.season = w.trade_season
+                          AND c.job_code = 'COAT'
+            WHERE w.xwoba_t_minus_1 IS NOT NULL
+              AND w.xwoba_t_plus_1 IS NOT NULL
+            """
+        ).df()
+
+        if not hitter_trades.empty:
+            # per-(coach, trade_season): mean xwoba_jump
+            coach_season = (
+                hitter_trades.groupby(["coach_name", "trade_season"])
+                .agg(coach_xwoba_jump=("xwoba_jump", "mean"))
+                .reset_index()
+                .sort_values(["coach_name", "trade_season"])
+            )
+            # trailing 3-year rolling mean per coach (across teams they've coached)
+            coach_season["coach_xwoba_jump_3yr"] = (
+                coach_season.groupby("coach_name")["coach_xwoba_jump"]
+                .rolling(window=3, min_periods=1)
+                .mean()
+                .reset_index(level=0, drop=True)
+            )
+            # shift forward — feature represents pre-trade-year knowledge
+            coach_season["season"] = coach_season["trade_season"] + 1
+            coach_record = coach_season[["coach_name", "season", "coach_xwoba_jump_3yr"]]
+
+            # join coach assignments (which team a coach was at in season s) to
+            # their trailing-3yr record from prior seasons
+            coach_at_team = (
+                coach_assignments.rename(columns={"person_name": "coach_name"}).merge(
+                    coach_record, on=["coach_name", "season"], how="left"
+                )
+            )[["bref_code", "season", "coach_xwoba_jump_3yr"]].rename(
+                columns={"coach_xwoba_jump_3yr": "coach_hitter_xwoba_jump_3yr"}
+            )
+
+            # in rare interim-coach swaps a team has 2+ COAT rows in a season —
+            # keep the one with non-null record
+            coach_at_team = coach_at_team.sort_values(
+                "coach_hitter_xwoba_jump_3yr", na_position="last"
+            ).drop_duplicates(["bref_code", "season"], keep="first")
+
+            team_season = team_season.merge(coach_at_team, on=["bref_code", "season"], how="left")
+        else:
+            team_season["coach_hitter_xwoba_jump_3yr"] = None
 
         rows = team_season[
             [
@@ -196,6 +264,7 @@ def compute_all() -> int:
                 "org_dev_fit_hitting",
                 "org_pitcher_k_jump_3yr",
                 "org_hitter_xwoba_jump_3yr",
+                "coach_hitter_xwoba_jump_3yr",
             ]
         ]
 
@@ -206,11 +275,13 @@ def compute_all() -> int:
                 "(team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
-                "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr) "
+                "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
+                "coach_hitter_xwoba_jump_3yr) "
                 "SELECT team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
-                "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr "
+                "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
+                "coach_hitter_xwoba_jump_3yr "
                 "FROM _staging_tsf"
             )
         finally:
