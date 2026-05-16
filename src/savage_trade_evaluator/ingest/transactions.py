@@ -10,6 +10,7 @@ See https://statsapi.mlb.com/api/v1/transactions?startDate=YYYY-MM-DD&endDate=YY
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from datetime import date
 from typing import TYPE_CHECKING, Any
 
@@ -77,14 +78,24 @@ def _parse_iso_date(raw: str | None) -> date | None:
         return None
 
 
-def _normalize(raw: dict[str, Any], season: int) -> dict[str, Any]:
-    """Flatten one nested API record into a row matching the ``transactions`` table."""
+def _normalize(raw: dict[str, Any], season: int, leg_index: int) -> dict[str, Any]:
+    """Flatten one nested API record into a row matching the ``transactions`` table.
+
+    Args:
+        raw: One transaction object from the MLB Stats API.
+        season: 4-digit year the ingestion run is targeting.
+        leg_index: 0-based ordinal among rows sharing the same ``transaction_id``.
+            For multi-player trades (e.g., 3-team or A-for-B-and-C deals), the
+            API emits one row per player movement; ``leg_index`` distinguishes
+            them within the trade event.
+    """
     from_team = raw.get("fromTeam") or {}
     to_team = raw.get("toTeam") or {}
     person = raw.get("person") or {}
 
     return {
         "transaction_id": raw["id"],
+        "leg_index": leg_index,
         "date": _parse_iso_date(raw.get("date")),
         "effective_date": _parse_iso_date(raw.get("effectiveDate")),
         "resolution_date": _parse_iso_date(raw.get("resolutionDate")),
@@ -100,6 +111,25 @@ def _normalize(raw: dict[str, Any], season: int) -> dict[str, Any]:
         "season": season,
         "source": SOURCE,
     }
+
+
+def _normalize_all(raw_rows: list[dict[str, Any]], season: int) -> list[dict[str, Any]]:
+    """Normalize a season's worth of raw rows, assigning leg indices per trade event.
+
+    Args:
+        raw_rows: Raw transaction objects in the order returned by the API.
+        season: 4-digit year.
+
+    Returns:
+        Normalized rows ready for ``upsert``.
+    """
+    counters: dict[int, int] = defaultdict(int)
+    normalized: list[dict[str, Any]] = []
+    for raw in raw_rows:
+        tid = raw["id"]
+        normalized.append(_normalize(raw, season, leg_index=counters[tid]))
+        counters[tid] += 1
+    return normalized
 
 
 def upsert(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> int:
@@ -120,7 +150,7 @@ def upsert(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> int:
     column_list = ", ".join(columns)
     sql = (
         f"INSERT INTO transactions ({column_list}) VALUES ({placeholders}) "
-        f"ON CONFLICT (transaction_id) DO NOTHING"
+        f"ON CONFLICT (transaction_id, leg_index) DO NOTHING"
     )
 
     values = [[row[c] for c in columns] for row in rows]
@@ -139,7 +169,7 @@ def ingest_season(season: int) -> int:
         Number of transaction rows written (new + already-present treated alike).
     """
     raw = fetch_season(season)
-    rows = [_normalize(r, season) for r in raw]
+    rows = _normalize_all(raw, season)
     with db.connect() as conn:
         schemas.initialize(conn)
         upsert(conn, rows)

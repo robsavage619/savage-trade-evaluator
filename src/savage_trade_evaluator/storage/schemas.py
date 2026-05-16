@@ -26,7 +26,8 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE TABLE IF NOT EXISTS transactions (
-        transaction_id BIGINT PRIMARY KEY,
+        transaction_id BIGINT NOT NULL,
+        leg_index INTEGER NOT NULL,
         date DATE NOT NULL,
         effective_date DATE,
         resolution_date DATE,
@@ -41,7 +42,8 @@ DDL_STATEMENTS: tuple[str, ...] = (
         player_name VARCHAR,
         season INTEGER NOT NULL,
         source VARCHAR NOT NULL,
-        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (transaction_id, leg_index)
     )
     """,
     """
@@ -52,6 +54,10 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(type_code)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_transactions_trade_event
+        ON transactions(transaction_id, type_code)
     """,
 )
 

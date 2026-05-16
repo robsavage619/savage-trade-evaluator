@@ -12,7 +12,7 @@ from savage_trade_evaluator.config import (
     configure_logging,
 )
 from savage_trade_evaluator.ingest import transactions
-from savage_trade_evaluator.storage import db, schemas
+from savage_trade_evaluator.storage import db, schemas, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
 ingest_app = typer.Typer(no_args_is_help=True, help="Ingestion commands.")
@@ -23,10 +23,11 @@ logger = logging.getLogger(__name__)
 
 @app.command()
 def init() -> None:
-    """Initialize the DuckDB schema."""
+    """Initialize the DuckDB schema and trade-event views."""
     configure_logging()
     with db.connect() as conn:
         schemas.initialize(conn)
+        trade_views.create_all(conn)
     typer.echo("schema initialized")
 
 
@@ -60,6 +61,11 @@ def status() -> None:
         seasons = conn.execute(
             "SELECT season, COUNT(*) FROM transactions GROUP BY season ORDER BY season"
         ).fetchall()
-    typer.echo(f"total transactions: {count[0]}")
+        trade_events = conn.execute("SELECT COUNT(*) FROM trade_events").fetchone()
+        affiliated = conn.execute("SELECT COUNT(*) FROM trade_events_affiliated").fetchone()
+    typer.echo(f"total transactions:        {count[0]}")
+    typer.echo(f"trade events (all):        {trade_events[0] if trade_events else 0}")
+    typer.echo(f"trade events (MLB-only):   {affiliated[0] if affiliated else 0}")
+    typer.echo("per-season transactions:")
     for s, n in seasons:
         typer.echo(f"  {s}: {n}")

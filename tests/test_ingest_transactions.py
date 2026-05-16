@@ -8,7 +8,11 @@ from __future__ import annotations
 
 from datetime import date
 
-from savage_trade_evaluator.ingest.transactions import _normalize, _parse_iso_date
+from savage_trade_evaluator.ingest.transactions import (
+    _normalize,
+    _normalize_all,
+    _parse_iso_date,
+)
 
 
 def test_parse_iso_date_handles_iso_datetime() -> None:
@@ -41,9 +45,10 @@ def test_normalize_flattens_nested_payload() -> None:
         "person": {"id": 519151, "fullName": "Ryan Pressly"},
     }
 
-    row = _normalize(raw, season=2018)
+    row = _normalize(raw, season=2018, leg_index=0)
 
     assert row["transaction_id"] == 12345
+    assert row["leg_index"] == 0
     assert row["date"] == date(2018, 7, 27)
     assert row["type_code"] == "TR"
     assert row["from_team_name"] == "Minnesota Twins"
@@ -59,7 +64,24 @@ def test_normalize_tolerates_missing_nested_objects() -> None:
         "date": "2018-01-01",
         "typeCode": "ASG",
     }
-    row = _normalize(raw, season=2018)
+    row = _normalize(raw, season=2018, leg_index=0)
     assert row["from_team_id"] is None
     assert row["to_team_name"] is None
     assert row["player_id"] is None
+
+
+def test_normalize_all_assigns_sequential_leg_indices() -> None:
+    """A 3-leg trade event should produce leg_index 0, 1, 2 sharing transaction_id."""
+    raw_rows = [
+        {"id": 371509, "date": "2018-07-27", "typeCode": "TR",
+         "person": {"id": 1, "fullName": "Jorge Alcala"}},
+        {"id": 371509, "date": "2018-07-27", "typeCode": "TR",
+         "person": {"id": 2, "fullName": "Ryan Pressly"}},
+        {"id": 371509, "date": "2018-07-27", "typeCode": "TR",
+         "person": {"id": 3, "fullName": "Gilberto Celestino"}},
+        {"id": 371329, "date": "2018-07-27", "typeCode": "TR",
+         "person": {"id": 4, "fullName": "Cole Hamels"}},
+    ]
+    rows = _normalize_all(raw_rows, season=2018)
+    assert [r["leg_index"] for r in rows] == [0, 1, 2, 0]
+    assert [r["transaction_id"] for r in rows] == [371509, 371509, 371509, 371329]
