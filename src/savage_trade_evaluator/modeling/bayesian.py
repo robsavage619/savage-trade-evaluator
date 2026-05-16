@@ -38,7 +38,7 @@ Posteriors mostly-centered-on-zero with the right uncertainty will have lower
 CRPS than the same-mean point estimates from OLS, even if MAE is similar.
 """
 
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false, reportMissingImports=false
+# pyright: reportAttributeAccessIssue=false, reportCallIssue=false, reportMissingImports=false, reportArgumentType=false
 
 from __future__ import annotations
 

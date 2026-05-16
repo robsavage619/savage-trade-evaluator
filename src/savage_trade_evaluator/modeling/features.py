@@ -15,6 +15,8 @@ no payroll-room, no manager dev-track-record yet — those need additional
 data sources). This is the V1 feature set the data layer already supports.
 """
 
+# pyright: reportCallIssue=false, reportAttributeAccessIssue=false, reportArgumentType=false
+
 from __future__ import annotations
 
 import logging
@@ -142,6 +144,43 @@ def compute_all() -> int:
         else:
             team_season["org_pitcher_k_jump_3yr"] = None
 
+        # === MVP Machine Ch 5 thesis: per-team historical xwOBA-jump on acquired hitters ===
+        # Hitting-side analog. For each (team t, season s), avg of
+        # (xwoba_t_plus_1 - xwoba_t_minus_1) for every hitter this team acquired
+        # in seasons [s-3, s-1]. Proxies "this team's hitting coaching staff
+        # systematically improves acquired hitters' quality-of-contact" — the
+        # Latta / Hyers story for Turner / Betts.
+        hit_history = conn.execute(
+            """
+            SELECT to_team_bref AS bref_code,
+                   trade_season,
+                   AVG(xwoba_t_plus_1 - xwoba_t_minus_1) AS xwoba_jump_avg,
+                   COUNT(*) AS n_hitters
+            FROM trade_player_xwoba_window
+            WHERE xwoba_t_minus_1 IS NOT NULL
+              AND xwoba_t_plus_1 IS NOT NULL
+              AND to_team_bref IS NOT NULL
+            GROUP BY to_team_bref, trade_season
+            """
+        ).df()
+        if not hit_history.empty:
+            hit_history = hit_history.sort_values(["bref_code", "trade_season"])
+            hit_history["xwoba_jump_3yr"] = (
+                hit_history.groupby("bref_code")["xwoba_jump_avg"]
+                .rolling(window=3, min_periods=1)
+                .mean()
+                .reset_index(level=0, drop=True)
+            )
+            hit_history["season"] = hit_history["trade_season"] + 1
+            hit_history = hit_history[["bref_code", "season", "xwoba_jump_3yr"]].rename(
+                columns={"xwoba_jump_3yr": "org_hitter_xwoba_jump_3yr"}
+            )
+            team_season = team_season.merge(
+                hit_history, on=["bref_code", "season"], how="left"
+            )
+        else:
+            team_season["org_hitter_xwoba_jump_3yr"] = None
+
         rows = team_season[
             [
                 "team_id",
@@ -156,6 +195,7 @@ def compute_all() -> int:
                 "org_dev_fit_pitching",
                 "org_dev_fit_hitting",
                 "org_pitcher_k_jump_3yr",
+                "org_hitter_xwoba_jump_3yr",
             ]
         ]
 
@@ -166,11 +206,11 @@ def compute_all() -> int:
                 "(team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
-                "org_pitcher_k_jump_3yr) "
+                "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr) "
                 "SELECT team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
-                "org_pitcher_k_jump_3yr "
+                "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr "
                 "FROM _staging_tsf"
             )
         finally:
