@@ -24,6 +24,31 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-09: Draft pedigree feature null at V1 scale
+
+**Question.** Does the receiving team's acquired-player draft pedigree (`receiver_best_draft_pick`, lower = higher pedigree) add predictive signal to the multilevel Bayesian model? This is the R-08-prep proposal in pragmatic form — MLB Pipeline top-100 was lazy-loaded so we substituted the MLB Stats API `/draft/<year>` endpoint and used pick-number as a coarse pedigree proxy.
+
+**Setup.** Ingested 46,126 draft picks 1990-2024 (`ingest/draft.py`, schema v11). Built `trade_pedigree` view (per trade-event-per-receiver: MIN/AVG/count of pick_number across acquired players). Joined as `receiver_best_draft_pick` into `trade_with_context`. Matched-subset A/B: 9-feat (with) vs 8-feat (without) on the 763-row subset where all 9 features are non-null. Train pre-2021, test 2021-2024. PyMC, seed=137, 1000 tune + 1000 draws × 2 chains.
+
+**Result.** Δ CRPS = +0.0008 (essentially zero, slightly *worse* with the feature). Δ MAE = +0.0033. Both models score ~+4.5% CRPS vs predict-zero on this subset — same regime as R-06/R-07. The new feature does not move the needle. See `scripts/ablation_draft_feature.py`.
+
+Pressly sanity check passed: HOU side (received Pressly, MLB pick #354 / 2007 R11) has `receiver_best_draft_pick = 354`; MIN side (received Alcala + Celestino, both int'l FAs) is NULL — correct.
+
+**Interpretation.** Same shape as R-06 (org-aggregate hitter dev-fit) and R-07 (per-coach hitter dev-fit). Three plausible explanations, in order of likelihood:
+1. **Sample size below detection floor.** 364 training trades + 9 features = ~40 trades per coefficient. Real effects in this regime are washed out by team-cluster partial pooling absorbing variance into `tau_team`.
+2. **Pick number is too coarse a pedigree proxy.** A 1st-round signability case (think Mark Appel #1 overall) and a Mike Trout #25 are both "first-round picks" but worth radically different things at trade time. MLB Pipeline top-100 *ranks* would discriminate better — still blocked by lazy-load. FV grades better still — still need Playwright on FanGraphs.
+3. **Pedigree at draft != pedigree at trade.** Trade outcomes are dominated by post-draft performance (which bWAR already captures in the naïve baseline). Pre-draft pedigree adds little marginal info conditional on that.
+
+Confidence: medium. Strongly suspect #1 + #3 dominate. Cannot distinguish without either more data (Retrosheet pre-2010 trades, ~5x rows) or a richer pedigree signal (top-100 rank or FV).
+
+**Affects.**
+- Supports D-19/D-20 generalization: at V1 sample size, individual feature additions consistently sit below the noise floor on the matched-subset test. Pattern is now 3-for-3 (R-06, R-07, R-09).
+- Suggests the next high-leverage move is *sample size*, not more features: Retrosheet pre-2010 transaction ingest or Playwright-based MLB Pipeline scrape.
+- Catalog new draft_picks source as ingested.
+- Keep `receiver_best_draft_pick` in FEATURE_COLUMNS — non-harmful, future-relevant when sample grows.
+
+---
+
 ## [2026-05-16] R-08-prep: Future Value methodology ingested — prospect-feature design candidates surfaced
 
 **Question.** Per D-20, the next-highest-leverage feature work is prospect-side. Longenhagen & McDaniel's *Future Value* (2020) is the canonical public reference for the FV-grade-to-WAR mapping. What concrete features does the book suggest we add to the multilevel Bayesian model, and what data would we need to compute them?

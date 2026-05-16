@@ -200,6 +200,24 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         ON t3.player_id    = t.mlb_player_id AND t3.year    = t.trade_season + 3
     """,
     """
+    CREATE OR REPLACE VIEW trade_pedigree AS
+    -- Per (trade_event, receiving_team), aggregate draft-pick pedigree of
+    -- players acquired. Lower pick_number = higher pedigree. Players without
+    -- a matching draft record (international FAs, pre-1990 draftees) are
+    -- dropped from the aggregate; n_with_pick tells you the coverage.
+    SELECT
+        tpu.trade_event_id,
+        tpu.to_team_bref AS receiver_bref,
+        MIN(d.pick_number) AS receiver_best_draft_pick,
+        AVG(d.pick_number) AS receiver_avg_draft_pick,
+        COUNT(d.pick_number) AS receiver_n_with_pick,
+        COUNT(*) AS receiver_n_players
+    FROM trade_player_unified tpu
+    LEFT JOIN draft_picks d ON d.mlb_player_id = tpu.mlb_player_id
+    WHERE tpu.to_team_bref IS NOT NULL
+    GROUP BY tpu.trade_event_id, tpu.to_team_bref
+    """,
+    """
     CREATE OR REPLACE VIEW trade_with_context AS
     -- Joins naïve baseline surplus to per-team-season context features for
     -- both receiving and giving sides. This is the row shape the V2 model
@@ -219,11 +237,16 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         tsf.prior_year_pyth_pct AS receiver_prior_year_pyth_pct,
         tsf.org_pitcher_k_jump_3yr AS receiver_org_pitcher_k_jump_3yr,
         tsf.org_hitter_xwoba_jump_3yr AS receiver_org_hitter_xwoba_jump_3yr,
-        tsf.coach_hitter_xwoba_jump_3yr AS receiver_coach_hitter_xwoba_jump_3yr
+        tsf.coach_hitter_xwoba_jump_3yr AS receiver_coach_hitter_xwoba_jump_3yr,
+        tp.receiver_best_draft_pick,
+        tp.receiver_avg_draft_pick
     FROM naive_baseline_results nbr
     LEFT JOIN team_season_features tsf
         ON tsf.bref_code = nbr.team_bref
         AND tsf.season = nbr.trade_season
+    LEFT JOIN trade_pedigree tp
+        ON tp.trade_event_id = nbr.trade_event_id
+        AND tp.receiver_bref = nbr.team_bref
     """,
     """
     CREATE OR REPLACE VIEW trade_player_arsenal_window AS

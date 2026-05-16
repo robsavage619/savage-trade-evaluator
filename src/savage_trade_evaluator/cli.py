@@ -15,7 +15,9 @@ from savage_trade_evaluator.config import (
 from savage_trade_evaluator.ingest import (
     catalog,
     coaches,
+    draft,
     front_office,
+    prospects,
     standings,
     stats,
     transactions,
@@ -153,6 +155,38 @@ def ingest_front_office(
     for s in seasons:
         total += front_office.ingest_season_all_teams(s)
     typer.echo(f"ingested {total} front-office rows across {len(seasons)} season(s)")
+
+
+@ingest_app.command("prospects")
+def ingest_prospects(
+    year: int | None = typer.Option(None, help="Single year to ingest."),
+    start: int = typer.Option(2018, help="First year (MLB Pipeline coverage starts ~2018)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+) -> None:
+    """Scrape MLB Pipeline top-100 prospect rankings per year."""
+    configure_logging()
+    if year is not None:
+        n = prospects.ingest_year(year)
+        typer.echo(f"ingested {n} prospects for {year}")
+    else:
+        n = prospects.ingest_range(start, end)
+        typer.echo(f"ingested {n} prospects across {end - start + 1} year(s)")
+
+
+@ingest_app.command("draft")
+def ingest_draft(
+    year: int | None = typer.Option(None, help="Single draft year to ingest."),
+    start: int = typer.Option(1990, help="First draft year (MLB Stats API coverage)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last draft year."),
+) -> None:
+    """Ingest MLB Draft picks per year from the MLB Stats API."""
+    configure_logging()
+    if year is not None:
+        n = draft.ingest_year(year)
+        typer.echo(f"ingested {n} draft picks for {year}")
+    else:
+        n = draft.ingest_range(start, end)
+        typer.echo(f"ingested {n} draft picks across {end - start + 1} year(s)")
 
 
 @ingest_app.command("standings")

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 11
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -293,6 +293,56 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_standings_season ON standings(season)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS prospect_rankings (
+        rank_year INTEGER NOT NULL,
+        rank INTEGER NOT NULL,
+        mlb_player_id INTEGER NOT NULL,
+        player_name VARCHAR NOT NULL,
+        position VARCHAR,
+        team_id INTEGER,
+        team_name VARCHAR,
+        level VARCHAR,
+        age INTEGER,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (rank_year, mlb_player_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_prospects_player ON prospect_rankings(mlb_player_id)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_prospects_year ON prospect_rankings(rank_year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS draft_picks (
+        draft_year INTEGER NOT NULL,
+        pick_number INTEGER NOT NULL,
+        pick_round VARCHAR,
+        round_pick_number INTEGER,
+        overall_rank INTEGER,
+        pick_value DOUBLE,
+        signing_bonus DOUBLE,
+        is_drafted BOOLEAN,
+        is_pass BOOLEAN,
+        mlb_player_id INTEGER,
+        player_name VARCHAR,
+        team_id INTEGER,
+        team_name VARCHAR,
+        school_name VARCHAR,
+        scouting_report VARCHAR,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (draft_year, pick_number)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_draft_player ON draft_picks(mlb_player_id)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_draft_year ON draft_picks(draft_year)
     """,
 )
 
