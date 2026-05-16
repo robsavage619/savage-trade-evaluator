@@ -138,6 +138,101 @@ VIEW_STATEMENTS: tuple[str, ...] = (
                               AND rcvr.year_id  = t.trade_season
                               AND rcvr.bref_code = t.to_team_bref
     """,
+    """
+    CREATE OR REPLACE VIEW trade_player_xwoba_window AS
+    -- Statcast-era only (2015+). xwOBA is the regression-to-mean baseline that
+    -- filters BABIP noise out of trade-outcome assessment. Returns NULL for
+    -- pre-2015 trades or players without Savant coverage.
+    SELECT
+        t.trade_event_id,
+        t.leg_index,
+        t.date,
+        t.trade_season,
+        t.mlb_player_id,
+        t.player_name,
+        t.from_team_bref,
+        t.to_team_bref,
+        prior.est_woba AS xwoba_t_minus_1,
+        same.est_woba  AS xwoba_t,
+        t1.est_woba    AS xwoba_t_plus_1,
+        t2.est_woba    AS xwoba_t_plus_2,
+        t3.est_woba    AS xwoba_t_plus_3
+    FROM trade_player_unified t
+    LEFT JOIN statcast_batting_expected prior
+        ON prior.player_id = t.mlb_player_id AND prior.year = t.trade_season - 1
+    LEFT JOIN statcast_batting_expected same
+        ON same.player_id  = t.mlb_player_id AND same.year  = t.trade_season
+    LEFT JOIN statcast_batting_expected t1
+        ON t1.player_id    = t.mlb_player_id AND t1.year    = t.trade_season + 1
+    LEFT JOIN statcast_batting_expected t2
+        ON t2.player_id    = t.mlb_player_id AND t2.year    = t.trade_season + 2
+    LEFT JOIN statcast_batting_expected t3
+        ON t3.player_id    = t.mlb_player_id AND t3.year    = t.trade_season + 3
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_player_xera_window AS
+    -- Pitcher analog: xERA windows from Statcast pitching-expected. Lower is
+    -- better. Returns NULL for non-pitcher trades or pre-2015 events.
+    SELECT
+        t.trade_event_id,
+        t.leg_index,
+        t.date,
+        t.trade_season,
+        t.mlb_player_id,
+        t.player_name,
+        t.from_team_bref,
+        t.to_team_bref,
+        prior.xera AS xera_t_minus_1,
+        same.xera  AS xera_t,
+        t1.xera    AS xera_t_plus_1,
+        t2.xera    AS xera_t_plus_2,
+        t3.xera    AS xera_t_plus_3
+    FROM trade_player_unified t
+    LEFT JOIN statcast_pitching_expected prior
+        ON prior.player_id = t.mlb_player_id AND prior.year = t.trade_season - 1
+    LEFT JOIN statcast_pitching_expected same
+        ON same.player_id  = t.mlb_player_id AND same.year  = t.trade_season
+    LEFT JOIN statcast_pitching_expected t1
+        ON t1.player_id    = t.mlb_player_id AND t1.year    = t.trade_season + 1
+    LEFT JOIN statcast_pitching_expected t2
+        ON t2.player_id    = t.mlb_player_id AND t2.year    = t.trade_season + 2
+    LEFT JOIN statcast_pitching_expected t3
+        ON t3.player_id    = t.mlb_player_id AND t3.year    = t.trade_season + 3
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_player_arsenal_window AS
+    -- Pitcher-arsenal percentile ranks at T-1 and T+1. The "did the receiving
+    -- team's dev system change this pitcher's arsenal" question lives here.
+    -- Higher percentile = better. Statcast-era only.
+    SELECT
+        t.trade_event_id,
+        t.leg_index,
+        t.date,
+        t.trade_season,
+        t.mlb_player_id,
+        t.player_name,
+        t.from_team_bref,
+        t.to_team_bref,
+        prior.fb_velocity   AS fb_velocity_t_minus_1,
+        post.fb_velocity    AS fb_velocity_t_plus_1,
+        prior.fb_spin       AS fb_spin_t_minus_1,
+        post.fb_spin        AS fb_spin_t_plus_1,
+        prior.curve_spin    AS curve_spin_t_minus_1,
+        post.curve_spin     AS curve_spin_t_plus_1,
+        prior.k_percent     AS k_percent_t_minus_1,
+        post.k_percent      AS k_percent_t_plus_1,
+        prior.bb_percent    AS bb_percent_t_minus_1,
+        post.bb_percent     AS bb_percent_t_plus_1,
+        prior.whiff_percent AS whiff_percent_t_minus_1,
+        post.whiff_percent  AS whiff_percent_t_plus_1,
+        prior.chase_percent AS chase_percent_t_minus_1,
+        post.chase_percent  AS chase_percent_t_plus_1
+    FROM trade_player_unified t
+    LEFT JOIN statcast_pitcher_percentile_ranks prior
+        ON prior.player_id = t.mlb_player_id AND prior.year = t.trade_season - 1
+    LEFT JOIN statcast_pitcher_percentile_ranks post
+        ON post.player_id  = t.mlb_player_id AND post.year  = t.trade_season + 1
+    """,
 )
 
 
