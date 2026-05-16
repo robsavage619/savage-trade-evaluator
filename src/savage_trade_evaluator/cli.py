@@ -6,6 +6,7 @@ import logging
 
 import typer
 
+from savage_trade_evaluator.analysis import trade_summary
 from savage_trade_evaluator.config import (
     BACKTESTER_END_SEASON,
     BACKTESTER_START_SEASON,
@@ -16,7 +17,9 @@ from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, tr
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
 ingest_app = typer.Typer(no_args_is_help=True, help="Ingestion commands.")
+analyze_app = typer.Typer(no_args_is_help=True, help="Read-only analysis helpers.")
 app.add_typer(ingest_app, name="ingest")
+app.add_typer(analyze_app, name="analyze")
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +168,54 @@ def ingest_statcast(
         f"{pit_total} pit-expected, {pct_total} percentile-ranks "
         f"across {len(seasons)} season(s)"
     )
+
+
+@analyze_app.command("scope")
+def analyze_scope(min_war: float = typer.Option(2.0, help="Minimum prior-season WAR")) -> None:
+    """Count of trade events per season for various Q-01 scope cutoffs.
+
+    Helps answer Q-01 (what counts as a 'meaningful' trade for the backtester).
+    """
+    configure_logging()
+    all_trades = trade_summary.trades_per_season()
+    war_trades = trade_summary.trades_with_war_player(min_war)
+    typer.echo(f"{all_trades.label}: total = {all_trades.total()}")
+    typer.echo(f"{war_trades.label}: total = {war_trades.total()}")
+    typer.echo()
+    typer.echo(f"{'season':>8s}  {'all':>5s}  {'≥' + str(min_war) + ' WAR':>10s}")
+    for s in sorted(all_trades.counts_by_season):
+        typer.echo(
+            f"{s:>8d}  {all_trades.counts_by_season.get(s, 0):>5d}  "
+            f"{war_trades.counts_by_season.get(s, 0):>10d}"
+        )
+
+
+@analyze_app.command("dev-fit-jumps")
+def analyze_dev_fit_jumps(
+    season: int = typer.Option(2018, help="Season of trades to analyze."),
+    top: int = typer.Option(10, help="Number of biggest jumps to show."),
+) -> None:
+    """Pitchers traded in `season` ranked by post-trade K-percentile jump."""
+    configure_logging()
+    df = trade_summary.biggest_dev_fit_jumps(season=season, top_n=top)
+    if df.empty:
+        typer.echo("(no matching trades)")
+        return
+    typer.echo(df.to_string(index=False))
+
+
+@analyze_app.command("personnel")
+def analyze_personnel(trade_event_id: int = typer.Argument(...)) -> None:
+    """Show both-sides personnel snapshot for one trade event."""
+    configure_logging()
+    snapshot = trade_summary.personnel_for_trade(trade_event_id)
+    if not snapshot:
+        typer.echo(f"no trade event with id {trade_event_id}")
+        return
+    for side, df in snapshot.items():
+        typer.echo(f"--- {side} ---")
+        typer.echo(df.to_string(index=False))
+        typer.echo()
 
 
 @app.command()
