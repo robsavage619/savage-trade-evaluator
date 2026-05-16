@@ -73,14 +73,30 @@ def test_normalize_tolerates_missing_nested_objects() -> None:
 def test_normalize_all_assigns_sequential_leg_indices() -> None:
     """A 3-leg trade event should produce leg_index 0, 1, 2 sharing transaction_id."""
     raw_rows = [
-        {"id": 371509, "date": "2018-07-27", "typeCode": "TR",
-         "person": {"id": 1, "fullName": "Jorge Alcala"}},
-        {"id": 371509, "date": "2018-07-27", "typeCode": "TR",
-         "person": {"id": 2, "fullName": "Ryan Pressly"}},
-        {"id": 371509, "date": "2018-07-27", "typeCode": "TR",
-         "person": {"id": 3, "fullName": "Gilberto Celestino"}},
-        {"id": 371329, "date": "2018-07-27", "typeCode": "TR",
-         "person": {"id": 4, "fullName": "Cole Hamels"}},
+        {
+            "id": 371509,
+            "date": "2018-07-27",
+            "typeCode": "TR",
+            "person": {"id": 1, "fullName": "Jorge Alcala"},
+        },
+        {
+            "id": 371509,
+            "date": "2018-07-27",
+            "typeCode": "TR",
+            "person": {"id": 2, "fullName": "Ryan Pressly"},
+        },
+        {
+            "id": 371509,
+            "date": "2018-07-27",
+            "typeCode": "TR",
+            "person": {"id": 3, "fullName": "Gilberto Celestino"},
+        },
+        {
+            "id": 371329,
+            "date": "2018-07-27",
+            "typeCode": "TR",
+            "person": {"id": 4, "fullName": "Cole Hamels"},
+        },
     ]
     rows = _normalize_all(raw_rows, season=2018)
     assert [r["leg_index"] for r in rows] == [0, 1, 2, 0]

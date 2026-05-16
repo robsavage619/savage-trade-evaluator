@@ -11,7 +11,7 @@ from savage_trade_evaluator.config import (
     BACKTESTER_START_SEASON,
     configure_logging,
 )
-from savage_trade_evaluator.ingest import transactions
+from savage_trade_evaluator.ingest import stats, transactions
 from savage_trade_evaluator.storage import db, schemas, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
@@ -49,6 +49,42 @@ def ingest_transactions(
     typer.echo(f"ingested {total} transactions across {len(seasons)} season(s)")
 
 
+@ingest_app.command("bwar")
+def ingest_bwar() -> None:
+    """Pull bWAR batting + pitching tables (1871-present) from Baseball Reference."""
+    configure_logging()
+    batting = stats.ingest_bwar_batting()
+    pitching = stats.ingest_bwar_pitching()
+    typer.echo(f"ingested bWAR: {batting} batting rows + {pitching} pitching rows")
+
+
+@ingest_app.command("statcast")
+def ingest_statcast(
+    season: int | None = typer.Option(None, help="Single season to ingest."),
+    start: int = typer.Option(2015, help="First season (Statcast era starts 2015)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season (inclusive)."),
+    skip_percentiles: bool = typer.Option(
+        False, help="Skip pitcher percentile ranks (arsenal data)."
+    ),
+) -> None:
+    """Pull Baseball Savant Statcast expected stats + pitcher percentile ranks."""
+    configure_logging()
+    seasons = [season] if season else list(range(start, end + 1))
+    bat_total = 0
+    pit_total = 0
+    pct_total = 0
+    for s in seasons:
+        bat_total += stats.ingest_statcast_batting_expected(s)
+        pit_total += stats.ingest_statcast_pitching_expected(s)
+        if not skip_percentiles:
+            pct_total += stats.ingest_statcast_pitcher_percentile_ranks(s)
+    typer.echo(
+        f"ingested Statcast: {bat_total} bat-expected, "
+        f"{pit_total} pit-expected, {pct_total} percentile-ranks "
+        f"across {len(seasons)} season(s)"
+    )
+
+
 @app.command()
 def status() -> None:
     """Print a summary of what's in the DuckDB store."""
@@ -63,9 +99,23 @@ def status() -> None:
         ).fetchall()
         trade_events = conn.execute("SELECT COUNT(*) FROM trade_events").fetchone()
         affiliated = conn.execute("SELECT COUNT(*) FROM trade_events_affiliated").fetchone()
-    typer.echo(f"total transactions:        {count[0]}")
-    typer.echo(f"trade events (all):        {trade_events[0] if trade_events else 0}")
-    typer.echo(f"trade events (MLB-only):   {affiliated[0] if affiliated else 0}")
+    with db.connect(read_only=True) as conn:
+        bwar_bat = conn.execute("SELECT COUNT(*) FROM bwar_batting").fetchone()
+        bwar_pit = conn.execute("SELECT COUNT(*) FROM bwar_pitching").fetchone()
+        statcast_bat = conn.execute("SELECT COUNT(*) FROM statcast_batting_expected").fetchone()
+        statcast_pit = conn.execute("SELECT COUNT(*) FROM statcast_pitching_expected").fetchone()
+        statcast_pct = conn.execute(
+            "SELECT COUNT(*) FROM statcast_pitcher_percentile_ranks"
+        ).fetchone()
+
+    typer.echo(f"total transactions:                {count[0]}")
+    typer.echo(f"trade events (all):                {trade_events[0] if trade_events else 0}")
+    typer.echo(f"trade events (MLB-only):           {affiliated[0] if affiliated else 0}")
+    typer.echo(f"bwar batting rows:                 {bwar_bat[0] if bwar_bat else 0}")
+    typer.echo(f"bwar pitching rows:                {bwar_pit[0] if bwar_pit else 0}")
+    typer.echo(f"statcast batting expected:         {statcast_bat[0] if statcast_bat else 0}")
+    typer.echo(f"statcast pitching expected:        {statcast_pit[0] if statcast_pit else 0}")
+    typer.echo(f"statcast pitcher percentile ranks: {statcast_pct[0] if statcast_pct else 0}")
     typer.echo("per-season transactions:")
     for s, n in seasons:
         typer.echo(f"  {s}: {n}")
