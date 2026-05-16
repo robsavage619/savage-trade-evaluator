@@ -13,7 +13,7 @@ from savage_trade_evaluator.config import (
     configure_logging,
 )
 from savage_trade_evaluator.ingest import catalog, coaches, front_office, stats, transactions
-from savage_trade_evaluator.modeling import naive_baseline
+from savage_trade_evaluator.modeling import features, naive_baseline
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
@@ -221,6 +221,18 @@ def analyze_personnel(trade_event_id: int = typer.Argument(...)) -> None:
         typer.echo(f"--- {side} ---")
         typer.echo(df.to_string(index=False))
         typer.echo()
+
+
+@app.command(name="features")
+def compute_features() -> None:
+    """Compute team-season context features for the V2 model.
+
+    Aggregates bWAR by (team, season) into hitting and pitching dev-fit
+    proxies plus a prior-year-war column. Persists to ``team_season_features``.
+    """
+    configure_logging()
+    n = features.compute_all()
+    typer.echo(f"computed {n} team-season feature rows")
 
 
 @backtest_app.command("naive")

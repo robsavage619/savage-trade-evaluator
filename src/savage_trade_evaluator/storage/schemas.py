@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -254,6 +254,26 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_nbr_surplus ON naive_baseline_results(surplus)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS team_season_features (
+        team_id INTEGER NOT NULL,
+        bref_code VARCHAR NOT NULL,
+        season INTEGER NOT NULL,
+        prior_year_wins INTEGER,
+        prior_year_losses INTEGER,
+        prior_year_run_diff INTEGER,
+        prior_year_pyth_pct DOUBLE,
+        prior_year_war DOUBLE,
+        farm_war_top_10 DOUBLE,
+        org_dev_fit_pitching DOUBLE,
+        org_dev_fit_hitting DOUBLE,
+        computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (team_id, season)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_tsf_season ON team_season_features(season)
     """,
 )
 

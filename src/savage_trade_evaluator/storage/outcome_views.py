@@ -200,6 +200,27 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         ON t3.player_id    = t.mlb_player_id AND t3.year    = t.trade_season + 3
     """,
     """
+    CREATE OR REPLACE VIEW trade_with_context AS
+    -- Joins naïve baseline surplus to per-team-season context features for
+    -- both receiving and giving sides. This is the row shape the V2 model
+    -- fits on: (surplus, receiver_features, giver_features) per trade event.
+    SELECT
+        nbr.trade_event_id,
+        nbr.trade_season,
+        nbr.outcome_window_years,
+        nbr.team_bref AS receiver_bref,
+        nbr.surplus,
+        nbr.war_received,
+        nbr.war_given_up,
+        tsf.prior_year_war AS receiver_prior_year_war,
+        tsf.org_dev_fit_pitching AS receiver_dev_fit_pitching,
+        tsf.org_dev_fit_hitting AS receiver_dev_fit_hitting
+    FROM naive_baseline_results nbr
+    LEFT JOIN team_season_features tsf
+        ON tsf.bref_code = nbr.team_bref
+        AND tsf.season = nbr.trade_season
+    """,
+    """
     CREATE OR REPLACE VIEW trade_player_arsenal_window AS
     -- Pitcher-arsenal percentile ranks at T-1 and T+1. The "did the receiving
     -- team's dev system change this pitcher's arsenal" question lives here.
