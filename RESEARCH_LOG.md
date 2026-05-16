@@ -24,6 +24,38 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-08-prep: Future Value methodology ingested — prospect-feature design candidates surfaced
+
+**Question.** Per D-20, the next-highest-leverage feature work is prospect-side. Longenhagen & McDaniel's *Future Value* (2020) is the canonical public reference for the FV-grade-to-WAR mapping. What concrete features does the book suggest we add to the multilevel Bayesian model, and what data would we need to compute them?
+
+**Setup.** Not an experiment — a methodology read. Ingested three chapters:
+- Ch 1 (four scouting markets context)
+- Ch 2 (post-2012 hard-cap draft mechanics + power-law of production)
+- Ch 10 (★ FV grade definition + WAR mapping)
+
+Notes in vault: `longenhagen-mcdaniel-2020-ch{1,2,10}-*.md`.
+
+**Result — proposed feature shapes:**
+
+| Feature | Data needed | Source candidate |
+|---|---|---|
+| Prospect-WAR-projection per acquired player | FV grade + variance + ETA at trade-time | FG (blocked); MLB Pipeline / BA top-100 (scrapeable) |
+| Cost-controlled-surplus expectation | FV → WAR table × years-of-control remaining | Craig Edwards' published FG tables; need to source |
+| Draft-class era marker | Pre-2012 / 2012-2016 / 2017+ | We already have draft year; just need to bucket |
+| Age-adjusted-within-class indicator | Birthdate + draft-class | MLB Stats API has DOB; trivial to add |
+| Market-of-origin (US-draft / J2 / NPB-posting) | Player metadata at signing | Chadwick register has it |
+
+**Interpretation.** The book confirms the prospect-feature direction is real and gives us the FV-to-WAR mapping structure. The methodology requires:
+1. **Ingest a public prospect-grades source** (MLB Pipeline top-100 lists are the most likely viable path given FG is Cloudflare-blocked).
+2. **Build a per-trade prospect-feature joiner** — for each trade-event leg, look up the player's FV grade as-of-trade-date and project expected WAR over their remaining cost-controlled window.
+3. **Add variance bucket and market-of-origin as side features** per Ch 10's variance modifier discussion.
+
+The Ramírez-vs-Grieve thought experiment (Ch 10) is a clean **validation test** for any prospect-aware model: a well-formed trade-eval should rank Grieve higher for cost-controlled surplus and Ramírez higher for total career WAR, with the recommendation depending on what the buyer optimizes.
+
+**Affects.** Establishes the work-plan for R-09+ (actual prospect-feature ingestion + Bayesian re-fit). Does not itself produce a model fit. Logged so the R-NN chain stays continuous and the prospect-feature direction has a documented design rationale.
+
+---
+
 ## [2026-05-16] R-07: Per-coach hitter operationalization — also ~0 contribution
 
 **Question.** R-06 found the team-aggregate hitter dev-fit feature was silent. Hypothesis (D-19): the Ch 5 thesis lives at a per-coach level — when Tim Hyers moves LAD-asst → BOS-head → TEX-head, his coaching signal moves with him; a team-aggregate gets diluted across coach turnover. Does a per-coach trailing-3yr xwOBA-jump feature recover the signal?
