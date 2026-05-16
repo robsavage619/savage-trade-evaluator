@@ -6,6 +6,12 @@ Things we've discovered the hard way. New entries go on top, dated.
 
 ## 2026-05-15
 
+### Modeling
+
+- **The Bayesian multilevel framing isn't stylistic — it's structurally necessary.** Phase 2.5 fitted both OLS and PyMC multilevel models on the same 5-feature test set. OLS test MAE: 1.501 vs predict-zero 1.154 — **30% WORSE** (spurious -7.1 coefficient on prior_year_pyth_pct overfits the training set). Bayesian test MAE: 1.209 — only 4.7% worse than predict-zero, AND test CRPS = 1.163 — within 1% of the predict-zero baseline. Strong priors regularize toward zero and only deviate where signal warrants. **D-12/D-13 were the right calls.**
+- **More weak features != better model.** Adding wins + pythagorean pct as features made OLS catastrophically worse and barely moved the Bayesian results. The signal in 5-dim feature space against trade-eval-noise is genuinely thin.
+- **Posterior tau_team ~ 0.08 in our fit.** The model is correctly inferring that per-team intercept deviations are essentially zero — there's no team-specific signal worth fitting with the features we have. To get team-specific effects to shine, we'd need richer features (contract years, prospect FV, mid-season standings).
+
 ### Data-source blockers
 
 - **FanGraphs is gated by Cloudflare.** Tried pybaseball (legacy endpoint), direct httpx with browser headers, `curl_cffi` with Chrome120 TLS impersonation, and `cloudscraper` Cloudflare JS-challenge solver. **All hit 403.** The only viable route is Playwright (real headless browser) which is heavy and fragile. **Substitute: bWAR (Baseball Reference) for WAR and value components; Baseball Savant Statcast for xwOBA / xERA / arsenal data.** Don't waste cycles re-trying FG without Playwright — track this in the catalog as `blocked=True`.
@@ -15,6 +21,8 @@ Things we've discovered the hard way. New entries go on top, dated.
 - **MLB Stats API transactions coverage starts effectively 2010** (D-14). Pre-2009: 1 trade event across 1990-2008 combined. 2009: 24K rows including 289 trade events. 2010+: 30K-75K/year. V1 backtester scope therefore is 2010-2024 for trade events.
 
 - **MLB API has coaches, not GMs.** `/teams/{id}/coaches?season=Y` returns the full coaching staff (manager + bench/hitting/pitching/bullpen/base coaches). It does NOT return front-office executives. Use Baseball Reference per-season team pages for that (D-15).
+
+- **pybaseball.standings() is broken for 2010+.** Returns empty list — BR HTML scrape fragility for recent years (older years like 1990s still work, with non-standard division structures). **Use MLB Stats API `/standings?leagueId=103,104&season=YYYY&standingsTypes=regularSeason` instead.** That endpoint is the same source as our transactions adapter and works reliably. Got 30/30 teams matched per season by integer team_id (no name-match heuristics).
 
 ### Performance wins
 
