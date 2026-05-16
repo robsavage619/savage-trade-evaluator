@@ -59,6 +59,7 @@ Project meta docs sit alongside:
 
 - [`SKILLS.md`](SKILLS.md) — project-specific skill routing (when to invoke which of Rob's skills)
 - [`LESSONS.md`](LESSONS.md) — gotchas + perf wins discovered the hard way
+- [`RESEARCH_LOG.md`](RESEARCH_LOG.md) — R-NN per-experiment record (setup, metrics, interpretation)
 - [`CHANGELOG.md`](CHANGELOG.md) — Keep-a-Changelog format
 
 ## V1 design docs

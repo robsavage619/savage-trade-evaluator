@@ -4,6 +4,13 @@ Things we've discovered the hard way. New entries go on top, dated.
 
 ---
 
+## 2026-05-16
+
+### Modeling
+
+- **Hitter dev-fit thesis (MVP Machine Ch 5) does not show up at team-season aggregate.** Pitcher dev-fit (Ch 9) gave us the first beat-zero on CRPS (+3.33%); adding the hitter analog dropped headline CRPS to +1.05%. We initially thought this was the hitter feature degrading the model. A matched-subset A/B (`scripts/ablation_hitter_feature.py`) revealed: the hitter feature contributes ~0 marginal CRPS; the drop was sample-shrinkage confound. **The Ch 5 thesis is probably real but lives at a different granularity (per-coach, not per-team) than our V0 operationalization.** Logged as D-19. Always run apples-to-apples ablations when one feature change appears to degrade a result — the test-set composition is often the actual confound.
+- **`library.fangraphs.com` is NOT Cloudflare-gated.** The main FG site is, but the WordPress methodology library returns 200 with full content. Use this for fWAR / wRC+ / FIP / xFIP / SIERA reference rather than trying to scrape the main site. Different subdomain, different bot policy.
+
 ## 2026-05-15
 
 ### Modeling
