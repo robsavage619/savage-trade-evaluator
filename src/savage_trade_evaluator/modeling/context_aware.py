@@ -39,6 +39,7 @@ FEATURE_COLUMNS: tuple[str, ...] = (
     "receiver_dev_fit_hitting",
     "receiver_prior_year_wins",
     "receiver_prior_year_pyth_pct",
+    "receiver_org_pitcher_k_jump_3yr",
 )
 
 

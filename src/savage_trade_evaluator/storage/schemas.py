@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -268,6 +268,7 @@ DDL_STATEMENTS: tuple[str, ...] = (
         farm_war_top_10 DOUBLE,
         org_dev_fit_pitching DOUBLE,
         org_dev_fit_hitting DOUBLE,
+        org_pitcher_k_jump_3yr DOUBLE,
         computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (team_id, season)
     )

@@ -105,6 +105,43 @@ def compute_all() -> int:
         team_season["prior_year_run_diff"] = None  # needs game-log adapter
         team_season["farm_war_top_10"] = None  # needs prospect FV (Phase 2.5)
 
+        # === MVP Machine Ch 9 thesis: per-team historical K-jump on acquired pitchers ===
+        # For each (team t, season s), avg of (k_percent_t_plus_1 - k_percent_t_minus_1)
+        # for every pitcher this team acquired in seasons [s-3, s-1]. Proxies
+        # "this team's coaching staff systematically improves acquired pitchers."
+        dev_history = conn.execute(
+            """
+            SELECT to_team_bref AS bref_code,
+                   trade_season,
+                   AVG(k_percent_t_plus_1 - k_percent_t_minus_1) AS k_jump_avg,
+                   COUNT(*) AS n_pitchers
+            FROM trade_player_arsenal_window
+            WHERE k_percent_t_minus_1 IS NOT NULL
+              AND k_percent_t_plus_1 IS NOT NULL
+              AND to_team_bref IS NOT NULL
+            GROUP BY to_team_bref, trade_season
+            """
+        ).df()
+        if not dev_history.empty:
+            # rolling 3-year mean per team
+            dev_history = dev_history.sort_values(["bref_code", "trade_season"])
+            dev_history["k_jump_3yr"] = (
+                dev_history.groupby("bref_code")["k_jump_avg"]
+                .rolling(window=3, min_periods=1)
+                .mean()
+                .reset_index(level=0, drop=True)
+            )
+            # shift forward so feature is "what we knew BEFORE this season"
+            dev_history["season"] = dev_history["trade_season"] + 1
+            dev_history = dev_history[["bref_code", "season", "k_jump_3yr"]].rename(
+                columns={"k_jump_3yr": "org_pitcher_k_jump_3yr"}
+            )
+            team_season = team_season.merge(
+                dev_history, on=["bref_code", "season"], how="left"
+            )
+        else:
+            team_season["org_pitcher_k_jump_3yr"] = None
+
         rows = team_season[
             [
                 "team_id",
@@ -118,6 +155,7 @@ def compute_all() -> int:
                 "farm_war_top_10",
                 "org_dev_fit_pitching",
                 "org_dev_fit_hitting",
+                "org_pitcher_k_jump_3yr",
             ]
         ]
 
@@ -127,10 +165,12 @@ def compute_all() -> int:
                 "INSERT INTO team_season_features "
                 "(team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
-                "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting) "
+                "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
+                "org_pitcher_k_jump_3yr) "
                 "SELECT team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
-                "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting "
+                "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
+                "org_pitcher_k_jump_3yr "
                 "FROM _staging_tsf"
             )
         finally:
