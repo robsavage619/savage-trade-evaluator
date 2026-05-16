@@ -44,6 +44,23 @@ uv run ste analyze dev-fit-jumps --season 2018 --top 10
 uv run ste analyze personnel 371509           # Pressly trade full personnel snapshot
 ```
 
+## Agent context files
+
+The repo root has a fan of agent-context files for cross-tool compatibility. All are symlinks to **[`CLAUDE.md`](CLAUDE.md)** — the single source of truth. Edit `CLAUDE.md` and every consumer sees the change.
+
+| File | Read by |
+|---|---|
+| `CLAUDE.md` | **Canonical.** Read by Claude Code; also where humans look. |
+| `AGENTS.md` | OpenAI Codex / Jules, Cursor, agents.md standard tools |
+| `GEMINI.md` | Google Gemini CLI |
+| `.github/copilot-instructions.md` | GitHub Copilot (Chat, Workspace, PR review) |
+
+Project meta docs sit alongside:
+
+- [`SKILLS.md`](SKILLS.md) — project-specific skill routing (when to invoke which of Rob's skills)
+- [`LESSONS.md`](LESSONS.md) — gotchas + perf wins discovered the hard way
+- [`CHANGELOG.md`](CHANGELOG.md) — Keep-a-Changelog format
+
 ## V1 design docs
 
 - [`docs/STATS_CATALOG.md`](docs/STATS_CATALOG.md) — registry of stat sources

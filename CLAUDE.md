@@ -1,6 +1,8 @@
-# savage-trade-evaluator — Claude project context
+# savage-trade-evaluator — Agent project context
 
-Rob's global conventions (`~/.claude/CLAUDE.md`) apply. This file is **project-specific overlay**: where the planning lives, what V1 looks like, what's load-bearing, and what to avoid.
+> **Canonical agent context file.** `AGENTS.md`, `GEMINI.md`, and `.github/copilot-instructions.md` are all symlinks to this file — edits here propagate to every supported tool (Claude Code, OpenAI Codex / Jules, Gemini CLI, GitHub Copilot, Cursor's AGENTS.md reader, etc.).
+
+Rob's global conventions (`~/.claude/CLAUDE.md`) apply. This file is the **project-specific overlay**: where the planning lives, what V1 looks like, what's load-bearing, and what to avoid.
 
 ---
 
