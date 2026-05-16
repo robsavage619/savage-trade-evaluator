@@ -109,6 +109,43 @@ CATALOG: tuple[StatSource, ...] = (
         ingested=True,
         notes="Pre-2010 coverage is sparse (D-14). 2010+ is comprehensive.",
     ),
+    # === Personnel (managers, coaches, front-office) ===
+    StatSource(
+        name="coaches",
+        source="mlb-stats-api",
+        granularity="team-season",
+        era_start=2010,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.coaches.fetch_team_season",
+        primary_columns=(
+            "team_id", "season", "job_code", "job_title",
+            "person_id", "person_name",
+        ),
+        target_table="coaches",
+        ingested=True,
+        notes=(
+            "Per team-season coaching staff (manager + assistants). Direct "
+            "fuel for coach-portability features (MVP Machine Ch 5)."
+        ),
+    ),
+    StatSource(
+        name="front-office",
+        source="bref-other",
+        granularity="team-season",
+        era_start=2010,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.front_office.ingest_team_season",
+        primary_columns=(
+            "team_id", "season", "role", "person_name",
+        ),
+        target_table="front_office",
+        ingested=True,
+        notes=(
+            "Per team-season front office: GM, President of Baseball Ops, "
+            "Farm Director, Scouting Director. Source: BR team-season pages. "
+            "Required for GM-behavior modeling (D-09 / Phase 3)."
+        ),
+    ),
     # === Player WAR + value components ===
     StatSource(
         name="bwar-batting",
