@@ -15,6 +15,7 @@ from datetime import date
 from typing import TYPE_CHECKING, Any
 
 import httpx
+import pandas as pd
 
 from savage_trade_evaluator.config import MLB_STATS_API_BASE
 from savage_trade_evaluator.storage import db, schemas
@@ -146,17 +147,19 @@ def upsert(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> int:
         return 0
 
     columns = list(rows[0].keys())
-    placeholders = ", ".join("?" for _ in columns)
     column_list = ", ".join(columns)
-    sql = (
-        f"INSERT INTO transactions ({column_list}) VALUES ({placeholders}) "
-        f"ON CONFLICT (transaction_id, leg_index) DO NOTHING"
-    )
+    df = pd.DataFrame(rows, columns=columns)
 
-    values = [[row[c] for c in columns] for row in rows]
-    for row_values in values:
-        conn.execute(sql, row_values)
-    return len(values)
+    conn.register("_staging_transactions", df)
+    try:
+        conn.execute(
+            f"INSERT INTO transactions ({column_list}) "
+            f"SELECT {column_list} FROM _staging_transactions "
+            f"ON CONFLICT (transaction_id, leg_index) DO NOTHING"
+        )
+    finally:
+        conn.unregister("_staging_transactions")
+    return len(rows)
 
 
 def ingest_season(season: int) -> int:
