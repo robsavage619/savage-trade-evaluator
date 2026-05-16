@@ -11,8 +11,8 @@ from savage_trade_evaluator.config import (
     BACKTESTER_START_SEASON,
     configure_logging,
 )
-from savage_trade_evaluator.ingest import stats, transactions
-from savage_trade_evaluator.storage import db, schemas, trade_views
+from savage_trade_evaluator.ingest import catalog, stats, transactions
+from savage_trade_evaluator.storage import db, schemas, teams, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
 ingest_app = typer.Typer(no_args_is_help=True, help="Ingestion commands.")
@@ -23,12 +23,60 @@ logger = logging.getLogger(__name__)
 
 @app.command()
 def init() -> None:
-    """Initialize the DuckDB schema and trade-event views."""
+    """Initialize the DuckDB schema, teams mapping, and trade-event views."""
     configure_logging()
     with db.connect() as conn:
         schemas.initialize(conn)
+        teams.initialize(conn)
         trade_views.create_all(conn)
     typer.echo("schema initialized")
+
+
+@app.command(name="catalog")
+def catalog_(
+    status: str = typer.Option(
+        "all",
+        help="Filter: 'all', 'ingested', 'available', 'blocked'.",
+    ),
+    source: str | None = typer.Option(None, help="Filter by source (e.g. 'baseball-savant')."),
+    search: str | None = typer.Option(None, help="Substring search across name/notes/columns."),
+) -> None:
+    """List available stat sources from the catalog.
+
+    Browse what we can pull in. The catalog lives in
+    ``src/savage_trade_evaluator/ingest/catalog.py``; this command is a
+    convenience for exploring it from the shell.
+    """
+    if status == "ingested":
+        entries = catalog.ingested()
+    elif status == "available":
+        entries = catalog.available_not_yet_ingested()
+    elif status == "blocked":
+        entries = catalog.blocked()
+    else:
+        entries = list(catalog.CATALOG)
+
+    if source:
+        entries = [e for e in entries if e.source == source]
+    if search:
+        needle = search.lower()
+        entries = [
+            e
+            for e in entries
+            if needle in (e.name + " " + e.notes + " " + " ".join(e.primary_columns)).lower()
+        ]
+
+    if not entries:
+        typer.echo("(no matching catalog entries)")
+        return
+    for e in entries:
+        flag = "✅" if e.ingested else ("⛔" if e.blocked else "☐ ")
+        era_end = e.era_end if e.era_end else "now"
+        typer.echo(
+            f"{flag} {e.name:<40} {e.source:<18} {e.granularity:<22} {e.era_start}-{era_end}"
+        )
+        if e.notes:
+            typer.echo(f"    {e.notes}")
 
 
 @ingest_app.command("transactions")
