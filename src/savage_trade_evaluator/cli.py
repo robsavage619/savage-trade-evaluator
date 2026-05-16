@@ -11,7 +11,7 @@ from savage_trade_evaluator.config import (
     BACKTESTER_START_SEASON,
     configure_logging,
 )
-from savage_trade_evaluator.ingest import catalog, stats, transactions
+from savage_trade_evaluator.ingest import catalog, coaches, front_office, stats, transactions
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
@@ -105,6 +105,39 @@ def ingest_bwar() -> None:
     batting = stats.ingest_bwar_batting()
     pitching = stats.ingest_bwar_pitching()
     typer.echo(f"ingested bWAR: {batting} batting rows + {pitching} pitching rows")
+
+
+@ingest_app.command("coaches")
+def ingest_coaches(
+    season: int | None = typer.Option(None, help="Single season to ingest."),
+    start: int = typer.Option(2010, help="First season (coaches endpoint coverage starts ~2010)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+) -> None:
+    """Pull team coaching staff (manager + assistants) per team-season from MLB Stats API."""
+    configure_logging()
+    seasons = [season] if season else list(range(start, end + 1))
+    total = 0
+    for s in seasons:
+        total += coaches.ingest_season(s)
+    typer.echo(f"ingested {total} coach rows across {len(seasons)} season(s)")
+
+
+@ingest_app.command("front-office")
+def ingest_front_office(
+    season: int | None = typer.Option(None, help="Single season to ingest."),
+    start: int = typer.Option(2010, help="First season."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+) -> None:
+    """Scrape front-office personnel (GM, POBO, Farm/Scouting Director) from Baseball Reference.
+
+    Rate-limited per BR guidelines; expect ~25 minutes for a full 2010-2024 ingest.
+    """
+    configure_logging()
+    seasons = [season] if season else list(range(start, end + 1))
+    total = 0
+    for s in seasons:
+        total += front_office.ingest_season_all_teams(s)
+    typer.echo(f"ingested {total} front-office rows across {len(seasons)} season(s)")
 
 
 @ingest_app.command("statcast")

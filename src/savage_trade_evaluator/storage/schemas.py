@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -196,6 +196,43 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_statcast_pct_year ON statcast_pitcher_percentile_ranks(year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS coaches (
+        team_id INTEGER NOT NULL,
+        season INTEGER NOT NULL,
+        job_code VARCHAR NOT NULL,
+        job_title VARCHAR,
+        person_id INTEGER,
+        person_name VARCHAR,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (team_id, season, job_code, person_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_coaches_team_season ON coaches(team_id, season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_coaches_job ON coaches(job_code, season)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS front_office (
+        team_id INTEGER NOT NULL,
+        bref_code VARCHAR NOT NULL,
+        season INTEGER NOT NULL,
+        role VARCHAR NOT NULL,
+        person_name VARCHAR NOT NULL,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (team_id, season, role, person_name)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_front_office_team_season ON front_office(team_id, season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_front_office_role ON front_office(role, season)
     """,
 )
 
