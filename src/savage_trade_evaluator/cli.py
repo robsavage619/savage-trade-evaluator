@@ -13,7 +13,7 @@ from savage_trade_evaluator.config import (
     configure_logging,
 )
 from savage_trade_evaluator.ingest import catalog, coaches, front_office, stats, transactions
-from savage_trade_evaluator.modeling import context_aware, features, naive_baseline
+from savage_trade_evaluator.modeling import bayesian, context_aware, features, naive_baseline
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
@@ -301,6 +301,47 @@ def backtest_context(
     delta = result.naive_zero_mae_test - result.test_mae
     pct = 100.0 * delta / result.naive_zero_mae_test if result.naive_zero_mae_test else 0.0
     typer.echo(f"improvement over predict-0:  {delta:+.4f} WAR  ({pct:+.2f}%)")
+
+
+@backtest_app.command("bayesian")
+def backtest_bayesian(
+    test_start: int = typer.Option(2021, help="First test season (out-of-time split)."),
+    samples: int = typer.Option(1000, help="MCMC posterior samples per chain."),
+    tune: int = typer.Option(1000, help="MCMC tuning steps per chain."),
+    chains: int = typer.Option(2, help="MCMC chains."),
+) -> None:
+    """Fit the multilevel varying-intercepts Bayesian model and score on test set.
+
+    Compares MAE + CRPS against the predict-zero benchmark.
+    """
+    configure_logging()
+    result = bayesian.fit_multilevel(
+        test_start_season=test_start,
+        n_samples=samples,
+        n_tune=tune,
+        n_chains=chains,
+    )
+    typer.echo(
+        f"multilevel Bayesian: train n={result.n_train}, test n={result.n_test}, "
+        f"teams={result.n_teams}"
+    )
+    typer.echo(f"posterior sigma (mean):    {result.posterior_sigma_mean:.4f}")
+    typer.echo(f"posterior tau_team (mean): {result.posterior_tau_team_mean:.4f}")
+    typer.echo()
+    typer.echo(f"train MAE:                   {result.train_mae:.4f}")
+    typer.echo(f"test MAE (Bayesian):         {result.test_mae:.4f}")
+    typer.echo(f"test MAE (predict-zero):     {result.naive_zero_test_mae:.4f}")
+    mae_delta = result.naive_zero_test_mae - result.test_mae
+    mae_pct = 100.0 * mae_delta / result.naive_zero_test_mae if result.naive_zero_test_mae else 0.0
+    typer.echo(f"MAE improvement over zero:   {mae_delta:+.4f} ({mae_pct:+.2f}%)")
+    typer.echo()
+    typer.echo(f"test CRPS (Bayesian):        {result.test_crps:.4f}")
+    typer.echo(f"test CRPS (predict-zero):    {result.test_crps_naive_zero:.4f}")
+    crps_delta = result.test_crps_naive_zero - result.test_crps
+    crps_pct = (
+        100.0 * crps_delta / result.test_crps_naive_zero if result.test_crps_naive_zero else 0.0
+    )
+    typer.echo(f"CRPS improvement over zero:  {crps_delta:+.4f} ({crps_pct:+.2f}%)")
 
 
 @backtest_app.command("trade")
