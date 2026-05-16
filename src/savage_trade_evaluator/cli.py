@@ -6,20 +6,25 @@ import logging
 
 import typer
 
-from savage_trade_evaluator.analysis import trade_summary
+from savage_trade_evaluator.analysis import backtest, trade_summary
 from savage_trade_evaluator.config import (
     BACKTESTER_END_SEASON,
     BACKTESTER_START_SEASON,
     configure_logging,
 )
 from savage_trade_evaluator.ingest import catalog, coaches, front_office, stats, transactions
+from savage_trade_evaluator.modeling import naive_baseline
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
 ingest_app = typer.Typer(no_args_is_help=True, help="Ingestion commands.")
 analyze_app = typer.Typer(no_args_is_help=True, help="Read-only analysis helpers.")
+backtest_app = typer.Typer(
+    no_args_is_help=True, help="Backtest harness — run models over historical trades."
+)
 app.add_typer(ingest_app, name="ingest")
 app.add_typer(analyze_app, name="analyze")
+app.add_typer(backtest_app, name="backtest")
 
 logger = logging.getLogger(__name__)
 
@@ -216,6 +221,78 @@ def analyze_personnel(trade_event_id: int = typer.Argument(...)) -> None:
         typer.echo(f"--- {side} ---")
         typer.echo(df.to_string(index=False))
         typer.echo()
+
+
+@backtest_app.command("naive")
+def backtest_naive(
+    start: int = typer.Option(BACKTESTER_START_SEASON, help="First trade season (inclusive)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last trade season (inclusive)."),
+    window: int = typer.Option(3, help="Outcome-window length in years (T+1..T+N)."),
+) -> None:
+    """Run the naïve WAR-surplus baseline over historical trades.
+
+    Stores per-(trade_event, team) results in ``naive_baseline_results``.
+    """
+    configure_logging()
+    n = backtest.run_naive_baseline(start_season=start, end_season=end, outcome_window_years=window)
+    typer.echo(f"naïve baseline: {n} rows written (window={window}y)")
+
+
+@backtest_app.command("show")
+def backtest_show(
+    season: int | None = typer.Option(None, help="Filter to one season."),
+    top: int = typer.Option(10, help="Top/bottom N to show."),
+    side: str = typer.Option("both", help="'top', 'bottom', or 'both'."),
+) -> None:
+    """Show biggest WAR wins / losses from the latest backtest."""
+    configure_logging()
+    if side in ("top", "both"):
+        typer.echo(f"=== top {top} naïve-baseline WAR-surplus rows ===")
+        df = backtest.top_surpluses(season=season, top_n=top)
+        if df.empty:
+            typer.echo("(no rows — run `ste backtest naive` first)")
+            return
+        typer.echo(df.to_string(index=False, max_colwidth=60))
+        typer.echo()
+    if side in ("bottom", "both"):
+        typer.echo(f"=== bottom {top} naïve-baseline WAR-surplus rows ===")
+        df = backtest.bottom_surpluses(season=season, top_n=top)
+        typer.echo(df.to_string(index=False, max_colwidth=60))
+
+
+@backtest_app.command("dist")
+def backtest_dist() -> None:
+    """Per-season distribution summary of naïve-baseline surpluses."""
+    configure_logging()
+    df = backtest.surplus_distribution()
+    typer.echo(df.to_string(index=False))
+
+
+@backtest_app.command("trade")
+def backtest_trade(
+    trade_event_id: int = typer.Argument(...),
+    window: int = typer.Option(3, help="Outcome window years."),
+) -> None:
+    """Evaluate one trade live (without writing to DB)."""
+    configure_logging()
+    result = naive_baseline.evaluate(trade_event_id, outcome_window_years=window)
+    if result is None:
+        typer.echo(f"no MLB-affiliated legs for trade {trade_event_id}")
+        return
+    typer.echo(
+        f"trade {result.trade_event_id} ({result.trade_season}, "
+        f"{result.outcome_window_years}y window):"
+    )
+    for ledger in result.team_ledgers:
+        typer.echo(
+            f"  {ledger.team_bref}  recv={ledger.war_received:+6.2f}  "
+            f"gave={ledger.war_given_up:+6.2f}  surplus={ledger.surplus:+6.2f}"
+        )
+        typer.echo(f"    received: {', '.join(ledger.players_received) or '(none)'}")
+        typer.echo(f"    gave:     {', '.join(ledger.players_given_up) or '(none)'}")
+    win = result.winning_team
+    if win:
+        typer.echo(f"  winner by WAR: {win}")
 
 
 @app.command()

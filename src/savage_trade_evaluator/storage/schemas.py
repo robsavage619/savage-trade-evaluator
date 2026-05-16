@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -233,6 +233,27 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_front_office_role ON front_office(role, season)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS naive_baseline_results (
+        trade_event_id BIGINT NOT NULL,
+        trade_season INTEGER NOT NULL,
+        outcome_window_years INTEGER NOT NULL,
+        team_bref VARCHAR NOT NULL,
+        war_received DOUBLE NOT NULL,
+        war_given_up DOUBLE NOT NULL,
+        surplus DOUBLE NOT NULL,
+        players_received VARCHAR,
+        players_given_up VARCHAR,
+        evaluated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (trade_event_id, team_bref, outcome_window_years)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_nbr_season ON naive_baseline_results(trade_season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_nbr_surplus ON naive_baseline_results(surplus)
     """,
 )
 

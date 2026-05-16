@@ -27,8 +27,7 @@ def trades_per_season() -> TradeScopeCount:
     """Affiliated MLB trade events per season."""
     with db.connect(read_only=True) as conn:
         rows = conn.execute(
-            "SELECT season, COUNT(*) FROM trade_events_affiliated "
-            "GROUP BY season ORDER BY season"
+            "SELECT season, COUNT(*) FROM trade_events_affiliated GROUP BY season ORDER BY season"
         ).fetchall()
     return TradeScopeCount(
         label="affiliated trades",
