@@ -214,7 +214,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         nbr.war_given_up,
         tsf.prior_year_war AS receiver_prior_year_war,
         tsf.org_dev_fit_pitching AS receiver_dev_fit_pitching,
-        tsf.org_dev_fit_hitting AS receiver_dev_fit_hitting
+        tsf.org_dev_fit_hitting AS receiver_dev_fit_hitting,
+        tsf.prior_year_wins AS receiver_prior_year_wins,
+        tsf.prior_year_pyth_pct AS receiver_prior_year_pyth_pct
     FROM naive_baseline_results nbr
     LEFT JOIN team_season_features tsf
         ON tsf.bref_code = nbr.team_bref

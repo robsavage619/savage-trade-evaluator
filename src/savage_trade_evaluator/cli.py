@@ -12,7 +12,14 @@ from savage_trade_evaluator.config import (
     BACKTESTER_START_SEASON,
     configure_logging,
 )
-from savage_trade_evaluator.ingest import catalog, coaches, front_office, stats, transactions
+from savage_trade_evaluator.ingest import (
+    catalog,
+    coaches,
+    front_office,
+    standings,
+    stats,
+    transactions,
+)
 from savage_trade_evaluator.modeling import bayesian, context_aware, features, naive_baseline
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
@@ -146,6 +153,21 @@ def ingest_front_office(
     for s in seasons:
         total += front_office.ingest_season_all_teams(s)
     typer.echo(f"ingested {total} front-office rows across {len(seasons)} season(s)")
+
+
+@ingest_app.command("standings")
+def ingest_standings(
+    season: int | None = typer.Option(None, help="Single season to ingest."),
+    start: int = typer.Option(BACKTESTER_START_SEASON, help="First season."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+) -> None:
+    """Pull final-standings per season via pybaseball.standings()."""
+    configure_logging()
+    seasons = [season] if season else list(range(start, end + 1))
+    total = 0
+    for s in seasons:
+        total += standings.ingest_season(s)
+    typer.echo(f"ingested {total} standings rows across {len(seasons)} season(s)")
 
 
 @ingest_app.command("statcast")

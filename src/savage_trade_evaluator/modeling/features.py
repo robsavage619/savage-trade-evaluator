@@ -83,15 +83,27 @@ def compute_all() -> int:
         team_season["org_dev_fit_hitting"] = team_season["bat_war"]
         team_season["org_dev_fit_pitching"] = team_season["pit_war"]
 
-        # bWAR doesn't give us actual W-L records, but a useful proxy:
-        # prior-year total team WAR is correlated with prior-year wins.
-        # We'll fill the W-L columns as NULL for V0 — they're added later
-        # via a standings adapter (catalog scaffolded but not yet ingested).
-        team_season["prior_year_wins"] = None
-        team_season["prior_year_losses"] = None
-        team_season["prior_year_run_diff"] = None
-        team_season["prior_year_pyth_pct"] = None
-        team_season["farm_war_top_10"] = None  # needs prospect FV → bWAR mapping (Phase 2.5)
+        # Pull standings → join prior-year W-L by (team, season-1).
+        standings_df = conn.execute(
+            "SELECT bref_code, season, wins, losses, win_pct FROM standings"
+        ).df()
+        if not standings_df.empty:
+            standings_df = standings_df.rename(
+                columns={"wins": "prior_year_wins", "losses": "prior_year_losses"}
+            )
+            standings_df["season"] = standings_df["season"] + 1  # shift to "prior year"
+            standings_df["prior_year_pyth_pct"] = standings_df["win_pct"]
+            standings_df = standings_df.drop(columns=["win_pct"])
+            team_season = team_season.merge(
+                standings_df, on=["bref_code", "season"], how="left"
+            )
+        else:
+            team_season["prior_year_wins"] = None
+            team_season["prior_year_losses"] = None
+            team_season["prior_year_pyth_pct"] = None
+
+        team_season["prior_year_run_diff"] = None  # needs game-log adapter
+        team_season["farm_war_top_10"] = None  # needs prospect FV (Phase 2.5)
 
         rows = team_season[
             [
