@@ -13,7 +13,7 @@ from savage_trade_evaluator.config import (
     configure_logging,
 )
 from savage_trade_evaluator.ingest import catalog, coaches, front_office, stats, transactions
-from savage_trade_evaluator.modeling import features, naive_baseline
+from savage_trade_evaluator.modeling import context_aware, features, naive_baseline
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
@@ -278,6 +278,29 @@ def backtest_dist() -> None:
     configure_logging()
     df = backtest.surplus_distribution()
     typer.echo(df.to_string(index=False))
+
+
+@backtest_app.command("context")
+def backtest_context(
+    test_start: int = typer.Option(2021, help="First test season (out-of-time split)."),
+) -> None:
+    """Fit + evaluate the V0 context-aware OLS model.
+
+    Reports test-set MAE vs the predict-zero baseline.
+    """
+    configure_logging()
+    result = context_aware.fit(test_start_season=test_start)
+    typer.echo(f"OLS fit on {result.n_train} train rows, {result.n_test} test rows")
+    typer.echo(f"intercept: {result.intercept:+.4f}")
+    for col, coef in zip(result.feature_columns, result.coefficients, strict=True):
+        typer.echo(f"  coef {col:30s}: {coef:+.5f}")
+    typer.echo()
+    typer.echo(f"train MAE:                   {result.train_mae:.4f}")
+    typer.echo(f"test MAE (context-aware):    {result.test_mae:.4f}")
+    typer.echo(f"test MAE (predict-zero):     {result.naive_zero_mae_test:.4f}")
+    delta = result.naive_zero_mae_test - result.test_mae
+    pct = 100.0 * delta / result.naive_zero_mae_test if result.naive_zero_mae_test else 0.0
+    typer.echo(f"improvement over predict-0:  {delta:+.4f} WAR  ({pct:+.2f}%)")
 
 
 @backtest_app.command("trade")
