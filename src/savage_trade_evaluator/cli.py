@@ -12,7 +12,7 @@ from savage_trade_evaluator.config import (
     configure_logging,
 )
 from savage_trade_evaluator.ingest import catalog, stats, transactions
-from savage_trade_evaluator.storage import db, schemas, teams, trade_views
+from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
 ingest_app = typer.Typer(no_args_is_help=True, help="Ingestion commands.")
@@ -29,6 +29,7 @@ def init() -> None:
         schemas.initialize(conn)
         teams.initialize(conn)
         trade_views.create_all(conn)
+        outcome_views.create_all(conn)
     typer.echo("schema initialized")
 
 
