@@ -31,14 +31,15 @@ Refinement (D-09): **three valuations per player at any decision point** — cur
 - **Phase 3** — GM-behavior layer: ☐ later. Personnel data is ready.
 - **Phase 4** — product surface: ☐ later.
 
-## The Pressly canonical case
+## Validation philosophy
 
-Ryan Pressly MIN→HOU 2018-07-27 (`trade_event_id=371509`) is the V1 validation reference. The MVP Machine Ch 9 thesis ("the Astros' Brent Strom intake meeting changed Pressly's pitch mix") is **fully encoded in V1 data**:
-- bWAR: T-1 = -0.04, T@MIN = 0.73, T@HOU = 1.34, T+1..3 = 1.68 / 0.22 / 1.87
-- Arsenal: fb_spin pct 97→98, curve_spin 100→100 (stuff unchanged), K% 65→94, whiff% 69→95 (usage changed)
-- Personnel: HOU = Luhnow + Hinch + Strom; MIN = Falvey + Levine + Molitor + Alston
-
-Any V1 model must rate this trade as a clear HOU win. If it doesn't, something is broken before we touch open questions.
+**Diagnose with distributions, not single trades.** The actual diagnostics are:
+backtest calibration (90% CI coverage on held-out test set), CRPS / MAE,
+and credible-feature counts per outcome (D-26 threshold). A single canonical
+trade ("does the model rate Pressly as a HOU win?") is a poor anchor:
+hierarchical shrinkage will pull tail-of-distribution outcomes toward the
+regime mean by design, and fitting any one outlier tightly is overfitting.
+Earlier docs over-indexed on the Pressly case — don't.
 
 ## Domain conventions (project-specific)
 
@@ -74,8 +75,7 @@ Any V1 model must rate this trade as a clear HOU win. If it doesn't, something i
 
 - `uv run ste catalog --status ingested` — quickly see what data we have
 - `uv run ste status` — DB row counts
-- `uv run ste analyze personnel 371509` — Pressly snapshot
-- The Pressly case is the "smoke test for everything" — run it after any model change
+- `uv run python scripts/v2_full_backtest.py` — the real smoke test (calibration + credible-feature counts across all 4 outcomes)
 - If you're tempted to add FanGraphs, **stop.** See above.
 - If you're tempted to hand-curate GM data, **stop.** See above — BR scrape works.
 

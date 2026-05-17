@@ -88,7 +88,7 @@ For V2.0 we hardcode league $/WAR; V2.1 could derive it dynamically from FA-sign
 - **Test**: 2021-2024 (out-of-time, ~1,500 trades)
 - **Primary metric**: CRPS on test (lower = better calibration)
 - **Secondary**: per-quartile coverage (does the 90% CI actually contain 90% of outcomes?)
-- **Smoke test**: Pressly trade `transaction_id=371509` must rate as a clear HOU win across all four outcomes
+- **Smoke test**: calibration ≥ 90% on held-out 2021-2024; ≥1 credible feature per outcome at the D-26 threshold
 
 ### Credibility framework (D-26)
 
@@ -114,16 +114,16 @@ CLI:
 ```bash
 uv run ste v2 fit --outcome xwoba --start 2010 --end 2020
 uv run ste v2 backtest --outcome xwoba
-uv run ste v2 predict --trade-id 371509   # the Pressly canonical
+uv run ste v2 predict --trade-id <event_id>
 ```
 
 ## Build order
 
-1. **features.py + outcomes.py** — assemble the data; verify Pressly row looks sensible
+1. **features.py + outcomes.py** — assemble the data
 2. **regimes.py** — (team, regime) mapping with pre-1990 fallback
 3. **multilevel.py** — single-outcome PyMC fit, validate convergence
 4. **backtest.py** — train-test split + CRPS + calibration
-5. **Smoke test on Pressly** — model must call it HOU win
+5. **Distribution smoke test** — coverage ≥ 90% on test set; ≥1 credible feature per outcome
 6. **R-33 V2 baseline ablation** — vs V1 on the same data; does V2 add credible features?
 
 ## Open follow-ups (V2.1+)

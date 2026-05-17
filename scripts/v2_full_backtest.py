@@ -1,68 +1,19 @@
-"""V2 full backtest — all four outcomes + Pressly smoke check.
+"""V2 full backtest — all four outcomes.
 
-Bumps ``target_accept`` to 0.99 to suppress the xwOBA divergences seen in
-the smoke test, then runs xwoba / kpct / war / dollar_surplus in series.
-
-After fitting, looks up the Pressly trade (event 371509, HOU side) in each
-outcome's test predictions when present, else prints its training-set
-posterior; we expect a clear positive signal across all four.
+Runs xwoba / kpct / war / dollar_surplus through the train-2010-2020 /
+test-2021-2024 split and prints per-outcome calibration, CRPS, and the
+D-26 credible-feature list. Calibration coverage + credible-feature counts
+are the actual diagnostics — single-trade case checks are not a smoke test.
 """
 
 # pyright: reportAttributeAccessIssue=false, reportCallIssue=false, reportArgumentType=false
 
 from __future__ import annotations
 
-import numpy as np
-
 from savage_trade_evaluator.modeling.v2.backtest import (
-    OUTCOME_FEATURES,
-    assemble_combined,
     backtest_outcome,
     print_backtest_report,
 )
-from savage_trade_evaluator.modeling.v2.features import filter_complete_cases
-
-PRESSLY_EVENT_ID = 371509
-PRESSLY_RECEIVER = "HOU"
-
-
-def _pressly_check(outcome: str, result) -> None:  # noqa: ANN001
-    """Posterior summary for the Pressly HOU 2018 trade (in-sample)."""
-    fit = result.fit
-    combined = assemble_combined()
-    combined = combined[combined[outcome].notna()].copy()
-    feature_cols = list(fit.feature_cols)
-    for c in feature_cols:
-        combined[c] = combined[c].astype("float64")
-        combined[c] = combined[c].fillna(combined[c].mean())
-    row = combined[
-        (combined["trade_event_id"] == PRESSLY_EVENT_ID)
-        & (combined["receiver_bref"] == PRESSLY_RECEIVER)
-    ]
-    if row.empty:
-        print(f"  >>> PRESSLY HOU: no row found for {outcome}")
-        return
-    r = row.iloc[0]
-    x_row = ((row[feature_cols] - fit.feature_means) / fit.feature_stds).to_numpy(
-        dtype=float
-    )[0]
-    post = fit.trace.posterior
-    n = post["alpha0"].shape[0] * post["alpha0"].shape[1]
-    alpha0_s = post["alpha0"].values.reshape(n)
-    beta_s = post["beta"].values.reshape(n, len(feature_cols))
-    alpha_regime_s = post["alpha_regime"].values.reshape(n, len(fit.regimes))
-    regime_idx = {rg: i for i, rg in enumerate(fit.regimes)}.get(r["regime_id"], -1)
-    team_alpha = alpha_regime_s[:, regime_idx] if regime_idx >= 0 else 0.0
-    mu_z = alpha0_s + team_alpha + beta_s @ x_row
-    samples = mu_z * fit.y_std + fit.y_mean
-    print(
-        f"  >>> PRESSLY HOU (in-sample): "
-        f"true={r[outcome]:+.4f}  "
-        f"pred_mean={float(samples.mean()):+.4f}  "
-        f"[{float(np.percentile(samples, 5)):+.4f}, "
-        f"{float(np.percentile(samples, 95)):+.4f}]  "
-        f"regime={r['regime_id']}"
-    )
 
 
 def main() -> None:
@@ -86,10 +37,6 @@ def main() -> None:
             continue
         print_backtest_report(result)
         results[o] = result
-
-        # Pressly snapshot — 2018 trade falls in train split; pull a posterior
-        # prediction directly from the fitted model on that row.
-        _pressly_check(o, result)
 
     print()
     print("=" * 88)
