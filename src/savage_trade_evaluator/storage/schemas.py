@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 12
+SCHEMA_VERSION = 13
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -439,6 +439,91 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_oaa_player_year
         ON statcast_outs_above_average(player_id, year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS chadwick_register (
+        mlb_player_id INTEGER NOT NULL,
+        retro_id VARCHAR,
+        bref_id VARCHAR,
+        fangraphs_id VARCHAR,
+        name_first VARCHAR,
+        name_last VARCHAR,
+        name_given VARCHAR,
+        birth_year INTEGER,
+        birth_month INTEGER,
+        birth_day INTEGER,
+        death_year INTEGER,
+        death_month INTEGER,
+        death_day INTEGER,
+        pro_played_first INTEGER,
+        pro_played_last INTEGER,
+        mlb_played_first INTEGER,
+        mlb_played_last INTEGER,
+        col_played_first INTEGER,
+        col_played_last INTEGER,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (mlb_player_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_chadwick_bref ON chadwick_register(bref_id)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_chadwick_retro ON chadwick_register(retro_id)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS statcast_catcher_framing (
+        player_id INTEGER NOT NULL,
+        player_name VARCHAR,
+        year INTEGER NOT NULL,
+        pitches INTEGER,
+        runs_total DOUBLE,
+        strike_rate_total DOUBLE,
+        rv_11 DOUBLE,
+        pct_11 DOUBLE,
+        rv_12 DOUBLE,
+        pct_12 DOUBLE,
+        rv_13 DOUBLE,
+        pct_13 DOUBLE,
+        rv_14 DOUBLE,
+        pct_14 DOUBLE,
+        rv_16 DOUBLE,
+        pct_16 DOUBLE,
+        rv_17 DOUBLE,
+        pct_17 DOUBLE,
+        rv_18 DOUBLE,
+        pct_18 DOUBLE,
+        rv_19 DOUBLE,
+        pct_19 DOUBLE,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_catcher_framing_year ON statcast_catcher_framing(year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS mlb_awards (
+        award_id VARCHAR NOT NULL,
+        award_name VARCHAR,
+        season INTEGER NOT NULL,
+        player_id INTEGER NOT NULL,
+        player_name VARCHAR,
+        team_id INTEGER,
+        team_name VARCHAR,
+        votes DOUBLE,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (award_id, season, player_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_awards_player ON mlb_awards(player_id)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_awards_season ON mlb_awards(season)
     """,
 )
 

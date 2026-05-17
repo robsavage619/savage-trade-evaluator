@@ -16,6 +16,7 @@ from savage_trade_evaluator.ingest import (
     catalog,
     coaches,
     draft,
+    fortification,
     front_office,
     prospects,
     retrosheet_transactions,
@@ -183,6 +184,40 @@ def ingest_retrosheet_transactions(
     configure_logging()
     n = retrosheet_transactions.ingest(end_year=end_year)
     typer.echo(f"ingested {n} retrosheet trade-leg rows through {end_year}")
+
+
+@ingest_app.command("chadwick")
+def ingest_chadwick() -> None:
+    """Ingest the Chadwick player register (birth dates + ID cross-walks)."""
+    configure_logging()
+    n = fortification.ingest_chadwick_register()
+    typer.echo(f"ingested {n} chadwick register rows")
+
+
+@ingest_app.command("catcher-framing")
+def ingest_catcher_framing(
+    year: int | None = typer.Option(None, help="Single year."),
+    start: int = typer.Option(2015, help="First year."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+) -> None:
+    """Ingest Statcast catcher framing leaderboard from Baseball Savant."""
+    configure_logging()
+    if year is not None:
+        n = fortification.ingest_catcher_framing_range(start=year, end=year)
+    else:
+        n = fortification.ingest_catcher_framing_range(start=start, end=end)
+    typer.echo(f"ingested {n} catcher framing rows")
+
+
+@ingest_app.command("awards")
+def ingest_awards(
+    start: int = typer.Option(1990, help="First season."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+) -> None:
+    """Ingest MVP/Cy Young/ROY/Gold Glove/Silver Slugger recipients from MLB Stats API."""
+    configure_logging()
+    n = fortification.ingest_awards_range(start=start, end=end)
+    typer.echo(f"ingested {n} award-recipient rows")
 
 
 @ingest_app.command("statcast-extended")
