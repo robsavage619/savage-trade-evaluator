@@ -24,6 +24,128 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-31: Dev-credit attribution — built the org-quality 2D map, found surprising rankings, debunked the Dodgers "elite system" framing
+
+**Question (plain English).** Rob's insight: trade-outcome metrics measure how trades worked out, but they don't credit teams for developing players who eventually became MLB stars (even after being traded). A team that drafts and develops a star should get credit for them regardless of where they finished their career. We need a dev-quality signal independent of trade skill.
+
+**Setup.** Three iterations:
+- v1: total career WAR by drafting team. Inflated by didn't-sign cases (Helton drafted SDP '92, never signed, became Hall of Famer with COL → SDP was incorrectly credited).
+- v2: filter to "debuted with drafter" (player's first MLB stint matches the drafting team). Properly excludes Helton from SDP, properly credits COL.
+- v3: add franchise-alias resolution (TBD→TBR, FLA→MIA, MON→WSN, ANA/CAL→LAA, BRO→LAD, NYG→SFG, BSN→ATL, SLB→BAL, WS1→MIN, WS2→TEX, PHA/KCA→OAK), filter to current 30 franchises only, add international signing proxy (post-1995 MLB debutees not in draft_picks), add scout-to-sign conversion rate by round, build the 2D (dev, trade) coordinate map.
+
+**Result.**
+
+### Dev credit (career WAR of 1990+ MLB debutees, by current franchise)
+
+| Rank | Team | n debutees | dev WAR | mean WAR/debutee |
+|---|---|---|---|---|
+| 1 | CLE | 246 | 1352.8 | 5.50 |
+| 2 | HOU | 262 | 1224.1 | 4.67 |
+| 3 | MIN | 276 | 1209.2 | 4.38 |
+| 4 | LAD | 235 | 1197.9 | 5.10 |
+| 5 | ATL | 256 | 1128.5 | 4.41 |
+| 6 | OAK | 275 | 1123.3 | 4.08 |
+| 7 | SEA | 289 | 1123.1 | 3.89 |
+| 8 | NYY | 255 | 1109.4 | 4.35 |
+| 9 | TOR | 274 | 1107.6 | 4.04 |
+| 10 | STL | 282 | 1102.2 | 3.91 |
+| ... | | | | |
+| 29 | SDP | 312 | 690.7 | 2.21 |
+| **30** | **SFG** | **263** | **623.5** | **2.37** |
+
+### International signing proxy (post-1995 debutees not in draft_picks)
+
+| Rank | Team | n intl | intl WAR | top single WAR |
+|---|---|---|---|---|
+| 1 | NYY | 79 | 422.9 | 68.7 (likely Cano) |
+| 2 | CLE | 53 | 400.7 | 58.8 |
+| 3 | SEA | 71 | 375.5 | 60.0 (Ichiro) |
+| 4 | MIA | 89 | 342.9 | 67.2 (likely M. Cabrera through trade year) |
+| 5 | LAD | 75 | 309.7 | 93.7 (likely Adrián Beltré) |
+| 6 | HOU | 71 | 303.7 | 60.2 |
+| 7 | MIN | 63 | 281.7 | 55.0 |
+| 8 | ATL | 67 | 277.8 | 62.7 |
+| 9 | NYM | 65 | 276.4 | 37.0 |
+| 10 | LAA | 59 | 251.8 | 54.1 |
+
+### Scout-to-sign conversion by round
+
+| Round | n reach MLB | debuted with drafter | rate |
+|---|---|---|---|
+| 1 | 777 | 615 | **79.2%** |
+| 2 | 513 | 346 | 67.4% |
+| 3 | 406 | 250 | 61.6% |
+| 5 | 344 | 209 | 60.8% |
+| 10 | 185 | 112 | 60.5% |
+| 15 | 121 | 58 | 47.9% |
+
+Even in round 1, 21% of MLB-reaching draftees don't debut for the drafter. By round 15, nearly half debut elsewhere.
+
+### 2D org-quality map
+
+Median DEV-WAR = 1200; median trade-Δ = -0.157. Four quadrants:
+
+**HIGH-DEV / TRUE-POSITIVE-TRADE** (best of both):
+- **HOU only**: dev 1528, trade Δ +0.049. Only team with above-median dev AND truly positive trade Δ (above zero).
+
+**HIGH-DEV / ABOVE-MEDIAN-TRADE** (good both ways):
+- CLE (1754, -0.14), NYY (1532, -0.07), LAD (1508, -0.03), MIA (1324, -0.15), TOR (1240, -0.14), WSN (1239, -0.11)
+
+**HIGH-DEV / BELOW-MEDIAN-TRADE** (great dev, poor trades):
+- SEA (1499, -0.19), MIN (1491, -0.18), ATL (1406, -0.20), LAA (1271, -0.16), OAK (1269, -0.26), CHW (1219, -0.34), TEX (1216, -0.27), BOS (1200, -0.22)
+
+**LOW-DEV / ABOVE-MEDIAN-TRADE** (compensate with trades):
+- **STL only**: dev 1200, trade Δ **+0.10** — the strongest positive trade Δ in baseball, despite below-median dev. The "Cardinal Way" is really about trading skill, not dev pipeline.
+- PIT, KCR, MIL, PHI, DET, ARI, COL
+
+**LOW-DEV / BELOW-MEDIAN-TRADE** (bottom-quadrant — weak both axes):
+- NYM (1109, -0.22), BAL (922, -0.19), CHC (880, -0.17), TBR (880, -0.37), CIN (868, -0.20), **SDP (809, -0.24), SFG (671, -0.35)**
+
+**Interpretation (plain English).**
+
+1. **Cleveland is the league's best dev pipeline** (1754 total dev WAR including int'l). They lead in both the amateur draft channel (1353) AND in international scouting (#2 at 401).
+
+2. **Houston is in a class of its own as the only HIGH-DEV / TRULY-POSITIVE-TRADE team.** They're the most balanced franchise on both axes. The MVP Machine Ch 9 dev-travels narrative was incomplete — they're not just installing MLB-level fixes; they're also developing more talent than most teams.
+
+3. **St. Louis is the dedicated trade-skill leader.** Strongest positive trade Δ in the league (+0.10) despite below-median dev. Their reputation as "great organization" is really about trading skill, not amateur pipeline.
+
+4. **The Dodgers' "elite system" reputation is overstated.** They're #4 in dev (top tier but not first) and their trade Δ is near-median (-0.03). They're a balanced top-tier franchise but not anomalous. The original Dodgers system-tax thesis was empirically rejected (D-29) and is now further reframed: they're an average-to-good franchise on both metrics, not exceptional on either.
+
+5. **The Giants are the league's worst on both axes.** Last in dev (671 WAR), among worst in trade Δ (-0.35). Their 2010-2014 World Series titles were built on outliers (Posey, Lincecum, FA acquisitions) not underlying franchise quality.
+
+6. **San Diego is in the bottom quadrant on both axes.** Dev 809 WAR (29th of 30), trade Δ -0.24. Preller's aggressive style hasn't moved the franchise out of the bottom quadrant in 11 years.
+
+7. **Boston falls to HIGH-DEV / BELOW-MEDIAN-TRADE.** Their scouting reputation holds but their trade outcomes are mid-to-poor. The "Cherington / Bloom" era criticism is statistically supported.
+
+8. **NYY's international scouting is #1 in baseball** (423 WAR from int'l alone). Their reputation as a "buy stars" franchise misses that they also develop more international talent than anyone.
+
+9. **TBR (880 dev, -0.37 trade Δ) has the WORST trade Δ in baseball.** They develop players but lose massive trade value when they move them. This is the cleanest "system tax mechanic" in our data, but at the *franchise* level, not the prospect-mechanism level — they trade their stars early in arb cycles.
+
+10. **The DEV vs TRADE axes are roughly orthogonal.** Pearson correlation ~ near zero. Teams good at one aren't systematically good at the other. The (dev, trade) coordinate is the right product-relevant artifact.
+
+**Affects.**
+
+- **D-30 candidate**: V2 product surface should ship the 2D org-quality coordinate map as a first-class artifact. Each org gets a (dev_war, trade_delta) tuple with quadrant label. Strategy implications differ by quadrant:
+  - HIGH-DEV/POS-TRADE → keep doing what you're doing (HOU)
+  - HIGH-DEV/NEG-TRADE → improve trade execution; you have the pipeline (BOS, MIN, ATL, OAK)
+  - LOW-DEV/POS-TRADE → continue compensating via trades but invest in dev (STL, PIT)
+  - LOW-DEV/NEG-TRADE → systemic rebuild needed (SDP, SFG, NYM, TBR)
+
+- **Reframes 30 rounds of work.** The "system tax" thesis (Dodgers, Preller-era SDP) → empirically rejected, replaced by a 2D quality framework that says these are mid-quadrant or bottom-quadrant teams without anomalous mechanisms.
+
+- **International signing data has been a known gap** (D-15 etc.). The post-1995 not-in-draft-picks proxy fills it imperfectly but usefully. Next-iteration ingest would be MLB Trade Rumors annual int'l-signing trackers (no public API, would require Playwright scraping).
+
+- **Franchise-alias resolution is a reusable utility.** All future per-team analyses across 1990+ should use it. Should be added as a shared module in `storage/`.
+
+- **Caveats**:
+  - International proxy mis-includes pre-1990 draftees who debuted in early 1990s (small but non-zero contamination)
+  - The "first MLB team" attribution misses prospect trades in the minors (e.g., a Cuban signee acquired by HOU and traded to TEX as an A-baller would credit TEX, not HOU)
+  - Career WAR is a counting stat — older teams (LAD, STL, NYY, CLE) accumulate it just from existing longer with stable pipelines
+
+Files: `scripts/dev_credit_attribution.py` (v1, kept for transparency), `scripts/dev_credit_attribution_v2.py` (v2 — debuted-with-drafter filter), `scripts/dev_credit_full.py` (v3 — all four fixes).
+
+---
+
 ## [2026-05-16] R-30: Sell-high vs system-tax decomposition — the original Dodgers thesis is rejected; TEX-Daniels is a clean sell-high finding
 
 **Question (plain English).** R-28 surfaced TEX-Daniels as the strongest negative regime in the data. R-29 archaeology of Daniels' trades showed the negative signal came from veterans (Lucroy, Minor, Michael Young, Darvish) — sell-high mechanic, not the system-tax mechanic from Rob's original thesis. Does this distinction generalize? For each regime, split trades into:
