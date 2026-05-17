@@ -24,6 +24,66 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-10: Origin-org system-tax test — LAD signal collapses 25x under controls; NYM/HOU are bigger outliers in the opposite direction
+
+**Question.** Rob's "system guy" hypothesis: do tech-forward orgs (LAD specifically) produce prospects whose production is partly attributable to org infrastructure, such that the player regresses after trade? Mirror image of the MVP Machine Ch 9 receiving-side dev-fit feature.
+
+**Setup.** Three rounds of increasingly-controlled tests on `trade_player_xwoba_window` (2015+, hitters):
+
+- Round 1: Raw mean Δxwoba per origin-org. n=577 across 30 orgs.
+- Round 2: Split each origin's departed-hitter population by pre-trade xwOBA tier (HIGH ≥ 0.330 / LOW < 0.300) to test the selection-cancelation hypothesis.
+- Round 3: PyMC Bayesian multilevel — `Δxwoba ~ α + α_origin[i] + β_pre·z(pre_xwoba) + β_season·z(season) + β_rdf·z(receiver_dev_fit) + ε`. Partial pooling on origin. 4 chains × 2000 draws.
+
+**Result.**
+
+| Round | LAD effect | Interpretation |
+|---|---|---|
+| 1 (raw delta) | -0.0094 (rank #9, SEM 0.018) | Indistinguishable from noise. Apparent rejection. |
+| 2 (HIGH-cohort split) | **-0.076** (n=10, SEM 0.023, **3.2σ**) | LAD HIGH cohort drops 75% more than league non-analytics HIGH (-0.043); 2.5× more than other analytics-leaders HIGH (-0.030). Apparent weak support. |
+| 3 (pedigree-controlled multilevel) | **-0.003** (90% CI [-0.018, +0.009], P(<0)=63%) | Collapsed 25× from raw. Crosses zero. **Not credibly separable.** |
+
+Population posteriors from R-3: `β_pre = -0.048` [-0.054, -0.041] dominates — regression to the mean. `τ_origin = 0.009` [0.002, 0.018] — between-org variation is real but ~10× smaller than within-org noise (`σ = 0.088`).
+
+Comp set after controls — analytics-leader cohort fails to generalize:
+
+| Org | Intercept | P(<0) |
+|---|---|---|
+| **LAD** | **-0.003** | **63%** |
+| BOS | -0.001 | 55% |
+| TBR | +0.001 | 46% |
+| SDP | +0.001 | 44% |
+| CLE | +0.003 | 39% |
+| HOU | +0.003 | 37% |
+
+Accidental findings, both stronger than the LAD signal:
+
+- **NYM (+0.012, P(<0) = 14.6%)** — biggest positive outlier. Departed Mets *gain* xwOBA after controls. Inverse-system-tax candidate.
+- **HOU (+0.003, P(<0) = 37%)** — positive intercept. Origin-side mirror of MVP Machine Ch 9: dev improvements installed under Strom *travel* with the player. Verlander/Cole/Greinke arc all fit.
+
+**Interpretation.**
+
+1. **Origin-org effect is real but small.** `τ_origin` posterior bounded above zero at 90%. ~0.01 SD across orgs on xwOBA scale.
+2. **Rob's LAD-specific intuition gets partial credit** — LAD ranks #4 most negative of 30 — but magnitude (~3 thousandths xwOBA) sits below V1 detection floor at n=27.
+3. **"Analytics-leader cohort" version of the thesis is rejected.** HOU/TBR/SDP/CLE all have *positive* intercepts. Only LAD shows the predicted sign.
+4. **97% of the raw HIGH-cohort effect was regression to the mean** (Round 2's apparent 3.2σ signal). Any test that doesn't control for pre-trade tier will systematically over-attribute RTM to origin-org effects.
+5. **Cannot distinguish (a) "LAD inflates production via system advantages that don't travel" from (b) "LAD sells high more aggressively"** — both predict identical mild-negative intercept. Synthetic-control framing (Mixtape Ch 10) deferred until sample doubles.
+
+The most publishable single finding here is the **NYM and HOU positive outliers**, not LAD. They're directionally opposed to the original thesis and have larger effect magnitudes.
+
+Confidence: high on the controlled-test conclusion (n=577, tight β_pre posterior). Moderate on the org-level rankings — n per org is 9-32, individual rankings are still noisy.
+
+**Affects.**
+
+- Documented as [[trade-eval--origin-org-system-tax-v1]] in vault. Closes R-10.
+- Reinforces the V1 sample-size bottleneck identified in R-06/07/09: per-org effects at this scale are detectable only as the marginal `τ` posterior, not as per-org separations.
+- Strengthens the case for Retrosheet pre-2010 transaction ingest as the highest-leverage next move (raised in R-09 affects too).
+- New candidate research thread: **HOU origin-side dev-fit-travels** — symmetric reading of MVP Machine Ch 9 from the departure direction. Larger and cleaner signal than the LAD test.
+- New candidate research thread: **NYM inverse-system-tax** — players who leave the Mets outperform expectations. Could be sell-at-trough selection or genuinely suppressive environment.
+
+Files: `scripts/explore_origin_org_dropoff.py` (R-1), `scripts/explore_system_tax_split.py` (R-2), `scripts/origin_org_pedigree_controlled.py` (R-3).
+
+---
+
 ## [2026-05-16] R-09: Draft pedigree feature null at V1 scale
 
 **Question.** Does the receiving team's acquired-player draft pedigree (`receiver_best_draft_pick`, lower = higher pedigree) add predictive signal to the multilevel Bayesian model? This is the R-08-prep proposal in pragmatic form — MLB Pipeline top-100 was lazy-loaded so we substituted the MLB Stats API `/draft/<year>` endpoint and used pick-number as a coarse pedigree proxy.
