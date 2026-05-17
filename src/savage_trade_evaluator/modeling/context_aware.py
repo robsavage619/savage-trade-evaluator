@@ -45,6 +45,8 @@ FEATURE_COLUMNS: tuple[str, ...] = (
     "receiver_best_draft_pick",
     "receiver_acquired_from_dev_cluster_score",
     "receiver_acquired_player_quality",
+    "receiver_acquired_player_avg_experience",
+    "receiver_acquired_player_avg_war_trajectory",
 )
 
 

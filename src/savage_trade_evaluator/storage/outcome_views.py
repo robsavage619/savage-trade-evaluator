@@ -276,6 +276,65 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     GROUP BY trade_event_id, receiver_bref
     """,
     """
+    CREATE OR REPLACE VIEW trade_acquired_player_age_trajectory AS
+    -- More within-team-variation features per D-24:
+    --  - avg experience (years since first MLB season) of acquired players
+    --  - avg WAR trajectory (war_t_minus_1 - war_t_minus_2) — improving vs declining
+    -- Both vary across trades involving the same team, so they can claim
+    -- residual variance against team-cluster intercepts.
+    WITH first_season AS (
+        SELECT mlb_id, MIN(year_id) AS first_year
+        FROM bwar_player_seasons
+        WHERE mlb_id IS NOT NULL
+        GROUP BY mlb_id
+    ),
+    season_war AS (
+        SELECT mlb_id, year_id, SUM(war) AS war
+        FROM bwar_player_seasons
+        WHERE mlb_id IS NOT NULL
+        GROUP BY mlb_id, year_id
+    ),
+    per_player AS (
+        SELECT
+            tpu.trade_event_id,
+            tpu.to_team_bref AS receiver_bref,
+            (tpu.trade_season - fs.first_year) AS experience,
+            (w1.war - w2.war) AS war_trajectory
+        FROM trade_player_unified tpu
+        LEFT JOIN first_season fs ON fs.mlb_id = tpu.mlb_player_id
+        LEFT JOIN season_war w1
+            ON w1.mlb_id = tpu.mlb_player_id AND w1.year_id = tpu.trade_season - 1
+        LEFT JOIN season_war w2
+            ON w2.mlb_id = tpu.mlb_player_id AND w2.year_id = tpu.trade_season - 2
+        WHERE tpu.to_team_bref IS NOT NULL
+    )
+    SELECT
+        trade_event_id,
+        receiver_bref,
+        AVG(experience) AS receiver_acquired_player_avg_experience,
+        AVG(war_trajectory) AS receiver_acquired_player_avg_war_trajectory
+    FROM per_player
+    WHERE experience IS NOT NULL
+    GROUP BY trade_event_id, receiver_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_xwoba_outcome AS
+    -- Rate-based aggregate outcome per (trade_event, receiver): mean Δ xwOBA
+    -- of acquired hitters with Statcast data both pre- and post-trade.
+    -- This is the non-WAR outcome variable for testing R-15's player-quality
+    -- finding against a metric that isn't mechanically WAR-derivative (D-25).
+    SELECT
+        trade_event_id,
+        to_team_bref AS receiver_bref,
+        AVG(xwoba_t_plus_1 - xwoba_t_minus_1) AS xwoba_delta_mean,
+        COUNT(*) AS n_hitters_with_signal
+    FROM trade_player_xwoba_window
+    WHERE xwoba_t_minus_1 IS NOT NULL
+      AND xwoba_t_plus_1 IS NOT NULL
+      AND to_team_bref IS NOT NULL
+    GROUP BY trade_event_id, to_team_bref
+    """,
+    """
     CREATE OR REPLACE VIEW trade_origin_dev_cluster AS
     -- Per (trade_event, receiving_team), the average "dev-cluster" score of
     -- the origin teams the receiver acquired players from. R-12/13 found two
@@ -341,7 +400,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         tp.receiver_best_draft_pick,
         tp.receiver_avg_draft_pick,
         tdc.receiver_acquired_from_dev_cluster_score,
-        pds.receiver_acquired_player_quality
+        pds.receiver_acquired_player_quality,
+        pat.receiver_acquired_player_avg_experience,
+        pat.receiver_acquired_player_avg_war_trajectory
     FROM naive_baseline_results nbr
     LEFT JOIN team_season_features tsf
         ON tsf.bref_code = nbr.team_bref
@@ -355,6 +416,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     LEFT JOIN trade_player_dev_signature pds
         ON pds.trade_event_id = nbr.trade_event_id
         AND pds.receiver_bref = nbr.team_bref
+    LEFT JOIN trade_acquired_player_age_trajectory pat
+        ON pat.trade_event_id = nbr.trade_event_id
+        AND pat.receiver_bref = nbr.team_bref
     """,
     """
     CREATE OR REPLACE VIEW trade_player_arsenal_window AS
