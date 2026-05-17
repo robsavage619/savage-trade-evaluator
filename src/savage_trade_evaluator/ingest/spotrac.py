@@ -27,6 +27,7 @@ from __future__ import annotations
 import logging
 import re
 import time
+import unicodedata
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -226,11 +227,30 @@ def fetch_team_payroll(
     return all_rows, totals
 
 
-def _resolve_mlb_ids(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
-    """Populate mlb_player_id via exact name match against mlb_people.
+_SUFFIX_RE = re.compile(r"\s+(?:jr|sr|ii|iii|iv)\.?$", re.IGNORECASE)
 
-    Uses a registered staging DataFrame for the JOIN (avoids SQL-injection-shaped
-    string concat on player names with apostrophes/unicode).
+
+def _normalize_name(name: str) -> str:
+    """Canonicalize a player name for matching.
+
+    Strips accents (NFKD), removes dots, replaces hyphens with spaces, strips
+    trailing Jr/Sr/II/III/IV suffixes, collapses whitespace, lowercases.
+    """
+    s = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    s = s.replace(".", "").replace("-", " ")
+    s = _SUFFIX_RE.sub("", s)
+    s = " ".join(s.split()).lower()
+    return s
+
+
+def _resolve_mlb_ids(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
+    """Populate mlb_player_id via name match against mlb_people.
+
+    Two-pass: (1) exact full_name join (covers ~92%); (2) normalized match
+    for the remainder — accent-stripped, dot-stripped, suffix-stripped,
+    case-folded. Skips any normalized key that collides on multiple
+    mlb_player_ids (true homonyms — accepting them would create false
+    positives).
     """
     if not rows:
         return
@@ -239,7 +259,7 @@ def _resolve_mlb_ids(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]
     names = pd.DataFrame({"name": sorted({r["player_name"] for r in rows})})
     conn.register("_staging_names", names)
     try:
-        mapping = dict(
+        exact_mapping = dict(
             conn.execute(
                 "SELECT n.name, p.mlb_player_id "
                 "FROM _staging_names n "
@@ -248,8 +268,28 @@ def _resolve_mlb_ids(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]
         )
     finally:
         conn.unregister("_staging_names")
+
+    # Second pass: normalize the residual.
+    unmatched = [n for n in names["name"] if n not in exact_mapping]
+    norm_mapping: dict[str, int] = {}
+    if unmatched:
+        people = conn.execute("SELECT mlb_player_id, full_name FROM mlb_people").fetchall()
+        norm_index: dict[str, set[int]] = {}
+        for pid, full_name in people:
+            if full_name is None:
+                continue
+            key = _normalize_name(full_name)
+            norm_index.setdefault(key, set()).add(pid)
+        # Resolve unmatched: only keep keys with a single mlb_player_id.
+        unique_index = {k: next(iter(v)) for k, v in norm_index.items() if len(v) == 1}
+        for n in unmatched:
+            pid = unique_index.get(_normalize_name(n))
+            if pid is not None:
+                norm_mapping[n] = pid
+
     for r in rows:
-        r["mlb_player_id"] = mapping.get(r["player_name"])
+        nm = r["player_name"]
+        r["mlb_player_id"] = exact_mapping.get(nm) or norm_mapping.get(nm)
 
 
 def _upsert(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
