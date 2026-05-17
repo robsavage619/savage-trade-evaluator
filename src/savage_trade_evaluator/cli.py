@@ -28,6 +28,7 @@ from savage_trade_evaluator.ingest import (
     transactions,
 )
 from savage_trade_evaluator.modeling import bayesian, context_aware, features, naive_baseline
+from savage_trade_evaluator.modeling.v2 import backtest as v2_backtest
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
 app = typer.Typer(no_args_is_help=True, help="Savage Trade Evaluator CLI.")
@@ -36,9 +37,13 @@ analyze_app = typer.Typer(no_args_is_help=True, help="Read-only analysis helpers
 backtest_app = typer.Typer(
     no_args_is_help=True, help="Backtest harness — run models over historical trades."
 )
+v2_app = typer.Typer(no_args_is_help=True, help="V2 multilevel-model commands.")
 app.add_typer(ingest_app, name="ingest")
 app.add_typer(analyze_app, name="analyze")
 app.add_typer(backtest_app, name="backtest")
+app.add_typer(v2_app, name="v2")
+
+V2_OUTCOMES: tuple[str, ...] = ("xwoba_delta", "kpct_delta", "war_delta", "dollar_surplus")
 
 logger = logging.getLogger(__name__)
 
@@ -621,3 +626,133 @@ def status() -> None:
     typer.echo("per-season transactions:")
     for s, n in seasons:
         typer.echo(f"  {s}: {n}")
+
+
+def _v2_validate_outcome(outcome: str) -> None:
+    if outcome not in V2_OUTCOMES:
+        msg = f"unknown outcome '{outcome}'; choose from {', '.join(V2_OUTCOMES)}"
+        raise typer.BadParameter(msg)
+
+
+@v2_app.command("fit")
+def v2_fit(
+    outcome: str = typer.Option(..., help=f"One of: {', '.join(V2_OUTCOMES)}."),
+    train_end: int = typer.Option(2020, help="Last season included in training."),
+    test_end: int = typer.Option(2024, help="Last test season."),
+    minimum_features_present: int = typer.Option(5, help="Min non-null features per row."),
+) -> None:
+    """Fit + backtest a single V2 outcome and print the report."""
+    configure_logging()
+    _v2_validate_outcome(outcome)
+    result = v2_backtest.backtest_outcome(
+        outcome=outcome,
+        train_end_season=train_end,
+        test_end_season=test_end,
+        minimum_features_present=minimum_features_present,
+    )
+    v2_backtest.print_backtest_report(result)
+
+
+@v2_app.command("backtest")
+def v2_backtest_all(
+    outcome: str = typer.Option("all", help="'all' or a specific outcome name."),
+    train_end: int = typer.Option(2020, help="Last season included in training."),
+    test_end: int = typer.Option(2024, help="Last test season."),
+    minimum_features_present: int = typer.Option(5, help="Min non-null features per row."),
+) -> None:
+    """Run the V2 backtest across one or all outcomes; print summary table."""
+    configure_logging()
+    if outcome == "all":
+        outcomes: tuple[str, ...] = V2_OUTCOMES
+    else:
+        _v2_validate_outcome(outcome)
+        outcomes = (outcome,)
+
+    results = {}
+    for o in outcomes:
+        typer.echo("")
+        typer.echo("#" * 88)
+        typer.echo(f"# {o.upper()}")
+        typer.echo("#" * 88)
+        try:
+            result = v2_backtest.backtest_outcome(
+                outcome=o,
+                train_end_season=train_end,
+                test_end_season=test_end,
+                minimum_features_present=minimum_features_present,
+            )
+        except ValueError as e:
+            typer.echo(f"  SKIPPED: {e}")
+            continue
+        v2_backtest.print_backtest_report(result)
+        results[o] = result
+
+    typer.echo("")
+    typer.echo("=" * 88)
+    typer.echo("SUMMARY")
+    typer.echo("=" * 88)
+    for o, r in results.items():
+        ncred = int(r.credible_features["credible"].sum())
+        typer.echo(
+            f"  {o:<16} train={r.train_n:>4} test={r.test_n:>4}  "
+            f"MAE={r.test_mae:.4f}  CRPS={r.test_crps:.4f}  "
+            f"cov90={r.coverage_90:.1%}  credible_features={ncred}"
+        )
+
+
+@v2_app.command("predict")
+def v2_predict(
+    trade_id: int = typer.Option(..., help="trade_event_id to predict for."),
+    receiver: str = typer.Option(..., help="Receiver team bref code (e.g. 'HOU')."),
+    outcome: str = typer.Option(..., help=f"One of: {', '.join(V2_OUTCOMES)}."),
+    train_end: int = typer.Option(2024, help="Last season included in the fit."),
+    minimum_features_present: int = typer.Option(5, help="Min non-null features per row."),
+) -> None:
+    """Posterior prediction for one (trade_event_id, receiver) under a fitted V2 model."""
+    import numpy as np
+
+    configure_logging()
+    _v2_validate_outcome(outcome)
+    # Fit on full history through train_end (test set used internally is ignored
+    # — we just need the posterior).
+    result = v2_backtest.backtest_outcome(
+        outcome=outcome,
+        train_end_season=train_end,
+        test_end_season=train_end,
+        minimum_features_present=minimum_features_present,
+    )
+    fit = result.fit
+
+    combined = v2_backtest.assemble_combined()
+    combined = combined[combined[outcome].notna()].copy()
+    cols = list(fit.feature_cols)
+    for c in cols:
+        combined[c] = combined[c].astype("float64")
+        combined[c] = combined[c].fillna(combined[c].mean())
+    row = combined[
+        (combined["trade_event_id"] == trade_id) & (combined["receiver_bref"] == receiver)
+    ]
+    if row.empty:
+        typer.echo(f"no row found for trade_id={trade_id} receiver={receiver} outcome={outcome}")
+        raise typer.Exit(code=1)
+
+    r = row.iloc[0]
+    x_row = ((row[cols] - fit.feature_means) / fit.feature_stds).to_numpy(dtype=float)[0]
+    post = fit.trace.posterior
+    n = post["alpha0"].shape[0] * post["alpha0"].shape[1]
+    alpha0_s = post["alpha0"].values.reshape(n)
+    beta_s = post["beta"].values.reshape(n, len(cols))
+    alpha_regime_s = post["alpha_regime"].values.reshape(n, len(fit.regimes))
+    regime_idx = {rg: i for i, rg in enumerate(fit.regimes)}.get(r["regime_id"], -1)
+    team_alpha = alpha_regime_s[:, regime_idx] if regime_idx >= 0 else 0.0
+    mu_z = alpha0_s + team_alpha + beta_s @ x_row
+    samples = mu_z * fit.y_std + fit.y_mean
+    typer.echo(f"trade_id={trade_id}  receiver={receiver}  outcome={outcome}")
+    typer.echo(f"  true:            {r[outcome]:+.4f}")
+    typer.echo(f"  posterior mean:  {float(samples.mean()):+.4f}")
+    typer.echo(
+        f"  90% CI:          "
+        f"[{float(np.percentile(samples, 5)):+.4f}, "
+        f"{float(np.percentile(samples, 95)):+.4f}]"
+    )
+    typer.echo(f"  regime:          {r['regime_id']}")
