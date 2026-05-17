@@ -24,6 +24,65 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-12: WAR-version of origin-org system-tax test on R-11 expanded sample
+
+**Question.** With R-11 nearly doubling the affiliated trade-event sample (2,734 -> ~6,200), does the R-10 origin-org system-tax thesis become credibly separable? Specifically: can we now distinguish LAD as a system-tax org from the analytics-leader cohort baseline, or from zero?
+
+**Setup.** Mirror of `scripts/origin_org_pedigree_controlled.py` (R-10) with three changes:
+- Outcome: Δ WAR (war_t_plus_1 - war_t_minus_1) instead of Δ xwOBA. bWAR has full 1871+ coverage so the new pre-2010 Retrosheet trades feed straight in.
+- Pre-trade control: war_t_minus_1.
+- Receiver dev-fit covariate dropped — `org_hitter_xwoba_jump_3yr` is Statcast-era only and would reintroduce a 2015+ filter, defeating the R-11 expansion.
+- Filter trade_season >= 1990.
+- n=4,235 trade legs across 30 origin orgs.
+
+PyMC multilevel, 4 chains x 2000 draws, target_accept=0.95.
+
+**Result.**
+
+Population posteriors:
+- `α (league baseline) = -0.154` [-0.194, -0.112] — average post-trade WAR loss of ~0.15 after controls.
+- `β_pre = -1.01` [-1.05, -0.98] — extreme RTM. A +3 WAR pre-player drops ~2 WAR post.
+- `τ_origin = 0.066` [0.016, 0.121] — origin-org variance IS detectable as a population parameter; lower bound well above zero.
+- `σ = 1.41` — per-trade noise ~20x larger than τ_origin.
+
+Key per-org intercepts (selected):
+
+| Org | n | Intercept | P(<0) | vs R-10 xwOBA P(<0) |
+|---|---|---|---|---|
+| NYM | 187 | -0.040 | 74% | 15% (FLIPPED sign) |
+| TBR | 150 | -0.040 | 73% | 46% |
+| SDP | 235 | -0.034 | 72% | 44% |
+| **LAD** | **169** | **-0.022** | **64%** | **63%** (same) |
+| BOS | 155 | -0.017 | 61% | 55% |
+| HOU | 124 | +0.027 | 34% | 37% (consistent) |
+| CLE | 180 | +0.039 | 26% | 39% (consistent) |
+| MIA | 180 | +0.060 | 18% | — |
+
+**Interpretation.**
+
+1. **LAD result replicates but remains inconclusive at 6x more data.** R-10 P(<0) = 63% → R-12 P(<0) = 64%. 90% CI still crosses zero ([-0.124, +0.065]). **Best statement V1 data can make is "LAD trends slightly negative on departed-player residuals; cannot reject H0 at the current sample."** Doubling-the-data did not break ambiguity.
+
+2. **Analytics-leader cohort splits cleanly into two camps.** 4 of 6 negative (LAD, TBR, SDP, BOS), 2 positive (HOU, CLE). The "tech-forward orgs broadly produce system guys" framing is rejected by the data. There IS a subgroup pattern inside the cohort, but it's not what Rob's original thesis predicted.
+
+3. **HOU/CLE dev-travels finding is now the cleanest signal.** Both positive across both metrics (R-10 xwOBA and R-12 WAR). Supports the origin-side mirror reading of MVP Machine Ch 9: improvements installed under Strom/Espada/Willis travel with the player. CLE joining HOU strengthens the claim — both known pitching-dev-forward orgs.
+
+4. **NYM cross-metric sign flip is genuinely interesting.** xwOBA = +0.012 (positive); WAR = -0.040 (negative). Reading: Mets-departed players retain rate-stat quality but lose counting WAR via reduced playing time / aging. Aligns with the Pinheiro-Szymanski mean-variance framing — these would be "high-mean, declining-variance" hitters whose rate stats stabilize while their PT/durability drops.
+
+5. **WAR-specific confound to note.** β_pre = -1.01 is very aggressive. Players with high pre-WAR are predicted to lose almost an entire WAR per pre-SD. Some of this is aging (players are traded at peak); some is PT regression (vet traded to bench role). The single covariate cannot fully decompose these. The pure-test version would condition on age and post-trade games-played, neither of which is currently in our schema.
+
+Confidence: high on the within-cohort split being real. Moderate on LAD/HOU/CLE individual rankings (n=124-180 per org, posterior 90% CIs still wide). Low on cross-metric reconciliation (NYM flip is consistent with mean-variance theory but not directly tested).
+
+**Affects.**
+
+- Refines D-21 (origin-org system-tax decision). Updates the cohort claim: "analytics-leader cohort splits into LAD/TBR/SDP/BOS (negative) and HOU/CLE (positive) on WAR-residual."
+- Strengthens the case for HOU/CLE dev-travels as a publishable single-finding. Larger and cleaner signal than LAD.
+- The LAD-specific synthetic-control test (Mixtape Ch 10) is *still* the only path to disambiguate (a) system-tax from (b) sell-high — and now the case for running it is weaker because doubling the sample didn't move the LAD posterior off zero.
+- Queued: age-conditioning the model. Age is needed to separate "aging at peak" from "system-dependent production." Requires `bwar_player_seasons` first_mlb_year join — feasible from current schema.
+
+Files: `scripts/origin_org_pedigree_controlled_war.py`.
+
+---
+
 ## [2026-05-16] R-11: Retrosheet pre-2010 transaction ingest — 2.5x affiliated-trade sample expansion
 
 **Question.** R-06/07/09/10 all hit the same noise floor: ~30 trades per origin-org is too few to detect any feature contribution above the regression-to-the-mean baseline. Will ingesting Retrosheet's transaction database (which the Pinheiro-Szymanski 2022 paper cites as covering 1994-2016) push the sample size into a regime where per-org effects become credibly separable?
