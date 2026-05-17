@@ -21,6 +21,7 @@ from savage_trade_evaluator.ingest import (
     prospects,
     retrosheet_gamelogs,
     retrosheet_transactions,
+    spotrac,
     standings,
     statcast_extended,
     stats,
@@ -201,6 +202,23 @@ def ingest_retrosheet_transactions(
     configure_logging()
     n = retrosheet_transactions.ingest(end_year=end_year)
     typer.echo(f"ingested {n} retrosheet trade-leg rows through {end_year}")
+
+
+@ingest_app.command("spotrac")
+def ingest_spotrac(
+    year: int | None = typer.Option(None, help="Single season."),
+    start: int = typer.Option(2011, help="First season (Spotrac coverage)."),
+    end: int = typer.Option(2025, help="Last season."),
+    team: str | None = typer.Option(None, help="Single team bref_code (e.g. LAD)."),
+) -> None:
+    """Ingest MLB player contracts + team payrolls from Spotrac."""
+    configure_logging()
+    teams = (team,) if team else None
+    if year is not None:
+        n = spotrac.ingest_year(year, team_filter=teams)
+    else:
+        n = spotrac.ingest_range(start=start, end=end)
+    typer.echo(f"ingested {n} spotrac contract rows")
 
 
 @ingest_app.command("team-season-stats")

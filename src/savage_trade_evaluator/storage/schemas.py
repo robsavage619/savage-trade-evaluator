@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 18
+SCHEMA_VERSION = 19
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -717,6 +717,55 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_tss_season ON team_season_stats(season, stat_group)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS spotrac_player_contracts (
+        spotrac_id INTEGER NOT NULL,
+        mlb_player_id INTEGER,
+        player_name VARCHAR NOT NULL,
+        team_bref VARCHAR NOT NULL,
+        season INTEGER NOT NULL,
+        position VARCHAR,
+        service_time DOUBLE,
+        acquired_method VARCHAR,
+        status VARCHAR,
+        base_salary BIGINT,
+        cap_hit BIGINT,
+        signing_bonus BIGINT,
+        incentives BIGINT,
+        table_type VARCHAR NOT NULL,
+        spotrac_slug VARCHAR,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (spotrac_id, season, table_type)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_spotrac_player_year
+        ON spotrac_player_contracts(mlb_player_id, season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_spotrac_team_season
+        ON spotrac_player_contracts(team_bref, season)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS spotrac_team_payroll (
+        team_bref VARCHAR NOT NULL,
+        team_slug VARCHAR NOT NULL,
+        season INTEGER NOT NULL,
+        active_players INTEGER,
+        active_payroll BIGINT,
+        dead_money BIGINT,
+        injured_payroll BIGINT,
+        total_payroll BIGINT,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (team_bref, season)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_spotrac_team_payroll_season
+        ON spotrac_team_payroll(season)
     """,
 )
 
