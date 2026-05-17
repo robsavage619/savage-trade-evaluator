@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 14
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -524,6 +524,39 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_awards_season ON mlb_awards(season)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS game_logs (
+        game_date DATE NOT NULL,
+        game_number VARCHAR NOT NULL,
+        season INTEGER NOT NULL,
+        day_of_week VARCHAR,
+        visitor_team_bref VARCHAR NOT NULL,
+        visitor_league VARCHAR,
+        visitor_game_number INTEGER,
+        home_team_bref VARCHAR NOT NULL,
+        home_league VARCHAR,
+        home_game_number INTEGER,
+        visitor_score INTEGER,
+        home_score INTEGER,
+        game_length_outs INTEGER,
+        day_night VARCHAR,
+        park_id VARCHAR,
+        attendance INTEGER,
+        game_time_minutes INTEGER,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (game_date, game_number, home_team_bref, visitor_team_bref)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_game_logs_season ON game_logs(season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_game_logs_home ON game_logs(home_team_bref, season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_game_logs_visitor ON game_logs(visitor_team_bref, season)
     """,
 )
 

@@ -19,6 +19,7 @@ from savage_trade_evaluator.ingest import (
     fortification,
     front_office,
     prospects,
+    retrosheet_gamelogs,
     retrosheet_transactions,
     standings,
     statcast_extended,
@@ -174,6 +175,22 @@ def ingest_prospects(
     else:
         n = prospects.ingest_range(start, end)
         typer.echo(f"ingested {n} prospects across {end - start + 1} year(s)")
+
+
+@ingest_app.command("game-logs")
+def ingest_game_logs(
+    year: int | None = typer.Option(None, help="Single year."),
+    start: int = typer.Option(1990, help="First year."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+) -> None:
+    """Ingest Retrosheet per-game logs (date, teams, scores, attendance, park, etc.)."""
+    configure_logging()
+    if year is not None:
+        n = retrosheet_gamelogs.ingest_year(year)
+        typer.echo(f"ingested {n} games for {year}")
+    else:
+        n = retrosheet_gamelogs.ingest_range(start=start, end=end)
+        typer.echo(f"ingested {n} games across {end - start + 1} seasons")
 
 
 @ingest_app.command("retrosheet-transactions")

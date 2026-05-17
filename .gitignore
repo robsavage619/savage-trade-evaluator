@@ -235,3 +235,4 @@ __pycache__/
 
 # Retrosheet cached downloads
 data/static/retrosheet/
+data/static/retrosheet_gl/
