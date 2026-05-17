@@ -318,6 +318,45 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     GROUP BY trade_event_id, receiver_bref
     """,
     """
+    CREATE OR REPLACE VIEW team_regime_assignments AS
+    -- Map each (team, season) to a regime_id defined by the top baseball-ops
+    -- decision-maker. Priority: President (POBO) > General Manager > fallback.
+    -- The regime_id is the team's bref_code concatenated with the decision-maker
+    -- name; same name across seasons = same regime. Used to swap team-cluster
+    -- random intercepts for (team, regime) clusters in V2-style ablations.
+    --
+    -- D-28: org-stability decade-split (R-25) showed 90% of variance in per-org
+    -- effects is within-team across regimes. Regime-aware clustering is the
+    -- methodological fix for that finding.
+    --
+    -- Coverage: front_office is 2010+ only (D-15). Pre-2010 trades fall back
+    -- to the team-only cluster (no regime info available). 2010-2024 is the
+    -- regime-control window.
+    WITH top_role AS (
+        SELECT bref_code, season,
+               -- Pick the top-ranking baseball-ops person available per (team, season).
+               COALESCE(
+                   MAX(CASE WHEN role = 'President' THEN person_name END),
+                   MAX(CASE WHEN role = 'General Manager' THEN person_name END),
+                   MAX(CASE WHEN role = 'POBO' THEN person_name END)
+               ) AS decision_maker,
+               MAX(CASE WHEN role = 'President' THEN person_name END) AS president,
+               MAX(CASE WHEN role = 'General Manager' THEN person_name END) AS gm
+        FROM front_office
+        GROUP BY bref_code, season
+    )
+    SELECT
+        bref_code,
+        season,
+        decision_maker,
+        president,
+        gm,
+        -- Regime identifier: bref_code + decision_maker. Same person across
+        -- seasons = same regime. Changes = new regime.
+        bref_code || '_' || COALESCE(decision_maker, 'UNKNOWN') AS regime_id
+    FROM top_role
+    """,
+    """
     CREATE OR REPLACE VIEW trade_xera_outcome AS
     -- Rate-based pitcher outcome per (trade_event, receiver): mean Δ xERA of
     -- acquired pitchers with Statcast data. xERA inverts the goodness scale

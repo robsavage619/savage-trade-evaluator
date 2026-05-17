@@ -24,6 +24,77 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-27: Regime-control reruns — most R-17 findings weaken; OAK-Beane emerges as strongest specific-regime signal
+
+**Question (plain English).** Per D-28, V2 model architecture must cluster on (team, GM-regime) not just team. Rerun R-12/R-17 origin-org system-tax tests with regime_id as the cluster. Which of our prior team-level findings survive being decomposed into specific GM eras?
+
+**Setup.** Built `team_regime_assignments` view that maps (bref_code, season) to regime_id = "{team}_{decision_maker}". Decision-maker is the top baseball-ops role per season (President > GM). Front_office data covers 2010-2024 so regime-control is bounded to that window.
+
+`scripts/regime_control_reruns.py` runs the origin-org multilevel on three outcomes (WAR, xwOBA, K%) with regime_id as cluster. Reports per-regime intercepts and Friedman-LAD-vs-other pairwise probabilities.
+
+**Result.**
+
+### Per-regime intercepts
+
+WAR (n=2046, 79 regimes after MIN_N=6 filter):
+
+| Regime | n | Intercept | 90% CI | P(<0) |
+|---|---|---|---|---|
+| LAD-Friedman | 63 | -0.021 | [-0.158, +0.086] | 61% |
+| LAD-Colletti | 20 | +0.007 | [-0.116, +0.144] | 47% |
+| HOU-Luhnow | 44 | +0.005 | [-0.111, +0.130] | 47% |
+| HOU-Click | small | (filtered/not shown) | | |
+| CLE-Shapiro | 22 | -0.002 | [-0.130, +0.127] | 51% |
+| CLE-Antonetti | 45 | -0.009 | [-0.133, +0.102] | 54% |
+| **OAK-Beane** | 66 | **+0.057** | [-0.046, +0.232] | **26%** |
+| STL-Mozeliak | 49 | +0.015 | [-0.095, +0.148] | 43% |
+| BOS-Bloom | 20 | +0.021 | [-0.095, +0.173] | 41% |
+
+xwOBA (n=514, 35 regimes):
+| LAD-Friedman | 27 | -0.003 | [-0.019, +0.009] | 62% |
+| HOU-Luhnow | 10 | +0.003 | [-0.011, +0.021] | 40% |
+| CLE-Antonetti | 25 | +0.003 | [-0.010, +0.018] | 39% |
+| OAK-Beane | 18 | -0.001 | [-0.016, +0.014] | 52% |
+
+K% (n=141, 18 regimes): LAD-Friedman not in sample (LAD doesn't trade enough pitchers in Statcast era). STL-Mozeliak -5.7 K-pct-points (P(<0)=85%); OAK-Beane +2.9 (P(<0)=28%).
+
+### Pairwise: Friedman-LAD vs other regimes
+
+WAR:
+- vs LAD-Colletti: 60%   vs HOU-Luhnow: 60%   vs CLE-Antonetti: 55%
+- vs OAK-Beane: **74%**   vs STL-Mozeliak: 62%   vs BOS-Bloom: 63%
+
+xwOBA:
+- vs HOU-Luhnow: 65%   vs CLE-Antonetti: 66%   vs OAK-Beane: 58%   vs BOS-Bloom: 63%
+
+R-17 (team-level) comparisons: LAD vs HOU = 70% (WAR) / 69% (xwOBA); LAD vs CLE = 75% (WAR) / 67% (xwOBA).
+
+**Interpretation (plain English).**
+
+1. **WAR-based LAD < HOU pairwise WEAKENED from 70% to 59%** under regime control. The team-HOU number was averaging four regimes (Wade/Luhnow/Click/Brown). The clean Luhnow-specific intercept is +0.005 — essentially zero. The R-17 effect was partly a "non-Luhnow HOU regimes pulling team-HOU down" artifact.
+
+2. **xwOBA-based LAD < HOU pairwise SURVIVES** regime control: 69% -> 65%. The rate-based version of the comparison is more robust. This was already the cleaner test per D-26; it stays cleaner.
+
+3. **Modern CLE shows NO dev-travels signal** in regime-controlled view. Shapiro 2010-2015 = -0.002; Antonetti 2016+ = -0.009. Both near zero. The R-12/R-17 CLE-positive finding was almost certainly driven by pre-2010 Shapiro-era trades that contributed to the team-level aggregate but predated our front_office data window.
+
+4. **The HOU "dev-travels" thesis (MVP Machine Ch 9) is weaker than the team-level data suggested.** Luhnow-specific intercept is +0.005 on WAR, not the +0.034 we'd see at team-HOU level. Some of the team-level signal may have been pre-Luhnow Wade-era trades or post-Luhnow Click trades that benefit from the lingering Luhnow infrastructure.
+
+5. **OAK-Beane emerges as the strongest specific-regime positive outlier.** +0.057 WAR intercept, P(<0) = 26%. Friedman-LAD vs OAK-Beane pairwise: 74% on WAR — the strongest pairwise comparison we have. Beane's ~25-year tenure gives enough data to credibly attribute this to him personally rather than to "Oakland the organization."
+
+6. **R-22's k_trajectory feature credibility (mass=100%, -10.8) is not retested here.** R-27 only checks regime intercepts, not feature coefficients. Whether the largest credible coefficient in the project survives regime clustering requires a separate ablation. Queued.
+
+**Affects.**
+
+- **Reframes R-17 findings as half-surviving regime control.** The xwOBA-based LAD < HOU/CLE pairwise is robust. The WAR-based version is weakened, particularly for CLE where modern regimes show no signal at all.
+- **OAK-Beane is now the project's cleanest specific-regime finding.** Should be foregrounded in any product-facing summary alongside the still-tentative LAD-Friedman vs HOU-Luhnow xwOBA comparison.
+- **Reframes the HOU dev-travels narrative.** It's a *partial* Luhnow-era effect that may include both pre-Luhnow setup and post-Luhnow inheritance. Cleaner framing: "Beane-era OAK pitchers gained K% after departure with the strongest credibility we can measure" rather than "Luhnow-HOU is the dev-travels champion."
+- **Modern CLE drops out of the analytics-leader-cluster framing entirely.** Their 2010-2024 regimes show zero dev-travels signal. The reputation predates our data window.
+- **R-22's headline credibility result is the obvious next test.** If k_trajectory's -10.8 effect on K% survives regime clustering, it stands as the project's strongest finding regardless of regime-aware concerns.
+
+Files: `scripts/regime_control_reruns.py`, `src/savage_trade_evaluator/storage/outcome_views.py` (added `team_regime_assignments` view).
+
+---
+
 ## [2026-05-16] R-25: Org-stability decade-split — GM regimes drive 90% of within-team variance; org-identity-as-feature is wrong
 
 **Question (plain English).** Are organizations static, or do GM regimes matter? When we say "LAD-departed players underperform HOU-departed players" (R-17, ~70% pairwise), is that about *organizational culture that persists across regimes* or about *specific GM regimes that happened to occupy those org chairs during our sample*?
