@@ -24,6 +24,48 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-14: Analytics-leader-cluster feature — null predictive contribution; redundant with team-cluster intercepts
+
+**Question (plain English).** R-12/13 found that trades acquiring players FROM HOU/CLE behave differently than trades acquiring FROM LAD/TBR/SDP/BOS. We encoded this as a numeric feature per trade-event-per-receiver: +1 if from HOU/CLE on average, -1 if from LAD/TBR/SDP/BOS, 0 otherwise. Does adding this feature to the context-aware Bayesian model improve out-of-time CRPS?
+
+**Setup.** Added `trade_origin_dev_cluster` view and joined into `trade_with_context` as `receiver_acquired_from_dev_cluster_score`. Added to FEATURE_COLUMNS. Matched-subset ablation: 10-feat vs 9-feat (without cluster score) on 763 rows, 364 train / 399 test.
+
+NB: first run used PyMC defaults (2 chains, target_accept=0.8) and showed Δ CRPS = -0.030. That was a sampling artifact — 1000+ divergences in the 9-feat fit. Bumped to 4 chains, tune=2000, target_accept=0.97, 1500 draws. The "improvement" disappeared.
+
+**Result.**
+
+| | Without | With | Δ |
+|---|---|---|---|
+| Test CRPS | 1.3552 | 1.3559 | **+0.0007** |
+| Test MAE | 1.5584 | 1.5618 | +0.0034 |
+
+Same null pattern as R-06 (org-hitter dev-fit), R-07 (per-coach hitter), R-09 (draft pedigree).
+
+Cluster feature's posterior coefficient: +0.099 [-0.051, +0.204]. 92% of posterior mass positive — directionally consistent with the descriptive R-12/13 finding. But predictively, it adds nothing measurable.
+
+**Interpretation (plain English).**
+
+1. **The descriptive R-12/13 finding (HOU/CLE departed players hold value better than LAD/TBR/SDP/BOS departed players) is real and replicates.** The coefficient sign in this model is positive and the 92% posterior-mass-positive shows the model "agrees" with the descriptive finding.
+
+2. **But the feature earns nothing predictively because it's informationally redundant with team-cluster random intercepts.** The model already has per-receiving-team intercepts (`alpha_team`) that absorb every team's idiosyncratic behavior. A binary "is the trade involving HOU/CLE on the sending side" indicator duplicates information the model has already learned via the team-cluster dial. It's the multilevel-modeling equivalent of adding a "is this team Houston?" column when the model already has a Houston-specific intercept.
+
+3. **The lesson generalizes.** Any *static team-level binary or categorical feature* in a model with team-cluster random intercepts will face the same redundancy. To earn predictive keep, future features need to either:
+   - **Vary within team** (player-level fingerprints, time-varying signals)
+   - **Cross team with another covariate** (e.g. HOU x pitch-type, LAD x player-age)
+   - **Replace the team-cluster intercept structure** (treat origin/receiver as observed features rather than latent clusters)
+
+**Affects.**
+
+- Feature kept in FEATURE_COLUMNS (precedent: R-09's `receiver_best_draft_pick` was also kept despite null). Doesn't harm; trends in right direction; may matter when sample grows.
+- The `trade_origin_dev_cluster` view remains useful for descriptive analysis even if the feature isn't predictive.
+- Adds D-24 candidate to vault: methodology rule "static team-level features don't earn keep in multilevel-w/-team-cluster models; require within-team variation or cross-features."
+- The R-12/13 LAD/HOU/CLE finding is now formally bounded: it's *descriptive* (provable from raw pairwise comparisons), not *predictive* (doesn't improve CRPS as a static feature).
+- The "engineer it as a feature" payoff hypothesized in R-12/13 has been falsified. Move on to the methodologically valid alternatives above.
+
+Files: `scripts/ablation_dev_cluster_feature.py`, `src/savage_trade_evaluator/storage/outcome_views.py` (added `trade_origin_dev_cluster` view).
+
+---
+
 ## [2026-05-16] R-13: Age-conditioned WAR-version test — population effects unchanged, but pairwise posterior framing reveals comparative LAD signal
 
 **Question.** R-12's β_pre coefficient was -1.01, suspiciously aggressive. Hypothesis: pre_war was doing double duty as both RTM and aging-at-peak absorber. Adding years_since_debut (proxy for age) as an explicit covariate should reduce β_pre's magnitude, tighten per-org posteriors, and potentially shift rankings if orgs differ in age-of-traded-players.

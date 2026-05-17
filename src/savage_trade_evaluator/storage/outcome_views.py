@@ -200,6 +200,30 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         ON t3.player_id    = t.mlb_player_id AND t3.year    = t.trade_season + 3
     """,
     """
+    CREATE OR REPLACE VIEW trade_origin_dev_cluster AS
+    -- Per (trade_event, receiving_team), the average "dev-cluster" score of
+    -- the origin teams the receiver acquired players from. R-12/13 found two
+    -- camps among analytics-leader orgs:
+    --   +1 = HOU, CLE: improvements installed travel with the departed player
+    --   -1 = LAD, TBR, SDP, BOS: improvements don't travel; departures drop
+    --    0 = everyone else
+    -- A receiver who acquires players FROM the +1 cluster should expect those
+    -- players to keep their improvement post-trade; from -1, expect dropoff.
+    SELECT
+        tpu.trade_event_id,
+        tpu.to_team_bref AS receiver_bref,
+        AVG(CASE
+            WHEN tpu.from_team_bref IN ('HOU', 'CLE') THEN 1.0
+            WHEN tpu.from_team_bref IN ('LAD', 'TBR', 'SDP', 'BOS') THEN -1.0
+            ELSE 0.0
+        END) AS receiver_acquired_from_dev_cluster_score,
+        COUNT(*) AS n_acquired_players
+    FROM trade_player_unified tpu
+    WHERE tpu.to_team_bref IS NOT NULL
+      AND tpu.from_team_bref IS NOT NULL
+    GROUP BY tpu.trade_event_id, tpu.to_team_bref
+    """,
+    """
     CREATE OR REPLACE VIEW trade_pedigree AS
     -- Per (trade_event, receiving_team), aggregate draft-pick pedigree of
     -- players acquired. Lower pick_number = higher pedigree. Players without
@@ -239,7 +263,8 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         tsf.org_hitter_xwoba_jump_3yr AS receiver_org_hitter_xwoba_jump_3yr,
         tsf.coach_hitter_xwoba_jump_3yr AS receiver_coach_hitter_xwoba_jump_3yr,
         tp.receiver_best_draft_pick,
-        tp.receiver_avg_draft_pick
+        tp.receiver_avg_draft_pick,
+        tdc.receiver_acquired_from_dev_cluster_score
     FROM naive_baseline_results nbr
     LEFT JOIN team_season_features tsf
         ON tsf.bref_code = nbr.team_bref
@@ -247,6 +272,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     LEFT JOIN trade_pedigree tp
         ON tp.trade_event_id = nbr.trade_event_id
         AND tp.receiver_bref = nbr.team_bref
+    LEFT JOIN trade_origin_dev_cluster tdc
+        ON tdc.trade_event_id = nbr.trade_event_id
+        AND tdc.receiver_bref = nbr.team_bref
     """,
     """
     CREATE OR REPLACE VIEW trade_player_arsenal_window AS
