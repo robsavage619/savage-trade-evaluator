@@ -9,7 +9,8 @@
 [![DuckDB](https://img.shields.io/badge/store-DuckDB-fff100)](https://duckdb.org/)
 [![rounds completed](https://img.shields.io/badge/research_rounds-31-success)](RESEARCH_LOG.md)
 [![decisions logged](https://img.shields.io/badge/ADR_decisions-30-success)](https://github.com/robsavage619/savage-trade-evaluator)
-[![schema](https://img.shields.io/badge/duckdb_schema-v12-informational)](src/savage_trade_evaluator/storage/schemas.py)
+[![schema](https://img.shields.io/badge/duckdb_schema-v18-informational)](src/savage_trade_evaluator/storage/schemas.py)
+[![rows](https://img.shields.io/badge/duckdb_rows-1.29M-informational)](docs/DATA_SOURCE_PROBE.md)
 
 ---
 
@@ -123,7 +124,17 @@ uv run ste ingest statcast                   # Baseball Savant 2015-2024 (~10s)
 uv run ste ingest statcast-extended          # Batter percentiles + pitcher arsenal + OAA (~5min)
 uv run ste ingest draft                      # MLB Stats API draft 1990-2024 (~30s, 46K picks)
 uv run ste ingest coaches                    # MLB API coaches per team-season (~3min)
-uv run ste ingest front-office               # BR front-office 2010-2024 (~25min, rate-limited)
+uv run ste ingest front-office --start 1990  # BR front-office 1990-2024 (~50min, rate-limited)
+uv run ste ingest chadwick                   # Chadwick register (birth dates + IDs)  ~5s
+uv run ste ingest mlb-people                 # Per-player MLB profiles (country/handedness)  ~30s
+uv run ste ingest awards                     # MVP/CY/ROY/etc 1990-2024  ~2min
+uv run ste ingest catcher-framing            # Statcast catcher framing 2015-2024  ~5s
+uv run ste ingest game-logs                  # Retrosheet per-game data 1990-2024  ~1min
+uv run ste ingest parks                      # Retrosheet park reference  ~1s
+uv run ste ingest pitch-movement             # Statcast pitch physics 2015-2024  ~5min
+uv run ste ingest rosters                    # 40-man rosters per team-season  ~5min
+uv run ste ingest venues                     # MLB venues with dimensions  ~1s
+uv run ste ingest team-season-stats          # Per-team-season aggregates  ~3min
 
 # Check what landed
 uv run ste status
@@ -155,20 +166,32 @@ uv run ste catalog --status blocked           # FanGraphs etc.
 
 ## Data layer at a glance
 
+**29 tables · 1.29M rows · schema v18**
+
 | Source | Coverage | Rows | Notes |
 |---|---|---|---|
 | **MLB Stats API transactions** | 2010-2024 | 703K | Comprehensive 2010+; sparse pre-2010 (D-14) |
 | **Retrosheet transactions** | 1880-2009 | 16,890 trade legs | Fills the pre-2010 gap (D-22 ID-offset) |
 | **bWAR batting + pitching** | 1871+ | 182K player-seasons | The all-era spine |
-| **Statcast batting expected** | 2015+ | ~6K seasons | xwOBA, xBA, xSLG |
-| **Statcast pitching expected** | 2015+ | ~7K seasons | xERA, xwOBA-against |
-| **Statcast pitcher percentile ranks** | 2015+ | ~3K seasons | K%, whiff%, FB velocity, spin |
+| **Statcast batting expected** | 2015+ | 8,500 | xwOBA, xBA, xSLG |
+| **Statcast pitching expected** | 2015+ | 8,095 | xERA, xwOBA-against |
+| **Statcast pitcher percentile ranks** | 2015+ | 6,809 | K%, whiff%, FB velocity, spin |
 | **Statcast batter percentile ranks** | 2015-2024 | 6,460 | Chase%, hard-hit%, sprint speed, OAA, bat speed |
 | **Statcast pitcher arsenal stats** | 2015-2024 | 13,542 | Per-pitch-type breakdowns |
+| **Statcast pitch movement** | 2015-2024 | 17,553 | Per-pitcher per-pitch-type physics (velocity, break, percentiles) |
+| **Statcast catcher framing** | 2015-2024 | 580 | Per-catcher framing runs by zone |
 | **Statcast Outs Above Average** | 2015-2024 | 2,479 | Defensive metric across 5 positions |
 | **Draft picks (MLB Stats API)** | 1990-2024 | 46,127 | Round, pick number, signing bonus, scouting report |
-| **MLB coaches** | 2010-2024 | ~5K per season | Manager + assistants |
-| **BR front-office personnel** | 2010-2024 | ~10K | GM, POBO, Farm Director, Scouting Director |
+| **Chadwick Register** | all-time | 127,526 | Birth dates + ID cross-walks (MLBAM↔Retro↔BRef↔FG) |
+| **MLB Stats API people** | all-time | 23,617 | Birth country, bat/pitch hand, height/weight, debut date |
+| **MLB awards** | 1990-2024 | 1,733 | MVP/CY/ROY/GG/SS/HOF recipients (17 award types) |
+| **Retrosheet game logs** | 1990-2024 | 80,798 | Per-game date, teams, scores, park, attendance |
+| **Retrosheet parks** | all-time | 260 | Park metadata (name, city, dates, league) |
+| **MLB venues** | all | 1,646 | Capacity, dimensions, surface, roof |
+| **Team rosters (40-man)** | 2010-2024 | 22,549 | Per team-season player composition |
+| **Team season stats** | 2010-2024 | 1,350 | Per-team-season hitting/pitching/fielding aggregates |
+| **MLB coaches** | 2010-2024 | 5,380 | Manager + assistants per team-season |
+| **BR front-office personnel** | 1990-2024 | 2,000+ (growing) | GM, POBO, Farm Director, Scouting Director |
 | **MLB standings** | 1990-2024 | ~450 team-seasons | Wins, losses, win pct |
 
 **Storage:** DuckDB single-file at `data/duckdb/trades.db`. Schema version 12. Versioned DDL at [`src/savage_trade_evaluator/storage/schemas.py`](src/savage_trade_evaluator/storage/schemas.py).
