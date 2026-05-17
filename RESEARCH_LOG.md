@@ -24,6 +24,57 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-13: Age-conditioned WAR-version test — population effects unchanged, but pairwise posterior framing reveals comparative LAD signal
+
+**Question.** R-12's β_pre coefficient was -1.01, suspiciously aggressive. Hypothesis: pre_war was doing double duty as both RTM and aging-at-peak absorber. Adding years_since_debut (proxy for age) as an explicit covariate should reduce β_pre's magnitude, tighten per-org posteriors, and potentially shift rankings if orgs differ in age-of-traded-players.
+
+**Setup.** R-12 model + `β_exp` term where `experience = trade_season - first_mlb_year` derived from `MIN(year_id)` per `mlb_id` in `bwar_player_seasons`. Filter `experience BETWEEN 0 AND 25`. n=4,235 unchanged.
+
+**Result.**
+
+| Param | R-12 | R-13 | Change |
+|---|---|---|---|
+| α | -0.154 | -0.154 | none |
+| β_pre | -1.01 | -1.00 | none |
+| β_exp | — | -0.034 [-0.071, +0.002] | marginal, just touches zero |
+| τ_origin | 0.066 | 0.065 | none |
+| σ | 1.41 | 1.41 | none |
+
+LAD: -0.021, P(<0) = 63% (vs R-12's -0.022, 64%). Effectively zero change.
+
+**Pairwise comparison framing (new diagnostic):**
+
+| LAD vs | Mean diff | 90% CI | P(LAD < other) |
+|---|---|---|---|
+| HOU | -0.047 | [-0.20, +0.08] | 70% |
+| CLE | -0.058 | [-0.22, +0.06] | 75% |
+| MIA | -0.078 | [-0.24, +0.04] | 81% |
+| OAK | -0.075 | [-0.25, +0.05] | 80% |
+| ARI | -0.076 | [-0.25, +0.05] | 80% |
+| STL | -0.077 | [-0.26, +0.05] | 80% |
+
+**Interpretation.**
+
+1. **Age conditioning did almost nothing.** β_exp = -0.034 is small (~7% the magnitude of β_pre), and τ_origin / per-org rankings are essentially unchanged. The aging-at-peak effect was already absorbed by pre_war alone — these two covariates are near-collinear when proxied by pre-trade WAR. True age (birth-date) would add slightly more information than years_since_debut, but not enough to break the LAD ambiguity.
+2. **The genuinely useful finding is methodological.** Single-org marginal P(<0) values sit near 50-75% because τ_origin shrinkage pulls every org toward zero by roughly the same amount. **Pairwise posterior differences survive the shrinkage** — sampling `α_origin[LAD] - α_origin[other]` cancels the shared pull. The pairwise framing is more powerful than the marginal framing in this kind of shrunken multilevel model.
+3. **LAD claim should be reframed comparatively, not absolutely.**
+   - Original: "LAD-departed players underperform" — V1 data: cannot credibly support.
+   - Reframed: "LAD-departed players underperform HOU/CLE/MIA/OAK/STL-departed players" — V1 data: ~70-81% posterior probability per pair.
+   The comparative claim is defensible. It maps onto the R-12 analytics-leader-split finding (HOU/CLE dev-travels camp vs LAD/TBR/SDP/BOS system-tax-consistent camp).
+4. **β_pre = -1.00 stays extreme.** Each +1 SD in pre-WAR predicts a 1.0-WAR drop. The post-trade WAR distribution is genuinely far below the pre-trade distribution for high-WAR players, regardless of age. Could be selection (trades concentrated at peak production) + bWAR-volatility + post-trade-PT-redistribution. Single covariate cannot decompose these.
+
+Confidence: high on the negative result for age conditioning. High on the pairwise-framing methodological observation. Moderate on the LAD vs HOU/CLE pairwise claim (70-75% posterior probability is moderate but not at 95% credible).
+
+**Affects.**
+
+- Supersedes the single-org framing in D-23 with the pairwise framing as the right way to interpret shrunken multilevel posteriors at our sample size.
+- Future per-org multilevel tests should report pairwise posteriors against a reference cluster (e.g. "vs analytics-leader cohort", "vs league-mean") rather than marginal P(<0). Reusable methodological insight.
+- The "engineer the analytics-leader-cluster split as a binary feature" follow-up is now well-motivated — D-21/D-23 found the split, R-13 quantified the pairwise probability. R-14 candidate: `receiver_in_dev_travels_cluster` vs `receiver_in_system_tax_cluster` as a categorical feature, ablation-tested.
+
+Files: `scripts/origin_org_age_conditioned.py`.
+
+---
+
 ## [2026-05-16] R-12: WAR-version of origin-org system-tax test on R-11 expanded sample
 
 **Question.** With R-11 nearly doubling the affiliated trade-event sample (2,734 -> ~6,200), does the R-10 origin-org system-tax thesis become credibly separable? Specifically: can we now distinguish LAD as a system-tax org from the analytics-leader cohort baseline, or from zero?
