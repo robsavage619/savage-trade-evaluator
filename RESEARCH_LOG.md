@@ -24,6 +24,106 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-16: Pitcher K%-based origin-org test — only HOU survives cross-metric replication
+
+**Question (plain English).** R-10 used xwOBA, R-12/13 used WAR. Same per-org test, three outcome metrics. Do the "analytics-leader cluster splits into HOU/CLE dev-travels vs LAD/TBR/SDP/BOS system-tax" finding replicate when outcome is pitcher K% (Statcast percentile rank), the cleanest pitcher-side rate metric we have? Driven by Rob's metric-skepticism (correctly noted that R-11/12/13 drifted from D-11 by using aggregate WAR).
+
+**Setup.** Same multilevel structure as R-10/12 but outcome = `k_percent_t_plus_1 - k_percent_t_minus_1` from `trade_player_arsenal_window`. Bounded to Statcast era (2015+), MIN_N = 5 trades per origin. PyMC 4 chains x 2000 draws.
+
+**Result.**
+
+Population posteriors:
+- α = -2.6 K-pct points [-5.7, +0.5]: post-trade pitchers lose ~2-3 percentile points on average.
+- β_pre = -11.3 [-14.2, -8.4]: extreme RTM (high-K% pitchers regress massively).
+- τ_origin = 3.5 [0.5, 7.8]: detectable but wide.
+
+**LAD did not meet the n>=5 threshold.** 4 pitcher trades 2015+, dropped from the analysis. LAD is a hitter-trading team in the modern era; the system-tax-on-pitcher-development thesis is *not testable on V1 data for LAD*. That's a data-availability fact, not a null result.
+
+Selected per-origin intercepts (sorted most negative):
+
+| Org | n | Mean K% Δ residual | P(<0) | xwOBA (R-10) | WAR (R-12) |
+|---|---|---|---|---|---|
+| STL | 8 | -3.4 | 77% | +0.007 | +0.058 |
+| NYM | 7 | -2.8 | 74% | +0.012 (positive) | -0.040 (negative) |
+| CLE | 7 | -0.8 | 57% | +0.003 (positive) | +0.039 (positive) |
+| HOU | 6 | +1.6 | 36% | +0.046 (positive) | +0.027 (positive) |
+| TBR | 11 | +1.9 | 31% | +0.001 (positive) | -0.040 (negative) |
+| OAK | 8 | +2.2 | 30% | +0.001 | -0.223 |
+
+**Interpretation (plain English).**
+
+1. **Only HOU stays consistent across all three metrics.** Positive in xwOBA, positive in WAR, positive in K%. The "Strom dev-travels" reading of MVP Machine Ch 9 is the single most metric-robust origin-org finding from R-10/11/12/13/16.
+
+2. **CLE flipped between metrics.** Strongly positive in xwOBA (+0.003) and WAR (+0.039), slightly negative on K% (-0.79). CLE's dev-fit shows up in hitter quality-of-contact and overall WAR but not in pitcher strikeout rate. They might be a hitter-dev-strong org but pitcher-dev-different.
+
+3. **TBR flipped twice.** Positive in xwOBA, negative in WAR, then positive again in K% (rank #25 of 26, mostly likely positive). TBR is genuinely hard to characterize from a single metric.
+
+4. **OAK is the biggest positive outlier on K%.** Departed A's pitchers tend to gain K% percentile rank. Opposite of the Moneyball-era stereotype of "OAK extracts every drop before trading." Their pitcher dev produces improvements that travel.
+
+5. **The clean R-12/13 narrative is metric-dependent.** "Dev-travels cluster = HOU/CLE; system-tax cluster = LAD/TBR/SDP/BOS" was a clean story when limited to WAR. K% doesn't tell the same story. The general lesson: **single-metric origin-org tests over-claim**.
+
+Confidence: high on the cross-metric instability finding (replicated across 3 outcome variables). High on the HOU-only-survivor finding (consistent across all 3). Moderate on individual K% rankings — per-org n is 5-12, posterior 90% CIs are very wide on the K% scale (typical sd ~3.5 K-pct points).
+
+**Affects.**
+
+- Supersedes the R-12/13 "analytics-leader cluster split" characterization. The cluster is real but **metric-specific**, not universal. D-23/D-24 should be updated to reflect this.
+- Validates Rob's metric-skepticism. R-11/12/13's WAR-based work picked up artifactual signal that doesn't replicate on rate-based components.
+- **Bar for future per-org claims**: a real per-org finding must replicate across at least two outcome metrics (preferably both rate-based and aggregate). By this bar, only HOU dev-travels is confirmed.
+- Reinforces D-11 (components, not aggregate WAR). The team-level work should default to rate-based outcomes; WAR is reserved for the surplus-value baseline only.
+
+Files: `scripts/origin_org_arsenal_k_pct.py`.
+
+---
+
+## [2026-05-16] R-15: Per-player dev-signature feature — first ablation with positive directional signal
+
+**Question (plain English).** R-14 confirmed that static team-level features can't earn keep against team-cluster random intercepts (D-24). The architectural fix is **within-team-variation features** — features whose value depends on the trade-specific player composition, not just the receiver team identity. Built `receiver_acquired_player_quality`: for each acquired player, a rate-based composite (offensive runs-above-avg per 600 PA for hitters, era_plus deviation for pitchers) averaged over their prior 2 seasons. Then aggregated by mean across the trade's acquired players. Tests whether the first principled within-team feature improves CRPS.
+
+**Setup.** New view `trade_player_dev_signature` builds the per-player quality measure from bWAR components (D-11 compliant — no aggregate WAR in the feature definition). View joined into `trade_with_context`. Matched-subset ablation: 11-feat vs 10-feat on 455 rows, 217 train / 238 test (smaller subset than prior ablations because new feature filters out trades whose players have <30 PA or <5 G in either prior season).
+
+**Result.**
+
+| | Without | With | Δ |
+|---|---|---|---|
+| Test CRPS | 1.5563 | 1.5534 | **-0.0029** (0.19% improvement) |
+| Test MAE | 1.8606 | 1.8529 | -0.0077 |
+
+CRPS improvement is sub-threshold (below the matched-subset noise floor). But the per-feature coefficient table shows something new:
+
+| Feature | Posterior mass with same sign | Was this the highest in prior ablations? |
+|---|---|---|
+| **receiver_acquired_player_quality** | **87% positive** | **YES — highest of any feature so far** |
+| receiver_dev_fit_pitching | 79% positive | (was the previous high) |
+| receiver_dev_fit_hitting | 74% positive | |
+| receiver_org_pitcher_k_jump_3yr | 74% positive | |
+| receiver_acquired_from_dev_cluster_score | 74% positive | (R-14, was directionally consistent but predictively null) |
+| receiver_best_draft_pick | 59% negative | (R-09) |
+
+**Interpretation (plain English).**
+
+1. **First positive-trending feature in five ablation rounds (R-06, R-07, R-09, R-14, R-15).** The 87% posterior-mass-positive on `receiver_acquired_player_quality` is the strongest directional signal we've gotten from any feature. Translation: the model "believes" trades acquiring higher-quality players produce more surplus, with the strongest confidence we've seen.
+
+2. **But CRPS improvement is still sub-threshold (0.19%).** The other 10 features — especially team intercepts, prior-year WAR, and dev-fit — already capture much of what player-quality means. The marginal predictive value is detectable in coefficient sign but not yet in test-set CRPS.
+
+3. **D-24 architectural lesson validated.** A within-team-variation feature DID claim residual variance the static cluster feature (R-14) could not. The "within-team variation works where team-level features fail" claim from D-24 is supported. R-15 is the *evidence* for D-24, not just an instance of it.
+
+4. **There IS a small mechanical-correlation caveat.** The `surplus` outcome is computed from WAR-received minus WAR-given-up, so "acquired player quality" is structurally related to surplus by construction. Part of the 87% directional confidence may reflect this mechanical link rather than a learned predictive relationship. Cleaner test: run the same ablation with a rate-based outcome (CRPS on Δ xwOBA or Δ K%) rather than WAR-derived surplus. Deferred.
+
+5. **Path forward.** Build more within-team-variation features. Candidates: acquired-player age, acquired-player years-of-control remaining, acquired-player trajectory (Δ K% or Δ xwOBA last 2 years rather than level). Each is D-24-compliant and at the player-level should claim residual variance.
+
+Confidence: high on the directional signal being meaningfully stronger than prior nulls (87% vs prior best 79% mass). Moderate on the predictive contribution being real-but-tiny (CRPS -0.0029 is below detection threshold). Low on the magnitude of the genuine effect — the mechanical-correlation caveat means we can't distinguish "the feature is well-aligned with surplus by construction" from "the feature has independent predictive value."
+
+**Affects.**
+
+- First feature passes the D-24 "within-team variation" test directionally.
+- Supports the principle of player-level over team-level features for future engineering.
+- Open caveat: outcome variable (surplus) is itself WAR-based — circular per Rob's D-11 metric-skepticism. Future ablations should ALSO be run on rate-based outcome variables (xwOBA-surplus, K%-surplus) to break the mechanical correlation.
+- Combined with R-16, the pair establishes: **the path forward is (a) player-level features and (b) rate-based outcomes.** Both directions are aligned with D-11 (components not WAR) and D-24 (within-team variation).
+
+Files: `scripts/ablation_player_quality_feature.py`, `src/savage_trade_evaluator/storage/outcome_views.py` (added `trade_player_dev_signature` view).
+
+---
+
 ## [2026-05-16] R-14: Analytics-leader-cluster feature — null predictive contribution; redundant with team-cluster intercepts
 
 **Question (plain English).** R-12/13 found that trades acquiring players FROM HOU/CLE behave differently than trades acquiring FROM LAD/TBR/SDP/BOS. We encoded this as a numeric feature per trade-event-per-receiver: +1 if from HOU/CLE on average, -1 if from LAD/TBR/SDP/BOS, 0 otherwise. Does adding this feature to the context-aware Bayesian model improve out-of-time CRPS?

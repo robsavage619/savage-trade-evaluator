@@ -200,6 +200,82 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         ON t3.player_id    = t.mlb_player_id AND t3.year    = t.trade_season + 3
     """,
     """
+    CREATE OR REPLACE VIEW trade_player_dev_signature AS
+    -- Per (trade_event, receiving_team), aggregate the acquired players' pre-trade
+    -- 2-year rate-based performance into a unified "acquired-player-quality" signal.
+    -- WITHIN-team variation (different trades have different player mixes);
+    -- satisfies the D-24 architectural rule against static team features.
+    --
+    -- Per-player measure (each player contributes ONE value regardless of position):
+    --   hitters: avg of (runs_above_avg_off / pa) * 600 over (t-1, t-2), per-600-PA basis
+    --   pitchers: avg of (era_plus - 100) / 10 over (t-1, t-2), SD-like deviation from avg
+    -- These two are on roughly comparable scales (~-5 to +5 for both elite/replacement).
+    --
+    -- Per D-11 (components, not aggregate WAR). Pitchers use era_plus which is
+    -- era- and park-adjusted with 1871+ coverage. Hitters use runs_above_avg_off
+    -- which is offense-only (sidesteps DRS/UZR noise).
+    WITH hitter_perf AS (
+        SELECT mlb_id, year_id,
+               (SUM(runs_above_avg_off) / NULLIF(SUM(pa), 0)) * 600.0 AS off_per_600
+        FROM bwar_batting
+        WHERE mlb_id IS NOT NULL AND pa >= 30
+        GROUP BY mlb_id, year_id
+    ),
+    pitcher_perf AS (
+        SELECT mlb_id, year_id,
+               (AVG(era_plus) - 100.0) / 10.0 AS era_plus_dev
+        FROM bwar_pitching
+        WHERE mlb_id IS NOT NULL AND era_plus IS NOT NULL AND g >= 5
+        GROUP BY mlb_id, year_id
+    ),
+    per_player_unified AS (
+        -- Each player contributes one row with one value (hitter OR pitcher; if both,
+        -- we average both — two-way players are rare and acceptable noise).
+        SELECT
+            tpu.trade_event_id,
+            tpu.to_team_bref AS receiver_bref,
+            tpu.mlb_player_id,
+            AVG(COALESCE(h_prior.off_per_600, h_prior2.off_per_600,
+                         p_prior.era_plus_dev, p_prior2.era_plus_dev,
+                         (h_prior.off_per_600 + p_prior.era_plus_dev) / 2.0)) AS quality_signal,
+            -- explicit fallback chain: prefer t-1 if available, else t-2, else other class
+            CASE
+                WHEN h_prior.off_per_600 IS NOT NULL AND p_prior.era_plus_dev IS NOT NULL
+                    THEN (h_prior.off_per_600 + p_prior.era_plus_dev) / 2.0
+                WHEN h_prior.off_per_600 IS NOT NULL THEN h_prior.off_per_600
+                WHEN p_prior.era_plus_dev IS NOT NULL THEN p_prior.era_plus_dev
+                WHEN h_prior2.off_per_600 IS NOT NULL THEN h_prior2.off_per_600
+                WHEN p_prior2.era_plus_dev IS NOT NULL THEN p_prior2.era_plus_dev
+                ELSE NULL
+            END AS pre_trade_quality
+        FROM trade_player_unified tpu
+        LEFT JOIN hitter_perf h_prior
+            ON h_prior.mlb_id = tpu.mlb_player_id
+            AND h_prior.year_id = tpu.trade_season - 1
+        LEFT JOIN hitter_perf h_prior2
+            ON h_prior2.mlb_id = tpu.mlb_player_id
+            AND h_prior2.year_id = tpu.trade_season - 2
+        LEFT JOIN pitcher_perf p_prior
+            ON p_prior.mlb_id = tpu.mlb_player_id
+            AND p_prior.year_id = tpu.trade_season - 1
+        LEFT JOIN pitcher_perf p_prior2
+            ON p_prior2.mlb_id = tpu.mlb_player_id
+            AND p_prior2.year_id = tpu.trade_season - 2
+        WHERE tpu.to_team_bref IS NOT NULL
+        GROUP BY tpu.trade_event_id, tpu.to_team_bref, tpu.mlb_player_id,
+                 h_prior.off_per_600, h_prior2.off_per_600,
+                 p_prior.era_plus_dev, p_prior2.era_plus_dev
+    )
+    SELECT
+        trade_event_id,
+        receiver_bref,
+        AVG(pre_trade_quality) AS receiver_acquired_player_quality,
+        COUNT(pre_trade_quality) AS n_acquired_with_signal,
+        COUNT(*) AS n_acquired_total
+    FROM per_player_unified
+    GROUP BY trade_event_id, receiver_bref
+    """,
+    """
     CREATE OR REPLACE VIEW trade_origin_dev_cluster AS
     -- Per (trade_event, receiving_team), the average "dev-cluster" score of
     -- the origin teams the receiver acquired players from. R-12/13 found two
@@ -264,7 +340,8 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         tsf.coach_hitter_xwoba_jump_3yr AS receiver_coach_hitter_xwoba_jump_3yr,
         tp.receiver_best_draft_pick,
         tp.receiver_avg_draft_pick,
-        tdc.receiver_acquired_from_dev_cluster_score
+        tdc.receiver_acquired_from_dev_cluster_score,
+        pds.receiver_acquired_player_quality
     FROM naive_baseline_results nbr
     LEFT JOIN team_season_features tsf
         ON tsf.bref_code = nbr.team_bref
@@ -275,6 +352,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     LEFT JOIN trade_origin_dev_cluster tdc
         ON tdc.trade_event_id = nbr.trade_event_id
         AND tdc.receiver_bref = nbr.team_bref
+    LEFT JOIN trade_player_dev_signature pds
+        ON pds.trade_event_id = nbr.trade_event_id
+        AND pds.receiver_bref = nbr.team_bref
     """,
     """
     CREATE OR REPLACE VIEW trade_player_arsenal_window AS

@@ -44,6 +44,7 @@ FEATURE_COLUMNS: tuple[str, ...] = (
     "receiver_coach_hitter_xwoba_jump_3yr",
     "receiver_best_draft_pick",
     "receiver_acquired_from_dev_cluster_score",
+    "receiver_acquired_player_quality",
 )
 
 
