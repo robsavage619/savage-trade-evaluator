@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 15
+SCHEMA_VERSION = 16
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -586,6 +586,78 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_people_position ON mlb_people(primary_position_code)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS retrosheet_parks (
+        park_id VARCHAR NOT NULL,
+        name VARCHAR,
+        aka VARCHAR,
+        city VARCHAR,
+        state VARCHAR,
+        start_date VARCHAR,
+        end_date VARCHAR,
+        league VARCHAR,
+        notes VARCHAR,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (park_id)
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS statcast_pitch_movement (
+        player_id INTEGER NOT NULL,
+        player_name VARCHAR,
+        team_abbrev VARCHAR,
+        year INTEGER NOT NULL,
+        pitch_hand VARCHAR,
+        pitch_type VARCHAR NOT NULL,
+        pitch_name VARCHAR,
+        avg_speed DOUBLE,
+        pitches_thrown INTEGER,
+        pitch_usage_pct DOUBLE,
+        vertical_break_inches DOUBLE,
+        league_vertical_break DOUBLE,
+        diff_vertical DOUBLE,
+        induced_vertical DOUBLE,
+        horizontal_break_inches DOUBLE,
+        league_horizontal_break DOUBLE,
+        diff_horizontal DOUBLE,
+        percentile_diff_vertical DOUBLE,
+        percentile_diff_horizontal DOUBLE,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year, pitch_type)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_pitch_movement_year ON statcast_pitch_movement(year)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_pitch_movement_player_year
+        ON statcast_pitch_movement(player_id, year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS team_rosters (
+        team_id INTEGER NOT NULL,
+        team_bref VARCHAR,
+        season INTEGER NOT NULL,
+        roster_type VARCHAR NOT NULL,
+        player_id INTEGER NOT NULL,
+        player_name VARCHAR,
+        position_code VARCHAR,
+        position_name VARCHAR,
+        status VARCHAR,
+        jersey_number VARCHAR,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (team_id, season, roster_type, player_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_rosters_player ON team_rosters(player_id, season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_rosters_team_season ON team_rosters(team_id, season)
     """,
 )
 

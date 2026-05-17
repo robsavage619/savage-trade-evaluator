@@ -203,6 +203,36 @@ def ingest_retrosheet_transactions(
     typer.echo(f"ingested {n} retrosheet trade-leg rows through {end_year}")
 
 
+@ingest_app.command("parks")
+def ingest_parks() -> None:
+    """Ingest Retrosheet parkcode.txt — historical park metadata."""
+    configure_logging()
+    n = fortification.ingest_retrosheet_parks()
+    typer.echo(f"ingested {n} park rows")
+
+
+@ingest_app.command("pitch-movement")
+def ingest_pitch_movement(
+    start: int = typer.Option(2015, help="First year."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+) -> None:
+    """Ingest Statcast pitch-movement leaderboard across all pitch types."""
+    configure_logging()
+    n = fortification.ingest_pitch_movement_range(start=start, end=end)
+    typer.echo(f"ingested {n} pitch-movement rows")
+
+
+@ingest_app.command("rosters")
+def ingest_rosters(
+    start: int = typer.Option(2010, help="First season."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+) -> None:
+    """Ingest team 40-man rosters from MLB Stats API."""
+    configure_logging()
+    n = fortification.ingest_rosters_range(start=start, end=end)
+    typer.echo(f"ingested {n} roster rows")
+
+
 @ingest_app.command("mlb-people")
 def ingest_mlb_people() -> None:
     """Pull MLB Stats API /people for every player in our bWAR table.

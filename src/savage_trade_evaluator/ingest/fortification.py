@@ -437,6 +437,269 @@ def _upsert_people(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) 
         conn.unregister("_staging_pe")
 
 
+# === Retrosheet park reference ===
+
+
+PARKCODE_URL = "https://www.retrosheet.org/parkcode.txt"
+
+
+def ingest_retrosheet_parks() -> int:
+    """Pull Retrosheet's parkcode.txt — 261 historical parks with metadata."""
+    with httpx.Client() as client:
+        r = client.get(PARKCODE_URL, timeout=30.0)
+        r.raise_for_status()
+    text = r.text
+    if text.startswith("﻿"):
+        text = text[1:]
+    reader = csv.DictReader(io.StringIO(text))
+    rows: list[dict[str, Any]] = []
+    for row in reader:
+        park_id = row.get("PARKID", "").strip()
+        if not park_id:
+            continue
+        rows.append(
+            {
+                "park_id": park_id,
+                "name": row.get("NAME", "").strip() or None,
+                "aka": row.get("AKA", "").strip() or None,
+                "city": row.get("CITY", "").strip() or None,
+                "state": row.get("STATE", "").strip() or None,
+                "start_date": row.get("START", "").strip() or None,
+                "end_date": row.get("END", "").strip() or None,
+                "league": row.get("LEAGUE", "").strip() or None,
+                "notes": row.get("NOTES", "").strip() or None,
+                "source": "retrosheet",
+            }
+        )
+
+    with db.connect() as conn:
+        schemas.initialize(conn)
+        if rows:
+            import pandas as pd
+
+            df = pd.DataFrame(rows)
+            conn.register("_staging_pk", df)
+            try:
+                conn.execute(
+                    "INSERT INTO retrosheet_parks "
+                    "(park_id, name, aka, city, state, start_date, end_date, "
+                    "league, notes, source) "
+                    "SELECT park_id, name, aka, city, state, start_date, end_date, "
+                    "league, notes, source FROM _staging_pk "
+                    "ON CONFLICT (park_id) DO NOTHING"
+                )
+            finally:
+                conn.unregister("_staging_pk")
+    logger.info("parks: %d rows ingested", len(rows))
+    return len(rows)
+
+
+# === Statcast pitch movement ===
+
+
+SAVANT_PITCH_MOVEMENT = (
+    "https://baseballsavant.mlb.com/leaderboard/pitch-movement"
+    "?year={year}&team=&min=q&hand=&pitch_type={pitch_type}&csv=true"
+)
+# Major pitch types we care about (Savant codes)
+PITCH_TYPES_TO_INGEST: tuple[str, ...] = (
+    "FF",  # 4-seam fastball
+    "SI",  # sinker
+    "FC",  # cutter
+    "SL",  # slider
+    "ST",  # sweeper
+    "SV",  # slurve
+    "CU",  # curveball
+    "KC",  # knuckle curve
+    "CH",  # changeup
+    "FS",  # splitter
+    "FO",  # forkball
+    "SC",  # screwball
+)
+
+
+def fetch_pitch_movement_year(
+    client: httpx.Client, year: int, pitch_type: str
+) -> list[dict[str, Any]]:
+    """Fetch one (year, pitch_type) pair from Savant pitch-movement leaderboard."""
+    url = SAVANT_PITCH_MOVEMENT.format(year=year, pitch_type=pitch_type)
+    r = client.get(url, timeout=60.0)
+    r.raise_for_status()
+    text = r.text
+    if text.startswith("﻿"):
+        text = text[1:]
+    reader = csv.DictReader(io.StringIO(text))
+    out: list[dict[str, Any]] = []
+    for row in reader:
+        pid_raw = row.get("pitcher_id", "").strip()
+        if not pid_raw:
+            continue
+        try:
+            pid = int(pid_raw)
+        except ValueError:
+            continue
+        try:
+            yr = int(row.get("year", "").strip())
+        except ValueError:
+            yr = year
+        out.append(
+            {
+                "player_id": pid,
+                "player_name": row.get("last_name, first_name", "").strip().strip('"') or None,
+                "team_abbrev": row.get("team_name_abbrev", "").strip() or None,
+                "year": yr,
+                "pitch_hand": row.get("pitch_hand", "").strip() or None,
+                "pitch_type": row.get("pitch_type", "").strip() or pitch_type,
+                "pitch_name": row.get("pitch_type_name", "").strip() or None,
+                "avg_speed": _safe_float(row.get("avg_speed")),
+                "pitches_thrown": int(row["pitches_thrown"])
+                if row.get("pitches_thrown", "").strip()
+                else None,
+                "pitch_usage_pct": _safe_float(row.get("pitch_per")),
+                "vertical_break_inches": _safe_float(row.get("pitcher_break_z")),
+                "league_vertical_break": _safe_float(row.get("league_break_z")),
+                "diff_vertical": _safe_float(row.get("diff_z")),
+                "induced_vertical": _safe_float(row.get("pitcher_break_z_induced")),
+                "horizontal_break_inches": _safe_float(row.get("pitcher_break_x")),
+                "league_horizontal_break": _safe_float(row.get("league_break_x")),
+                "diff_horizontal": _safe_float(row.get("diff_x")),
+                "percentile_diff_vertical": _safe_float(row.get("percent_rank_diff_z")),
+                "percentile_diff_horizontal": _safe_float(row.get("percent_rank_diff_x")),
+                "source": "baseball-savant",
+            }
+        )
+    return out
+
+
+def ingest_pitch_movement_range(start: int = 2015, end: int = 2024) -> int:
+    """Ingest pitch movement for each (year, pitch_type) in range."""
+    total = 0
+    with httpx.Client() as client, db.connect() as conn:
+        schemas.initialize(conn)
+        for year in range(start, end + 1):
+            for pt in PITCH_TYPES_TO_INGEST:
+                try:
+                    rows = fetch_pitch_movement_year(client, year, pt)
+                except httpx.HTTPError:
+                    continue
+                if not rows:
+                    continue
+                import pandas as pd
+
+                df = pd.DataFrame(rows)
+                conn.register("_staging_pm", df)
+                try:
+                    cols = (
+                        "player_id, player_name, team_abbrev, year, pitch_hand, "
+                        "pitch_type, pitch_name, avg_speed, pitches_thrown, "
+                        "pitch_usage_pct, vertical_break_inches, league_vertical_break, "
+                        "diff_vertical, induced_vertical, horizontal_break_inches, "
+                        "league_horizontal_break, diff_horizontal, "
+                        "percentile_diff_vertical, percentile_diff_horizontal, source"
+                    )
+                    conn.execute(
+                        f"INSERT INTO statcast_pitch_movement ({cols}) "
+                        f"SELECT {cols} FROM _staging_pm "
+                        "ON CONFLICT (player_id, year, pitch_type) DO NOTHING"
+                    )
+                finally:
+                    conn.unregister("_staging_pm")
+                total += len(rows)
+            logger.info("pitch movement %d: cumulative %d", year, total)
+    return total
+
+
+# === MLB Stats API team rosters ===
+
+
+MLB_TEAMS_URL = "https://statsapi.mlb.com/api/v1/teams?sportId=1&season={season}"
+MLB_ROSTER_URL = (
+    "https://statsapi.mlb.com/api/v1/teams/{team_id}/roster"
+    "?rosterType={roster_type}&season={season}"
+)
+
+
+def fetch_team_rosters_for_season(
+    client: httpx.Client, season: int, roster_type: str = "40Man"
+) -> list[dict[str, Any]]:
+    """Get every team's roster for one season."""
+    teams_resp = client.get(MLB_TEAMS_URL.format(season=season), timeout=30.0)
+    teams_resp.raise_for_status()
+    teams_data = teams_resp.json()
+    out: list[dict[str, Any]] = []
+    for team in teams_data.get("teams", []):
+        team_id = team.get("id")
+        # Skip non-MLB teams (occasional cameos)
+        if not team_id or not team.get("active"):
+            continue
+        sport = team.get("sport") or {}
+        if sport.get("id") != 1:
+            continue
+        try:
+            rr = client.get(
+                MLB_ROSTER_URL.format(team_id=team_id, roster_type=roster_type, season=season),
+                timeout=30.0,
+            )
+        except httpx.HTTPError:
+            continue
+        if rr.status_code != 200:
+            continue
+        roster = rr.json().get("roster", [])
+        for r in roster:
+            person = r.get("person") or {}
+            position = r.get("position") or {}
+            status = r.get("status") or {}
+            pid = person.get("id")
+            if pid is None:
+                continue
+            out.append(
+                {
+                    "team_id": int(team_id),
+                    "team_bref": team.get("abbreviation"),
+                    "season": season,
+                    "roster_type": roster_type,
+                    "player_id": int(pid),
+                    "player_name": person.get("fullName"),
+                    "position_code": position.get("code"),
+                    "position_name": position.get("name"),
+                    "status": status.get("description"),
+                    "jersey_number": r.get("jerseyNumber"),
+                    "source": "mlb-stats-api",
+                }
+            )
+    return out
+
+
+def ingest_rosters_range(start: int = 2010, end: int = 2024) -> int:
+    """Ingest 40-man rosters for every team for each season in range."""
+    total = 0
+    with httpx.Client() as client, db.connect() as conn:
+        schemas.initialize(conn)
+        for season in range(start, end + 1):
+            rows = fetch_team_rosters_for_season(client, season)
+            if not rows:
+                continue
+            import pandas as pd
+
+            df = pd.DataFrame(rows)
+            conn.register("_staging_rs", df)
+            try:
+                cols = (
+                    "team_id, team_bref, season, roster_type, player_id, "
+                    "player_name, position_code, position_name, status, "
+                    "jersey_number, source"
+                )
+                conn.execute(
+                    f"INSERT INTO team_rosters ({cols}) SELECT {cols} FROM _staging_rs "
+                    "ON CONFLICT (team_id, season, roster_type, player_id) DO NOTHING"
+                )
+            finally:
+                conn.unregister("_staging_rs")
+            total += len(rows)
+            logger.info("rosters season %d: cumulative %d", season, total)
+    return total
+
+
 def ingest_people_for_all_bwar_players() -> int:
     """Pull /people data for every mlb_player_id that appears in our bWAR table."""
     with db.connect() as conn:
