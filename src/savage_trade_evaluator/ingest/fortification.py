@@ -359,7 +359,7 @@ BATCH_SIZE = 100  # safe batch size for the API
 
 
 def _parse_height(h: str | None) -> int | None:
-    """Parse ``6' 4\"`` style height to total inches."""
+    r"""Parse ``6' 4\"`` style height to total inches."""
     if not h:
         return None
     try:
