@@ -29,6 +29,9 @@ ACQUIRED_PLAYER_FEATURES: tuple[str, ...] = (
     "receiver_pct_international_born",
     "receiver_pct_left_handed_bat",
     "receiver_pct_pitchers",
+    # Pedigree from mlb_awards (career awards strictly prior to trade season).
+    "receiver_acquired_avg_prior_awards",
+    "receiver_acquired_pct_awarded",
 )
 
 RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
@@ -79,7 +82,10 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 -- Payroll context (NEW from Spotrac)
                 stp.total_payroll AS receiver_total_payroll,
                 -- Origin features
-                twc.receiver_acquired_from_dev_cluster_score
+                twc.receiver_acquired_from_dev_cluster_score,
+                -- Pedigree (NEW from mlb_awards)
+                tpp.avg_prior_awards AS receiver_acquired_avg_prior_awards,
+                tpp.pct_awarded_players AS receiver_acquired_pct_awarded
             FROM trade_with_context twc
             LEFT JOIN trade_receiver_demographic_mix trdm
                 ON trdm.trade_event_id = twc.trade_event_id
@@ -87,6 +93,9 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
             LEFT JOIN spotrac_team_payroll stp
                 ON stp.team_bref = twc.receiver_bref
                 AND stp.season = twc.trade_season
+            LEFT JOIN trade_acquired_player_pedigree tpp
+                ON tpp.trade_event_id = twc.trade_event_id
+                AND tpp.receiver_bref = twc.receiver_bref
             WHERE twc.trade_season BETWEEN {start_season} AND {end_season}
             """
         ).df()

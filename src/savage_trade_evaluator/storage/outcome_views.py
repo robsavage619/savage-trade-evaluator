@@ -742,6 +742,43 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     LEFT JOIN road_runs_scored r
         ON r.team = h.team AND r.season = h.season
     """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_player_pedigree AS
+    -- Per (trade_event, receiver) aggregate of acquired-player career awards
+    -- (strictly prior to the trade season — no leakage). Awards count as a
+    -- proxy for scouting / front-office consensus on player pedigree, which
+    -- is orthogonal to recent-season WAR (player_quality). Major-only awards
+    -- (MVP / Cy Young / ROY / All-Star / Gold Glove / Silver Slugger / HoF /
+    -- LCS-MVP / WS-MVP) — we ignore the noisy MoY / monthly votes.
+    WITH major_awards AS (
+        SELECT player_id, season, award_id
+        FROM mlb_awards
+        WHERE award_id IN (
+            'ALMVP', 'NLMVP', 'ALCY', 'NLCY', 'ALROY', 'NLROY',
+            'ALGG', 'NLGG', 'ALSS', 'NLSS',
+            'ALCSMVP', 'NLCSMVP', 'WSMVP', 'MLBHOF'
+        )
+    ),
+    player_award_counts AS (
+        SELECT t.trade_event_id, t.to_team_bref AS receiver_bref,
+               t.mlb_player_id,
+               COALESCE(SUM(CASE WHEN ma.season < t.trade_season THEN 1 ELSE 0 END), 0)
+                   AS prior_award_count
+        FROM trade_player_unified t
+        LEFT JOIN major_awards ma ON ma.player_id = t.mlb_player_id
+        WHERE t.to_team_bref IS NOT NULL
+        GROUP BY t.trade_event_id, t.to_team_bref, t.mlb_player_id, t.trade_season
+    )
+    SELECT
+        trade_event_id,
+        receiver_bref,
+        AVG(prior_award_count)::DOUBLE AS avg_prior_awards,
+        MAX(prior_award_count)::DOUBLE AS max_prior_awards,
+        SUM(CASE WHEN prior_award_count > 0 THEN 1 ELSE 0 END)::DOUBLE
+            / NULLIF(COUNT(*), 0) AS pct_awarded_players
+    FROM player_award_counts
+    GROUP BY trade_event_id, receiver_bref
+    """,
 )
 
 
