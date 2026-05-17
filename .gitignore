@@ -232,3 +232,6 @@ __pycache__/
 .claude/settings.local.json
 .claude/projects/
 .claude/worktrees/*/
+
+# Retrosheet cached downloads
+data/static/retrosheet/

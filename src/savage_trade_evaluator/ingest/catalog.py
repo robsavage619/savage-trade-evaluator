@@ -109,6 +109,30 @@ CATALOG: tuple[StatSource, ...] = (
         ingested=True,
         notes="Pre-2010 coverage is sparse (D-14). 2010+ is comprehensive.",
     ),
+    StatSource(
+        name="retrosheet-transactions",
+        source="retrosheet",
+        granularity="transaction",
+        era_start=1880,
+        era_end=2022,
+        fetcher="savage_trade_evaluator.ingest.retrosheet_transactions.ingest",
+        primary_columns=(
+            "transaction_id",
+            "date",
+            "type_code",
+            "from_team_id",
+            "to_team_id",
+            "player_id",
+        ),
+        target_table="transactions",
+        ingested=True,
+        notes=(
+            "Pre-2010 trade fill via Retrosheet tranDB.zip. Player IDs bridged "
+            "via Chadwick register. Transaction-IDs offset by 10^10 to avoid "
+            "PK collision with MLB Stats API IDs. Source attribution = "
+            "'retrosheet'. Adds ~4,500 affiliated trade events pre-2010."
+        ),
+    ),
     # === Personnel (managers, coaches, front-office) ===
     StatSource(
         name="coaches",

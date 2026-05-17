@@ -18,6 +18,7 @@ from savage_trade_evaluator.ingest import (
     draft,
     front_office,
     prospects,
+    retrosheet_transactions,
     standings,
     stats,
     transactions,
@@ -171,6 +172,16 @@ def ingest_prospects(
     else:
         n = prospects.ingest_range(start, end)
         typer.echo(f"ingested {n} prospects across {end - start + 1} year(s)")
+
+
+@ingest_app.command("retrosheet-transactions")
+def ingest_retrosheet_transactions(
+    end_year: int = typer.Option(2009, help="Last season to ingest (default pre-2010 only)."),
+) -> None:
+    """Ingest pre-2010 trades from Retrosheet to fill the MLB Stats API gap."""
+    configure_logging()
+    n = retrosheet_transactions.ingest(end_year=end_year)
+    typer.echo(f"ingested {n} retrosheet trade-leg rows through {end_year}")
 
 
 @ingest_app.command("draft")

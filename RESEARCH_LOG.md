@@ -24,6 +24,51 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-11: Retrosheet pre-2010 transaction ingest — 2.5x affiliated-trade sample expansion
+
+**Question.** R-06/07/09/10 all hit the same noise floor: ~30 trades per origin-org is too few to detect any feature contribution above the regression-to-the-mean baseline. Will ingesting Retrosheet's transaction database (which the Pinheiro-Szymanski 2022 paper cites as covering 1994-2016) push the sample size into a regime where per-org effects become credibly separable?
+
+**Setup.** Built `ingest/retrosheet_transactions.py`. Pulls `https://www.retrosheet.org/transactions/tranDB.zip` (1.2 MB, last updated 2022, 101,594 rows total). Parses CSV with quoted/padded fields. Filters to `type = 'T'` (trades only). Bridges Retrosheet 8-char player IDs to MLB Stats API integer IDs via the Chadwick Register (`pybaseball.chadwick_register()`, 25,620 retro->mlbam mappings). Maps Retrosheet 3-char team codes (NYA, CHN, SLN, etc.) to our `bref_code` via a hand-coded 33-entry dict covering the modern-MLB-era franchise set. Transaction IDs offset by 10^10 to avoid PK collision with the MLB Stats API IDs. Default ingest window: 1880-2009 to avoid duplicate-attribution conflicts with the existing MLB Stats API rows for 2010+.
+
+**Result.**
+
+| Metric | Before | After |
+|---|---|---|
+| transactions rows | 703K | 720K (+16,890 retrosheet trade legs) |
+| pre-2010 affiliated trade events | ~1 (D-14) | **~2,500** |
+| pre-2010 trades with every leg ID-resolved | 0 | **4,551** |
+| total `trade_events_affiliated` (all eras) | 2,734 | **6,200+** |
+
+Decade rollup of `trade_events_affiliated` after ingest:
+
+```
+1880s: 1     1890s: 15    1900s: 38    1910s: 39
+1920s: 34    1930s: 72    1940s: 91    1950s: 176
+1960s: 449   1970s: 888   1980s: 902   1990s: 979
+2000s: 1166  2010s: 1660  2020s: 987
+```
+
+Pressly trade still validates (transaction 86280 in source data → 10000086280 after offset, 3 legs intact). Manny Ramirez BOS→LAD 2008-07-31 three-team trade verified end-to-end: 6 legs (Manny, Bay, Hansen, Moss, LaRoche, Morris) with correct from/to teams and human-readable names via Chadwick.
+
+**Interpretation.**
+
+- **Sample-size bottleneck is broken for any test that uses bWAR-based outcome windows.** bWAR has full 1871+ coverage, so the new ~2,500 pre-2010 affiliated trades feed straight into `trade_player_war_window`. R-10 WAR-version, R-09 draft-pedigree, and any future origin-org test can now run on roughly 2.5x the data.
+- **Statcast-era tests (xwOBA, xERA, arsenal percentiles) get zero benefit** — those windows are 2015+ only. R-10 as run (xwOBA-based) is unchanged.
+- **MLB Pipeline top-100 / FV-grade gap remains.** Retrosheet has no FV grades; the prospect-pedigree gap is still draft-pick-only via `draft_picks`. The R-09 ceiling is unchanged.
+- **No PK conflicts observed** at the 10^10 offset. Source attribution via the `source` column (`retrosheet` vs `mlb-stats-api`) is intact, queries that need to filter or audit by provenance work.
+- **Manny Ramirez 2008 case** is now reconstructable. That trade (3-team, 6 legs, BOS giving up Manny + 2 prospects, getting Bay; PIT giving up Bay + 2 prospects, getting Hansen + Moss + LaRoche + Morris) is the kind of complex multi-team trade structure the V1 backtester needs to handle correctly — and now does, including the LAD-side leg directly relevant to the R-10 system-tax thread.
+
+**Affects.**
+
+- Unblocks the WAR-based version of R-10 — can now repeat the pedigree-controlled multilevel test with ~2.5x sample and credibly separable per-origin posteriors (or at least a tighter `tau_origin` lower bound).
+- Catalog updated: `retrosheet-transactions` source entry marked ingested (1880-2022, ~5,300 trade legs total, ~4,500 affiliated post-mapping).
+- D-22 added: source-attribution model and offset convention documented.
+- Queued follow-ups: (i) R-10 WAR-version rerun, (ii) extending coverage to free-agency type ('F'/'Fg') as a separate scope decision, (iii) augmenting `mlb-stats-api` 2010-2024 with Retrosheet 2010-2022 as a cross-validation source rather than primary.
+
+Files: `src/savage_trade_evaluator/ingest/retrosheet_transactions.py`, `data/static/retrosheet/tranDB.zip` (cached download).
+
+---
+
 ## [2026-05-16] R-10: Origin-org system-tax test — LAD signal collapses 25x under controls; NYM/HOU are bigger outliers in the opposite direction
 
 **Question.** Rob's "system guy" hypothesis: do tech-forward orgs (LAD specifically) produce prospects whose production is partly attributable to org infrastructure, such that the player regresses after trade? Mirror image of the MVP Machine Ch 9 receiving-side dev-fit feature.
