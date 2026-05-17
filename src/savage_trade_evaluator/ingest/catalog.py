@@ -39,6 +39,7 @@ Granularity = Literal[
     "draft",
     "transaction",
     "standings",
+    "reference",
 ]
 
 Source = Literal[
@@ -51,6 +52,7 @@ Source = Literal[
     "retrosheet",
     "chadwick",
     "manual",
+    "spotrac",
 ]
 
 
@@ -160,7 +162,7 @@ CATALOG: tuple[StatSource, ...] = (
         name="front-office",
         source="bref-other",
         granularity="team-season",
-        era_start=2010,
+        era_start=1990,
         era_end=None,
         fetcher="savage_trade_evaluator.ingest.front_office.ingest_team_season",
         primary_columns=(
@@ -267,8 +269,8 @@ CATALOG: tuple[StatSource, ...] = (
         era_end=None,
         fetcher="pybaseball.statcast_batter_percentile_ranks",
         primary_columns=("xwOBA", "xBA", "xSLG", "barrel_pct", "exit_velocity", "sprint_speed"),
-        target_table=None,
-        ingested=False,
+        target_table="statcast_batter_percentile_ranks",
+        ingested=True,
         notes="Batter-side equivalent. Pull when batter dev-fit features become load-bearing.",
     ),
     StatSource(
@@ -299,8 +301,8 @@ CATALOG: tuple[StatSource, ...] = (
             "woba",
             "whiff_pct",
         ),
-        target_table=None,
-        ingested=False,
+        target_table="statcast_pitcher_arsenal_stats",
+        ingested=True,
         notes=(
             "Per-pitch-type breakdown per pitcher-season. Reveals which pitches "
             "an org's dev system actually fixed."
@@ -344,8 +346,8 @@ CATALOG: tuple[StatSource, ...] = (
         era_end=None,
         fetcher="pybaseball.statcast_outs_above_average",
         primary_columns=("outs_above_average", "estimated_success_rate"),
-        target_table=None,
-        ingested=False,
+        target_table="statcast_outs_above_average",
+        ingested=True,
         notes="Modern defensive metric. Replaces UZR/DRS as Statcast's defensive WAR component.",
     ),
     StatSource(
@@ -356,8 +358,8 @@ CATALOG: tuple[StatSource, ...] = (
         era_end=None,
         fetcher="pybaseball.statcast_catcher_framing",
         primary_columns=("runs_extra_strikes", "strike_rate"),
-        target_table=None,
-        ingested=False,
+        target_table="statcast_catcher_framing",
+        ingested=True,
         notes="Catcher-specific dev signal — receiving + pitch framing.",
     ),
     StatSource(
@@ -463,8 +465,8 @@ CATALOG: tuple[StatSource, ...] = (
         era_end=None,
         fetcher="pybaseball.amateur_draft",
         primary_columns=("Year", "Rnd", "Pick", "Tm", "Player", "Pos", "School", "WAR"),
-        target_table=None,
-        ingested=False,
+        target_table="draft_picks",
+        ingested=True,
         notes=(
             "Draft history - needed for position-class x source-class "
             "baselines (D-11). One year at a time."
@@ -499,12 +501,12 @@ CATALOG: tuple[StatSource, ...] = (
         name="standings",
         source="bref-other",
         granularity="standings",
-        era_start=1901,
+        era_start=2010,
         era_end=None,
         fetcher="pybaseball.standings",
         primary_columns=("Tm", "W", "L", "GB", "season"),
-        target_table=None,
-        ingested=False,
+        target_table="standings",
+        ingested=True,
         notes=(
             "Per-season standings. Needed for contention-window features and "
             "playoff probability backfill."
@@ -526,11 +528,11 @@ CATALOG: tuple[StatSource, ...] = (
             "name_first",
             "name_last",
         ),
-        target_table=None,
-        ingested=False,
+        target_table="chadwick_register",
+        ingested=True,
         notes=(
-            "Definitive player-ID bridge across all data sources. Pull when "
-            "we need cross-source joins beyond bWAR-Statcast."
+            "Definitive player-ID bridge across all data sources. "
+            "MLBAM ↔ Retro ↔ BRef ↔ Fangraphs ID cross-walk."
         ),
     ),
     # === Blocked sources ===
@@ -596,6 +598,161 @@ CATALOG: tuple[StatSource, ...] = (
             "BA top-100 lists. Public for top-30 most years; full top-100 "
             "archive requires subscription or archive.org."
         ),
+    ),
+    # === Contracts / payroll (Spotrac) ===
+    StatSource(
+        name="spotrac-player-contracts",
+        source="spotrac",
+        granularity="player-season",
+        era_start=2011,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.spotrac.ingest_year",
+        primary_columns=(
+            "mlb_player_id",
+            "team_bref",
+            "season",
+            "base_salary",
+            "cap_hit",
+            "signing_bonus",
+            "status",
+        ),
+        target_table="spotrac_player_contracts",
+        ingested=True,
+        notes=(
+            "Per-player-season cap_hit + status (Veteran / Pre-Arb / etc.). "
+            "Source of empirical $/WAR curve. 17,352 rows; 98.4% mlb_id match."
+        ),
+    ),
+    StatSource(
+        name="spotrac-team-payroll",
+        source="spotrac",
+        granularity="team-season",
+        era_start=2011,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.spotrac.ingest_year",
+        primary_columns=("team_bref", "season", "total_payroll"),
+        target_table="spotrac_team_payroll",
+        ingested=True,
+        notes="Total committed payroll per team-season. 449 rows.",
+    ),
+    # === Statcast aux ===
+    StatSource(
+        name="statcast-pitch-movement",
+        source="baseball-savant",
+        granularity="player-season",
+        era_start=2015,
+        era_end=None,
+        fetcher="pybaseball.statcast_pitch_movement",
+        primary_columns=(
+            "pitch_type",
+            "avg_speed",
+            "movement_inches_x",
+            "movement_inches_z",
+            "percent_rank_diff_x",
+        ),
+        target_table="statcast_pitch_movement",
+        ingested=True,
+        notes="Per-pitcher × pitch-type velocity / break / percentiles. 17,553 rows.",
+    ),
+    # === MLB Stats API reference / awards / rosters ===
+    StatSource(
+        name="mlb-people",
+        source="mlb-stats-api",
+        granularity="player-career",
+        era_start=1871,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.fortification.ingest_people",
+        primary_columns=(
+            "mlb_player_id",
+            "full_name",
+            "bat_side",
+            "throw_hand",
+            "birth_country",
+            "birth_date",
+        ),
+        target_table="mlb_people",
+        ingested=True,
+        notes="Player demographics + handedness + nationality. 23,617 profiles.",
+    ),
+    StatSource(
+        name="mlb-awards",
+        source="mlb-stats-api",
+        granularity="player-season",
+        era_start=1990,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.fortification.ingest_awards",
+        primary_columns=("player_id", "award_id", "season"),
+        target_table="mlb_awards",
+        ingested=True,
+        notes="17 award types (MVP, Cy Young, ROY, AS, etc.). 1,733 rows.",
+    ),
+    StatSource(
+        name="mlb-venues",
+        source="mlb-stats-api",
+        granularity="reference",
+        era_start=1871,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.fortification.ingest_venues",
+        primary_columns=("venue_id", "name", "city", "state"),
+        target_table="mlb_venues",
+        ingested=True,
+        notes="Park reference table from MLB Stats API. 1,646 venues.",
+    ),
+    StatSource(
+        name="retrosheet-parks",
+        source="retrosheet",
+        granularity="reference",
+        era_start=1871,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.fortification.ingest_parks",
+        primary_columns=("park_id", "name", "city", "state"),
+        target_table="retrosheet_parks",
+        ingested=True,
+        notes="Historical park reference from Retrosheet. 260 parks.",
+    ),
+    StatSource(
+        name="retrosheet-gamelogs",
+        source="retrosheet",
+        granularity="team-game",
+        era_start=1990,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.retrosheet_gamelogs.ingest_year",
+        primary_columns=(
+            "date",
+            "home_team",
+            "away_team",
+            "home_score",
+            "away_score",
+            "attendance",
+            "park_id",
+        ),
+        target_table="game_logs",
+        ingested=True,
+        notes="Per-game logs 1990-2024. 80,798 games.",
+    ),
+    StatSource(
+        name="team-40man-rosters",
+        source="mlb-stats-api",
+        granularity="team-season",
+        era_start=2010,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.fortification.ingest_rosters",
+        primary_columns=("team_id", "season", "mlb_player_id", "position"),
+        target_table="team_rosters",
+        ingested=True,
+        notes="40-man roster snapshots per team-season. 22,549 rows.",
+    ),
+    StatSource(
+        name="team-season-stats",
+        source="mlb-stats-api",
+        granularity="team-season",
+        era_start=2010,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.fortification.ingest_team_season_stats",
+        primary_columns=("team_id", "season", "wins", "losses", "runs", "runs_allowed"),
+        target_table="team_season_stats",
+        ingested=True,
+        notes="Per team-season aggregate stats. 1,350 rows.",
     ),
 )
 
