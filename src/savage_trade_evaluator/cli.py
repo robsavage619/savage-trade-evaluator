@@ -203,6 +203,14 @@ def ingest_retrosheet_transactions(
     typer.echo(f"ingested {n} retrosheet trade-leg rows through {end_year}")
 
 
+@ingest_app.command("venues")
+def ingest_venues() -> None:
+    """Ingest MLB Stats API venues (capacity, dimensions, turf, roof)."""
+    configure_logging()
+    n = fortification.ingest_mlb_venues()
+    typer.echo(f"ingested {n} venue rows")
+
+
 @ingest_app.command("parks")
 def ingest_parks() -> None:
     """Ingest Retrosheet parkcode.txt — historical park metadata."""

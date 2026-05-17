@@ -437,6 +437,77 @@ def _upsert_people(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) 
         conn.unregister("_staging_pe")
 
 
+# === MLB Stats API venues ===
+
+
+MLB_VENUES_URL = "https://statsapi.mlb.com/api/v1/venues?hydrate=fieldInfo,location"
+
+
+def _safe_int(v: Any) -> int | None:
+    """Coerce arbitrary value to int or None."""
+    if v is None:
+        return None
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def ingest_mlb_venues() -> int:
+    """Pull every MLB venue with hydrated fieldInfo + location."""
+    with httpx.Client() as client:
+        r = client.get(MLB_VENUES_URL, timeout=60.0)
+        r.raise_for_status()
+    data = r.json()
+    rows: list[dict[str, Any]] = []
+    for v in data.get("venues", []):
+        loc = v.get("location") or {}
+        fi = v.get("fieldInfo") or {}
+        rows.append(
+            {
+                "venue_id": int(v.get("id")),
+                "name": v.get("name"),
+                "city": loc.get("city"),
+                "state_abbrev": loc.get("stateAbbrev"),
+                "country": loc.get("country"),
+                "capacity": _safe_int(fi.get("capacity")),
+                "turf_type": fi.get("turfType"),
+                "roof_type": fi.get("roofType"),
+                "left_field_ft": _safe_int(fi.get("leftLine")),
+                "left_center_ft": _safe_int(fi.get("leftCenter")),
+                "center_field_ft": _safe_int(fi.get("center")),
+                "right_center_ft": _safe_int(fi.get("rightCenter")),
+                "right_field_ft": _safe_int(fi.get("rightLine")),
+                "active": v.get("active"),
+                "season": v.get("season"),
+                "source": "mlb-stats-api",
+            }
+        )
+
+    with db.connect() as conn:
+        schemas.initialize(conn)
+        if rows:
+            import pandas as pd
+
+            df = pd.DataFrame(rows)
+            conn.register("_staging_v", df)
+            try:
+                cols = (
+                    "venue_id, name, city, state_abbrev, country, capacity, "
+                    "turf_type, roof_type, left_field_ft, left_center_ft, "
+                    "center_field_ft, right_center_ft, right_field_ft, "
+                    "active, season, source"
+                )
+                conn.execute(
+                    f"INSERT INTO mlb_venues ({cols}) SELECT {cols} FROM _staging_v "
+                    "ON CONFLICT (venue_id) DO NOTHING"
+                )
+            finally:
+                conn.unregister("_staging_v")
+    logger.info("venues: %d rows ingested", len(rows))
+    return len(rows)
+
+
 # === Retrosheet park reference ===
 
 

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 16
+SCHEMA_VERSION = 17
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -658,6 +658,31 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_rosters_team_season ON team_rosters(team_id, season)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS mlb_venues (
+        venue_id INTEGER NOT NULL,
+        name VARCHAR,
+        city VARCHAR,
+        state_abbrev VARCHAR,
+        country VARCHAR,
+        capacity INTEGER,
+        turf_type VARCHAR,
+        roof_type VARCHAR,
+        left_field_ft INTEGER,
+        left_center_ft INTEGER,
+        center_field_ft INTEGER,
+        right_center_ft INTEGER,
+        right_field_ft INTEGER,
+        active BOOLEAN,
+        season VARCHAR,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (venue_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_venues_active ON mlb_venues(active)
     """,
 )
 
