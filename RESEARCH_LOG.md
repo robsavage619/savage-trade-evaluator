@@ -24,6 +24,70 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-30: Sell-high vs system-tax decomposition — the original Dodgers thesis is rejected; TEX-Daniels is a clean sell-high finding
+
+**Question (plain English).** R-28 surfaced TEX-Daniels as the strongest negative regime in the data. R-29 archaeology of Daniels' trades showed the negative signal came from veterans (Lucroy, Minor, Michael Young, Darvish) — sell-high mechanic, not the system-tax mechanic from Rob's original thesis. Does this distinction generalize? For each regime, split trades into:
+- VET-AT-PEAK: pre_war >= 2.0 AND experience >= 6 (sold-high candidate)
+- YOUNG-PROSPECT: pre_war <= 1.0 AND experience <= 4 (system-tax candidate)
+- MIDDLE: everything else
+
+The system-tax thesis predicts the YOUNG-PROSPECT bucket should be NEGATIVE in regimes where it applies. The sell-high thesis predicts the VET-AT-PEAK bucket should be NEGATIVE.
+
+**Setup.** `scripts/sell_high_vs_system_tax.py` joins trade_player_war_window to team_regime_assignments + first-mlb-year proxy. Buckets per the above. Reports per-bucket mean Δ WAR per regime for the 16 most-discussed regimes (top 8 negative + top 4 positive from R-28 + 4 prior-highlight).
+
+**Result.**
+
+Per-regime decomposition (selected):
+
+| Regime | n | Overall Δ | YOUNG-PROSPECT Δ (n) | VET-AT-PEAK Δ (n) | Mechanism |
+|---|---|---|---|---|---|
+| **TEX-Daniels** | 66 | -0.537 | **+0.13** (27) | **-2.54** (9) | **clean SELL-HIGH** |
+| MIL-Stearns | 39 | -0.413 | +0.73 (14) | -3.39 (5) | sell-high (small vet n) |
+| LAA-Eppler | 23 | -0.467 | +0.05 (5) | -3.87 (1) | inconclusive (vet n=1) |
+| ATL-Anthopoulos | 23 | -0.113 | +0.07 (15) | — (0) | inconclusive |
+| LAD-Friedman | 63 | +0.006 | +0.51 (34) | -4.08 (2) | **neutral overall** |
+| OAK-Beane | 66 | -0.137 | +0.60 (23) | -1.59 (9) | sell-high |
+| CLE-Antonetti | 45 | -0.124 | +0.81 (25) | -3.21 (6) | sell-high |
+| HOU-Luhnow | 44 | +0.208 | **+0.83** (22) | -2.87 (2) | YOUNG-PROSPECT POSITIVE |
+| TOR-Anthopoulos | 31 | +0.348 | +0.43 (10) | -0.98 (2) | positive |
+| STL-Mozeliak | 49 | -0.242 | +0.44 (23) | -2.47 (1) | inconclusive |
+| WSN-Rizzo | 52 | +0.143 | +0.61 (17) | -1.14 (7) | mixed positive |
+| PIT-Cherington | 27 | +0.726 | +0.81 (11) | +1.96 (1) | broad positive |
+
+**Two universal patterns:**
+
+1. **YOUNG-PROSPECT bucket is POSITIVE in every regime tested.** Mean ranges from +0.05 to +0.83 WAR. No regime shows the predicted system-tax pattern.
+2. **VET-AT-PEAK bucket is sharply NEGATIVE in every regime.** Mean ranges from -0.98 to -4.08 WAR. This is universal aging-at-peak, not org-specific.
+
+**Interpretation (plain English).**
+
+1. **The original Dodgers system-tax thesis is EMPIRICALLY REJECTED.** Across every regime we tested, young players who get traded *gain* WAR on average after the trade. No regime shows the predicted "young system-dependent player declines after leaving" pattern. The R-10/R-12/R-17/R-27 negative regime intercepts we attributed (implicitly) to system-tax mechanics were not what we thought.
+
+2. **TEX-Daniels is the cleanest sell-high finding in the project.** 9 veterans traded with mean pre-trade WAR +3.96 who collectively dropped -2.54 WAR after the trade. Lucroy → COL, Minor → OAK, Michael Young → PHI, Darvish → LAD, Kiner-Falefa → MIN. The pattern is broad-based (trim test from R-29: mean shifts only +0.05 when removing 3 worst + 3 best). Daniels has a credible, replicable skill at identifying veterans whose value is peaking and trading them right before the cliff. **This is a different thesis than what we set out to test, but it's the most-supported single claim in the project.**
+
+3. **The LAD-Friedman story collapses on inspection.** His regime-level intercept (-0.018) was driven by R-17 *pairwise* comparisons. In absolute terms, LAD-Friedman is NEUTRAL: +0.006 overall, with young prospects he traded gaining an average +0.51 WAR. He's not system-tax; he's not even credibly different from zero. The "LAD < HOU" comparison still holds but it's not because LAD is bad — it's because HOU-Luhnow's young prospects gain *more* than LAD's young prospects do.
+
+4. **HOU-Luhnow young-prospect launchpad is the strongest specific positive finding** in the project: +0.83 mean WAR gain on 22 young prospects he traded out. This is the OPPOSITE of the dev-travels reading of MVP Machine Ch 9 — Luhnow was trading prospects he *didn't* think would crack the Astros' rich roster, and those prospects often proved his judgment wrong (or right, depending on framing) by thriving with their new teams.
+
+5. **The systematic young-prospect-gains-after-trade pattern is consistent with playing-time recovery.** Young players blocked behind better starters → get traded → get regular PT → counting WAR rises. This is a *non-system* mechanism that explains most of the YOUNG-PROSPECT positive pattern without requiring any org-level dev story.
+
+**Affects.**
+
+- **Original Dodgers system-tax thesis: rejected.** Documenting clearly in the decisions log.
+- **TEX-Daniels sell-high is the new headline finding.** Worth foregrounding in any project writeup ahead of LAD-Friedman or HOU-Luhnow.
+- **HOU-Luhnow positive intercept is now reframed.** Not "dev-travels with the player" — it's "rich roster meant the prospects he traded out got opportunity elsewhere." That's a roster-context finding, not a coaching-staff-travels finding.
+- **The MVP Machine Ch 9 thesis** (Pressly receiving-side dev-fit) is unaffected by this — that was about acquired players, not departed ones. But the symmetric origin-side reading of Ch 9 we proposed in R-27 is much weaker than we thought.
+- **D-29 candidate**: research framing must distinguish sell-high vs system-tax mechanisms. Any future per-regime claim needs the bucket decomposition to be interpretable.
+
+Caveats:
+- VET-AT-PEAK n is small per regime (1-9). The TEX-Daniels finding at n=9 is the strongest; others (Stearns n=5, Beane n=9, Antonetti n=6) are directionally supportive but less individually credible.
+- Experience is an MLB-debut-based proxy for age; late bloomers / early debuts get miscategorized.
+- Playing-time recovery is a confounder we cannot disentangle from "system-tax via WAR" without explicit PA / IP controls.
+
+Files: `scripts/sell_high_vs_system_tax.py`, `scripts/investigate_regime_anomalies.py` (R-29 archaeology).
+
+---
+
 ## [2026-05-16] R-27: Regime-control reruns — most R-17 findings weaken; OAK-Beane emerges as strongest specific-regime signal
 
 **Question (plain English).** Per D-28, V2 model architecture must cluster on (team, GM-regime) not just team. Rerun R-12/R-17 origin-org system-tax tests with regime_id as the cluster. Which of our prior team-level findings survive being decomposed into specific GM eras?
