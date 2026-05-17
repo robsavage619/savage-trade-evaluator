@@ -70,9 +70,7 @@ def fit_and_score(
         beta = pm.Normal("beta", mu=0.0, sigma=0.1, dims="feature")
         mu = alpha + alpha_team[team_idx_train] + pm.math.dot(x_train, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_train)
-        trace = pm.sample(
-            draws=1000, tune=1000, chains=2, random_seed=SEED, progressbar=False
-        )
+        trace = pm.sample(draws=1000, tune=1000, chains=2, random_seed=SEED, progressbar=False)
 
     post = trace.posterior
     n_total = post["alpha"].shape[0] * post["alpha"].shape[1]

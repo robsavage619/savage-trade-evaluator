@@ -65,7 +65,8 @@ def load_data() -> pd.DataFrame:
                 c.mlb_seasons,
                 fs.first_mlb_team_bref,
                 -- did the player debut for the drafting team?
-                CASE WHEN fs.first_mlb_team_bref = t.bref_code THEN 1 ELSE 0 END AS debuted_with_drafter
+                CASE WHEN fs.first_mlb_team_bref = t.bref_code
+                     THEN 1 ELSE 0 END AS debuted_with_drafter
             FROM draft_picks d
             LEFT JOIN teams t ON t.name = d.team_name
             LEFT JOIN career c ON c.mlb_id = d.mlb_player_id

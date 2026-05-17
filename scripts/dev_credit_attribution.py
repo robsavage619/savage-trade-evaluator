@@ -1,5 +1,7 @@
-"""R-31: Dev-credit attribution — give the drafting team lifetime credit for a
-player's MLB WAR, regardless of where that WAR was actually earned.
+"""R-31: dev-credit attribution.
+
+Give the drafting team lifetime credit for a player's MLB WAR, regardless of
+where that WAR was actually earned.
 
 Rob's insight: trade-outcome metrics (R-10 through R-30) measure how trades
 worked out, but they don't credit teams for dev programs that produced

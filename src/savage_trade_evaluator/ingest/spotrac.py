@@ -41,9 +41,11 @@ SOURCE = "spotrac"
 RATE_LIMIT_SECONDS = 1.5  # polite — Spotrac is a small business
 
 BROWSER_HEADERS = {
+    # Mozilla compatibility shim is required (Spotrac rejects bare Python user-agents),
+    # but identify ourselves alongside it. 1.5s rate limit is enforced.
     "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "Mozilla/5.0 (compatible; savage-trade-evaluator/0.1; research only) "
+        "AppleWebKit/537.36 (KHTML, like Gecko)"
     ),
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
@@ -155,13 +157,10 @@ def parse_payroll_table(
         slug_seg = link_match.group(2)
         clean_cells = [_clean_text(c) for c in cells]
         # The player-name cell has a leading-uppercase-name span we want to skip.
-        # The visible name is the last text node in the first <td>.
+        # The visible name is in the <a>...</a> tag.
         name_match = re.search(r'<a href="[^"]+"[^>]*>([^<]+)</a>', cells[0])
-        player_name = (
-            name_match.group(1).strip()
-            if name_match
-            else clean_cells[0].split()[-2] + " " + clean_cells[0].split()[-1]
-        )
+        # Fallback to cleaned cell text rather than risk IndexError on short tokens.
+        player_name = name_match.group(1).strip() if name_match else (clean_cells[0] or "(unknown)")
         # Column mapping for active table:
         # 0=name 1=position 2=service 3=acquired 4=status 5=base 6=cap 7=bonus 8=incentives
         position = clean_cells[1] if len(clean_cells) > 1 else None
@@ -228,17 +227,27 @@ def fetch_team_payroll(
 
 
 def _resolve_mlb_ids(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
-    """Populate mlb_player_id via exact name match against mlb_people."""
+    """Populate mlb_player_id via exact name match against mlb_people.
+
+    Uses a registered staging DataFrame for the JOIN (avoids SQL-injection-shaped
+    string concat on player names with apostrophes/unicode).
+    """
     if not rows:
         return
-    name_set = {r["player_name"] for r in rows}
-    name_list = ",".join("'" + n.replace("'", "''") + "'" for n in name_set)
-    mapping = {
-        n: pid
-        for n, pid in conn.execute(
-            f"SELECT full_name, mlb_player_id FROM mlb_people WHERE full_name IN ({name_list})"
-        ).fetchall()
-    }
+    import pandas as pd  # local
+
+    names = pd.DataFrame({"name": sorted({r["player_name"] for r in rows})})
+    conn.register("_staging_names", names)
+    try:
+        mapping = dict(
+            conn.execute(
+                "SELECT n.name, p.mlb_player_id "
+                "FROM _staging_names n "
+                "JOIN mlb_people p ON p.full_name = n.name"
+            ).fetchall()
+        )
+    finally:
+        conn.unregister("_staging_names")
     for r in rows:
         r["mlb_player_id"] = mapping.get(r["player_name"])
 
@@ -300,7 +309,11 @@ def ingest_year(year: int, team_filter: tuple[str, ...] | None = None) -> int:
     total_rows = 0
     with httpx.Client(headers=BROWSER_HEADERS) as client, db.connect() as conn:
         schemas.initialize(conn)
-        for team_bref in teams_iter:
+        for i, team_bref in enumerate(teams_iter):
+            if i > 0:
+                # Rate-limit BEFORE each request, not after success — ensures we wait
+                # even when a previous request failed (be polite to Spotrac always).
+                time.sleep(RATE_LIMIT_SECONDS)
             try:
                 rows, totals = fetch_team_payroll(client, team_bref, year)
             except httpx.HTTPError as exc:
@@ -320,7 +333,6 @@ def ingest_year(year: int, team_filter: tuple[str, ...] | None = None) -> int:
                 f"{totals['dead']:,}",
                 f"{totals['injured']:,}",
             )
-            time.sleep(RATE_LIMIT_SECONDS)
     return total_rows
 
 

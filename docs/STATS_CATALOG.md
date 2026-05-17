@@ -18,6 +18,18 @@ Browse interactively: `uv run ste catalog`.
 | **statcast-batting-expected** | Baseball Savant | player-season | 2015-* | xwOBA, xBA, xSLG (luck-adjusted baselines) |
 | **statcast-pitching-expected** | Baseball Savant | player-season | 2015-* | xwOBA + xERA (FIP substitute) |
 | **statcast-pitcher-percentile-ranks** | Baseball Savant | player-season | 2015-* | fb_velocity, fb_spin, curve_spin, k% / bb% / whiff% / chase% — dev-fit arsenal |
+| **statcast-catcher-framing** | Baseball Savant | player-season | 2015-2024 | 580 rows. `baseballsavant.mlb.com/leaderboard/catcher-framing?csv=true`. Runs from extra strikes + strike rate. |
+| **statcast-pitch-movement** | Baseball Savant | player-season-pitch | 2015-2024 | 17,553 rows. `baseballsavant.mlb.com/leaderboard/pitch-movement`. Per pitcher × pitch type: velocity, vertical break, horizontal break, percentiles. |
+| **chadwick-register** | Chadwick Bureau (GitHub) | player-career | all-time | 127,526 rows. `chadwickbureau/register`. ID cross-walk MLBAM ↔ Retro ↔ BRef ↔ Fangraphs + birth dates. |
+| **mlb-people** | MLB Stats API | player-career | all-time | 23,617 player profiles. `statsapi.mlb.com/api/v1/people`. Birth country, bat side, pitch hand, height/weight, debut date. |
+| **mlb-awards** | MLB Stats API | player-season-award | 1990-2024 | 1,734 rows. `statsapi.mlb.com/api/v1/awards/<id>/recipients`. 17 award types (MVP, Cy Young, ROY, Gold Glove, Silver Slugger, etc.). |
+| **retrosheet-gamelogs** | Retrosheet | team-game | 1990-2024 | 80,798 games. `retrosheet.org/gamelogs/gl<YEAR>.zip`. Per-game date, teams, scores, park, attendance. |
+| **retrosheet-parks** | Retrosheet | reference | all-time | 260 historical parks. `retrosheet.org/parkcode.txt`. Name, city, dates, league. |
+| **mlb-venues** | MLB Stats API | reference | all-time | 1,646 venues. `statsapi.mlb.com/api/v1/venues?hydrate=fieldInfo,location`. Capacity, dimensions, surface, roof. |
+| **team-40man-rosters** | MLB Stats API | team-season-player | 2010-2024 | 22,549 rows. `statsapi.mlb.com/api/v1/teams/<id>/roster?rosterType=40Man`. |
+| **team-season-stats** | MLB Stats API | team-season | 2010-2024 | 1,350 rows. `statsapi.mlb.com/api/v1/teams/<id>/stats?stats=season&group=<group>`. Hitting/pitching/fielding aggregates. |
+| **spotrac-contracts** | Spotrac | player-season-contract | 2011-2025 | Per-player contracts: cap_hit, base_salary, signing_bonus, status. `spotrac.com/mlb/<team-slug>/payroll/_/year/<YYYY>`. |
+| **spotrac-team-payrolls** | Spotrac | team-season | 2011-2025 | Aggregate per-team-season payroll. Same source as spotrac-contracts. |
 
 ---
 
@@ -35,21 +47,8 @@ Wire these up as adapters when a corresponding feature becomes important.
 | **statcast-pitcher-pitch-arsenal** | player-season | 2015-* | Per-pitch movement profiles (velocity, spin, vertical/horizontal break). Pitch-design feature space. |
 | **statcast-sprint-speed** | player-season | 2015-* | Baserunning dev signal |
 | **statcast-outs-above-average** | player-season | 2016-* | Modern defensive metric (replaces UZR/DRS as Statcast's def-WAR component) |
-| **statcast-catcher-framing** | player-season | 2015-* | Catcher receiving + pitch framing |
 | **statcast-catcher-poptime** | player-season | 2015-* | Catcher throwing-to-2B (pop time, exchange, arm strength) |
 | **statcast-outfielder-jump** | player-season | 2016-* | OF dev signal — breakdown of how OAA gets earned |
-
-### Pitch-level raw
-
-| Stat | Granularity | Era | When to wire |
-|---|---|---|---|
-| **statcast-pitch-by-pitch** | pitch-level | 2008-* | Every pitch since PITCHf/x launch. **Very large.** Defer until we need a feature we can't get from leaderboards. |
-
-### Player ID bridges + cross-source
-
-| Stat | Granularity | Era | When to wire |
-|---|---|---|---|
-| **chadwick-register** | player-career | 1871-* | When we need cross-source joins beyond bWAR↔Statcast (e.g., Retrosheet, BA archives) |
 
 ### Historical / Lahman
 
@@ -77,11 +76,20 @@ Wire these up as adapters when a corresponding feature becomes important.
 
 ---
 
+## Next-pass (deferred, known-reachable)
+
+| Stat | Source | Why deferred |
+|---|---|---|
+| **retrosheet-event-logs** | Retrosheet pitch-by-pitch event files | Gigabytes of data. Needed for Pinheiro-Szymanski mean-variance work; not load-bearing for V1. |
+| **mlbtr-international-tracker** | MLB Trade Rumors annual posts | Prose-embedded; covers ~30 notable signings/year (not comprehensive). Parse when international-amateur features become load-bearing. |
+
+---
+
 ## Blocked sources (need workaround)
 
 ### FanGraphs — Cloudflare-gated
 
-⛔ Tried pybaseball / httpx with browser headers / `curl_cffi` / `cloudscraper` — all hit 403 from Cloudflare. Only viable route: Playwright (heavy, deferred until specifically needed).
+⛔ Tried pybaseball / httpx with browser headers / `curl_cffi` / `cloudscraper` — all hit 403 from Cloudflare. Both probes re-confirmed. Only viable route: Playwright (heavy, deferred until specifically needed).
 
 | Stat | Substitute we use instead |
 |---|---|
@@ -89,9 +97,19 @@ Wire these up as adapters when a corresponding feature becomes important.
 | **fangraphs-pitching-leaders** (FIP, xFIP, SIERA, fWAR, K%, BB%, GB%) | bWAR + Statcast xERA + percentile ranks |
 | **fangraphs-prospects** (FV, Risk, ETA, tool grades) | **No public substitute.** Will need Playwright when Phase 2 prospect work starts. |
 
+### MLB Pipeline — JS lazy-load
+
+⛔ **mlb-pipeline-top-100** — top-100 prospects list is rendered via lazy-load JS. Static fetch returns no rows; requires Playwright.
+
+### Cot's Contracts
+
+⛔ **cots-contracts** — legacy URL 404s; the underlying Google Sheet IDs are not discoverable. Substituted by Spotrac for 2011+ coverage.
+
 ### Baseball America
 
 ⛔ **baseball-america-prospect-rankings** — BA top-30 lists are public most years; full top-100 archive requires subscription. archive.org has older issues.
+
+⛔ **baseball-america-international-tracker** — paywalled. No public substitute for international-amateur signing class.
 
 ---
 

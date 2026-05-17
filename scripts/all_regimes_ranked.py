@@ -69,7 +69,8 @@ def main() -> None:
     keep = counts[counts >= MIN_N].index
     df = df[df["origin_regime"].isin(keep)].reset_index(drop=True)
     print(
-        f"Loaded {len(df)} trade legs across {df['origin_regime'].nunique()} regimes (MIN_N={MIN_N})"
+        f"Loaded {len(df)} trade legs across "
+        f"{df['origin_regime'].nunique()} regimes (MIN_N={MIN_N})"
     )
 
     regimes = sorted(df["origin_regime"].unique())

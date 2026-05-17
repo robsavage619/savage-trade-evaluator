@@ -80,8 +80,11 @@ def fit_and_score(
         mu = alpha + alpha_team[team_idx_train] + pm.math.dot(x_train, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_train)
         trace = pm.sample(
-            draws=n_samples, tune=n_tune, chains=n_chains,
-            random_seed=SEED, progressbar=False,
+            draws=n_samples,
+            tune=n_tune,
+            chains=n_chains,
+            random_seed=SEED,
+            progressbar=False,
         )
 
     post = trace.posterior
