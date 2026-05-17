@@ -318,6 +318,118 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     GROUP BY trade_event_id, receiver_bref
     """,
     """
+    CREATE OR REPLACE VIEW trade_xera_outcome AS
+    -- Rate-based pitcher outcome per (trade_event, receiver): mean Δ xERA of
+    -- acquired pitchers with Statcast data. xERA inverts the goodness scale
+    -- (lower = better), so we store delta_xera where NEGATIVE = improvement.
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(post.xera - prior.xera) AS xera_delta_mean,
+        COUNT(*) AS n_pitchers_with_signal
+    FROM trade_player_unified t
+    JOIN statcast_pitching_expected prior
+        ON prior.player_id = t.mlb_player_id AND prior.year = t.trade_season - 1
+    JOIN statcast_pitching_expected post
+        ON post.player_id = t.mlb_player_id AND post.year = t.trade_season + 1
+    WHERE t.to_team_bref IS NOT NULL
+      AND prior.xera IS NOT NULL AND post.xera IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_kpct_outcome AS
+    -- Rate-based pitcher outcome per (trade_event, receiver): mean Δ K-pct
+    -- percentile rank of acquired pitchers. Higher = more strikeouts.
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(post.k_percent - prior.k_percent) AS kpct_delta_mean,
+        COUNT(*) AS n_pitchers_with_signal
+    FROM trade_player_unified t
+    JOIN statcast_pitcher_percentile_ranks prior
+        ON prior.player_id = t.mlb_player_id AND prior.year = t.trade_season - 1
+    JOIN statcast_pitcher_percentile_ranks post
+        ON post.player_id = t.mlb_player_id AND post.year = t.trade_season + 1
+    WHERE t.to_team_bref IS NOT NULL
+      AND prior.k_percent IS NOT NULL AND post.k_percent IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_xwoba_surplus AS
+    -- Rate-based "surplus" per (trade_event, team): xwOBA received minus
+    -- xwOBA given up. Same shape as the WAR-based naive baseline surplus
+    -- but uses post-trade hitter rate stats. Statcast 2015+ only.
+    --
+    -- For each (trade_event, team), partition acquired vs given-up players.
+    -- Received side: sum of (xwoba_t_plus_1 - xwoba_t_minus_1) for players
+    -- this team acquired. Given-up: same sum for players this team sent away.
+    -- Surplus = received - given_up. Positive = team gained xwOBA-quality.
+    WITH leg_deltas AS (
+        SELECT
+            w.trade_event_id,
+            w.to_team_bref AS team,
+            'received' AS side,
+            (w.xwoba_t_plus_1 - w.xwoba_t_minus_1) AS delta
+        FROM trade_player_xwoba_window w
+        WHERE w.xwoba_t_minus_1 IS NOT NULL AND w.xwoba_t_plus_1 IS NOT NULL
+          AND w.to_team_bref IS NOT NULL
+        UNION ALL
+        SELECT
+            w.trade_event_id,
+            w.from_team_bref AS team,
+            'given_up' AS side,
+            (w.xwoba_t_plus_1 - w.xwoba_t_minus_1) AS delta
+        FROM trade_player_xwoba_window w
+        WHERE w.xwoba_t_minus_1 IS NOT NULL AND w.xwoba_t_plus_1 IS NOT NULL
+          AND w.from_team_bref IS NOT NULL
+    )
+    SELECT
+        trade_event_id,
+        team AS receiver_bref,
+        SUM(CASE WHEN side = 'received' THEN delta ELSE 0 END) AS xwoba_received,
+        SUM(CASE WHEN side = 'given_up' THEN delta ELSE 0 END) AS xwoba_given_up,
+        (SUM(CASE WHEN side = 'received' THEN delta ELSE 0 END)
+         - SUM(CASE WHEN side = 'given_up' THEN delta ELSE 0 END)) AS xwoba_surplus,
+        COUNT(*) AS n_legs
+    FROM leg_deltas
+    GROUP BY trade_event_id, team
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_pitcher_arsenal_features AS
+    -- Within-team-variation pitcher features (D-24 compliant), aggregated to
+    -- (trade_event, receiver) level. Two features:
+    --  - avg K% trajectory: how much each acquired pitcher's K% moved from
+    --    t-2 to t-1 (positive = improving going into the trade).
+    --  - avg arsenal stability: absolute change in K% from t-2 to t-1 (low =
+    --    consistent pitcher; high = volatile recent profile).
+    -- Statcast era only. Tested against xwOBA + xERA + K% outcomes in R-24.
+    WITH per_pitcher AS (
+        SELECT
+            t.trade_event_id,
+            t.to_team_bref AS receiver_bref,
+            t.mlb_player_id,
+            (prior.k_percent - prior2.k_percent) AS k_trajectory,
+            ABS(prior.k_percent - prior2.k_percent) AS arsenal_volatility
+        FROM trade_player_unified t
+        LEFT JOIN statcast_pitcher_percentile_ranks prior
+            ON prior.player_id = t.mlb_player_id
+            AND prior.year = t.trade_season - 1
+        LEFT JOIN statcast_pitcher_percentile_ranks prior2
+            ON prior2.player_id = t.mlb_player_id
+            AND prior2.year = t.trade_season - 2
+        WHERE t.to_team_bref IS NOT NULL
+          AND prior.k_percent IS NOT NULL
+          AND prior2.k_percent IS NOT NULL
+    )
+    SELECT
+        trade_event_id,
+        receiver_bref,
+        AVG(k_trajectory) AS receiver_acquired_pitcher_k_trajectory,
+        AVG(arsenal_volatility) AS receiver_acquired_pitcher_arsenal_volatility
+    FROM per_pitcher
+    GROUP BY trade_event_id, receiver_bref
+    """,
+    """
     CREATE OR REPLACE VIEW trade_xwoba_outcome AS
     -- Rate-based aggregate outcome per (trade_event, receiver): mean Δ xwOBA
     -- of acquired hitters with Statcast data both pre- and post-trade.
@@ -402,7 +514,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         tdc.receiver_acquired_from_dev_cluster_score,
         pds.receiver_acquired_player_quality,
         pat.receiver_acquired_player_avg_experience,
-        pat.receiver_acquired_player_avg_war_trajectory
+        pat.receiver_acquired_player_avg_war_trajectory,
+        pa.receiver_acquired_pitcher_k_trajectory,
+        pa.receiver_acquired_pitcher_arsenal_volatility
     FROM naive_baseline_results nbr
     LEFT JOIN team_season_features tsf
         ON tsf.bref_code = nbr.team_bref
@@ -419,6 +533,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     LEFT JOIN trade_acquired_player_age_trajectory pat
         ON pat.trade_event_id = nbr.trade_event_id
         AND pat.receiver_bref = nbr.team_bref
+    LEFT JOIN trade_acquired_pitcher_arsenal_features pa
+        ON pa.trade_event_id = nbr.trade_event_id
+        AND pa.receiver_bref = nbr.team_bref
     """,
     """
     CREATE OR REPLACE VIEW trade_player_arsenal_window AS
