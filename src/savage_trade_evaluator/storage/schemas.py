@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 14
+SCHEMA_VERSION = 15
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -557,6 +557,35 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_game_logs_visitor ON game_logs(visitor_team_bref, season)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS mlb_people (
+        mlb_player_id INTEGER NOT NULL,
+        full_name VARCHAR,
+        birth_date DATE,
+        birth_city VARCHAR,
+        birth_state_province VARCHAR,
+        birth_country VARCHAR,
+        height_inches INTEGER,
+        weight_lbs INTEGER,
+        bat_side VARCHAR,
+        pitch_hand VARCHAR,
+        primary_position_code VARCHAR,
+        primary_position_name VARCHAR,
+        primary_position_type VARCHAR,
+        mlb_debut_date DATE,
+        last_played_date DATE,
+        active BOOLEAN,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (mlb_player_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_people_country ON mlb_people(birth_country)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_people_position ON mlb_people(primary_position_code)
     """,
 )
 

@@ -203,6 +203,19 @@ def ingest_retrosheet_transactions(
     typer.echo(f"ingested {n} retrosheet trade-leg rows through {end_year}")
 
 
+@ingest_app.command("mlb-people")
+def ingest_mlb_people() -> None:
+    """Pull MLB Stats API /people for every player in our bWAR table.
+
+    Provides birth country, bat side, pitch hand, height, weight, position,
+    MLB debut date. The cleaner replacement for our 'post-1995 non-drafted'
+    international-signing proxy.
+    """
+    configure_logging()
+    n = fortification.ingest_people_for_all_bwar_players()
+    typer.echo(f"ingested {n} mlb_people rows")
+
+
 @ingest_app.command("chadwick")
 def ingest_chadwick() -> None:
     """Ingest the Chadwick player register (birth dates + ID cross-walks)."""

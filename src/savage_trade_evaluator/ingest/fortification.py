@@ -349,3 +349,119 @@ def ingest_awards_range(start: int = 1990, end: int = 2024) -> int:
                 total += len(rows)
             logger.info("awards season %d: cumulative rows %d", season, total)
     return total
+
+
+# === MLB Stats API People (batch /people endpoint) ===
+
+
+MLB_PEOPLE_BATCH_URL = "https://statsapi.mlb.com/api/v1/people?personIds={ids}"
+BATCH_SIZE = 100  # safe batch size for the API
+
+
+def _parse_height(h: str | None) -> int | None:
+    """Parse ``6' 4\"`` style height to total inches."""
+    if not h:
+        return None
+    try:
+        parts = h.replace('"', "").split("'")
+        feet = int(parts[0].strip())
+        inches = int(parts[1].strip()) if len(parts) > 1 else 0
+        return feet * 12 + inches
+    except (ValueError, IndexError):
+        return None
+
+
+def _parse_iso_date(s: str | None) -> str | None:
+    """Return ISO date string or None."""
+    if not s:
+        return None
+    return s[:10]  # 'YYYY-MM-DD' from possibly longer ISO datetime
+
+
+def fetch_people_batch(client: httpx.Client, ids: list[int]) -> list[dict[str, Any]]:
+    """Fetch one batch of people via the MLB Stats API ``/people`` endpoint."""
+    id_str = ",".join(str(i) for i in ids)
+    r = client.get(MLB_PEOPLE_BATCH_URL.format(ids=id_str), timeout=30.0)
+    r.raise_for_status()
+    data = r.json()
+    out: list[dict[str, Any]] = []
+    for p in data.get("people", []):
+        pid = p.get("id")
+        if pid is None:
+            continue
+        pos = p.get("primaryPosition") or {}
+        out.append(
+            {
+                "mlb_player_id": int(pid),
+                "full_name": p.get("fullName"),
+                "birth_date": _parse_iso_date(p.get("birthDate")),
+                "birth_city": p.get("birthCity"),
+                "birth_state_province": p.get("birthStateProvince"),
+                "birth_country": p.get("birthCountry"),
+                "height_inches": _parse_height(p.get("height")),
+                "weight_lbs": p.get("weight"),
+                "bat_side": (p.get("batSide") or {}).get("code"),
+                "pitch_hand": (p.get("pitchHand") or {}).get("code"),
+                "primary_position_code": pos.get("code"),
+                "primary_position_name": pos.get("name"),
+                "primary_position_type": pos.get("type"),
+                "mlb_debut_date": _parse_iso_date(p.get("mlbDebutDate")),
+                "last_played_date": _parse_iso_date(p.get("lastPlayedDate")),
+                "active": p.get("active"),
+                "source": "mlb-stats-api",
+            }
+        )
+    return out
+
+
+def _upsert_people(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
+    """Insert/upsert mlb_people rows."""
+    if not rows:
+        return
+    import pandas as pd
+
+    df = pd.DataFrame(rows)
+    conn.register("_staging_pe", df)
+    try:
+        cols = (
+            "mlb_player_id, full_name, birth_date, birth_city, birth_state_province, "
+            "birth_country, height_inches, weight_lbs, bat_side, pitch_hand, "
+            "primary_position_code, primary_position_name, primary_position_type, "
+            "mlb_debut_date, last_played_date, active, source"
+        )
+        conn.execute(
+            f"INSERT INTO mlb_people ({cols}) SELECT {cols} FROM _staging_pe "
+            "ON CONFLICT (mlb_player_id) DO NOTHING"
+        )
+    finally:
+        conn.unregister("_staging_pe")
+
+
+def ingest_people_for_all_bwar_players() -> int:
+    """Pull /people data for every mlb_player_id that appears in our bWAR table."""
+    with db.connect() as conn:
+        schemas.initialize(conn)
+        ids = [
+            int(r[0])
+            for r in conn.execute(
+                "SELECT DISTINCT mlb_id FROM bwar_player_seasons WHERE mlb_id IS NOT NULL"
+            ).fetchall()
+        ]
+    logger.info("fetching MLB /people for %d distinct ids in batches of %d", len(ids), BATCH_SIZE)
+
+    total = 0
+    with httpx.Client() as client, db.connect() as conn:
+        schemas.initialize(conn)
+        for i in range(0, len(ids), BATCH_SIZE):
+            batch = ids[i : i + BATCH_SIZE]
+            try:
+                rows = fetch_people_batch(client, batch)
+            except httpx.HTTPError as exc:
+                logger.warning("batch %d-%d failed: %s", i, i + BATCH_SIZE, exc)
+                continue
+            _upsert_people(conn, rows)
+            total += len(rows)
+            if i % 2000 == 0:
+                logger.info("processed %d/%d ids (cumulative %d)", i + BATCH_SIZE, len(ids), total)
+    logger.info("people total: %d rows ingested", total)
+    return total
