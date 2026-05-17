@@ -53,6 +53,7 @@ Source = Literal[
     "chadwick",
     "manual",
     "spotrac",
+    "tjstats",
 ]
 
 
@@ -753,6 +754,97 @@ CATALOG: tuple[StatSource, ...] = (
         target_table="team_season_stats",
         ingested=True,
         notes="Per team-season aggregate stats. 1,350 rows.",
+    ),
+    # === TJStats (tjstats.ca, Thomas Nestico) — public WordPress JSON API ===
+    StatSource(
+        name="tjstats-top-prospects",
+        source="tjstats",
+        granularity="player-season",
+        era_start=2026,
+        era_end=None,
+        fetcher="tjstats.ca/wp-json/tjstats/v1/rankings",
+        primary_columns=("player_id", "rank_value", "name", "fv", "report"),
+        target_table=None,
+        ingested=False,
+        notes=(
+            "Live top-100 MLB prospect rankings with FV grades + free-text "
+            "scouting reports. player_id is MLBAM (no bridging needed). "
+            "Replaces blocked FanGraphs FV grades for Phase 2+ forward predictions. "
+            "Snapshot history is shallow — only goes back to early 2026 (3 versions). "
+            "Use for forward 'evaluate-a-proposed-trade-today' mode, not the "
+            "2010-2024 backtester."
+        ),
+    ),
+    StatSource(
+        name="tjstats-scout-pitchers",
+        source="tjstats",
+        granularity="player-career",
+        era_start=2026,
+        era_end=None,
+        fetcher="tjstats.ca/wp-json/tjstats/v1/scout-pitchers",
+        primary_columns=(
+            "player_id", "fv", "fastball_pv", "fastball_fv",
+            "slider_pv", "slider_fv", "curveball_pv", "curveball_fv",
+            "changeup_pv", "changeup_fv", "splitter_pv", "splitter_fv",
+            "command_pv", "command_fv", "eta", "risk",
+        ),
+        target_table=None,
+        ingested=False,
+        notes=(
+            "Per-pitcher 20-80 grades on individual pitch types (present + future "
+            "value). Richer than FanGraphs aggregate FV — gives the dev-fit feature "
+            "space a per-pitch decomposition. Current snapshot only."
+        ),
+    ),
+    StatSource(
+        name="tjstats-scout-batters",
+        source="tjstats",
+        granularity="player-career",
+        era_start=2026,
+        era_end=None,
+        fetcher="tjstats.ca/wp-json/tjstats/v1/scout-batters",
+        primary_columns=(
+            "player_id", "fv", "hit_pv", "hit_fv", "power_pv", "power_fv",
+            "decisions_pv", "decisions_fv", "speed_pv", "speed_fv",
+            "defense_pv", "defense_fv", "eta",
+        ),
+        target_table=None,
+        ingested=False,
+        notes=(
+            "Per-hitter 20-80 grades: hit / power / decisions / speed / defense, "
+            "present + future. Current snapshot only."
+        ),
+    ),
+    StatSource(
+        name="tjstats-draft-rankings",
+        source="tjstats",
+        granularity="draft",
+        era_start=2026,
+        era_end=None,
+        fetcher="tjstats.ca/wp-json/tjstats/v1/draft-rankings",
+        primary_columns=("player_id", "rank_value", "name", "position", "team"),
+        target_table=None,
+        ingested=False,
+        notes="TJStats' own draft prospect rankings. Current cycle only.",
+    ),
+    StatSource(
+        name="tjstats-tjbat",
+        source="tjstats",
+        granularity="player-season",
+        era_start=2024,
+        era_end=None,
+        fetcher="tjstats.ca/wp-json/tjstats/v1/tjbat?player_id=X",
+        primary_columns=(
+            "player_id", "season", "level", "pa",
+            "woba_plus", "tjbat_plus", "tjbat_plus_pctile", "woba_plus_pctile",
+        ),
+        target_table=None,
+        ingested=False,
+        notes=(
+            "tjbat+ regression-baseline hitting metric per (player, season, level), "
+            "covers MiLB levels (lo-a/hi-a/aa/aaa). Useful for minor-league "
+            "offensive evaluation where Statcast coverage is limited."
+        ),
     ),
 )
 
