@@ -81,6 +81,64 @@ Before this pass, age was proxied via `trade_season - first_mlb_year` (years-sin
 5. **MLB Pipeline top-100 prospects** — Playwright-based scrape (lazy-loaded JS).
 6. **fWAR via FanGraphs alt-route** — try `r.fangraphs.com` or archive.org cached snapshots.
 
+## Second-pass agent research (2026-05-17)
+
+Spawned four parallel research agents to deepen probes on the deferred items. Outcomes:
+
+### Win: pre-2010 GM regimes via BR scraper extension
+
+**Agent finding:** the existing `ingest/front_office.py` scraper that pulls 2010-2024 from Baseball Reference per-season team pages can be **iterated backward** with no code changes — every per-season BR team page (1980+) has the same `General Manager:` field. This is dramatically simpler than the Wikipedia / Wikidata routes we tried.
+
+Confirmed for `baseball-reference.com/teams/LAD/2008.shtml` → "Ned Colletti" in the team metadata. Same path the existing BR scrape uses for 2010+, just iterate backward.
+
+**Action taken:** kicked off `uv run ste ingest front-office --start 1990 --end 2009` in the background. ~30 minutes for 600 requests at BR's polite rate. Fills the D-28 pre-2010 regime gap with no new dependencies.
+
+Other Wikipedia / Wikidata routes (verified by Agent 3):
+- Wikidata SPARQL on `position held = baseball GM` returns zero rows — the data isn't modeled
+- "List of [Team] owners and executives" pages exist for ~15 of 30 teams (~50% coverage, not viable as a uniform pipeline)
+- Wikipedia team-article infoboxes only have the current GM, not history
+
+### Blocked: Spotrac, Cot's Contracts, MLB Trade Rumors, archive.org
+
+Three of four agents hit the same wall — `~/.claude/security/egress-allowlist.txt` doesn't include any of:
+
+- `spotrac.com`
+- `baseballprospectus.com` / `cotscontracts.com`
+- `mlbtraderumors.com`
+- `docs.google.com` (for Cot's Sheets exports)
+- `web.archive.org`
+- `mlbcontracts.blogspot.com` (original Cot's)
+- `baseballamerica.com` (canonical int'l signing tracker)
+
+These domains require an explicit policy decision to add. The agents agreed the highest-leverage allowlist addition would be **`docs.google.com` + `baseballprospectus.com`** — Cot's publishes contract data as public Google Sheets, and the CSV-export trick works cleanly without scraping.
+
+### Inferred from agent search (unverified by direct fetch this session)
+
+MLB Trade Rumors international tracker URL pattern (per Agent 1):
+
+- Slug per year is non-deterministic; need landing pages as index. Examples:
+  - `mlbtraderumors.com/2016-17-international-signings`
+  - `mlbtraderumors.com/2024/01/notable-international-signings-1-15-24.html`
+- Data is **prose-embedded**, not tabular. Bonuses in shorthand: `$2.2MM` / `$900K`.
+- Coverage: only ~30 notable signings per year. Baseball America is the canonical comprehensive source.
+
+If int'l signing depth is needed, Baseball America is the better target — but it's both paywalled and not allowlisted.
+
+## Open allowlist decisions
+
+For Rob to weigh:
+
+| Domain | Use case | Effort to ingest | Value |
+|---|---|---|---|
+| `docs.google.com` | Cot's Contracts via Google Sheets CSV export | Low (CSV download per sheet ID) | High (contract data) |
+| `baseballprospectus.com` | Cot's legacy page | Low (to find sheet IDs) | Enables above |
+| `mlbtraderumors.com` | Int'l signing trackers (~30/yr) | Medium (prose parsing) | Low-medium (limited coverage) |
+| `baseballamerica.com` | Canonical int'l signing tracker | Unknown (probably paywalled) | High if accessible |
+| `web.archive.org` | Cached versions of paywalled sources | Low | Variable |
+| `spotrac.com` | Salary/contract data | High (JS-heavy) | Medium |
+
+Adding entries to `~/.claude/security/egress-allowlist.txt` is a manual commit decision.
+
 ## Files of record
 
 - `scripts/probe_data_sources.py` — runnable probe sweep

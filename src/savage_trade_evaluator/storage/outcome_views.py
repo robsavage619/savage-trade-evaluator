@@ -610,6 +610,138 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     LEFT JOIN statcast_pitcher_percentile_ranks post
         ON post.player_id  = t.mlb_player_id AND post.year  = t.trade_season + 1
     """,
+    """
+    CREATE OR REPLACE VIEW trade_player_demographics AS
+    -- Each trade leg joined to real demographic data from mlb_people +
+    -- chadwick_register. Replaces the years-since-debut age proxy used in
+    -- R-13/R-25/R-27/R-29/R-30 with actual age at trade time.
+    --
+    -- prefers mlb_people.birth_date (96.6% coverage) over chadwick's birth_year/month/day.
+    -- birth_country lets us cleanly tag international vs domestic without the
+    -- post-1995-not-in-draft-picks heuristic from R-31.
+    SELECT
+        t.trade_event_id,
+        t.leg_index,
+        t.trade_season,
+        t.mlb_player_id,
+        t.player_name,
+        t.from_team_bref,
+        t.to_team_bref,
+        COALESCE(mp.birth_date, MAKE_DATE(
+            COALESCE(cr.birth_year, 1900),
+            COALESCE(cr.birth_month, 7),
+            COALESCE(cr.birth_day, 1)
+        )) AS birth_date,
+        COALESCE(mp.birth_country, '?') AS birth_country,
+        (t.trade_season - COALESCE(EXTRACT(YEAR FROM mp.birth_date)::INTEGER, cr.birth_year))
+            AS age_at_trade,
+        mp.bat_side,
+        mp.pitch_hand,
+        mp.primary_position_code,
+        mp.primary_position_type,
+        mp.height_inches,
+        mp.weight_lbs,
+        mp.mlb_debut_date,
+        CASE WHEN COALESCE(mp.birth_country, 'USA') NOT IN ('USA', 'Puerto Rico')
+             THEN 1 ELSE 0 END AS is_international_born
+    FROM trade_player_unified t
+    LEFT JOIN mlb_people mp ON mp.mlb_player_id = t.mlb_player_id
+    LEFT JOIN chadwick_register cr ON cr.mlb_player_id = t.mlb_player_id
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_receiver_demographic_mix AS
+    -- Per (trade_event, receiver) aggregate of the acquired-player demographics.
+    -- Adds within-team-variation features (D-24 compliant): avg age at trade,
+    -- proportion left-handed bat side, proportion international-born, position mix.
+    SELECT
+        trade_event_id,
+        to_team_bref AS receiver_bref,
+        AVG(age_at_trade) AS avg_age_at_trade,
+        STDDEV_SAMP(age_at_trade) AS age_stddev,
+        SUM(CASE WHEN bat_side = 'L' THEN 1 ELSE 0 END)::DOUBLE / COUNT(*)
+            AS pct_left_handed_bat,
+        SUM(CASE WHEN pitch_hand = 'L' THEN 1 ELSE 0 END)::DOUBLE / COUNT(*)
+            AS pct_left_handed_pitch,
+        SUM(is_international_born)::DOUBLE / COUNT(*) AS pct_international_born,
+        SUM(CASE WHEN primary_position_type = 'Pitcher' THEN 1 ELSE 0 END)::DOUBLE
+            / NULLIF(COUNT(*), 0) AS pct_pitchers,
+        AVG(height_inches) AS avg_height_inches,
+        AVG(weight_lbs) AS avg_weight_lbs,
+        COUNT(*) AS n_players
+    FROM trade_player_demographics
+    WHERE to_team_bref IS NOT NULL
+    GROUP BY trade_event_id, to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_player_pitch_movement_window AS
+    -- Per trade leg, the acquired pitcher's pitch arsenal physics at T-1 vs T+1
+    -- (Statcast 2015+ only). Lets us test whether the pitcher's intrinsic stuff
+    -- changed pre/post-trade — separates dev-fit from RTM.
+    SELECT
+        t.trade_event_id,
+        t.leg_index,
+        t.trade_season,
+        t.mlb_player_id,
+        t.player_name,
+        t.from_team_bref,
+        t.to_team_bref,
+        pm_prior.pitch_type,
+        pm_prior.avg_speed AS speed_t_minus_1,
+        pm_post.avg_speed  AS speed_t_plus_1,
+        pm_prior.vertical_break_inches AS vert_break_t_minus_1,
+        pm_post.vertical_break_inches  AS vert_break_t_plus_1,
+        pm_prior.horizontal_break_inches AS horiz_break_t_minus_1,
+        pm_post.horizontal_break_inches  AS horiz_break_t_plus_1,
+        pm_prior.pitch_usage_pct AS usage_t_minus_1,
+        pm_post.pitch_usage_pct  AS usage_t_plus_1
+    FROM trade_player_unified t
+    JOIN statcast_pitch_movement pm_prior
+        ON pm_prior.player_id = t.mlb_player_id
+        AND pm_prior.year = t.trade_season - 1
+    JOIN statcast_pitch_movement pm_post
+        ON pm_post.player_id = t.mlb_player_id
+        AND pm_post.year = t.trade_season + 1
+        AND pm_post.pitch_type = pm_prior.pitch_type
+    """,
+    """
+    CREATE OR REPLACE VIEW team_season_run_environment AS
+    -- Per (team, season): average runs per game scored at home vs road games
+    -- using Retrosheet game logs. Park-factor candidate baseline.
+    WITH home_runs_scored AS (
+        SELECT home_team_bref AS team, season, park_id,
+               AVG(home_score) AS avg_runs_scored_home,
+               AVG(visitor_score) AS avg_runs_allowed_home,
+               COUNT(*) AS home_games
+        FROM game_logs
+        WHERE home_score IS NOT NULL AND visitor_score IS NOT NULL
+        GROUP BY home_team_bref, season, park_id
+    ),
+    road_runs_scored AS (
+        SELECT visitor_team_bref AS team, season,
+               AVG(visitor_score) AS avg_runs_scored_road,
+               AVG(home_score) AS avg_runs_allowed_road,
+               COUNT(*) AS road_games
+        FROM game_logs
+        WHERE home_score IS NOT NULL AND visitor_score IS NOT NULL
+        GROUP BY visitor_team_bref, season
+    )
+    SELECT
+        h.team,
+        h.season,
+        h.park_id,
+        h.avg_runs_scored_home,
+        h.avg_runs_allowed_home,
+        h.home_games,
+        r.avg_runs_scored_road,
+        r.avg_runs_allowed_road,
+        r.road_games,
+        (h.avg_runs_scored_home + h.avg_runs_allowed_home)
+            / NULLIF((r.avg_runs_scored_road + r.avg_runs_allowed_road), 0)
+            AS park_factor_raw
+    FROM home_runs_scored h
+    LEFT JOIN road_runs_scored r
+        ON r.team = h.team AND r.season = h.season
+    """,
 )
 
 
