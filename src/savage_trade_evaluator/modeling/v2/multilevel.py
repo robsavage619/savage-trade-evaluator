@@ -60,7 +60,7 @@ def fit_multilevel_v2(
     tune: int = 2000,
     chains: int = 4,
     seed: int = 137,
-    target_accept: float = 0.97,
+    target_accept: float = 0.99,
 ) -> V2FitResult:
     """Fit the V2 multilevel model on one outcome.
 
@@ -98,12 +98,18 @@ def fit_multilevel_v2(
     with pm.Model(coords=coords):
         # Population intercept (in z-units)
         alpha0 = pm.Normal("alpha0", mu=0.0, sigma=1.0)
-        # Team-level deviations from alpha0
+        # Team-level deviations from alpha0 (non-centered to avoid funnel)
         tau_team = pm.HalfNormal("tau_team", sigma=1.0)
-        alpha_team = pm.Normal("alpha_team", mu=0.0, sigma=tau_team, dims="team")
-        # Regime-level deviations from their parent team
+        alpha_team_z = pm.Normal("alpha_team_z", mu=0.0, sigma=1.0, dims="team")
+        alpha_team = pm.Deterministic("alpha_team", alpha_team_z * tau_team, dims="team")
+        # Regime-level deviations from their parent team (non-centered)
         tau_regime = pm.HalfNormal("tau_regime", sigma=0.5)
-        alpha_regime_dev = pm.Normal("alpha_regime_dev", mu=0.0, sigma=tau_regime, dims="regime")
+        alpha_regime_dev_z = pm.Normal(
+            "alpha_regime_dev_z", mu=0.0, sigma=1.0, dims="regime"
+        )
+        alpha_regime_dev = pm.Deterministic(
+            "alpha_regime_dev", alpha_regime_dev_z * tau_regime, dims="regime"
+        )
         # Full regime intercept: team baseline + regime shift
         alpha_regime = pm.Deterministic(
             "alpha_regime",
