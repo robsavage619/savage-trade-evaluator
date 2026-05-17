@@ -19,8 +19,9 @@ import pandas as pd
 
 from savage_trade_evaluator.storage import db
 
-# League $/WAR per season. Hardcoded for V2.0; could be derived from FA
-# market signings in V2.1.
+# Hand-curated league $/WAR per season. Fallback only — preferred path is
+# the empirical curve from compute_empirical_dollar_per_war() below, which
+# is derived from Spotrac veteran-cohort cap_hit / cohort bWAR.
 LEAGUE_DOLLAR_PER_WAR: dict[int, float] = {
     2010: 4_500_000,
     2011: 5_000_000,
@@ -40,13 +41,74 @@ LEAGUE_DOLLAR_PER_WAR: dict[int, float] = {
 }
 
 
+_DOLLAR_PER_WAR_CACHE: dict[int, float] | None = None
+
+
+def compute_empirical_dollar_per_war() -> dict[int, float]:
+    """Derive $/WAR per season empirically from Spotrac veteran contracts.
+
+    Veterans (status='Veteran') are post-arbitration / open-market players,
+    the cleanest proxy for FA-market pricing within the data we have. For
+    each season: cohort cap_hit summed / cohort positive-WAR summed.
+
+    Falls back to ``LEAGUE_DOLLAR_PER_WAR`` for any season the query
+    cannot compute (notably 2010 — Spotrac coverage starts 2011).
+
+    Result is cached at module level; call ``reset_dollar_per_war_cache()``
+    to force recompute (used by tests / ablations).
+    """
+    global _DOLLAR_PER_WAR_CACHE  # noqa: PLW0603
+    if _DOLLAR_PER_WAR_CACHE is not None:
+        return _DOLLAR_PER_WAR_CACHE
+
+    with db.connect(read_only=True) as conn:
+        rows = conn.execute(
+            """
+            WITH vet AS (
+                SELECT season, mlb_player_id, cap_hit
+                FROM spotrac_player_contracts
+                WHERE status = 'Veteran' AND cap_hit IS NOT NULL
+            ),
+            war AS (
+                SELECT year_id AS season,
+                       mlb_id AS mlb_player_id,
+                       GREATEST(SUM(COALESCE(war, 0)), 0.0) AS pos_war
+                FROM bwar_player_seasons
+                GROUP BY year_id, mlb_id
+            )
+            SELECT v.season,
+                   SUM(v.cap_hit) AS total_cap,
+                   SUM(w.pos_war) AS total_war
+            FROM vet v
+            LEFT JOIN war w
+                ON w.season = v.season AND w.mlb_player_id = v.mlb_player_id
+            GROUP BY v.season
+            HAVING SUM(w.pos_war) > 50
+            ORDER BY v.season
+            """
+        ).fetchall()
+
+    empirical = {int(s): float(cap) / float(war) for s, cap, war in rows}
+    # Fill any missing season from the hand-curated fallback.
+    out = {**LEAGUE_DOLLAR_PER_WAR, **empirical}
+    _DOLLAR_PER_WAR_CACHE = out
+    return out
+
+
+def reset_dollar_per_war_cache() -> None:
+    """Clear the module-level cache (for tests / ablations)."""
+    global _DOLLAR_PER_WAR_CACHE  # noqa: PLW0603
+    _DOLLAR_PER_WAR_CACHE = None
+
+
 def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataFrame:
     """Build the four-outcome target matrix.
 
     Returns a DataFrame keyed on (trade_event_id, receiver_bref) with columns:
     xwoba_delta, kpct_delta, war_delta, dollar_surplus.
     """
-    values_clause = ", ".join(f"({y}, {v})" for y, v in LEAGUE_DOLLAR_PER_WAR.items())
+    dollar_per_war = compute_empirical_dollar_per_war()
+    values_clause = ", ".join(f"({y}, {v})" for y, v in dollar_per_war.items())
 
     with db.connect(read_only=True) as conn:
         df = conn.execute(
