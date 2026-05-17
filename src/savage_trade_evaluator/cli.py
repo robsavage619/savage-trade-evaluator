@@ -28,6 +28,7 @@ from savage_trade_evaluator.ingest import (
     transactions,
 )
 from savage_trade_evaluator.modeling import bayesian, context_aware, features, naive_baseline
+from savage_trade_evaluator.modeling import v3 as v3_module
 from savage_trade_evaluator.modeling.v2 import backtest as v2_backtest
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
 
@@ -37,11 +38,13 @@ analyze_app = typer.Typer(no_args_is_help=True, help="Read-only analysis helpers
 backtest_app = typer.Typer(
     no_args_is_help=True, help="Backtest harness — run models over historical trades."
 )
-v2_app = typer.Typer(no_args_is_help=True, help="V2 multilevel-model commands.")
+v2_app = typer.Typer(no_args_is_help=True, help="V2 multilevel-model commands (deprecated — see R-33/34/35).")
+v3_app = typer.Typer(no_args_is_help=True, help="V3 single-level Bayesian regression (current).")
 app.add_typer(ingest_app, name="ingest")
 app.add_typer(analyze_app, name="analyze")
 app.add_typer(backtest_app, name="backtest")
 app.add_typer(v2_app, name="v2")
+app.add_typer(v3_app, name="v3")
 
 V2_OUTCOMES: tuple[str, ...] = ("xwoba_delta", "kpct_delta", "war_delta", "dollar_surplus")
 
@@ -756,3 +759,62 @@ def v2_predict(
         f"{float(np.percentile(samples, 95)):+.4f}]"
     )
     typer.echo(f"  regime:          {r['regime_id']}")
+
+
+@v3_app.command("fit")
+def v3_fit(
+    outcome: str = typer.Option(..., help=f"One of: {', '.join(V2_OUTCOMES)}."),
+    train_end: int = typer.Option(2020, help="Last training season."),
+    test_end: int = typer.Option(2024, help="Last test season."),
+) -> None:
+    """Fit + backtest one V3 outcome and print the report."""
+    configure_logging()
+    _v2_validate_outcome(outcome)
+    result = v3_module.backtest_outcome_v3(
+        outcome=outcome, train_end_season=train_end, test_end_season=test_end,
+    )
+    v3_module.print_backtest_report(result)
+
+
+@v3_app.command("backtest")
+def v3_backtest_all(
+    outcome: str = typer.Option("all", help="'all' or a specific outcome name."),
+    train_end: int = typer.Option(2020, help="Last training season."),
+    test_end: int = typer.Option(2024, help="Last test season."),
+) -> None:
+    """Run V3 backtest across one or all outcomes; print summary table."""
+    configure_logging()
+    if outcome == "all":
+        outcomes: tuple[str, ...] = V2_OUTCOMES
+    else:
+        _v2_validate_outcome(outcome)
+        outcomes = (outcome,)
+
+    results = {}
+    for o in outcomes:
+        typer.echo("")
+        typer.echo("#" * 88)
+        typer.echo(f"# {o.upper()}")
+        typer.echo("#" * 88)
+        try:
+            result = v3_module.backtest_outcome_v3(
+                outcome=o, train_end_season=train_end, test_end_season=test_end,
+            )
+        except ValueError as e:
+            typer.echo(f"  SKIPPED: {e}")
+            continue
+        v3_module.print_backtest_report(result)
+        results[o] = result
+
+    typer.echo("")
+    typer.echo("=" * 88)
+    typer.echo("SUMMARY")
+    typer.echo("=" * 88)
+    for o, r in results.items():
+        ncred = int(r.credible_features["credible"].sum())
+        nfeat = len(r.fit.feature_cols)
+        typer.echo(
+            f"  {o:<16} train={r.train_n:>4} test={r.test_n:>4}  "
+            f"feats={nfeat:>2}  MAE={r.test_mae:.4f}  CRPS={r.test_crps:.4f}  "
+            f"cov90={r.coverage_90:.1%}  credible={ncred}"
+        )
