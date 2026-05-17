@@ -437,6 +437,115 @@ def _upsert_people(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) 
         conn.unregister("_staging_pe")
 
 
+# === MLB Stats API team season stats ===
+
+
+MLB_TEAM_STATS_URL = (
+    "https://statsapi.mlb.com/api/v1/teams/{team_id}/stats"
+    "?season={season}&stats=season&group={group}"
+)
+
+
+def _flt(v: Any) -> float | None:
+    """Coerce arbitrary value to float, NaN-safe."""
+    if v is None or v == "":
+        return None
+    try:
+        s = str(v)
+        # Avg might come back as ".257" (trim leading dot)
+        if s.startswith("."):
+            s = "0" + s
+        f = float(s)
+        return None if math.isnan(f) else f
+    except (TypeError, ValueError):
+        return None
+
+
+def fetch_team_season_stats(
+    client: httpx.Client, team_id: int, season: int, group: str
+) -> dict[str, Any] | None:
+    """Fetch one (team, season, group) row. Returns None if no data."""
+    r = client.get(
+        MLB_TEAM_STATS_URL.format(team_id=team_id, season=season, group=group),
+        timeout=30.0,
+    )
+    if r.status_code != 200:
+        return None
+    splits = r.json().get("stats", [{}])[0].get("splits", [])
+    if not splits:
+        return None
+    stat = splits[0].get("stat", {})
+    return {
+        "team_id": team_id,
+        "season": season,
+        "stat_group": group,
+        "games_played": stat.get("gamesPlayed"),
+        "runs": stat.get("runs"),
+        "hits": stat.get("hits"),
+        "doubles": stat.get("doubles"),
+        "triples": stat.get("triples"),
+        "home_runs": stat.get("homeRuns"),
+        "strike_outs": stat.get("strikeOuts"),
+        "base_on_balls": stat.get("baseOnBalls"),
+        "avg": _flt(stat.get("avg")),
+        "obp": _flt(stat.get("obp")),
+        "slg": _flt(stat.get("slg")),
+        "ops": _flt(stat.get("ops")),
+        "era": _flt(stat.get("era")),
+        "whip": _flt(stat.get("whip")),
+        "innings_pitched": _flt(stat.get("inningsPitched")),
+        "earned_runs": stat.get("earnedRuns"),
+        "stolen_bases": stat.get("stolenBases"),
+        "caught_stealing": stat.get("caughtStealing"),
+        "fielding_pct": _flt(stat.get("fielding")),
+        "errors": stat.get("errors"),
+        "source": "mlb-stats-api",
+    }
+
+
+def ingest_team_season_stats_range(start: int = 1990, end: int = 2024) -> int:
+    """Ingest hitting/pitching/fielding aggregates per team per season."""
+    # Get current 30 MLB teams (just iterate IDs 108-158 known set)
+    team_ids = list(range(108, 122)) + list(range(133, 148)) + [158]
+
+    total = 0
+    with httpx.Client() as client, db.connect() as conn:
+        schemas.initialize(conn)
+        for season in range(start, end + 1):
+            rows: list[dict[str, Any]] = []
+            for team_id in team_ids:
+                for group in ("hitting", "pitching", "fielding"):
+                    row = fetch_team_season_stats(client, team_id, season, group)
+                    if row is not None:
+                        # team_bref enrichment via teams table
+                        row["team_bref"] = None
+                        rows.append(row)
+            if not rows:
+                continue
+            import pandas as pd
+
+            df = pd.DataFrame(rows)
+            conn.register("_staging_ts", df)
+            try:
+                cols = (
+                    "team_id, team_bref, season, stat_group, games_played, "
+                    "runs, hits, doubles, triples, home_runs, strike_outs, "
+                    "base_on_balls, avg, obp, slg, ops, era, whip, "
+                    "innings_pitched, earned_runs, stolen_bases, caught_stealing, "
+                    "fielding_pct, errors, source"
+                )
+                conn.execute(
+                    f"INSERT INTO team_season_stats ({cols}) "
+                    f"SELECT {cols} FROM _staging_ts "
+                    "ON CONFLICT (team_id, season, stat_group) DO NOTHING"
+                )
+            finally:
+                conn.unregister("_staging_ts")
+            total += len(rows)
+            logger.info("team stats season %d: cumulative %d", season, total)
+    return total
+
+
 # === MLB Stats API venues ===
 
 

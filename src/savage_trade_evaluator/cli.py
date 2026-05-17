@@ -203,6 +203,17 @@ def ingest_retrosheet_transactions(
     typer.echo(f"ingested {n} retrosheet trade-leg rows through {end_year}")
 
 
+@ingest_app.command("team-season-stats")
+def ingest_team_season_stats(
+    start: int = typer.Option(1990, help="First season."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+) -> None:
+    """Ingest per-team per-season hitting/pitching/fielding aggregates."""
+    configure_logging()
+    n = fortification.ingest_team_season_stats_range(start=start, end=end)
+    typer.echo(f"ingested {n} team-season-stat rows")
+
+
 @ingest_app.command("venues")
 def ingest_venues() -> None:
     """Ingest MLB Stats API venues (capacity, dimensions, turf, roof)."""

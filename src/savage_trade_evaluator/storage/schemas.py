@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 17
+SCHEMA_VERSION = 18
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -683,6 +683,40 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_venues_active ON mlb_venues(active)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS team_season_stats (
+        team_id INTEGER NOT NULL,
+        team_bref VARCHAR,
+        season INTEGER NOT NULL,
+        stat_group VARCHAR NOT NULL,
+        games_played INTEGER,
+        runs INTEGER,
+        hits INTEGER,
+        doubles INTEGER,
+        triples INTEGER,
+        home_runs INTEGER,
+        strike_outs INTEGER,
+        base_on_balls INTEGER,
+        avg DOUBLE,
+        obp DOUBLE,
+        slg DOUBLE,
+        ops DOUBLE,
+        era DOUBLE,
+        whip DOUBLE,
+        innings_pitched DOUBLE,
+        earned_runs INTEGER,
+        stolen_bases INTEGER,
+        caught_stealing INTEGER,
+        fielding_pct DOUBLE,
+        errors INTEGER,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (team_id, season, stat_group)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_tss_season ON team_season_stats(season, stat_group)
     """,
 )
 
