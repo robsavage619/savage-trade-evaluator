@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 11
+SCHEMA_VERSION = 12
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -343,6 +343,102 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_draft_year ON draft_picks(draft_year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS statcast_batter_percentile_ranks (
+        player_id INTEGER NOT NULL,
+        player_name VARCHAR,
+        year INTEGER NOT NULL,
+        xwoba DOUBLE,
+        xba DOUBLE,
+        xslg DOUBLE,
+        xiso DOUBLE,
+        xobp DOUBLE,
+        brl DOUBLE,
+        brl_percent DOUBLE,
+        exit_velocity DOUBLE,
+        max_ev DOUBLE,
+        hard_hit_percent DOUBLE,
+        k_percent DOUBLE,
+        bb_percent DOUBLE,
+        whiff_percent DOUBLE,
+        chase_percent DOUBLE,
+        arm_strength DOUBLE,
+        sprint_speed DOUBLE,
+        oaa DOUBLE,
+        bat_speed DOUBLE,
+        squared_up_rate DOUBLE,
+        swing_length DOUBLE,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_batter_pct_year ON statcast_batter_percentile_ranks(year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS statcast_pitcher_arsenal_stats (
+        player_id INTEGER NOT NULL,
+        player_name VARCHAR,
+        team_name VARCHAR,
+        year INTEGER NOT NULL,
+        pitch_type VARCHAR NOT NULL,
+        pitch_name VARCHAR,
+        run_value_per_100 DOUBLE,
+        run_value DOUBLE,
+        pitches INTEGER,
+        pitch_usage DOUBLE,
+        pa INTEGER,
+        ba DOUBLE,
+        slg DOUBLE,
+        woba DOUBLE,
+        whiff_percent DOUBLE,
+        k_percent DOUBLE,
+        put_away DOUBLE,
+        est_ba DOUBLE,
+        est_slg DOUBLE,
+        est_woba DOUBLE,
+        hard_hit_percent DOUBLE,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year, pitch_type)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_pitcher_arsenal_player_year
+        ON statcast_pitcher_arsenal_stats(player_id, year)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_pitcher_arsenal_year
+        ON statcast_pitcher_arsenal_stats(year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS statcast_outs_above_average (
+        player_id INTEGER NOT NULL,
+        player_name VARCHAR,
+        team_name VARCHAR,
+        year INTEGER NOT NULL,
+        primary_pos VARCHAR NOT NULL,
+        fielding_runs_prevented DOUBLE,
+        oaa DOUBLE,
+        oaa_infront DOUBLE,
+        oaa_lateral_toward3b DOUBLE,
+        oaa_lateral_toward1b DOUBLE,
+        oaa_behind DOUBLE,
+        oaa_rhh DOUBLE,
+        oaa_lhh DOUBLE,
+        actual_success_rate DOUBLE,
+        adj_estimated_success_rate DOUBLE,
+        diff_success_rate DOUBLE,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year, primary_pos)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_oaa_player_year
+        ON statcast_outs_above_average(player_id, year)
     """,
 )
 

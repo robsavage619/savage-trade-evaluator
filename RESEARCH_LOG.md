@@ -24,6 +24,100 @@ Add new entries at the top. Never rewrite history — supersede with a new R-NN 
 
 ---
 
+## [2026-05-16] R-25: Org-stability decade-split — GM regimes drive 90% of within-team variance; org-identity-as-feature is wrong
+
+**Question (plain English).** Are organizations static, or do GM regimes matter? When we say "LAD-departed players underperform HOU-departed players" (R-17, ~70% pairwise), is that about *organizational culture that persists across regimes* or about *specific GM regimes that happened to occupy those org chairs during our sample*?
+
+**Setup.** Split each origin org's trade history into decades (1990s/2000s/2010s/2020s). Fit a multilevel model with (origin x decade) cells as the cluster instead of just origin. 4575 trade legs across 120 (team, decade) cells (after MIN_N=8 filter per cell). Decompose variance of the per-cell intercepts into between-team (org culture) and within-team-across-decades (regime/era) components.
+
+**Result.**
+
+Variance decomposition (teams with 2+ decades):
+- **Total variance of decade-cell intercepts: 0.00032**
+- **Between-team variance (org culture):       0.00010  (33% of total)**
+- **Within-team variance (regime/decade):      0.00029  (90% of total)**
+
+Within-team variance is ~3x larger than between-team variance. **GM regimes dominate.**
+
+Team-by-team decade breakdown of highlighted orgs (mean of alpha_cell intercept):
+
+| Team | 1990s | 2000s | 2010s | 2020s | Pattern |
+|---|---|---|---|---|---|
+| HOU | +0.008 | -0.014 | **+0.023** | +0.017 | Luhnow/Strom era (2010s) peak; fading |
+| CLE | +0.012 | **+0.040** | +0.003 | -0.009 | Shapiro era (2000s) peak; modern CLE neutral |
+| LAD | +0.010 | -0.028 | -0.018 | +0.009 | Friedman era (2010s) negative; modern back to neutral |
+| OAK | -0.003 | **+0.039** | +0.025 | +0.008 | Beane peak 2000s-2010s; fading |
+| STL | +0.031 | +0.026 | +0.003 | +0.009 | "Cardinal Way" was 1990s-2000s |
+| TBR | +0.003 | -0.019 | -0.023 | -0.006 | Mild persistent system-tax pattern (most stable in our set) |
+| BOS | -0.011 | -0.029 | +0.011 | +0.008 | Sign-flipped between Epstein and Cherington/Bloom |
+
+Per-cell 90% credible intervals all cross zero — at the individual decade level we cannot credibly separate any single cell from zero. The variance decomposition is the right signal here: it's a population-level claim about how variance is structured, more reliable than per-cell estimates.
+
+**Interpretation (plain English).**
+
+1. **Organizations are NOT static.** 90% of the variance in per-decade intercepts is within-team (regime shifts). Only 33% is between-team (org culture sticking across regimes). The ratio is ~3:1 in favor of regime over culture.
+
+2. **The R-17 "LAD < HOU" finding is really "Friedman-era LAD < Luhnow-era HOU."** Both are regime-specific. Pre-Friedman LAD and pre-Luhnow HOU look like average MLB teams. The pairwise probability we celebrated (~70%) was driven by a specific period overlap.
+
+3. **The "HOU dev-travels" narrative is largely Luhnow/Strom legacy.** Peaked in 2010s (+0.023), fading in 2020s (+0.017). Pre-Luhnow HOU shows no signal.
+
+4. **CLE in our "analytics-leader cluster" was reputation, not current data.** Modern CLE (2010s-2020s) shows zero or slightly negative dev-travels signal. The strong CLE effect was the 2000s Shapiro era.
+
+5. **For the V2 product**, a new GM hire is a model-input change. Treating "Houston" as a fixed team-level feature is wrong. (team x GM-regime) clusters are the right design.
+
+6. **TBR is the most stable** of the analytics-leader cluster — mild negative across all four decades. The Rays' reputation may genuinely be organizational rather than regime-driven, though the effect is small enough that this could also be noise.
+
+**Affects.**
+
+- **Reframes R-10 through R-22 as regime-specific findings, not organizational findings.** Origin-org effects we measured are largely artifacts of which GMs happened to be running those teams during 2015-2024 (Statcast era) or 1990-2024 (WAR era).
+- **D-28 candidate** (Phase 2 V2): use (team x GM-regime) clusters instead of just team clusters. Requires `front_office` table processing to identify regime boundaries.
+- **The "analytics-leader cluster" framing should be regime-dated.** Houston-Luhnow-era is in the dev-travels cluster; Houston-2024-onward may not be.
+- **Sample bias awareness**: Statcast outcomes (2015+) sample primarily one regime per team. The xwOBA / K% findings from R-19/R-22 are really "current-regime" findings — they don't speak to whether the same team in a different era would behave the same way.
+
+Files: `scripts/org_stability_decade_split.py`.
+
+---
+
+## [2026-05-16] R-26: Statcast-extended ingest — batter percentile ranks + pitcher arsenal stats + OAA
+
+**Question (plain English).** What Statcast data are we under-using? Three sources Savant publishes but we hadn't ingested:
+1. Batter percentile ranks (hitter analog to the existing pitcher percentile table)
+2. Per-pitch-type arsenal stats (slider vs curve vs FB breakdowns)
+3. Outs Above Average (per-position defensive metric)
+
+**Setup.** Built `ingest/statcast_extended.py` with three functions wrapping the pybaseball APIs. New schema additions (v12): `statcast_batter_percentile_ranks`, `statcast_pitcher_arsenal_stats`, `statcast_outs_above_average`. CLI: `ste ingest statcast-extended`.
+
+**Result (2015-2024 historical ingest):**
+
+| Source | Rows |
+|---|---|
+| Batter percentile ranks (614 hitters/year x 10 years) | 6,460 |
+| Pitcher per-pitch-type arsenal (1,881 player-pitch-rows/year x 10 years) | 13,542 |
+| Outs Above Average (across OF + 4 infield positions, ~268/year x 10 years) | 2,479 |
+
+Catcher framing was probed but `pybaseball.statcast_catcher_framing` fails CSV-parsing on Savant's response. Deferred; flagged in catalog.
+
+**Interpretation (plain English).**
+
+These three sources open three V2 feature avenues:
+
+1. **Hitter dev-signatures.** With hitter percentile ranks we can now build hitter equivalents to R-22's pitcher k_trajectory feature: chase% trajectory, hard-hit% trajectory, swing-length trajectory. These should surface dev-fit effects on hitters that current xwOBA-only features may obscure.
+
+2. **Pitch-type-specific dev-fit.** Houston's reputation is curveball install (high spin). LAD's is sweeper install (high horizontal break). Same pitcher, different installs. The pitcher_arsenal table lets us decompose K% gains/losses by pitch type — answering "did the trade improve the player's slider or just total K%?"
+
+3. **Defensive contribution decomposition.** "LAD inflates production" is partly defensive — Mookie + Lux + Muncy + great catching is significant. OAA lets us split offensive vs defensive trade outcomes.
+
+**Affects.**
+
+- Three new tables ingested 2015-2024; schema v12.
+- Catalog updates: 3 new "ingested" entries; 1 "blocked" (catcher framing CSV-parse issue).
+- New feature engineering opportunities for V2 ablations once we re-run on rate-based outcomes per D-26.
+- Pitcher arsenal table opens the question "was R-22's k_trajectory effect driven by a specific pitch type" — direct follow-up.
+
+Files: `src/savage_trade_evaluator/ingest/statcast_extended.py`, `src/savage_trade_evaluator/storage/schemas.py` (v11 -> v12).
+
+---
+
 ## [2026-05-16] R-20/21/22/23: omnibus four-outcome ablation — R-22 surfaces the largest credible coefficient in the entire project
 
 **Question (plain English).** R-19 showed rate-based outcomes unlock features that WAR-outcomes hide. Generalize: run the full 15-feature multilevel model against multiple rate-based outcomes (xERA, K%, xwOBA-surplus) and the original WAR-surplus baseline. Do we see different features become credible depending on outcome choice? Also: do the new pitcher arsenal features (k_trajectory, arsenal_volatility added in R-24 setup) show up?

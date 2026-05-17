@@ -20,6 +20,7 @@ from savage_trade_evaluator.ingest import (
     prospects,
     retrosheet_transactions,
     standings,
+    statcast_extended,
     stats,
     transactions,
 )
@@ -182,6 +183,22 @@ def ingest_retrosheet_transactions(
     configure_logging()
     n = retrosheet_transactions.ingest(end_year=end_year)
     typer.echo(f"ingested {n} retrosheet trade-leg rows through {end_year}")
+
+
+@ingest_app.command("statcast-extended")
+def ingest_statcast_extended(
+    year: int | None = typer.Option(None, help="Single year to ingest."),
+    start: int = typer.Option(2015, help="First year (Statcast era begins)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+) -> None:
+    """Ingest batter percentile ranks + pitcher arsenal stats + OAA from Savant."""
+    configure_logging()
+    if year is not None:
+        totals = statcast_extended.ingest_all_for_year(year)
+    else:
+        totals = statcast_extended.ingest_range(start, end)
+    for k, v in totals.items():
+        typer.echo(f"  {k}: {v} rows")
 
 
 @ingest_app.command("draft")
