@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Activity, ArrowRightLeft, Building2, Briefcase, Hammer } from 'lucide-react'
+import { Activity, ArrowRightLeft, Building2, Briefcase, FlaskConical, Hammer } from 'lucide-react'
 import PresslyCase from './routes/PresslyCase'
+import Research from './routes/Research'
 import TradeWorkspace from './routes/TradeWorkspace'
 import OrgExplorer from './routes/OrgExplorer'
 import TradeBuilder from './routes/TradeBuilder'
@@ -17,6 +18,7 @@ function TopNav() {
     { to: `/trade/${PRESSLY_TRADE_ID}`, label: 'Pipeline', icon: ArrowRightLeft },
     { to: '/orgs', label: 'Org Explorer', icon: Building2 },
     { to: '/case/pressly', label: 'Case Study', icon: Briefcase },
+    { to: '/research', label: 'Research', icon: FlaskConical },
   ]
   return (
     <header className="sticky top-0 z-50 border-b border-ink-700 bg-ink-950/85 backdrop-blur">
@@ -74,6 +76,7 @@ export default function App() {
         <Route path="/trade/:id" element={<TradeWorkspace />} />
         <Route path="/orgs" element={<OrgExplorer />} />
         <Route path="/orgs/:bref" element={<OrgScout />} />
+        <Route path="/research" element={<Research />} />
         <Route path="/player/:id" element={<PlayerProfile />} />
         <Route path="*" element={<Navigate to="/build" replace />} />
       </Routes>
