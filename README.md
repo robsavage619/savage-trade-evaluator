@@ -1,18 +1,22 @@
-# Savage Analytics
+<p align="center">
+  <img src="banner.svg" alt="Savage Analytics — Context-aware MLB trade valuation" width="100%"/>
+</p>
 
-> **Context-aware MLB trade valuation.** Every player has *N* valuations — one per acquiring club's contention window, payroll situation, farm depth, positional need, and dev-system fit. Fair value is a tensor, not a scalar. Every public model (FanGraphs $/WAR, Creagh charts, Baseball America value lists) collapses that tensor onto one axis. We're trying to do better.
-
-[![python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
-[![ruff](https://img.shields.io/badge/code%20style-ruff-261230)](https://docs.astral.sh/ruff/)
-[![pyright](https://img.shields.io/badge/type%20check-pyright-blue)](https://microsoft.github.io/pyright/)
-[![uv](https://img.shields.io/badge/packaging-uv-de5fe9)](https://github.com/astral-sh/uv)
-[![DuckDB](https://img.shields.io/badge/store-DuckDB-fff100)](https://duckdb.org/)
-[![React](https://img.shields.io/badge/frontend-React%2019-61dafb)](frontend/)
-[![Vite](https://img.shields.io/badge/build-Vite%208-646cff)](frontend/)
-[![rounds completed](https://img.shields.io/badge/research_rounds-35-success)](RESEARCH_LOG.md)
-[![decisions logged](https://img.shields.io/badge/ADR_decisions-30-success)](https://github.com/robsavage619/savage-trade-evaluator)
-[![schema](https://img.shields.io/badge/duckdb_schema-v20-informational)](src/savage_trade_evaluator/storage/schemas.py)
-[![rows](https://img.shields.io/badge/duckdb_rows-1.29M-informational)](docs/DATA_SOURCE_PROBE.md)
+<p align="center">
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12-blue.svg" alt="python 3.12"/></a>
+  <a href="https://docs.astral.sh/ruff/"><img src="https://img.shields.io/badge/code%20style-ruff-261230" alt="ruff"/></a>
+  <a href="https://microsoft.github.io/pyright/"><img src="https://img.shields.io/badge/type%20check-pyright-blue" alt="pyright"/></a>
+  <a href="https://github.com/astral-sh/uv"><img src="https://img.shields.io/badge/packaging-uv-de5fe9" alt="uv"/></a>
+  <a href="https://duckdb.org/"><img src="https://img.shields.io/badge/store-DuckDB-fff100" alt="DuckDB"/></a>
+  <a href="frontend/"><img src="https://img.shields.io/badge/frontend-React%2019-61dafb" alt="React 19"/></a>
+  <a href="frontend/"><img src="https://img.shields.io/badge/build-Vite%208-646cff" alt="Vite 8"/></a>
+</p>
+<p align="center">
+  <a href="RESEARCH_LOG.md"><img src="https://img.shields.io/badge/research_rounds-35-success" alt="rounds completed"/></a>
+  <a href="https://github.com/robsavage619/savage-trade-evaluator"><img src="https://img.shields.io/badge/ADR_decisions-30-success" alt="decisions logged"/></a>
+  <a href="src/savage_trade_evaluator/storage/schemas.py"><img src="https://img.shields.io/badge/duckdb_schema-v20-informational" alt="schema"/></a>
+  <a href="docs/DATA_SOURCE_PROBE.md"><img src="https://img.shields.io/badge/duckdb_rows-1.29M-informational" alt="rows"/></a>
+</p>
 
 ---
 
