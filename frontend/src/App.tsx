@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Activity, ArrowRightLeft, Building2, Briefcase, FlaskConical, Hammer } from 'lucide-react'
+import { ArrowRightLeft, Building2, Briefcase, FlaskConical, Hammer } from 'lucide-react'
 import PresslyCase from './routes/PresslyCase'
 import Research from './routes/Research'
 import TradeWorkspace from './routes/TradeWorkspace'
@@ -23,13 +23,32 @@ function TopNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-ink-700 bg-ink-950/85 backdrop-blur">
       <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-6 px-6 py-3">
-        <NavLink to="/case/pressly" className="flex items-center gap-2.5">
-          <div className="grid h-7 w-7 place-items-center rounded-md bg-accent-500/15 text-accent-400">
-            <Activity className="h-4 w-4" strokeWidth={2.5} />
+        <NavLink to="/" className="group flex items-center gap-3 select-none">
+          {/* Badge */}
+          <div className="relative flex-shrink-0">
+            {/* Spinning outer ring */}
+            <div className="nameplate-ring absolute -inset-[4px]" />
+            {/* Soft halo behind badge */}
+            <div className="absolute inset-0 rounded-xl blur-[6px] opacity-60"
+              style={{ background: 'radial-gradient(circle, #ff6a13 0%, transparent 75%)' }} />
+            {/* Badge body */}
+            <div className="nameplate-badge relative grid h-9 w-9 place-items-center rounded-xl"
+              style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}>
+              <span style={{
+                fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 800,
+                color: 'white', letterSpacing: '-0.03em', lineHeight: 1,
+                textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+              }}>SA</span>
+            </div>
           </div>
-          <div className="leading-tight">
-            <div className="text-[13px] font-semibold tracking-tight text-ink-100">Savage Trade Evaluator</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-ink-400">Baseball Operations · v0.1</div>
+          {/* Wordmark */}
+          <div className="leading-none">
+            <div className="nameplate-text text-[15px] font-bold tracking-[-0.02em]">
+              Savage Analytics
+            </div>
+            <div className="mt-[3px] text-[9px] font-semibold uppercase tracking-[0.22em] text-ink-500">
+              Baseball Intelligence
+            </div>
           </div>
         </NavLink>
         <nav className="flex items-center gap-1">
@@ -86,7 +105,7 @@ export default function App() {
             Sources: MLB Stats API · Baseball Reference · Baseball Savant Statcast · 27 tables · 1.29M rows
           </span>
           <span className="mono">
-            Posteriors illustrative pre-V2 model · naive baseline = $/WAR (D-11)
+            Savage Analytics · Posteriors illustrative pre-V2 model · naive baseline = $/WAR (D-11)
           </span>
         </div>
       </footer>
