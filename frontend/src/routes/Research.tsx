@@ -7,7 +7,7 @@ import {
 } from 'recharts'
 import { orgs, gms, kpctPoints } from '../data'
 import { teamColor, teamLogoUrl, fmtSigned } from '../lib/format'
-import { FlaskConical, TrendingDown, Map, Wrench, CheckCircle2, XCircle } from 'lucide-react'
+import { FlaskConical, TrendingDown, Map as MapIcon, Wrench, CheckCircle2, XCircle } from 'lucide-react'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -129,20 +129,13 @@ function OrgScatter() {
             </div>
           )
         }} />
-        <Scatter data={data}>
-          {data.map((d) => {
+        <Scatter data={data} shape={(props: { cx?: number; cy?: number; payload?: typeof data[0] }) => {
+            const cx = props.cx ?? 0; const cy = props.cy ?? 0
+            const d = props.payload!
             const url = teamLogoUrl(d.team)
-            return (
-              <Scatter key={d.team} data={[d]} fill={teamColor(d.team).primary}
-                shape={(props: { cx?: number; cy?: number }) => {
-                  const cx = props.cx ?? 0; const cy = props.cy ?? 0
-                  if (!url) return <g><circle cx={cx} cy={cy} r={7} fill={teamColor(d.team).primary} /><text x={cx + 10} y={cy + 3} fontSize={10} fill="#b9c1de" fontFamily="JetBrains Mono">{d.team}</text></g>
-                  return <g><circle cx={cx} cy={cy} r={SIZE / 2 + 2} fill="rgba(11,16,24,0.8)" stroke="rgba(255,255,255,0.08)" /><image href={url} x={cx - SIZE / 2} y={cy - SIZE / 2} width={SIZE} height={SIZE} /></g>
-                }}
-              />
-            )
-          })}
-        </Scatter>
+            if (!url) return <g><circle cx={cx} cy={cy} r={7} fill={teamColor(d.team).primary} /><text x={cx + 10} y={cy + 3} fontSize={10} fill="#b9c1de" fontFamily="JetBrains Mono">{d.team}</text></g>
+            return <g><circle cx={cx} cy={cy} r={SIZE / 2 + 2} fill="rgba(11,16,24,0.8)" stroke="rgba(255,255,255,0.08)" /><image href={url} x={cx - SIZE / 2} y={cy - SIZE / 2} width={SIZE} height={SIZE} /></g>
+          }} />
       </ScatterChart>
     </ResponsiveContainer>
   )
@@ -308,7 +301,7 @@ export default function Research() {
         </Station>
 
         {/* Station 4 — Org Quality Map */}
-        <Station index={4} eyebrow="Finding 3 · R-31" icon={Map}
+        <Station index={4} eyebrow="Finding 3 · R-31" icon={MapIcon}
           title="Development skill and trading skill are orthogonal across 30 MLB orgs">
           <p className="mb-4 max-w-2xl text-[14px] leading-relaxed text-ink-300">
             Every franchise gets two coordinates: <span className="font-semibold text-ink-100">dev WAR</span> (career WAR of players
