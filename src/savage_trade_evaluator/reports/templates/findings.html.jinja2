@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Savage Trade Evaluator — Research Findings</title>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: #1a1d27;
+      --panel2: #20243a;
+      --text: #ecf0f1;
+      --muted: #8899aa;
+      --accent: #3498db;
+      --green: #2ecc71;
+      --yellow: #f1c40f;
+      --red: #e74c3c;
+      --border: rgba(255,255,255,0.08);
+      --radius: 10px;
+      --sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--sans); font-size: 15px;
+      line-height: 1.65; display: flex;
+    }
+
+    /* ── Sidebar nav ── */
+    nav {
+      position: sticky; top: 0; height: 100vh; width: 220px;
+      flex-shrink: 0; padding: 32px 16px;
+      background: var(--panel); border-right: 1px solid var(--border);
+      overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+    }
+    nav .logo {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 24px;
+    }
+    nav a {
+      display: block; padding: 7px 12px; border-radius: 6px;
+      color: var(--muted); text-decoration: none; font-size: 13px;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover { background: var(--panel2); color: var(--text); }
+    nav .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+      margin: 16px 0 4px 12px;
+    }
+
+    /* ── Main content ── */
+    main { flex: 1; padding: 48px 56px; max-width: 1100px; min-width: 0; }
+
+    section { margin-bottom: 72px; }
+    section:target { scroll-margin-top: 24px; }
+
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+    p { color: var(--muted); margin-bottom: 12px; }
+    p strong { color: var(--text); }
+    p em { font-style: italic; color: var(--muted); }
+
+    .subtitle { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+    .tag {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; margin-right: 6px;
+    }
+    .tag-round { background: rgba(52,152,219,0.15); color: var(--accent); }
+    .tag-confirmed { background: rgba(46,204,113,0.15); color: var(--green); }
+    .tag-rejected { background: rgba(231,76,60,0.15); color: var(--red); }
+
+    /* ── Evidence callout ── */
+    .evidence {
+      background: var(--panel2); border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 16px 20px; margin: 20px 0;
+    }
+    .evidence .ev-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px 24px;
+    }
+    .evidence .ev-item label {
+      display: block; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .evidence .ev-item .val {
+      font-family: var(--mono); font-size: 14px; color: var(--text);
+    }
+    .evidence .ev-item .val.pos { color: var(--green); }
+    .evidence .ev-item .val.neg { color: var(--red); }
+
+    /* ── Implication box ── */
+    .implication {
+      background: rgba(46,204,113,0.07); border: 1px solid rgba(46,204,113,0.2);
+      border-radius: var(--radius); padding: 14px 20px; margin-top: 20px;
+    }
+    .implication strong { color: var(--green); }
+
+    /* ── Chart wrapper ── */
+    .chart-wrap { margin: 24px 0; border-radius: var(--radius); overflow: hidden; }
+
+    /* ── Data table ── */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left; padding: 9px 12px;
+      background: var(--panel2); color: var(--muted);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 12px; border-bottom: 1px solid var(--border);
+      color: var(--text); font-family: var(--mono); font-size: 12px;
+    }
+    tr:hover td { background: var(--panel2); }
+    td.pos { color: var(--green); } td.neg { color: var(--red); }
+    td.label { font-family: var(--sans); font-size: 13px; color: var(--muted); }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+    /* ── Timeline (intro) ── */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .tl-item {
+      display: flex; gap: 16px; padding: 12px 0;
+      border-left: 2px solid var(--border); padding-left: 20px; position: relative;
+    }
+    .tl-item::before {
+      content: ''; position: absolute; left: -5px; top: 18px;
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+    }
+    .tl-item .tl-round { color: var(--accent); font-weight: 700; min-width: 52px; font-family: var(--mono); font-size: 12px; margin-top: 2px; }
+    .tl-item .tl-text { color: var(--muted); font-size: 13px; }
+    .tl-item .tl-text strong { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Trade Evaluator</div>
+  <div class="section-label">Research</div>
+  <a href="#intro">Overview</a>
+  <a href="#k-trajectory">K% Trajectory</a>
+  <a href="#sell-high">Sell-High</a>
+  <a href="#org-quality">Org Quality Map</a>
+  <div class="section-label">Methods</div>
+  <a href="#thesis">Thesis</a>
+  <a href="#corrections">Corrections</a>
+</nav>
+
+<main>
+
+  <!-- ── INTRO ── -->
+  <section id="intro">
+    <h1>Savage Trade Evaluator — Research Findings</h1>
+    <p class="subtitle">
+      31 research rounds, 5 books ingested, one original hypothesis inverted.
+      This report surfaces the confirmed findings from Phase 1 with supporting evidence
+      and the data behind each conclusion.
+    </p>
+
+    <h2>Research arc</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <span class="tl-round">R-01–05</span>
+        <span class="tl-text"><strong>Data spine.</strong> Transactions (703K), bWAR (182K rows, 1871+), Statcast 2015–2024, coaches, front-office, contracts.</span>
+      </div>
+      <div class="tl-item">
+        <span class="tl-round">R-06–15</span>
+        <span class="tl-text"><strong>WAR-outcome feature search.</strong> All team-static features null (R-06, 07, 09, 14). First directional signal: within-team variation (R-15).</span>
+      </div>
+      <div class="tl-item">
+        <span class="tl-round">R-16–19</span>
+        <span class="tl-text"><strong>Metric correction (D-26).</strong> Switched to rate-based outcomes (xwOBA, K%). Three features credible on xwOBA-delta — invisible on WAR at same sample size.</span>
+      </div>
+      <div class="tl-item">
+        <span class="tl-round">R-20–23</span>
+        <span class="tl-text"><strong>Outcome-specific signals (D-27).</strong> K%-trajectory coefficient: −10.8 percentile points, mass = 100%. Largest credible effect in the program.</span>
+      </div>
+      <div class="tl-item">
+        <span class="tl-round">R-25–28</span>
+        <span class="tl-text"><strong>Regime > franchise (D-28).</strong> GM identity explains ~3× more variance than franchise. Regime intercepts replace team intercepts.</span>
+      </div>
+      <div class="tl-item">
+        <span class="tl-round">R-29–31</span>
+        <span class="tl-text"><strong>Mechanism decomposition.</strong> System-tax thesis rejected. TEX-Daniels sell-high confirmed. 2D org-quality map built (D-30).</span>
+      </div>
+      <div class="tl-item">
+        <span class="tl-round">R-33–35</span>
+        <span class="tl-text"><strong>Architecture simplification.</strong> Regime nesting and team pooling add zero signal over flat regression (V3). Single-level Bayesian adopted.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── K% TRAJECTORY ── -->
+  <section id="k-trajectory">
+    <span class="tag tag-round">R-22</span>
+    <span class="tag tag-confirmed">Confirmed</span>
+    <h2>Pitchers coming off K%-jump seasons regress hard after trades</h2>
+
+    <p>
+      When a pitcher has elevated their strikeout-percentile-rank significantly in the year
+      before a trade, they revert sharply in the seasons after the trade.
+      This is the <strong>largest credible coefficient</strong> found in the entire research
+      program — and it only surfaces on the K%-delta outcome, not on WAR.
+    </p>
+
+    <div class="evidence">
+      <div class="ev-grid">
+        <div class="ev-item">
+          <label>Research Round</label>
+          <div class="val">R-22 / D-26 / D-27</div>
+        </div>
+        <div class="ev-item">
+          <label>Posterior β (standardized)</label>
+          <div class="val neg">−10.8 K-percentile pts</div>
+        </div>
+        <div class="ev-item">
+          <label>90% Credible Interval</label>
+          <div class="val">[ −17.1 ,  −4.3 ]</div>
+        </div>
+        <div class="ev-item">
+          <label>Directional Mass</label>
+          <div class="val pos">100%</div>
+        </div>
+        <div class="ev-item">
+          <label>Outcome Specificity</label>
+          <div class="val">kpct_delta only</div>
+        </div>
+        <div class="ev-item">
+          <label>Implication (D-27)</label>
+          <div class="val">WAR hides this entirely</div>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      The effect is consistent with extreme regression-to-the-mean on arsenal trajectories.
+      A pitcher who just posted a career-best K% is unlikely to repeat it — and the stress
+      of a trade (new catcher, new pitching coach, new environment) accelerates the reversion.
+      <em>This is not a new idea in baseball analytics, but our data now has a credible
+      posterior estimate of its size.</em>
+    </p>
+
+    <p>
+      <strong>Why WAR misses it:</strong> WAR aggregates across ERA, fielding support, park
+      factors, and offense. A pitcher whose K% regresses may still post similar WAR if his
+      park or defense improves. The rate-based outcome isolates the pitcher's actual stuff.
+    </p>
+
+    <div class="implication">
+      <strong>Trade valuation implication:</strong>
+      Acquiring a pitcher immediately after their best K% season likely means acquiring
+      a player at peak asking price but not at sustained performance. The model discounts
+      incoming pitcher quality proportional to the T−1 K%-trajectory.
+    </div>
+  </section>
+
+  <!-- ── SELL-HIGH ── -->
+  <section id="sell-high">
+    <span class="tag tag-round">R-29 / R-30</span>
+    <span class="tag tag-confirmed">Confirmed</span>
+    <h2>The original "system tax" thesis is wrong — what's real is sell-high skill</h2>
+
+    <p>
+      The starting hypothesis: elite development systems (Dodgers, Astros) inflate player
+      production in-system, and players decline post-trade because they were
+      "system-dependent." The data inverts this completely.
+    </p>
+
+    <p>
+      <strong>What the data actually shows:</strong> Young prospects are
+      <em>positive in every regime tested</em> — exactly the opposite of system-tax.
+      Veteran-at-peak players decline, but that's not system dependency — it's normal aging
+      curves and GMs selling at the right time. The best example is TEX–Jon Daniels.
+    </p>
+
+    <div class="evidence">
+      <div class="ev-grid">
+        <div class="ev-item">
+          <label>Research Round</label>
+          <div class="val">R-29 / R-30 / D-29</div>
+        </div>
+        <div class="ev-item">
+          <label>TEX-Daniels: Trades (n)</label>
+          <div class="val">9 veterans</div>
+        </div>
+        <div class="ev-item">
+          <label>Mean pre-trade WAR</label>
+          <div class="val">+3.96</div>
+        </div>
+        <div class="ev-item">
+          <label>Mean Δ WAR post-trade</label>
+          <div class="val neg">−2.54</div>
+        </div>
+        <div class="ev-item">
+          <label>Young-prospect Δ WAR</label>
+          <div class="val pos">Positive (all regimes)</div>
+        </div>
+        <div class="ev-item">
+          <label>System-tax signal</label>
+          <div class="val neg">Absent everywhere</div>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      TEX-Daniels moved Lucroy, Mike Minor, Michael Young, Yu Darvish, Robinson
+      Chirinos, Isiah Kiner-Falefa, and others — all near the top of their career WAR curves.
+      The decline is real, but the mechanism is aging, not system dependency.
+    </p>
+
+    <div class="chart-wrap">{{ sell_chart | safe }}</div>
+
+    <p>
+      The chart above shows mean Δ WAR by player maturity bucket across the
+      {{ n_regimes }} regimes analyzed. Note that the VET-AT-PEAK bar (red) is negative for
+      most regimes, but the YOUNG-PROSPECT bar (green) is consistently near zero or positive.
+    </p>
+
+    {% if tex_row %}
+    <h3>TEX–Jon Daniels bucket breakdown</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Bucket</th><th>n</th><th>Mean Δ WAR</th><th>Mean Pre-WAR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">Veteran-at-peak</td>
+          <td>{{ tex_row.vet_n }}</td>
+          <td class="{{ 'pos' if tex_row.vet_mean > 0 else 'neg' }}">{{ '%.3f'|format(tex_row.vet_mean) }}</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="label">Young prospect</td>
+          <td>{{ tex_row.young_n }}</td>
+          <td class="{{ 'pos' if tex_row.young_mean > 0 else 'neg' }}">{{ '%.3f'|format(tex_row.young_mean) }}</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="label">Middle</td>
+          <td>{{ tex_row.middle_n }}</td>
+          <td class="{{ 'pos' if tex_row.middle_mean > 0 else 'neg' }}">{{ '%.3f'|format(tex_row.middle_mean) }}</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td class="label"><strong>All</strong></td>
+          <td><strong>{{ tex_row.n_all }}</strong></td>
+          <td class="{{ 'pos' if tex_row.mean_delta_all > 0 else 'neg' }}"><strong>{{ '%.3f'|format(tex_row.mean_delta_all) }}</strong></td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    {% endif %}
+
+    <div class="implication">
+      <strong>Trade valuation implication:</strong>
+      The sell-high signal is a GM behavior pattern, not a player quality signal. A model
+      that clusters on (team, regime) can learn this pattern — but only if we separate veteran
+      aging from prospect development. The V3 model's <code>acquired_player_avg_experience</code>
+      feature captures this at the player level (99% negative mass on xwOBA-delta).
+    </div>
+  </section>
+
+  <!-- ── ORG QUALITY MAP ── -->
+  <section id="org-quality">
+    <span class="tag tag-round">R-31</span>
+    <span class="tag tag-confirmed">Confirmed</span>
+    <h2>Development skill and trading skill are orthogonal — most teams excel at one, not both</h2>
+
+    <p>
+      We built a 2D coordinate map of every current franchise:
+      <strong>Dev WAR</strong> (career WAR of players who debuted with this team, 1990+)
+      and <strong>Trade Δ WAR</strong> (mean change in player WAR before vs after departing
+      the franchise in a trade). The two axes are roughly independent — being great at player
+      development does not predict being good at trading.
+    </p>
+
+    <div class="evidence">
+      <div class="ev-grid">
+        <div class="ev-item">
+          <label>Research Round</label>
+          <div class="val">R-31 / D-30</div>
+        </div>
+        <div class="ev-item">
+          <label>Median Dev WAR</label>
+          <div class="val">{{ '%.0f'|format(oq_median_dev) }}</div>
+        </div>
+        <div class="ev-item">
+          <label>Median Trade Δ</label>
+          <div class="val">{{ '%+.3f'|format(oq_median_trade) }}</div>
+        </div>
+        <div class="ev-item">
+          <label>Only HIGH-DEV / POS-TRADE</label>
+          <div class="val pos">HOU</div>
+        </div>
+        <div class="ev-item">
+          <label>Best Trade Δ</label>
+          <div class="val pos">STL</div>
+        </div>
+        <div class="ev-item">
+          <label>Best Dev Pipeline</label>
+          <div class="val pos">CLE</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">{{ org_chart | safe }}</div>
+
+    <h3>Top 5 by total dev WAR</h3>
+    <table>
+      <thead>
+        <tr><th>Team</th><th>Full Name</th><th>Dev WAR</th><th>Trade Δ</th><th>Quadrant</th></tr>
+      </thead>
+      <tbody>
+        {% for row in top5 %}
+        <tr>
+          <td>{{ row.franchise }}</td>
+          <td class="label">{{ row.full_name }}</td>
+          <td>{{ '%.0f'|format(row.total_dev_war) }}</td>
+          <td class="{{ 'pos' if row.trade_delta > 0 else 'neg' }}">{{ '%+.3f'|format(row.trade_delta) }}</td>
+          <td class="label">{{ row.quadrant }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3 style="margin-top:20px">Bottom 5 by total dev WAR</h3>
+    <table>
+      <thead>
+        <tr><th>Team</th><th>Full Name</th><th>Dev WAR</th><th>Trade Δ</th><th>Quadrant</th></tr>
+      </thead>
+      <tbody>
+        {% for row in bot5 %}
+        <tr>
+          <td>{{ row.franchise }}</td>
+          <td class="label">{{ row.full_name }}</td>
+          <td>{{ '%.0f'|format(row.total_dev_war) }}</td>
+          <td class="{{ 'pos' if row.trade_delta > 0 else 'neg' }}">{{ '%+.3f'|format(row.trade_delta) }}</td>
+          <td class="label">{{ row.quadrant }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="implication">
+      <strong>Trade valuation implication:</strong>
+      The V3 model should eventually assign separate credit to acquiring teams vs developing
+      teams (D-30). A player traded away from CLE (elite dev, below-median trade Δ) and
+      acquired by HOU (elite at both) likely has different surplus profiles than the same
+      player going to SFG. This is Phase 2 work.
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- ── THESIS ── -->
+  <section id="thesis">
+    <h2>Thesis (unchanged)</h2>
+    <p>
+      <strong>Context-aware MLB trade valuation.</strong> The same player has <em>N</em> valuations,
+      one per acquiring club's contention window, payroll situation, farm depth, positional need,
+      and development-system fit. Fair value is a tensor, not a scalar.
+    </p>
+    <p>
+      The model explicitly tries to beat the FanGraphs $/WAR naive baseline: a single number
+      applied uniformly across all acquiring contexts. The research above provides the empirical
+      evidence for <em>why</em> context matters and <em>which</em> contextual features carry
+      credible signal.
+    </p>
+  </section>
+
+  <!-- ── CORRECTIONS ── -->
+  <section id="corrections">
+    <h2>Five methodology corrections (R-01 → R-35)</h2>
+    <p>Each of these corrects an assumption we started with:</p>
+
+    <table>
+      <thead>
+        <tr><th>#</th><th>Decision</th><th>What changed</th><th>Evidence</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>D-24</td>
+          <td class="label">Within-team variation beats static team features</td>
+          <td class="label">Static features → within-team Δ features</td>
+          <td>R-06, 07, 09, 14 null; R-15 directional</td>
+        </tr>
+        <tr>
+          <td>D-26</td>
+          <td class="label">Rate-based outcomes required for research</td>
+          <td class="label">WAR → xwOBA + K% + xERA as primary signals</td>
+          <td>R-19: 3 credible features on xwOBA, 0 on WAR</td>
+        </tr>
+        <tr>
+          <td>D-27</td>
+          <td class="label">Feature importance is outcome-specific</td>
+          <td class="label">Global best feature set → per-outcome selection</td>
+          <td>R-22: K%-trajectory invisible on WAR outcome</td>
+        </tr>
+        <tr>
+          <td>D-28</td>
+          <td class="label">GM regime explains 3× more variance than franchise</td>
+          <td class="label">Team clusters → (team, regime) clusters</td>
+          <td>R-25, R-27: variance decomposition</td>
+        </tr>
+        <tr>
+          <td>D-29</td>
+          <td class="label">System-tax thesis rejected; sell-high confirmed</td>
+          <td class="label">Development narrative → sell-high mechanism</td>
+          <td>R-30: bucket decomposition of every regime</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+</body>
+</html>

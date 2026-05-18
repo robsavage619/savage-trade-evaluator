@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
-DUCKDB_PATH = DATA_DIR / "duckdb" / "trades.db"
+# Allow STE_DUCKDB_PATH env var to point at a DB from a different worktree.
+DUCKDB_PATH = Path(os.environ["STE_DUCKDB_PATH"]) if "STE_DUCKDB_PATH" in os.environ else DATA_DIR / "duckdb" / "trades.db"
 
 MLB_STATS_API_BASE = "https://statsapi.mlb.com/api/v1"
 

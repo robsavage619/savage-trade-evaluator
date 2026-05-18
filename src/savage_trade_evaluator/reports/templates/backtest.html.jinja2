@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Savage Trade Evaluator — V3 Backtest Report</title>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1117; --panel: #1a1d27; --panel2: #20243a;
+      --text: #ecf0f1; --muted: #8899aa; --accent: #3498db;
+      --green: #2ecc71; --yellow: #f1c40f; --red: #e74c3c;
+      --border: rgba(255,255,255,0.08); --radius: 10px;
+      --sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.65; display: flex; }
+
+    nav {
+      position: sticky; top: 0; height: 100vh; width: 220px;
+      flex-shrink: 0; padding: 32px 16px;
+      background: var(--panel); border-right: 1px solid var(--border);
+      overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+    }
+    nav .logo { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 24px; }
+    nav a { display: block; padding: 7px 12px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 13px; transition: background 0.15s, color 0.15s; }
+    nav a:hover { background: var(--panel2); color: var(--text); }
+    nav .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 16px 0 4px 12px; }
+
+    main { flex: 1; padding: 48px 56px; max-width: 1100px; min-width: 0; }
+    section { margin-bottom: 72px; }
+    h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+    h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+    h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: var(--muted); }
+    p { color: var(--muted); margin-bottom: 12px; }
+    p strong { color: var(--text); }
+    .subtitle { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+
+    .metric-row { display: flex; gap: 16px; flex-wrap: wrap; margin: 20px 0; }
+    .metric-card {
+      flex: 1; min-width: 140px; background: var(--panel2);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px 20px;
+    }
+    .metric-card label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .metric-card .val { font-family: var(--mono); font-size: 22px; color: var(--text); }
+    .metric-card .val.good { color: var(--green); }
+    .metric-card .val.warn { color: var(--yellow); }
+
+    .outcome-section { border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; margin-bottom: 40px; background: var(--panel); }
+    .chart-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+    @media (max-width: 900px) { .chart-pair { grid-template-columns: 1fr; } }
+    .chart-wrap { border-radius: var(--radius); overflow: hidden; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 8px 12px; background: var(--panel2); color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 7px 12px; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 12px; }
+    td.label { font-family: var(--sans); font-size: 13px; color: var(--muted); }
+    td.pos { color: var(--green); } td.neg { color: var(--red); }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-cred { background: rgba(46,204,113,0.15); color: var(--green); }
+    .badge-dir { background: rgba(241,196,15,0.12); color: var(--yellow); }
+    hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Trade Evaluator</div>
+  <div class="section-label">Overview</div>
+  <a href="#summary">Summary</a>
+  <a href="#heatmap">Feature Matrix</a>
+  <div class="section-label">Outcomes</div>
+  {% for sec in outcome_sections %}
+  <a href="#{{ sec.outcome }}">{{ sec.outcome }}</a>
+  {% endfor %}
+</nav>
+
+<main>
+
+  <section id="summary">
+    <h1>V3 Backtest Report</h1>
+    <p class="subtitle">
+      Single-level Bayesian regression (post-R-33/34/35). Train: seasons ≤ {{ train_end }}. Test: {{ train_end + 1 }}–{{ test_end }}.
+      Four outcome-specific models run independently with per-outcome feature subsets (D-27).
+    </p>
+
+    <div class="chart-wrap">{{ summary_chart | safe }}</div>
+
+    <p style="margin-top:16px">
+      <strong>Credibility threshold (D-26):</strong> a feature is credible when its 90% posterior
+      credible interval excludes zero <em>and</em> directional mass ≥ 95%. Directional features
+      have mass ≥ 85% but do not fully exclude zero.
+    </p>
+  </section>
+
+  <section id="heatmap">
+    <h2>Feature credibility across outcomes</h2>
+    <p>
+      The same feature can be credible on one outcome and completely null on another (D-27).
+      This heatmap shows directional mass per feature × outcome cell.
+      <strong>★</strong> marks cells that meet the full D-26 credibility threshold.
+    </p>
+    <div class="chart-wrap">{{ heatmap_chart | safe }}</div>
+  </section>
+
+  <hr>
+
+  {% for sec in outcome_sections %}
+  <section id="{{ sec.outcome }}">
+    <div class="outcome-section">
+      <h2>{{ sec.outcome }}</h2>
+      <div class="metric-row">
+        <div class="metric-card">
+          <label>Train n</label>
+          <div class="val">{{ sec.train_n }}</div>
+        </div>
+        <div class="metric-card">
+          <label>Test n</label>
+          <div class="val">{{ sec.test_n }}</div>
+        </div>
+        <div class="metric-card">
+          <label>Test MAE</label>
+          <div class="val">{{ '%.4f'|format(sec.mae) }}</div>
+        </div>
+        <div class="metric-card">
+          <label>Test CRPS</label>
+          <div class="val">{{ '%.4f'|format(sec.crps) }}</div>
+        </div>
+        <div class="metric-card">
+          <label>90% Coverage</label>
+          <div class="val {{ 'good' if sec.coverage_90 >= 0.87 else 'warn' }}">
+            {{ '%.1f'|format(sec.coverage_90 * 100) }}%
+          </div>
+        </div>
+        <div class="metric-card">
+          <label>Credible Features</label>
+          <div class="val {{ 'good' if sec.n_credible > 0 else '' }}">{{ sec.n_credible }}</div>
+        </div>
+      </div>
+
+      <div class="chart-pair">
+        <div class="chart-wrap">{{ sec.cal_chart | safe }}</div>
+        <div class="chart-wrap">{{ sec.coef_chart | safe }}</div>
+      </div>
+
+      {% if sec.credible_rows %}
+      <h3>Credible features (D-26)</h3>
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>β (posterior mean)</th><th>90% CI</th><th>Mass</th></tr>
+        </thead>
+        <tbody>
+          {% for row in sec.credible_rows %}
+          <tr>
+            <td class="label">{{ row.feature }}</td>
+            <td class="{{ 'pos' if row.mean_beta > 0 else 'neg' }}">{{ '%+.4f'|format(row.mean_beta) }}</td>
+            <td>[ {{ '%+.3f'|format(row.p05) }} , {{ '%+.3f'|format(row.p95) }} ]</td>
+            <td class="pos">{{ '%.0f'|format(row.directional_mass * 100) }}%
+              <span class="badge badge-cred">credible</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="margin-top:16px"><em>No features cleared the D-26 credibility threshold on this outcome.</em></p>
+      {% endif %}
+    </div>
+  </section>
+  {% endfor %}
+
+</main>
+</body>
+</html>

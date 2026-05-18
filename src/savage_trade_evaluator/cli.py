@@ -6,6 +6,9 @@ import logging
 
 import typer
 
+import webbrowser
+from pathlib import Path
+
 from savage_trade_evaluator.analysis import backtest, trade_summary
 from savage_trade_evaluator.config import (
     BACKTESTER_END_SEASON,
@@ -41,11 +44,13 @@ backtest_app = typer.Typer(
 )
 v2_app = typer.Typer(no_args_is_help=True, help="V2 multilevel-model commands (deprecated — see R-33/34/35).")
 v3_app = typer.Typer(no_args_is_help=True, help="V3 single-level Bayesian regression (current).")
+report_app = typer.Typer(no_args_is_help=True, help="Generate HTML research reports.")
 app.add_typer(ingest_app, name="ingest")
 app.add_typer(analyze_app, name="analyze")
 app.add_typer(backtest_app, name="backtest")
 app.add_typer(v2_app, name="v2")
 app.add_typer(v3_app, name="v3")
+app.add_typer(report_app, name="report")
 
 V2_OUTCOMES: tuple[str, ...] = ("xwoba_delta", "kpct_delta", "war_delta", "dollar_surplus")
 
@@ -842,3 +847,43 @@ def v3_backtest_all(
             f"feats={nfeat:>2}  MAE={r.test_mae:.4f}  CRPS={r.test_crps:.4f}  "
             f"cov90={r.coverage_90:.1%}  credible={ncred}"
         )
+
+
+# ── Report commands ──────────────────────────────────────────────────────────
+
+@report_app.command("findings")
+def report_findings(
+    out: Path = typer.Option(Path("trade-eval-findings.html"), "--out", help="Output HTML path."),
+    open_browser: bool = typer.Option(True, "--open/--no-open", help="Open in browser after generating."),
+) -> None:
+    """Generate the research findings HTML report (org quality map + sell-high + methodology)."""
+    configure_logging()
+    from savage_trade_evaluator.reports import builder
+    typer.echo("building findings report…")
+    path = builder.build_findings_report(out)
+    typer.echo(f"wrote {path}")
+    if open_browser:
+        webbrowser.open(path.resolve().as_uri())
+
+
+@report_app.command("backtest")
+def report_backtest(
+    outcome: str = typer.Option("all", "--outcome", help="'all' or a specific outcome name."),
+    out: Path = typer.Option(Path("trade-eval-backtest.html"), "--out", help="Output HTML path."),
+    open_browser: bool = typer.Option(True, "--open/--no-open", help="Open in browser after generating."),
+    train_end: int = typer.Option(2020, "--train-end", help="Last training season."),
+    test_end: int = typer.Option(2024, "--test-end", help="Last test season."),
+) -> None:
+    """Fit V3 across outcomes and generate a calibration + feature-credibility HTML report (slow — runs MCMC)."""
+    configure_logging()
+    if outcome == "all":
+        outcomes: list[str] = list(V2_OUTCOMES)
+    else:
+        _v2_validate_outcome(outcome)
+        outcomes = [outcome]
+    from savage_trade_evaluator.reports import builder
+    typer.echo(f"building backtest report for {outcomes}…")
+    path = builder.build_backtest_report(outcomes=outcomes, out_path=out, train_end=train_end, test_end=test_end)
+    typer.echo(f"wrote {path}")
+    if open_browser:
+        webbrowser.open(path.resolve().as_uri())
