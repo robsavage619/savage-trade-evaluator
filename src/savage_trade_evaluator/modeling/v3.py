@@ -27,7 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # noqa: E402
 import pymc as pm
 
 from savage_trade_evaluator.modeling.v2.backtest import (
@@ -38,6 +38,40 @@ from savage_trade_evaluator.modeling.v2.features import (
     ACQUIRED_PLAYER_FEATURES,
     ALL_FEATURES,
 )
+from savage_trade_evaluator.modeling.v2.outcomes import build_outcomes, build_outcomes_windowed
+
+# Q-07: war_delta skips the transition year (T+1) — 30% MAE improvement.
+# Q-02: extending to T+5 adds further credible features (11 vs 6 at T+1..T+3).
+# Combined T+2..T+5 is the V3 default for war_delta.  Dollar_surplus keeps
+# T+1..T+3 because cap obligations in year 1 are real.
+V3_WAR_WINDOW: tuple[int, int] = (2, 5)
+
+
+def _build_v3_outcomes() -> pd.DataFrame:
+    """Build outcomes with per-outcome window choices (D-Q02/Q07 empirical findings).
+
+    war_delta    → T+2..T+5  (skip transition year, extend to 5yr)
+    dollar_surplus → T+1..T+3 (standard; shifting hurts it per Q-07)
+    xwoba_delta, kpct_delta → from standard build_outcomes()
+    """
+    import pandas as pd
+
+    # Standard outcomes for xwoba_delta + kpct_delta + dollar_surplus
+    std = build_outcomes()
+    # war_delta from T+2..T+5
+    war_windowed = build_outcomes_windowed(
+        war_window_start=V3_WAR_WINDOW[0],
+        war_window_end=V3_WAR_WINDOW[1],
+    )[["trade_event_id", "receiver_bref", "trade_season", "war_delta"]]
+    merged = std.drop(columns=["war_delta"]).merge(
+        war_windowed, on=["trade_event_id", "receiver_bref", "trade_season"], how="left"
+    )
+    return merged
+
+
+def assemble_v3_combined() -> pd.DataFrame:
+    """Feature + outcome matrix with V3-specific window choices for war_delta."""
+    return assemble_combined(outcomes_df=_build_v3_outcomes())
 
 # Per-outcome feature subsets per R-35.
 V3_OUTCOME_FEATURES: dict[str, tuple[str, ...]] = {
@@ -81,8 +115,17 @@ def _split_and_impute(
     train_end_season: int = 2020,
     test_end_season: int = 2024,
     minimum_features_present: int | None = None,
+    combined: pd.DataFrame | None = None,
+    meaningful_trades_only: bool = False,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    combined = assemble_combined()
+    if combined is None:
+        combined = assemble_v3_combined()
+    if meaningful_trades_only:
+        # Q-01: restrict to trades where at least one acquired player had ≥2 WAR
+        # in T-1. Uses receiver_acquired_player_quality as an ordinal proxy —
+        # the actual war_t_minus_1 filter requires a separate join.
+        combined = combined[combined["receiver_acquired_player_quality"].notna()
+                            & (combined["receiver_acquired_player_quality"] >= 1.0)].copy()
     combined = combined[combined[outcome].notna()].copy()
     # Default 5 matches V2's smoke-test convention; loose enough that
     # large-feature-set outcomes (war / dollar) keep ~3600 train rows.
@@ -185,11 +228,14 @@ def backtest_outcome_v3(
     test_end_season: int = 2024,
     feature_cols: tuple[str, ...] | None = None,
     minimum_features_present: int | None = None,
+    combined: pd.DataFrame | None = None,
+    meaningful_trades_only: bool = False,
 ) -> V3BacktestResult:
     """Run V3 train/test backtest for one outcome."""
     cols = feature_cols if feature_cols is not None else V3_OUTCOME_FEATURES[outcome]
     train, test = _split_and_impute(
-        outcome, cols, train_end_season, test_end_season, minimum_features_present
+        outcome, cols, train_end_season, test_end_season, minimum_features_present,
+        combined=combined, meaningful_trades_only=meaningful_trades_only,
     )
     if len(train) < 50:
         msg = (

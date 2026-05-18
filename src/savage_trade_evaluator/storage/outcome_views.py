@@ -121,7 +121,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         rcvr.war_with_receiver AS war_t_with_receiver,
         t1.war     AS war_t_plus_1,
         t2.war     AS war_t_plus_2,
-        t3.war     AS war_t_plus_3
+        t3.war     AS war_t_plus_3,
+        t4.war     AS war_t_plus_4,
+        t5.war     AS war_t_plus_5
     FROM trade_player_unified t
     LEFT JOIN season_war prior ON prior.mlb_id = t.mlb_player_id
                               AND prior.year_id = t.trade_season - 1
@@ -133,6 +135,10 @@ VIEW_STATEMENTS: tuple[str, ...] = (
                               AND t2.year_id    = t.trade_season + 2
     LEFT JOIN season_war t3    ON t3.mlb_id    = t.mlb_player_id
                               AND t3.year_id    = t.trade_season + 3
+    LEFT JOIN season_war t4    ON t4.mlb_id    = t.mlb_player_id
+                              AND t4.year_id    = t.trade_season + 4
+    LEFT JOIN season_war t5    ON t5.mlb_id    = t.mlb_player_id
+                              AND t5.year_id    = t.trade_season + 5
     LEFT JOIN receiving_team_war rcvr
                               ON rcvr.mlb_id    = t.mlb_player_id
                               AND rcvr.year_id  = t.trade_season
@@ -156,7 +162,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         same.est_woba  AS xwoba_t,
         t1.est_woba    AS xwoba_t_plus_1,
         t2.est_woba    AS xwoba_t_plus_2,
-        t3.est_woba    AS xwoba_t_plus_3
+        t3.est_woba    AS xwoba_t_plus_3,
+        t4.est_woba    AS xwoba_t_plus_4,
+        t5.est_woba    AS xwoba_t_plus_5
     FROM trade_player_unified t
     LEFT JOIN statcast_batting_expected prior
         ON prior.player_id = t.mlb_player_id AND prior.year = t.trade_season - 1
@@ -168,6 +176,10 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         ON t2.player_id    = t.mlb_player_id AND t2.year    = t.trade_season + 2
     LEFT JOIN statcast_batting_expected t3
         ON t3.player_id    = t.mlb_player_id AND t3.year    = t.trade_season + 3
+    LEFT JOIN statcast_batting_expected t4
+        ON t4.player_id    = t.mlb_player_id AND t4.year    = t.trade_season + 4
+    LEFT JOIN statcast_batting_expected t5
+        ON t5.player_id    = t.mlb_player_id AND t5.year    = t.trade_season + 5
     """,
     """
     CREATE OR REPLACE VIEW trade_player_xera_window AS
@@ -878,6 +890,35 @@ VIEW_STATEMENTS: tuple[str, ...] = (
             / NULLIF(COUNT(*), 0) AS pct_awarded_players
     FROM player_award_counts
     GROUP BY trade_event_id, receiver_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW team_season_payroll_context AS
+    -- Per (team, season): payroll as pct of luxury-tax threshold + 3yr trend.
+    -- Threshold hard-coded per collective bargaining agreement.
+    -- payroll_pct_of_cap: how much of the budget is committed (0=empty, 1=at cap)
+    -- payroll_trend_3yr: normalized 3yr payroll growth (positive = increasing spend)
+    WITH luxury_cap AS (
+        SELECT * FROM (VALUES
+            (2011, 178000000), (2012, 178000000), (2013, 178000000),
+            (2014, 189000000), (2015, 189000000), (2016, 189000000),
+            (2017, 195000000), (2018, 197000000), (2019, 206000000),
+            (2020, 208000000), (2021, 210000000), (2022, 230000000),
+            (2023, 233000000), (2024, 237000000), (2025, 241000000)
+        ) AS t(season, threshold)
+    )
+    SELECT
+        stp.team_bref,
+        stp.season,
+        stp.total_payroll,
+        lc.threshold AS luxury_tax_threshold,
+        stp.total_payroll / NULLIF(lc.threshold, 0) AS payroll_pct_of_cap,
+        (stp.total_payroll - stp3.total_payroll)
+            / NULLIF(stp3.total_payroll, 0) AS payroll_trend_3yr
+    FROM spotrac_team_payroll stp
+    LEFT JOIN luxury_cap lc ON lc.season = stp.season
+    LEFT JOIN spotrac_team_payroll stp3
+        ON stp3.team_bref = stp.team_bref
+        AND stp3.season   = stp.season - 3
     """,
 )
 

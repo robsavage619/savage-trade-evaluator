@@ -46,6 +46,10 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     "receiver_org_pitcher_k_jump_3yr",
     "receiver_org_hitter_xwoba_jump_3yr",
     "receiver_total_payroll",
+    # Contention window features (thesis core: payroll room × win probability).
+    "receiver_payroll_pct_of_cap",
+    "receiver_payroll_trend_3yr",
+    "receiver_contention_window_score",
 )
 
 ORIGIN_FEATURES: tuple[str, ...] = ("receiver_acquired_from_dev_cluster_score",)
@@ -85,6 +89,13 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 twc.receiver_org_hitter_xwoba_jump_3yr,
                 -- Payroll context (NEW from Spotrac)
                 stp.total_payroll AS receiver_total_payroll,
+                -- Contention window features (thesis core)
+                tspc.payroll_pct_of_cap AS receiver_payroll_pct_of_cap,
+                tspc.payroll_trend_3yr  AS receiver_payroll_trend_3yr,
+                -- Composite: high pyth_pct × low payroll commitment = win-now capacity
+                twc.receiver_prior_year_pyth_pct
+                    * GREATEST(0.0, 1.0 - COALESCE(tspc.payroll_pct_of_cap, 0.5))
+                    AS receiver_contention_window_score,
                 -- Origin features
                 twc.receiver_acquired_from_dev_cluster_score,
                 -- Pedigree (NEW from mlb_awards)
@@ -101,6 +112,9 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
             LEFT JOIN spotrac_team_payroll stp
                 ON stp.team_bref = twc.receiver_bref
                 AND stp.season = twc.trade_season
+            LEFT JOIN team_season_payroll_context tspc
+                ON tspc.team_bref = twc.receiver_bref
+                AND tspc.season   = twc.trade_season
             LEFT JOIN trade_acquired_player_pedigree tpp
                 ON tpp.trade_event_id = twc.trade_event_id
                 AND tpp.receiver_bref = twc.receiver_bref

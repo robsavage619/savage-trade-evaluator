@@ -101,6 +101,83 @@ def reset_dollar_per_war_cache() -> None:
     _DOLLAR_PER_WAR_CACHE = None
 
 
+def build_outcomes_windowed(
+    start_season: int = 1990,
+    end_season: int = 2024,
+    war_window_start: int = 1,
+    war_window_end: int = 3,
+) -> pd.DataFrame:
+    """Parameterised outcome builder for Q-02/Q-07 window experiments.
+
+    Args:
+        war_window_start: First T+N year to include (1=default, 2=skip transition year).
+        war_window_end:   Last T+N year to include (3=default, 5=longer window).
+
+    Returns the same schema as ``build_outcomes`` but with ``war_delta`` computed
+    from the requested window instead of the fixed T+1..T+3.
+    """
+    if war_window_end > 5:
+        msg = "war_window_end > 5 not supported (view only has T+5)"
+        raise ValueError(msg)
+    dollar_per_war = compute_empirical_dollar_per_war()
+    values_clause = ", ".join(f"({y}, {v})" for y, v in dollar_per_war.items())
+    war_cols_recv = " + ".join(
+        f"COALESCE(w.war_t_plus_{i}, 0)" for i in range(war_window_start, war_window_end + 1)
+    )
+    n_years = war_window_end - war_window_start + 1
+    with db.connect(read_only=True) as conn:
+        df = conn.execute(
+            f"""
+            WITH r_recv AS (
+                SELECT * FROM (VALUES {values_clause}) AS t(season, dollar_per_war)
+            ),
+            war_per_trade AS (
+                SELECT
+                    t.trade_event_id,
+                    t.to_team_bref AS receiver_bref,
+                    SUM({war_cols_recv}) / NULLIF(COUNT(DISTINCT t.leg_index), 0)
+                        AS war_delta,
+                    SUM({war_cols_recv}) AS war_received_total,
+                    t.trade_season
+                FROM trade_player_unified t
+                LEFT JOIN trade_player_war_window w
+                    ON w.trade_event_id = t.trade_event_id
+                    AND w.leg_index = t.leg_index
+                WHERE t.to_team_bref IS NOT NULL
+                    AND t.trade_season BETWEEN {start_season} AND {end_season}
+                GROUP BY t.trade_event_id, t.to_team_bref, t.trade_season
+            )
+            SELECT
+                wpt.trade_event_id,
+                wpt.receiver_bref,
+                wpt.trade_season,
+                wpt.war_delta,
+                wpt.war_received_total * COALESCE(r_recv.dollar_per_war, 8000000)
+                    AS war_value_received_dollars
+            FROM war_per_trade wpt
+            LEFT JOIN r_recv ON r_recv.season = wpt.trade_season
+            """
+        ).df()
+    with db.connect(read_only=True) as conn:
+        cap = conn.execute(
+            """
+            SELECT tpu.trade_event_id, tpu.to_team_bref AS receiver_bref,
+                   SUM(spc.cap_hit) AS total_cap_acquired
+            FROM trade_player_unified tpu
+            LEFT JOIN spotrac_player_contracts spc
+                ON spc.mlb_player_id = tpu.mlb_player_id
+                AND spc.season = tpu.trade_season
+            WHERE tpu.to_team_bref IS NOT NULL
+            GROUP BY tpu.trade_event_id, tpu.to_team_bref
+            """
+        ).df()
+    df = df.merge(cap, on=["trade_event_id", "receiver_bref"], how="left")
+    df["dollar_surplus"] = (
+        df["war_value_received_dollars"].fillna(0.0) - df["total_cap_acquired"].fillna(0.0)
+    )
+    return df[["trade_event_id", "receiver_bref", "trade_season", "war_delta", "dollar_surplus"]]
+
+
 def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataFrame:
     """Build the four-outcome target matrix.
 

@@ -67,10 +67,17 @@ def _crps_empirical(y: np.ndarray, samples: np.ndarray) -> float:
     return float(term1 - term2)
 
 
-def assemble_combined() -> pd.DataFrame:
-    """Build features + outcomes joined on (trade_event_id, receiver_bref)."""
+def assemble_combined(outcomes_df: pd.DataFrame | None = None) -> pd.DataFrame:
+    """Build features + outcomes joined on (trade_event_id, receiver_bref).
+
+    Args:
+        outcomes_df: Optional pre-built outcomes DataFrame. If None, calls
+            ``build_outcomes()`` with defaults. Pass a custom outcomes frame to
+            swap in alternative windows (Q-02 5yr, Q-07 shifted).
+    """
     features_df = build_feature_matrix()
-    outcomes_df = build_outcomes()
+    if outcomes_df is None:
+        outcomes_df = build_outcomes()
     merged = features_df.merge(
         outcomes_df,
         on=["trade_event_id", "receiver_bref", "trade_season"],
