@@ -1,4 +1,4 @@
-# Savage Trade Evaluator
+# Savage Analytics
 
 > **Context-aware MLB trade valuation.** Every player has *N* valuations — one per acquiring club's contention window, payroll situation, farm depth, positional need, and dev-system fit. Fair value is a tensor, not a scalar. Every public model (FanGraphs $/WAR, Creagh charts, Baseball America value lists) collapses that tensor onto one axis. We're trying to do better.
 
@@ -7,18 +7,22 @@
 [![pyright](https://img.shields.io/badge/type%20check-pyright-blue)](https://microsoft.github.io/pyright/)
 [![uv](https://img.shields.io/badge/packaging-uv-de5fe9)](https://github.com/astral-sh/uv)
 [![DuckDB](https://img.shields.io/badge/store-DuckDB-fff100)](https://duckdb.org/)
-[![rounds completed](https://img.shields.io/badge/research_rounds-31-success)](RESEARCH_LOG.md)
+[![React](https://img.shields.io/badge/frontend-React%2019-61dafb)](frontend/)
+[![Vite](https://img.shields.io/badge/build-Vite%208-646cff)](frontend/)
+[![rounds completed](https://img.shields.io/badge/research_rounds-35-success)](RESEARCH_LOG.md)
 [![decisions logged](https://img.shields.io/badge/ADR_decisions-30-success)](https://github.com/robsavage619/savage-trade-evaluator)
-[![schema](https://img.shields.io/badge/duckdb_schema-v18-informational)](src/savage_trade_evaluator/storage/schemas.py)
+[![schema](https://img.shields.io/badge/duckdb_schema-v20-informational)](src/savage_trade_evaluator/storage/schemas.py)
 [![rows](https://img.shields.io/badge/duckdb_rows-1.29M-informational)](docs/DATA_SOURCE_PROBE.md)
 
 ---
 
 ## What this is
 
-A research-grade data spine + analytical framework for evaluating MLB trades against the framing: **same player, different teams, different valuations.** Not a Sabermetric calculator. Not another $/WAR chart. A claims-and-receipts engine for the question *"was this trade a good move for this specific team in this specific era under this specific GM?"*
+**Savage Analytics** is a full-stack research platform for evaluating MLB trades. The backend is a research-grade data spine + Bayesian analytical framework. The frontend is a React SPA with 7 routes covering org scouting, player profiling, trade construction, and live research findings.
 
-The project began with one specific thesis: **the Dodgers' MLB-leading dev system inflates prospects who then fail elsewhere.** 31 rounds of testing later, the thesis is empirically rejected — but the *process* of rejecting it produced a richer framework, the project's most-supported single finding (TEX-Daniels sell-high), the largest credible coefficient in the program (pitcher K%-trajectory at -10.8 K-percentile-points), and a 2D org-quality map that replaces the system-tax narrative entirely.
+The core claim: **same player, different teams, different valuations.** Not a Sabermetric calculator. Not another $/WAR chart. A claims-and-receipts engine for the question *"was this trade a good move for this specific team in this specific era under this specific GM?"*
+
+The project began with one specific thesis: **the Dodgers' MLB-leading dev system inflates prospects who then fail elsewhere.** 35 rounds of testing later, the thesis is empirically rejected — but the *process* of rejecting it produced a richer framework, the project's most-supported single finding (TEX-Daniels sell-high), the largest credible coefficient in the program (pitcher K%-trajectory at -10.8 K-percentile-points), and a 2D org-quality map that replaces the system-tax narrative entirely.
 
 **The single most useful artifact:** the 2D `(dev WAR, trade Δ)` coordinate map of all 30 franchises. See [Headline findings](#headline-findings) below.
 
@@ -26,7 +30,7 @@ The project began with one specific thesis: **the Dodgers' MLB-leading dev syste
 
 ## TL;DR — what we found
 
-After **31 research rounds** and **30 logged decisions**:
+After **35 research rounds** and **30 logged decisions**:
 
 ### Original thesis: rejected
 
@@ -49,6 +53,10 @@ The "Dodgers system-tax" thesis predicted young system-developed prospects shoul
 | **Regime** | GM identity drives ~3× more variance than team identity. Cluster on (team, regime), not team. | [D-28](https://github.com/robsavage619/savage-trade-evaluator) |
 | **Mechanism** | Sell-high ≠ system-tax. Per-regime negative intercepts must be decomposed into vet-at-peak vs young-prospect buckets. | [D-29](https://github.com/robsavage619/savage-trade-evaluator) |
 | **Coverage** | Dev credit ≠ trade Δ. Teams should get credit for developing players who become stars elsewhere. | D-30 candidate |
+
+### The R-33/34/35 arc — V3 model adoption
+
+Three sequential bracket tests ([R-33](RESEARCH_LOG.md), [R-34](RESEARCH_LOG.md), [R-35](RESEARCH_LOG.md)) compared V0 (no pooling) / V1 (team-cluster) / V2 (team+regime nesting) on identical data. **Team pooling and regime nesting both add zero predictive signal over a flat population-level intercept.** The multilevel structure that motivated V2 was discarded. The active model is now V3 — single-level Bayesian regression with per-outcome feature selection.
 
 **Full synthesis:** [`docs/PHASE1_SYNTHESIS.md`](docs/PHASE1_SYNTHESIS.md).
 
@@ -113,7 +121,7 @@ Full table: [`docs/PHASE1_SYNTHESIS.md#the-2d-org-quality-map`](docs/PHASE1_SYNT
 # Install (uv handles Python 3.12 + every dep)
 uv sync
 
-# Initialize schema (DuckDB v12 + teams + views)
+# Initialize schema (DuckDB v20 + teams + views)
 uv run ste init
 
 # Ingest the V1 data spine
@@ -123,7 +131,7 @@ uv run ste ingest bwar                       # Baseball Reference WAR, all-time 
 uv run ste ingest statcast                   # Baseball Savant 2015-2024 (~10s)
 uv run ste ingest statcast-extended          # Batter percentiles + pitcher arsenal + OAA (~5min)
 uv run ste ingest draft                      # MLB Stats API draft 1990-2024 (~30s, 46K picks)
-uv run ste ingest coaches                    # MLB API coaches per team-season (~3min)
+uv run ste ingest coaches                    # MLB API coaching staff per team-season (~3min)
 uv run ste ingest front-office --start 1990  # BR front-office 1990-2024 (~50min, rate-limited)
 uv run ste ingest chadwick                   # Chadwick register (birth dates + IDs)  ~5s
 uv run ste ingest mlb-people                 # Per-player MLB profiles (country/handedness)  ~30s
@@ -135,6 +143,7 @@ uv run ste ingest pitch-movement             # Statcast pitch physics 2015-2024 
 uv run ste ingest rosters                    # 40-man rosters per team-season  ~5min
 uv run ste ingest venues                     # MLB venues with dimensions  ~1s
 uv run ste ingest team-season-stats          # Per-team-season aggregates  ~3min
+uv run ste ingest spotrac                    # Spotrac contracts (17K, $49B)  ~5min
 
 # Check what landed
 uv run ste status
@@ -144,7 +153,7 @@ uv run ste catalog --status ingested
 ### Quick reads
 
 ```bash
-# Pressly trade — the V1 canonical validation case (MIN→HOU 2018-07-27)
+# Pressly trade — V1 personnel reconstruction (MIN→HOU 2018-07-27)
 uv run ste analyze personnel 371509
 
 # Run the headline 2D org-quality map
@@ -156,8 +165,11 @@ uv run python scripts/ablation_multi_outcome_omnibus.py
 # Re-derive the TEX-Daniels sell-high finding
 uv run python scripts/sell_high_vs_system_tax.py
 
+# Generate an HTML research report
+uv run python -m savage_trade_evaluator.reports.builder
+
 # Browse known stat sources
-uv run ste catalog                            # all 25 entries
+uv run ste catalog                            # all entries
 uv run ste catalog --status ingested          # what's loaded
 uv run ste catalog --status blocked           # FanGraphs etc.
 ```
@@ -166,7 +178,7 @@ uv run ste catalog --status blocked           # FanGraphs etc.
 
 ## Data layer at a glance
 
-**29 tables · 1.29M rows · schema v18**
+**29 tables · 1.29M rows · schema v20**
 
 | Source | Coverage | Rows | Notes |
 |---|---|---|---|
@@ -191,12 +203,15 @@ uv run ste catalog --status blocked           # FanGraphs etc.
 | **Team rosters (40-man)** | 2010-2024 | 22,549 | Per team-season player composition |
 | **Team season stats** | 2010-2024 | 1,350 | Per-team-season hitting/pitching/fielding aggregates |
 | **MLB coaches** | 2010-2024 | 5,380 | Manager + assistants per team-season |
-| **BR front-office personnel** | 1990-2024 | 2,000+ (growing) | GM, POBO, Farm Director, Scouting Director |
-| **MLB standings** | 1990-2024 | ~450 team-seasons | Wins, losses, win pct |
+| **BR front-office personnel** | 1990-2024 | 2,000+ | GM, POBO, Farm Director, Scouting Director |
+| **MLB standings** | 1990-2024 | ~450 | Wins, losses, win pct |
+| **Spotrac contracts** | 2000-2024 | ~17,000 | $49B total value; empirical $/WAR curve replacing hardcoded |
+| **MiLB stats** | recent | — | Minor league quality features for V3 model |
+| **TJStats (Nestico API)** | 2015+ | — | Public API (tjstats.ca); mapped in catalog |
 
-**Storage:** DuckDB single-file at `data/duckdb/trades.db`. Schema version 12. Versioned DDL at [`src/savage_trade_evaluator/storage/schemas.py`](src/savage_trade_evaluator/storage/schemas.py).
+**Storage:** DuckDB single-file at `data/duckdb/trades.db`. Schema version 20. Versioned DDL at [`src/savage_trade_evaluator/storage/schemas.py`](src/savage_trade_evaluator/storage/schemas.py).
 
-**What we don't have:** FanGraphs (Cloudflare-blocked, D-25), MLB Pipeline top-100 prospect lists (lazy-load JS, deferred to Playwright), catcher framing (Savant CSV-parse failure), comprehensive international amateur signing data (proxied via post-1995-not-in-draft-picks; real ingest deferred).
+**What we don't have:** FanGraphs (Cloudflare-blocked, D-25), MLB Pipeline top-100 prospect lists (lazy-load JS, deferred to Playwright), comprehensive international amateur signing data (proxied via post-1995-not-in-draft-picks; real ingest deferred).
 
 ---
 
@@ -216,23 +231,48 @@ The Ryan Pressly trade (MIN → HOU, 2018-07-27, `trade_event_id=371509`) is the
 
 Personnel triangle was also fully reconstructed: HOU = Luhnow/Hinch/Strom; MIN = Falvey/Levine/Molitor/Alston. See `uv run ste analyze personnel 371509`.
 
-Any V1 model must rate this trade as a clear HOU win. If it doesn't, something is broken before we touch open questions.
+Note: Pressly is a strong reconstruction case, but not a reliable model calibration anchor — hierarchical shrinkage pulls tail-of-distribution outcomes toward the regime mean by design (see validation philosophy in [CLAUDE.md](CLAUDE.md)).
 
 ---
 
 ## Architecture
 
 ```
-savage-trade-evaluator/
+savage-analytics/
 ├── README.md                              ← you are here
 ├── docs/
 │   ├── PHASE1_SYNTHESIS.md                ← the project's "where we are" doc, read first
 │   ├── STATS_CATALOG.md                   ← registry of stat sources, ingested + available + blocked
-│   └── NAIVE_BASELINE.md                  ← the baseline model we want to beat
-├── RESEARCH_LOG.md                        ← R-01 → R-31 chronological experiment log
+│   ├── NAIVE_BASELINE.md                  ← the baseline model we want to beat
+│   └── V2_DESIGN.md                       ← archived; V3 single-level model supersedes this
+├── RESEARCH_LOG.md                        ← R-01 → R-35 chronological experiment log
 ├── LESSONS.md                             ← gotchas, perf wins, hard-earned lessons
 ├── CHANGELOG.md                           ← Keep-a-Changelog format
 ├── CLAUDE.md / AGENTS.md / GEMINI.md      ← agent-context files (symlinked to CLAUDE.md)
+│
+├── frontend/                              ← Savage Analytics React SPA
+│   ├── src/
+│   │   ├── routes/                        ← 7 route components
+│   │   │   ├── OrgExplorer.tsx            # org comparison / 2D map
+│   │   │   ├── OrgScout.tsx               # deep org-level analysis
+│   │   │   ├── PlayerProfile.tsx          # player detail + percentile radar
+│   │   │   ├── PresslyCase.tsx            # canonical V1 validation case
+│   │   │   ├── Research.tsx               # scroll-driven research findings
+│   │   │   ├── TradeBuilder.tsx           # trade evaluation interface
+│   │   │   └── TradeWorkspace.tsx         # multi-trade workspace
+│   │   ├── components/                    ← shared UI components
+│   │   │   ├── AiReasoning.tsx            # AI reasoning drawer
+│   │   │   ├── ClaudeCodeDrawer.tsx       # Claude Code dev integration
+│   │   │   ├── FarmSystem.tsx             # farm / prospect visualization
+│   │   │   ├── PercentileRadar.tsx        # Statcast percentile radar charts
+│   │   │   ├── PersonnelTriangle.tsx      # GM / manager / coach triangle
+│   │   │   ├── PosteriorViolin.tsx        # Bayesian posterior violin plots
+│   │   │   ├── TeamIdentitySwitcher.tsx   # acquiring-team context switcher
+│   │   │   ├── TradePipeline.tsx          # trade leg visualization
+│   │   │   └── ...                        # PlayerCard, Sparkline, TeamLogo, etc.
+│   │   ├── data/                          ← seed data (orgs, farm, player index)
+│   │   └── types.ts
+│   └── package.json                       ← React 19, Vite 8, Tailwind 4, TS 6
 │
 ├── src/savage_trade_evaluator/
 │   ├── config.py                          # paths, settings, logging
@@ -246,23 +286,31 @@ savage-trade-evaluator/
 │   │   ├── front_office.py                # BR front-office scrape
 │   │   ├── draft.py                       # MLB Stats API draft endpoint
 │   │   ├── standings.py                   # final standings per season
+│   │   ├── spotrac.py                     # Spotrac contracts (17K rows, $49B)
+│   │   ├── milb_stats.py                  # MiLB stats (minor league quality features)
+│   │   ├── prospects.py                   # prospect ingest
+│   │   ├── fortification.py               # fortification-pass sources
 │   │   └── catalog.py                     # stat-source registry
 │   ├── storage/
 │   │   ├── db.py                          # DuckDB connection context manager
-│   │   ├── schemas.py                     # versioned DDL (current v12)
+│   │   ├── schemas.py                     # versioned DDL (current v20)
 │   │   ├── teams.py                       # MLB↔bWAR↔Retrosheet team-code mapping
 │   │   ├── trade_views.py                 # trade_movements, trade_events, etc.
 │   │   └── outcome_views.py               # metric-agnostic outcome-window views
 │   ├── modeling/
 │   │   ├── naive_baseline.py              # FanGraphs-style $/WAR baseline (to beat)
-│   │   ├── context_aware.py               # V2 multilevel model with FEATURE_COLUMNS
+│   │   ├── v3.py                          # V3 single-level Bayesian regression (active)
+│   │   ├── v2/                            # V2 multilevel (archived; superseded by V3)
 │   │   ├── bayesian.py                    # PyMC fitting + CRPS scoring
 │   │   └── features.py                    # team-season feature engineering
+│   ├── reports/                           # HTML report generation
+│   │   ├── builder.py                     # report assembly
+│   │   └── charts.py                      # Plotly chart helpers
 │   └── analysis/
 │       ├── trade_summary.py               # read-only trade lookups
 │       └── backtest.py                    # out-of-time backtest harness
 │
-├── scripts/                               # 18 standalone reproducible analyses
+├── scripts/                               # 20+ standalone reproducible analyses
 │   ├── ablation_*.py                      # R-06 through R-22 feature ablations
 │   ├── origin_org_*.py                    # R-10 through R-22 origin-org tests
 │   ├── regime_control_reruns.py           # R-27 (team, regime) clustering
@@ -270,13 +318,104 @@ savage-trade-evaluator/
 │   ├── investigate_regime_anomalies.py    # R-29 archaeology
 │   ├── sell_high_vs_system_tax.py         # R-30 mechanism decomposition
 │   ├── dev_credit_full.py                 # R-31 dev-credit + 2D map
-│   └── org_stability_decade_split.py      # R-25 variance decomposition
+│   ├── org_stability_decade_split.py      # R-25 variance decomposition
+│   ├── export_farm.py                     # export farm system seed data
+│   ├── export_org_profiles.py             # export org profile JSON
+│   ├── export_player_index.py             # export player index for frontend
+│   ├── export_player_profiles.py          # export per-player JSON for frontend
+│   └── export_seed.py                     # full frontend seed export
 │
 ├── tests/                                 # unit tests for parsers, schema, IDs
 └── data/
     ├── duckdb/trades.db                   # the single-file store
     └── static/retrosheet/tranDB.zip       # Retrosheet cached download
 ```
+
+---
+
+## Frontend — Savage Analytics SPA
+
+The [`frontend/`](frontend/) directory is a production React application. It runs independently of the Python backend — the frontend consumes exported JSON seed data (generated by `scripts/export_*.py`) rather than hitting a live API.
+
+**Tech stack:**
+
+| | |
+|---|---|
+| Framework | React 19.2.6 + React Router 7.15.1 |
+| Build | Vite 8.0.12 |
+| Styling | Tailwind CSS 4.3.0 |
+| State | Zustand 5.0.13 |
+| Animation | Framer Motion 12.38.0 |
+| Charts | Recharts 3.8.1 |
+| Data viz | d3-array, d3-scale |
+| Types | TypeScript 6.0.2 |
+| Icons | Lucide React |
+
+**Routes:**
+
+| Route | Component | What it does |
+|---|---|---|
+| `/` | OrgExplorer | 2D org-quality map; all 30 franchises at a glance |
+| `/org/:team` | OrgScout | Deep org analysis — dev pipeline, trade history, regime breakdown |
+| `/player/:id` | PlayerProfile | Player detail with Statcast percentile radar and posterior violin plots |
+| `/pressly` | PresslyCase | Interactive reconstruction of the MIN→HOU 2018 canonical trade |
+| `/research` | Research | Scroll-driven findings page wired to R-NN summaries |
+| `/trade` | TradeBuilder | Trade evaluation interface with context switching |
+| `/workspace` | TradeWorkspace | Multi-trade workspace for side-by-side comparisons |
+
+**Running the frontend:**
+
+```bash
+cd frontend
+npm install
+npm run dev          # http://localhost:5173
+
+# Type check + build
+npm run build
+```
+
+**Regenerate frontend seed data from the DB:**
+
+```bash
+uv run python scripts/export_seed.py          # full export (orgs + players)
+uv run python scripts/export_player_profiles.py
+uv run python scripts/export_org_profiles.py
+uv run python scripts/export_farm.py
+```
+
+---
+
+## Modeling — V3 single-level Bayesian
+
+The active model is **V3** ([`src/savage_trade_evaluator/modeling/v3.py`](src/savage_trade_evaluator/modeling/v3.py)).
+
+### Why V3 replaced V2
+
+R-33, R-34, and R-35 ran a V0/V1/V2 bracket on identical data:
+- **V0** — no pooling, flat population-level intercept
+- **V1** — team-cluster random intercepts
+- **V2** — (team, GM-regime) nested random intercepts
+
+Result: V1 and V2 add zero predictive signal over V0. The multilevel structure that motivated V2 was producing more complex priors with no CRPS benefit. V3 is V0 with per-outcome feature selection.
+
+### V3 key properties
+
+- **Single-level Bayesian regression** (PyMC), one model per outcome metric
+- **Outcome window:** war_delta uses T+2…T+5 (skips T+1 transition year; ~30% MAE improvement — Q-07)
+- **Per-outcome feature selection** (D-27): features are selected per metric, not shared across outcomes
+- **Contention-window feature** live (Q-01/Q-02): acquirer's playoff probability at trade date
+- **Empirical $/WAR curve** from Spotrac veterans (17K contracts, $49B) replaces hardcoded market rate
+- **Credibility threshold:** 90% CI excludes zero AND directional mass ≥ 95%
+
+### V3 CLI
+
+```bash
+uv run ste v2 fit          # fit the model (note: v2 CLI namespace, V3 architecture)
+uv run ste v2 backtest     # out-of-time backtest
+uv run ste v2 predict      # score a specific trade
+```
+
+V2's multilevel design is documented in [`docs/V2_DESIGN.md`](docs/V2_DESIGN.md) for reference; it is not the active architecture.
 
 ---
 
@@ -287,21 +426,22 @@ If you have **15 minutes:**
 
 If you have **30 minutes:**
 2. This README (you're here)
-3. [`RESEARCH_LOG.md`](RESEARCH_LOG.md) — pick the R-NN entries that interest you. R-19, R-22, R-25, R-30, R-31 are the highlight reel
+3. [`RESEARCH_LOG.md`](RESEARCH_LOG.md) — pick the R-NN entries that interest you. R-19, R-22, R-25, R-30, R-31, R-33/34/35 are the highlight reel
 4. [`~/Vault/savage_vault/wiki/trade-eval--decisions.md`](https://github.com/robsavage619/savage-trade-evaluator) — 30 modeling/scope decisions in ADR format
 
 If you have **an afternoon:**
 5. Pick a `scripts/*.py` file, read the docstring, run it, inspect the output
 6. Read [`docs/STATS_CATALOG.md`](docs/STATS_CATALOG.md) — the registry of every data source we know about, with ingest/available/blocked status
+7. Spin up the frontend: `cd frontend && npm run dev`
 
 If you have **a weekend:**
-7. Stand up your own ingest pipeline. The CLI is documented; the schema is in [`schemas.py`](src/savage_trade_evaluator/storage/schemas.py). Try beating the [`docs/NAIVE_BASELINE.md`](docs/NAIVE_BASELINE.md) baseline.
+8. Stand up your own ingest pipeline. The CLI is documented; the schema is in [`schemas.py`](src/savage_trade_evaluator/storage/schemas.py). Try beating the [`docs/NAIVE_BASELINE.md`](docs/NAIVE_BASELINE.md) baseline.
 
 ---
 
 ## The seven Phase 2 lessons (codified)
 
-The 31-round arc produced seven methodology principles that any future work on this project should treat as load-bearing:
+The 35-round arc produced seven methodology principles that any future work on this project should treat as load-bearing:
 
 1. **Default to rate-based outcomes** (xwOBA, K%, xERA, era_plus) for any research-thread test. WAR is preserved only for the surplus-value baseline (product convention). [D-26](https://github.com/robsavage619/savage-trade-evaluator)
 
@@ -315,22 +455,21 @@ The 31-round arc produced seven methodology principles that any future work on t
 
 6. **Per-regime intercepts must be decomposed into sell-high vs system-tax buckets** to interpret the mechanism. [D-29](https://github.com/robsavage619/savage-trade-evaluator)
 
-7. **Ship the 2D org-quality coordinate** as a first-class V2 product artifact. Each org gets a `(dev, trade)` tuple with quadrant label and strategy implications.
+7. **Multilevel structure is not free.** R-33/34/35 proved team pooling and regime nesting add zero signal in this dataset. Start flat (V3); only add hierarchy if it earns its complexity.
 
 ---
 
 ## Open follow-ups (deferred to Phase 2+)
 
-- [ ] Build a **sell-high detection feature** for V2 based on TEX-Daniels' archetype
+- [ ] Build a **sell-high detection feature** for V3 based on TEX-Daniels' archetype
 - [ ] **Re-ablate the 5 WAR-null features** (R-06/07/09/14) against rate-based outcomes — several may surface
 - [ ] **Scrape MLB Trade Rumors / Baseball America** international signing trackers via Playwright (no public API)
-- [ ] **Build (team, regime)-cluster framework** as the standard V2 architecture
-- [ ] **Rate-based-surplus naive baseline** (xwoba_received − xwoba_given_up) as the V2 model target
-- [ ] **Cross-metric replicate R-22's k_trajectory** under regime clustering
+- [ ] **Rate-based-surplus naive baseline** (xwoba_received − xwoba_given_up) as the V3 model target
+- [ ] **Cross-metric replicate R-22's k_trajectory** under V3 single-level architecture
 - [ ] **Per-pitch-type dev-fit analysis** using `statcast_pitcher_arsenal_stats`
 - [ ] **fWAR cross-check** on the project's main findings (currently bWAR-only per D-11)
 - [ ] **MLB Pipeline top-100** ingest via Playwright (lazy-loaded JS)
-- [ ] **Catcher framing** re-attempt (Savant CSV-parse failure currently)
+- [ ] **Extend contention window feature** (Q-02) across all outcome metrics
 
 ---
 
@@ -341,7 +480,7 @@ The project's analytical framework is shaped by a specific set of books, ingeste
 1. **Lindbergh & Sawchik, *The MVP Machine* (2019)** — the modern dev-fit thesis (Ch 9 = the Pressly case)
 2. **Click & Keri, *Baseball Between the Numbers* (2006)** — the canonical sabermetric reference. Ch 5-2 on $/WAR currency, Ch 9-3 on log-5 playoff probability
 3. McElreath, *Statistical Rethinking* (2nd ed., 2020) — multilevel Bayesian methodology backing every R-NN ablation
-4. Cunningham, *Causal Inference: The Mixtape* (2021) — Ch 10 synthetic control framework (queued for V2)
+4. Cunningham, *Causal Inference: The Mixtape* (2021) — Ch 10 synthetic control framework (queued for V2+)
 5. Longenhagen & McDaniel, *Future Value* (2020) — FV-grade-to-WAR mapping (R-08-prep)
 
 Plus, importantly:
@@ -376,15 +515,24 @@ Project meta docs:
 ## Dev
 
 ```bash
-# Lint + format
+# Backend — lint + format
 uv run ruff check src/ scripts/ tests/
 uv run ruff format src/ scripts/ tests/
 
-# Type check
+# Backend — type check
 uv run pyright src/
 
-# Tests
+# Backend — tests
 uv run pytest
+
+# Frontend — dev server
+cd frontend && npm run dev
+
+# Frontend — type check + build
+cd frontend && npm run build
+
+# Frontend — lint
+cd frontend && npm run lint
 
 # Reproduce any R-NN: pick a script, read its docstring, run it
 uv run python scripts/<analysis>.py
@@ -408,19 +556,25 @@ uv run python scripts/<analysis>.py
 | Commits | Conventional (`feat:` `fix:` `chore:` `docs:` `refactor:`) |
 | ADR style | Numbered `D-NN` entries in vault |
 | Experiment log | Numbered `R-NN` entries in RESEARCH_LOG |
+| Frontend | React 19, TypeScript 6, Tailwind 4, Vite 8 |
 
 ---
 
 ## Status
 
 **Phase 0:** Research & vault build-up — ✅ complete (22 vault notes, 5 books ingested)
-**Phase 1:** Data spine & analytical framework — ✅ substantively complete (31 research rounds, 30 decisions, 2D org-quality map shipped)
-**Phase 2:** Context-aware valuation model — ☐ next. Architecture decisions locked in via D-24/D-26/D-28/D-29.
+**Phase 1:** Data spine & analytical framework — ✅ substantively complete (35 research rounds, 30 decisions, 2D org-quality map shipped)
+**Phase 2:** Context-aware valuation model — 🔄 in progress
+  - V3 single-level Bayesian live (R-33/34/35 proved V2 multilevel adds nothing)
+  - Savage Analytics SPA shipped (v0.1) with 7 routes + full component library
+  - Q-series experiments underway (contention window, outcome window optimization)
+  - Spotrac empirical $/WAR curve live; MiLB + prospects ingest added
+
 **Phase 3:** GM-behavior layer (predict-the-trade) — ☐ later
-**Phase 4:** Product surface — ☐ later
+**Phase 4:** Product surface (public-facing) — ☐ later
 **Phase 5+:** Persona critique agents — ☐ later
 
-Current breakpoint: **R-31 + PHASE1_SYNTHESIS.md.** Phase 2 build sequence is documented in the synthesis doc.
+Current breakpoint: **R-35 + V3 model + Savage Analytics SPA v0.1.** Phase 2 build sequence is documented in [`docs/PHASE1_SYNTHESIS.md`](docs/PHASE1_SYNTHESIS.md).
 
 ---
 
