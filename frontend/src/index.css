@@ -62,36 +62,3 @@ html, body, #root {
 .chip-pos { background: rgba(61,220,151,0.12); color: var(--color-positive-500); border-color: rgba(61,220,151,0.35); }
 .chip-neg { background: rgba(255,93,115,0.12); color: var(--color-negative-500); border-color: rgba(255,93,115,0.35); }
 
-/* ── Savage Analytics nameplate ── */
-@keyframes shimmer {
-  0%   { background-position: 200% center; }
-  100% { background-position: -200% center; }
-}
-@keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255,106,19,0), 0 0 18px rgba(255,106,19,0.45), inset 0 1px 0 rgba(255,255,255,0.22); }
-  50%       { box-shadow: 0 0 0 5px rgba(255,106,19,0.12), 0 0 28px rgba(255,106,19,0.7), inset 0 1px 0 rgba(255,255,255,0.22); }
-}
-@keyframes ring-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-.nameplate-text {
-  background: linear-gradient(90deg,
-    #e0e5f4 0%, #ffb37a 35%, #ff8a3d 50%, #ffb37a 65%, #e0e5f4 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 5s linear infinite;
-}
-.nameplate-badge {
-  background: linear-gradient(145deg, #ff8a3d 0%, #ff4500 100%);
-  animation: badge-pulse 3s ease-in-out infinite;
-}
-.nameplate-ring {
-  border-radius: 50%;
-  border: 1px solid rgba(255,106,19,0.25);
-  border-top-color: rgba(255,138,61,0.7);
-  animation: ring-spin 4s linear infinite;
-}

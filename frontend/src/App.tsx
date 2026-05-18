@@ -24,29 +24,27 @@ function TopNav() {
     <header className="sticky top-0 z-50 border-b border-ink-700 bg-ink-950/85 backdrop-blur">
       <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-6 px-6 py-3">
         <NavLink to="/" className="group flex items-center gap-3 select-none">
-          {/* Badge */}
-          <div className="relative flex-shrink-0">
-            {/* Spinning outer ring */}
-            <div className="nameplate-ring absolute -inset-[4px]" />
-            {/* Soft halo behind badge */}
-            <div className="absolute inset-0 rounded-xl blur-[6px] opacity-60"
-              style={{ background: 'radial-gradient(circle, #ff6a13 0%, transparent 75%)' }} />
-            {/* Badge body */}
-            <div className="nameplate-badge relative grid h-9 w-9 place-items-center rounded-xl"
-              style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}>
-              <span style={{
-                fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 800,
-                color: 'white', letterSpacing: '-0.03em', lineHeight: 1,
-                textShadow: '0 1px 3px rgba(0,0,0,0.4)',
-              }}>SA</span>
-            </div>
-          </div>
+          {/* Geometric mark — scatter trend */}
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
+            {/* Regression trend line */}
+            <line x1="4" y1="27" x2="28" y2="5"
+              stroke="#ff8a3d" strokeWidth="1" strokeOpacity="0.35"
+              strokeDasharray="3 2.5" strokeLinecap="round" />
+            {/* Data nodes — ascending scatter */}
+            <circle cx="4"  cy="26" r="2"   fill="#e0e5f4" fillOpacity="0.25" />
+            <circle cx="12" cy="20" r="2"   fill="#e0e5f4" fillOpacity="0.35" />
+            <circle cx="20" cy="13" r="2"   fill="#e0e5f4" fillOpacity="0.5"  />
+            {/* Top-right node — the credible finding */}
+            <circle cx="27" cy="7"  r="2.5" fill="#ff8a3d" />
+          </svg>
+          {/* Separator */}
+          <div style={{ width: 1, height: 26, background: 'var(--color-ink-700)', flexShrink: 0 }} />
           {/* Wordmark */}
           <div className="leading-none">
-            <div className="nameplate-text text-[15px] font-bold tracking-[-0.02em]">
+            <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', color: 'var(--color-ink-100)' }}>
               Savage Analytics
             </div>
-            <div className="mt-[3px] text-[9px] font-semibold uppercase tracking-[0.22em] text-ink-500">
+            <div style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.18em', color: 'var(--color-ink-500)', textTransform: 'uppercase', marginTop: 3 }}>
               Baseball Intelligence
             </div>
           </div>
