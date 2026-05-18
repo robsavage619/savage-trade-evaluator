@@ -1,0 +1,1183 @@
+{
+  "trade_event_id": 384506,
+  "trade_season": 2018,
+  "trade_date": "2018-12-05",
+  "teams": [
+    "ARI",
+    "STL"
+  ],
+  "legs": [
+    {
+      "trade_event_id": 384506,
+      "leg_index": 0,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 502671,
+      "player_name": "Paul Goldschmidt",
+      "from_team_id": 109,
+      "from_team_bref": "ARI",
+      "from_team_name": "Arizona Diamondbacks",
+      "to_team_id": 138,
+      "to_team_bref": "STL",
+      "to_team_name": "St. Louis Cardinals",
+      "description": "Arizona Diamondbacks traded 1B Paul Goldschmidt to St. Louis Cardinals for C Carson Kelly, RHP Luke Weaver, 2B Andy Young and Future Considerations."
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 3,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 596133,
+      "player_name": "Luke Weaver",
+      "from_team_id": 138,
+      "from_team_bref": "STL",
+      "from_team_name": "St. Louis Cardinals",
+      "to_team_id": 109,
+      "to_team_bref": "ARI",
+      "to_team_name": "Arizona Diamondbacks",
+      "description": "Arizona Diamondbacks traded 1B Paul Goldschmidt to St. Louis Cardinals for C Carson Kelly, RHP Luke Weaver, 2B Andy Young and Future Considerations."
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 2,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 608348,
+      "player_name": "Carson Kelly",
+      "from_team_id": 138,
+      "from_team_bref": "STL",
+      "from_team_name": "St. Louis Cardinals",
+      "to_team_id": 109,
+      "to_team_bref": "ARI",
+      "to_team_name": "Arizona Diamondbacks",
+      "description": "Arizona Diamondbacks traded 1B Paul Goldschmidt to St. Louis Cardinals for C Carson Kelly, RHP Luke Weaver, 2B Andy Young and Future Considerations."
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 1,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 670370,
+      "player_name": "Andrew Young",
+      "from_team_id": 138,
+      "from_team_bref": "STL",
+      "from_team_name": "St. Louis Cardinals",
+      "to_team_id": 109,
+      "to_team_bref": "ARI",
+      "to_team_name": "Arizona Diamondbacks",
+      "description": "Arizona Diamondbacks traded 1B Paul Goldschmidt to St. Louis Cardinals for C Carson Kelly, RHP Luke Weaver, 2B Andy Young and Future Considerations."
+    }
+  ],
+  "war_window": [
+    {
+      "trade_event_id": 384506,
+      "leg_index": 0,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 502671,
+      "player_name": "Paul Goldschmidt",
+      "from_team_bref": "ARI",
+      "to_team_bref": "STL",
+      "war_t_minus_1": 6.08,
+      "war_t_total": 5.77,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": 2.55,
+      "war_t_plus_2": 1.95,
+      "war_t_plus_3": 5.94
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 2,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 608348,
+      "player_name": "Carson Kelly",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "war_t_minus_1": -0.43,
+      "war_t_total": -0.42,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": 1.54,
+      "war_t_plus_2": -0.11000000000000001,
+      "war_t_plus_3": 2.14
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 3,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 596133,
+      "player_name": "Luke Weaver",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "war_t_minus_1": 0.8,
+      "war_t_total": -0.7000000000000001,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": 1.68,
+      "war_t_plus_2": -0.33,
+      "war_t_plus_3": 1.01
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 1,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 670370,
+      "player_name": "Andrew Young",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": -0.12,
+      "war_t_plus_3": -0.74
+    }
+  ],
+  "arsenal_window": [
+    {
+      "trade_event_id": 384506,
+      "leg_index": 3,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 596133,
+      "player_name": "Luke Weaver",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "fb_velocity_t_minus_1": 54.0,
+      "fb_velocity_t_plus_1": 62.0,
+      "fb_spin_t_minus_1": 54.0,
+      "fb_spin_t_plus_1": 64.0,
+      "curve_spin_t_minus_1": 10.0,
+      "curve_spin_t_plus_1": 15.0,
+      "k_percent_t_minus_1": 86.0,
+      "k_percent_t_plus_1": 70.0,
+      "bb_percent_t_minus_1": 77.0,
+      "bb_percent_t_plus_1": 89.0,
+      "whiff_percent_t_minus_1": 44.0,
+      "whiff_percent_t_plus_1": 53.0,
+      "chase_percent_t_minus_1": 13.0,
+      "chase_percent_t_plus_1": 25.0
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 0,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 502671,
+      "player_name": "Paul Goldschmidt",
+      "from_team_bref": "ARI",
+      "to_team_bref": "STL",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 1,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 670370,
+      "player_name": "Andrew Young",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 2,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 608348,
+      "player_name": "Carson Kelly",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    }
+  ],
+  "pitch_movement_window": [
+    {
+      "trade_event_id": 384506,
+      "leg_index": 3,
+      "trade_season": 2018,
+      "mlb_player_id": 596133,
+      "player_name": "Luke Weaver",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "pitch_type": "FF",
+      "speed_t_minus_1": 93.2,
+      "speed_t_plus_1": 93.8,
+      "vert_break_t_minus_1": 15.5,
+      "vert_break_t_plus_1": 15.4,
+      "horiz_break_t_minus_1": 9.1,
+      "horiz_break_t_plus_1": 8.6,
+      "usage_t_minus_1": 0.5928777670837344,
+      "usage_t_plus_1": 0.5204178537511871
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 3,
+      "trade_season": 2018,
+      "mlb_player_id": 596133,
+      "player_name": "Luke Weaver",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "pitch_type": "CU",
+      "speed_t_minus_1": 79.6,
+      "speed_t_plus_1": 81.3,
+      "vert_break_t_minus_1": 47.8,
+      "vert_break_t_plus_1": 50.9,
+      "horiz_break_t_minus_1": 9.1,
+      "horiz_break_t_plus_1": 1.3,
+      "usage_t_minus_1": 0.11742059672762271,
+      "usage_t_plus_1": 0.09116809116809117
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 3,
+      "trade_season": 2018,
+      "mlb_player_id": 596133,
+      "player_name": "Luke Weaver",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "pitch_type": "CH",
+      "speed_t_minus_1": 84.3,
+      "speed_t_plus_1": 84.5,
+      "vert_break_t_minus_1": 29.9,
+      "vert_break_t_plus_1": 32.0,
+      "horiz_break_t_minus_1": 10.9,
+      "horiz_break_t_plus_1": 11.4,
+      "usage_t_minus_1": 0.2569778633301251,
+      "usage_t_plus_1": 0.24786324786324787
+    }
+  ],
+  "demographics": [
+    {
+      "trade_event_id": 384506,
+      "leg_index": 2,
+      "trade_season": 2018,
+      "mlb_player_id": 608348,
+      "player_name": "Carson Kelly",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "birth_date": "1994-07-14",
+      "birth_country": "USA",
+      "age_at_trade": 24,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "2",
+      "primary_position_type": "Catcher",
+      "height_inches": 73,
+      "weight_lbs": 212,
+      "mlb_debut_date": "2016-09-05",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 3,
+      "trade_season": 2018,
+      "mlb_player_id": 596133,
+      "player_name": "Luke Weaver",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "birth_date": "1993-08-21",
+      "birth_country": "USA",
+      "age_at_trade": 25,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 74,
+      "weight_lbs": 180,
+      "mlb_debut_date": "2016-08-13",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 0,
+      "trade_season": 2018,
+      "mlb_player_id": 502671,
+      "player_name": "Paul Goldschmidt",
+      "from_team_bref": "ARI",
+      "to_team_bref": "STL",
+      "birth_date": "1987-09-10",
+      "birth_country": "USA",
+      "age_at_trade": 31,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "3",
+      "primary_position_type": "Infielder",
+      "height_inches": 74,
+      "weight_lbs": 225,
+      "mlb_debut_date": "2011-08-01",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 1,
+      "trade_season": 2018,
+      "mlb_player_id": 670370,
+      "player_name": "Andrew Young",
+      "from_team_bref": "STL",
+      "to_team_bref": "ARI",
+      "birth_date": "1994-05-10",
+      "birth_country": "USA",
+      "age_at_trade": 24,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "4",
+      "primary_position_type": "Infielder",
+      "height_inches": 72,
+      "weight_lbs": 196,
+      "mlb_debut_date": "2020-08-01",
+      "is_international_born": 0
+    }
+  ],
+  "naive_baseline": [
+    {
+      "trade_event_id": 384506,
+      "trade_season": 2018,
+      "outcome_window_years": 3,
+      "team_bref": "ARI",
+      "war_received": 5.07,
+      "war_given_up": 10.44,
+      "surplus": -5.37,
+      "players_received": "Andrew Young, Carson Kelly, Luke Weaver",
+      "players_given_up": "Paul Goldschmidt",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    },
+    {
+      "trade_event_id": 384506,
+      "trade_season": 2018,
+      "outcome_window_years": 3,
+      "team_bref": "STL",
+      "war_received": 10.44,
+      "war_given_up": 5.07,
+      "surplus": 5.37,
+      "players_received": "Paul Goldschmidt",
+      "players_given_up": "Andrew Young, Carson Kelly, Luke Weaver",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    }
+  ],
+  "people": [
+    {
+      "mlb_player_id": 502671,
+      "full_name": "Paul Goldschmidt",
+      "birth_date": "1987-09-10",
+      "primary_position_name": "First Base",
+      "primary_position_code": "3",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 74,
+      "weight_lbs": 225,
+      "birth_country": "USA",
+      "mlb_debut_date": "2011-08-01"
+    },
+    {
+      "mlb_player_id": 670370,
+      "full_name": "Andrew Young",
+      "birth_date": "1994-05-10",
+      "primary_position_name": "Second Base",
+      "primary_position_code": "4",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 72,
+      "weight_lbs": 196,
+      "birth_country": "USA",
+      "mlb_debut_date": "2020-08-01"
+    },
+    {
+      "mlb_player_id": 596133,
+      "full_name": "Luke Weaver",
+      "birth_date": "1993-08-21",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 74,
+      "weight_lbs": 180,
+      "birth_country": "USA",
+      "mlb_debut_date": "2016-08-13"
+    },
+    {
+      "mlb_player_id": 608348,
+      "full_name": "Carson Kelly",
+      "birth_date": "1994-07-14",
+      "primary_position_name": "Catcher",
+      "primary_position_code": "2",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 73,
+      "weight_lbs": 212,
+      "birth_country": "USA",
+      "mlb_debut_date": "2016-09-05"
+    }
+  ],
+  "coaches": [
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Mark Reed"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Humberto Quintero"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Dave McKay"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Tony Perezchica"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Tim Laker"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Jerry Narron"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "COAC",
+      "job_title": "Coach",
+      "person_name": "Luis Urueta"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Mike Butcher"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Dave Magadan"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Mike Fetters"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Torey Lovullo"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "QCCC",
+      "job_title": "Quality Control/Catching Coach",
+      "person_name": "Robby Hammock"
+    },
+    {
+      "team_id": 109,
+      "team_bref": "ARI",
+      "season": 2018,
+      "job_code": "SBAD",
+      "job_title": "Senior Baseball Advisor",
+      "person_name": "Shawn Marette"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "ASSC",
+      "job_title": "Assistant Coach",
+      "person_name": "Willie McGee"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Kleininger Teran"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Jamie Pogue"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Oliver Marmol"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Jos\u00e9 Oquendo"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Bill Mueller"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Ron 'Pop' Warner"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Mike Shildt"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COAH",
+      "job_title": "Batting Coach",
+      "person_name": "Mark Budaska"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Mike Maddux"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "John Mabry"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "George Greer"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Bryan Eversgerd"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Mike Shildt"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Mike Matheny"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "NTRM",
+      "job_title": "Interim Manager",
+      "person_name": "Mike Shildt"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "PERF",
+      "job_title": "Performance Coach",
+      "person_name": "Jason Shutt"
+    },
+    {
+      "team_id": 138,
+      "team_bref": "STL",
+      "season": 2018,
+      "job_code": "ROIN",
+      "job_title": "Roving Instructor",
+      "person_name": "Steve Turco"
+    }
+  ],
+  "front_office": [
+    {
+      "team_bref": "ARI",
+      "role": "Farm Director",
+      "person_name": "Mike Bell"
+    },
+    {
+      "team_bref": "ARI",
+      "role": "General Manager",
+      "person_name": "Mike Hazen"
+    },
+    {
+      "team_bref": "ARI",
+      "role": "Manager",
+      "person_name": "Torey Lovullo"
+    },
+    {
+      "team_bref": "ARI",
+      "role": "Scouting Director",
+      "person_name": "Deric Ladnier"
+    },
+    {
+      "team_bref": "STL",
+      "role": "Farm Director",
+      "person_name": "Gary LaRocque"
+    },
+    {
+      "team_bref": "STL",
+      "role": "General Manager",
+      "person_name": "Mike Girsch"
+    },
+    {
+      "team_bref": "STL",
+      "role": "President",
+      "person_name": "John Mozeliak"
+    },
+    {
+      "team_bref": "STL",
+      "role": "Scouting Director",
+      "person_name": "Randy Flores"
+    }
+  ],
+  "career_war_pitching": [
+    {
+      "mlb_player_id": 596133,
+      "year": 2016,
+      "team_id": "STL",
+      "war": -0.63,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2017,
+      "team_id": "STL",
+      "war": 0.78,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2018,
+      "team_id": "STL",
+      "war": -0.65,
+      "salary": 550800.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2019,
+      "team_id": "ARI",
+      "war": 1.71,
+      "salary": 581300.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2020,
+      "team_id": "ARI",
+      "war": -0.33,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2021,
+      "team_id": "ARI",
+      "war": 0.95,
+      "salary": 1950000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2022,
+      "team_id": "ARI",
+      "war": -0.4,
+      "salary": 2875000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2022,
+      "team_id": "KCR",
+      "war": -0.21,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2023,
+      "team_id": "CIN",
+      "war": -0.73,
+      "salary": 2000000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2023,
+      "team_id": "NYY",
+      "war": 0.32,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2023,
+      "team_id": "SEA",
+      "war": -0.15,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2024,
+      "team_id": "NYY",
+      "war": 1.81,
+      "salary": 2000000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2025,
+      "team_id": "NYY",
+      "war": 0.74,
+      "salary": 2500000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2026,
+      "team_id": "NYM",
+      "war": 0.08,
+      "salary": 9500000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2020,
+      "team_id": "ARI",
+      "war": 0.03,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2022,
+      "team_id": "ARI",
+      "war": -0.07,
+      "salary": 3325000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2023,
+      "team_id": "ARI",
+      "war": -0.04,
+      "salary": 4275000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2023,
+      "team_id": "DET",
+      "war": -0.03,
+      "salary": null
+    }
+  ],
+  "career_war_batting": [
+    {
+      "mlb_player_id": 502671,
+      "year": 2011,
+      "team_id": "ARI",
+      "war": 0.38,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2012,
+      "team_id": "ARI",
+      "war": 3.43,
+      "salary": 482000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2013,
+      "team_id": "ARI",
+      "war": 6.33,
+      "salary": 500000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2014,
+      "team_id": "ARI",
+      "war": 4.71,
+      "salary": 1100000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2015,
+      "team_id": "ARI",
+      "war": 8.33,
+      "salary": 3100000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2016,
+      "team_id": "ARI",
+      "war": 4.91,
+      "salary": 5875000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2017,
+      "team_id": "ARI",
+      "war": 6.08,
+      "salary": 8875000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2018,
+      "team_id": "ARI",
+      "war": 5.77,
+      "salary": 11100000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2019,
+      "team_id": "STL",
+      "war": 2.55,
+      "salary": 14500000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2020,
+      "team_id": "STL",
+      "war": 1.95,
+      "salary": 26000000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2021,
+      "team_id": "STL",
+      "war": 5.94,
+      "salary": 26000000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2022,
+      "team_id": "STL",
+      "war": 7.65,
+      "salary": 26000000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2023,
+      "team_id": "STL",
+      "war": 3.29,
+      "salary": 26000000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2024,
+      "team_id": "STL",
+      "war": 1.43,
+      "salary": 26000000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2025,
+      "team_id": "NYY",
+      "war": 1.19,
+      "salary": 12500000.0
+    },
+    {
+      "mlb_player_id": 502671,
+      "year": 2026,
+      "team_id": "NYY",
+      "war": 0.59,
+      "salary": 4000000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2016,
+      "team_id": "STL",
+      "war": 0.2,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2017,
+      "team_id": "STL",
+      "war": 0.02,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2018,
+      "team_id": "STL",
+      "war": -0.05,
+      "salary": 550800.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2019,
+      "team_id": "ARI",
+      "war": -0.03,
+      "salary": 581300.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2020,
+      "team_id": "ARI",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2021,
+      "team_id": "ARI",
+      "war": 0.06,
+      "salary": 1950000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2022,
+      "team_id": "ARI",
+      "war": -0.01,
+      "salary": 2875000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2022,
+      "team_id": "KCR",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2023,
+      "team_id": "CIN",
+      "war": null,
+      "salary": 2000000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2023,
+      "team_id": "NYY",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2023,
+      "team_id": "SEA",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2024,
+      "team_id": "NYY",
+      "war": null,
+      "salary": 2000000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2026,
+      "team_id": "NYM",
+      "war": 0.0,
+      "salary": 9500000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2016,
+      "team_id": "STL",
+      "war": -0.01,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2017,
+      "team_id": "STL",
+      "war": -0.43,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2018,
+      "team_id": "STL",
+      "war": -0.42,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2019,
+      "team_id": "ARI",
+      "war": 1.54,
+      "salary": 560000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2020,
+      "team_id": "ARI",
+      "war": -0.14,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2021,
+      "team_id": "ARI",
+      "war": 2.14,
+      "salary": 1700000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2022,
+      "team_id": "ARI",
+      "war": 0.85,
+      "salary": 3325000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2023,
+      "team_id": "ARI",
+      "war": -0.08,
+      "salary": 4275000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2023,
+      "team_id": "DET",
+      "war": 0.17,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2024,
+      "team_id": "DET",
+      "war": 0.66,
+      "salary": 3500000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2024,
+      "team_id": "TEX",
+      "war": -0.15,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2025,
+      "team_id": "CHC",
+      "war": 3.55,
+      "salary": 5000000.0
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2026,
+      "team_id": "CHC",
+      "war": 0.77,
+      "salary": 5000000.0
+    },
+    {
+      "mlb_player_id": 670370,
+      "year": 2020,
+      "team_id": "ARI",
+      "war": -0.12,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 670370,
+      "year": 2021,
+      "team_id": "ARI",
+      "war": -0.74,
+      "salary": null
+    }
+  ]
+}

@@ -1,0 +1,892 @@
+[
+  {
+    "gm_name": "Terry Ryan",
+    "team_bref": "MIN",
+    "n_trades": 23,
+    "mean_surplus": -1.4786956521739132,
+    "mean_war_received": 0.23086956521739133,
+    "mean_war_given_up": 1.7095652173913047,
+    "first_season": 2012,
+    "last_season": 2015
+  },
+  {
+    "gm_name": "Douglas Melvin",
+    "team_bref": "MIL",
+    "n_trades": 27,
+    "mean_surplus": -1.1296296296296295,
+    "mean_war_received": 0.7262962962962963,
+    "mean_war_given_up": 1.8559259259259255,
+    "first_season": 2009,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "Al Avila",
+    "team_bref": "DET",
+    "n_trades": 56,
+    "mean_surplus": -0.8341071428571428,
+    "mean_war_received": 0.542142857142857,
+    "mean_war_given_up": 1.37625,
+    "first_season": 2015,
+    "last_season": 2022
+  },
+  {
+    "gm_name": "John Hart",
+    "team_bref": "ATL",
+    "n_trades": 38,
+    "mean_surplus": -0.7886842105263157,
+    "mean_war_received": 0.8023684210526316,
+    "mean_war_given_up": 1.5910526315789475,
+    "first_season": 2014,
+    "last_season": 2015
+  },
+  {
+    "gm_name": "Peter Bendix",
+    "team_bref": "MIA",
+    "n_trades": 24,
+    "mean_surplus": -0.7504166666666667,
+    "mean_war_received": 0.04499999999999999,
+    "mean_war_given_up": 0.7954166666666667,
+    "first_season": 2024,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Ben Cherington",
+    "team_bref": "BOS",
+    "n_trades": 53,
+    "mean_surplus": -0.6532075471698111,
+    "mean_war_received": 0.9556603773584906,
+    "mean_war_given_up": 1.6088679245283017,
+    "first_season": 2012,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "Tony Reagins",
+    "team_bref": "LAA",
+    "n_trades": 8,
+    "mean_surplus": -0.635,
+    "mean_war_received": 1.5487499999999998,
+    "mean_war_given_up": 2.18375,
+    "first_season": 2009,
+    "last_season": 2011
+  },
+  {
+    "gm_name": "Bill Schmidt",
+    "team_bref": "COL",
+    "n_trades": 32,
+    "mean_surplus": -0.5584375,
+    "mean_war_received": 0.14156250000000004,
+    "mean_war_given_up": 0.7,
+    "first_season": 2021,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Theo Epstein",
+    "team_bref": "BOS",
+    "n_trades": 24,
+    "mean_surplus": -0.47458333333333336,
+    "mean_war_received": 0.48583333333333334,
+    "mean_war_given_up": 0.9604166666666666,
+    "first_season": 2009,
+    "last_season": 2011
+  },
+  {
+    "gm_name": "Ben Cherington",
+    "team_bref": "PIT",
+    "n_trades": 88,
+    "mean_surplus": -0.45238636363636364,
+    "mean_war_received": 0.16454545454545458,
+    "mean_war_given_up": 0.6169318181818183,
+    "first_season": 2020,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Tony La Russa",
+    "team_bref": "ARI",
+    "n_trades": 39,
+    "mean_surplus": -0.3866666666666666,
+    "mean_war_received": 1.4712820512820513,
+    "mean_war_given_up": 1.8579487179487177,
+    "first_season": 2014,
+    "last_season": 2016
+  },
+  {
+    "gm_name": "Jim Hendry",
+    "team_bref": "CHC",
+    "n_trades": 12,
+    "mean_surplus": -0.34833333333333333,
+    "mean_war_received": 0.051666666666666694,
+    "mean_war_given_up": 0.4000000000000001,
+    "first_season": 2009,
+    "last_season": 2011
+  },
+  {
+    "gm_name": "Perry Minasian",
+    "team_bref": "LAA",
+    "n_trades": 41,
+    "mean_surplus": -0.3173170731707317,
+    "mean_war_received": 0.28097560975609764,
+    "mean_war_given_up": 0.5982926829268292,
+    "first_season": 2021,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Dan O'Dowd",
+    "team_bref": "COL",
+    "n_trades": 39,
+    "mean_surplus": -0.3120512820512821,
+    "mean_war_received": 0.7948717948717949,
+    "mean_war_given_up": 1.106923076923077,
+    "first_season": 2009,
+    "last_season": 2013
+  },
+  {
+    "gm_name": "Mike Hill",
+    "team_bref": "MIA",
+    "n_trades": 44,
+    "mean_surplus": -0.29613636363636364,
+    "mean_war_received": 1.788636363636364,
+    "mean_war_given_up": 2.084772727272727,
+    "first_season": 2009,
+    "last_season": 2017
+  },
+  {
+    "gm_name": "Nick Krall",
+    "team_bref": "CIN",
+    "n_trades": 55,
+    "mean_surplus": -0.25472727272727275,
+    "mean_war_received": 0.3058181818181818,
+    "mean_war_given_up": 0.5605454545454546,
+    "first_season": 2021,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Derek Falvey",
+    "team_bref": "MIN",
+    "n_trades": 95,
+    "mean_surplus": -0.22736842105263153,
+    "mean_war_received": 0.6605263157894737,
+    "mean_war_given_up": 0.8878947368421055,
+    "first_season": 2017,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Jed Hoyer",
+    "team_bref": "CHC",
+    "n_trades": 56,
+    "mean_surplus": -0.20589285714285716,
+    "mean_war_received": 0.5742857142857142,
+    "mean_war_given_up": 0.7801785714285714,
+    "first_season": 2021,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Frank Wren",
+    "team_bref": "ATL",
+    "n_trades": 38,
+    "mean_surplus": -0.1955263157894737,
+    "mean_war_received": 0.8178947368421053,
+    "mean_war_given_up": 1.013421052631579,
+    "first_season": 2009,
+    "last_season": 2013
+  },
+  {
+    "gm_name": "Mark Shapiro",
+    "team_bref": "CLE",
+    "n_trades": 71,
+    "mean_surplus": -0.18056338028169006,
+    "mean_war_received": 0.5583098591549298,
+    "mean_war_given_up": 0.7388732394366199,
+    "first_season": 2009,
+    "last_season": 2015
+  },
+  {
+    "gm_name": "Bobby Evans",
+    "team_bref": "SFG",
+    "n_trades": 26,
+    "mean_surplus": -0.1780769230769231,
+    "mean_war_received": 0.7219230769230769,
+    "mean_war_given_up": 0.8999999999999999,
+    "first_season": 2015,
+    "last_season": 2018
+  },
+  {
+    "gm_name": "Chris Getz",
+    "team_bref": "CHW",
+    "n_trades": 17,
+    "mean_surplus": -0.1641176470588236,
+    "mean_war_received": 0.47941176470588237,
+    "mean_war_given_up": 0.6435294117647059,
+    "first_season": 2024,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Kevin Towers",
+    "team_bref": "ARI",
+    "n_trades": 37,
+    "mean_surplus": -0.15351351351351344,
+    "mean_war_received": 1.3637837837837834,
+    "mean_war_given_up": 1.5172972972972973,
+    "first_season": 2011,
+    "last_season": 2013
+  },
+  {
+    "gm_name": "John Coppolella",
+    "team_bref": "ATL",
+    "n_trades": 43,
+    "mean_surplus": -0.1369767441860465,
+    "mean_war_received": 0.029069767441860454,
+    "mean_war_given_up": 0.16604651162790696,
+    "first_season": 2016,
+    "last_season": 2017
+  },
+  {
+    "gm_name": "Billy Beane",
+    "team_bref": "OAK",
+    "n_trades": 164,
+    "mean_surplus": -0.13201219512195125,
+    "mean_war_received": 1.248719512195122,
+    "mean_war_given_up": 1.380731707317073,
+    "first_season": 2009,
+    "last_season": 2022
+  },
+  {
+    "gm_name": "J.J. Picollo",
+    "team_bref": "KCR",
+    "n_trades": 39,
+    "mean_surplus": -0.12333333333333339,
+    "mean_war_received": 0.19923076923076927,
+    "mean_war_given_up": 0.3225641025641026,
+    "first_season": 2023,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Chris Antonetti",
+    "team_bref": "CLE",
+    "n_trades": 116,
+    "mean_surplus": -0.10163793103448272,
+    "mean_war_received": 0.5511206896551724,
+    "mean_war_given_up": 0.6527586206896551,
+    "first_season": 2016,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Derek Jeter",
+    "team_bref": "MIA",
+    "n_trades": 53,
+    "mean_surplus": -0.10056603773584914,
+    "mean_war_received": 0.5933962264150944,
+    "mean_war_given_up": 0.6939622641509433,
+    "first_season": 2018,
+    "last_season": 2021
+  },
+  {
+    "gm_name": "Kevin Towers",
+    "team_bref": "SDP",
+    "n_trades": 7,
+    "mean_surplus": -0.09571428571428571,
+    "mean_war_received": 0.1142857142857143,
+    "mean_war_given_up": 0.21000000000000002,
+    "first_season": 2009,
+    "last_season": 2009
+  },
+  {
+    "gm_name": "Chris Young",
+    "team_bref": "TEX",
+    "n_trades": 25,
+    "mean_surplus": -0.08680000000000004,
+    "mean_war_received": 0.2668,
+    "mean_war_given_up": 0.35359999999999997,
+    "first_season": 2023,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Josh Byrnes",
+    "team_bref": "ARI",
+    "n_trades": 15,
+    "mean_surplus": -0.08333333333333345,
+    "mean_war_received": 0.9206666666666669,
+    "mean_war_given_up": 1.0040000000000002,
+    "first_season": 2009,
+    "last_season": 2010
+  },
+  {
+    "gm_name": "Jeff Bridich",
+    "team_bref": "COL",
+    "n_trades": 43,
+    "mean_surplus": -0.07395348837209303,
+    "mean_war_received": 0.3548837209302326,
+    "mean_war_given_up": 0.4288372093023256,
+    "first_season": 2014,
+    "last_season": 2020
+  },
+  {
+    "gm_name": "Mike Elias",
+    "team_bref": "BAL",
+    "n_trades": 82,
+    "mean_surplus": -0.060975609756097636,
+    "mean_war_received": 0.3270731707317072,
+    "mean_war_given_up": 0.38804878048780483,
+    "first_season": 2019,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Scott Harris",
+    "team_bref": "DET",
+    "n_trades": 29,
+    "mean_surplus": -0.035517241379310345,
+    "mean_war_received": 0.2875862068965518,
+    "mean_war_given_up": 0.323103448275862,
+    "first_season": 2023,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Walt Jocketty",
+    "team_bref": "CIN",
+    "n_trades": 37,
+    "mean_surplus": -0.016756756756756724,
+    "mean_war_received": 1.0535135135135134,
+    "mean_war_given_up": 1.0702702702702702,
+    "first_season": 2009,
+    "last_season": 2015
+  },
+  {
+    "gm_name": "Jack Zduriencik",
+    "team_bref": "SEA",
+    "n_trades": 41,
+    "mean_surplus": -0.01219512195121962,
+    "mean_war_received": 1.1209756097560977,
+    "mean_war_given_up": 1.1331707317073172,
+    "first_season": 2009,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "Dan Duquette",
+    "team_bref": "BAL",
+    "n_trades": 117,
+    "mean_surplus": -0.009658119658119625,
+    "mean_war_received": 0.5294017094017095,
+    "mean_war_given_up": 0.5390598290598291,
+    "first_season": 2012,
+    "last_season": 2018
+  },
+  {
+    "gm_name": "Andrew Friedman",
+    "team_bref": "TBR",
+    "n_trades": 52,
+    "mean_surplus": -0.008461538461538468,
+    "mean_war_received": 1.1007692307692307,
+    "mean_war_given_up": 1.1092307692307692,
+    "first_season": 2009,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "Mike Hazen",
+    "team_bref": "ARI",
+    "n_trades": 103,
+    "mean_surplus": -0.004077669902912642,
+    "mean_war_received": 0.648640776699029,
+    "mean_war_given_up": 0.6527184466019417,
+    "first_season": 2017,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Jon Daniels",
+    "team_bref": "TEX",
+    "n_trades": 188,
+    "mean_surplus": 0.0052659574468085285,
+    "mean_war_received": 0.5748404255319151,
+    "mean_war_given_up": 0.5695744680851065,
+    "first_season": 2009,
+    "last_season": 2022
+  },
+  {
+    "gm_name": "Ed Wade",
+    "team_bref": "HOU",
+    "n_trades": 13,
+    "mean_surplus": 0.019230769230769232,
+    "mean_war_received": 0.8492307692307693,
+    "mean_war_given_up": 0.8300000000000001,
+    "first_season": 2009,
+    "last_season": 2011
+  },
+  {
+    "gm_name": "Ken Williams",
+    "team_bref": "CHW",
+    "n_trades": 163,
+    "mean_surplus": 0.027852760736196348,
+    "mean_war_received": 0.456441717791411,
+    "mean_war_given_up": 0.4285889570552147,
+    "first_season": 2009,
+    "last_season": 2023
+  },
+  {
+    "gm_name": "John Mozeliak",
+    "team_bref": "STL",
+    "n_trades": 93,
+    "mean_surplus": 0.03397849462365597,
+    "mean_war_received": 1.3807526881720429,
+    "mean_war_given_up": 1.346774193548387,
+    "first_season": 2009,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "David Stearns",
+    "team_bref": "NYM",
+    "n_trades": 25,
+    "mean_surplus": 0.03840000000000002,
+    "mean_war_received": 0.07479999999999998,
+    "mean_war_given_up": 0.03640000000000001,
+    "first_season": 2024,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Sandy Alderson",
+    "team_bref": "NYM",
+    "n_trades": 93,
+    "mean_surplus": 0.05118279569892473,
+    "mean_war_received": 0.5250537634408601,
+    "mean_war_given_up": 0.4738709677419357,
+    "first_season": 2011,
+    "last_season": 2022
+  },
+  {
+    "gm_name": "Mark Shapiro",
+    "team_bref": "TOR",
+    "n_trades": 152,
+    "mean_surplus": 0.05657894736842101,
+    "mean_war_received": 0.6472368421052632,
+    "mean_war_given_up": 0.5906578947368422,
+    "first_season": 2016,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "A.J. Preller",
+    "team_bref": "SDP",
+    "n_trades": 147,
+    "mean_surplus": 0.06523809523809518,
+    "mean_war_received": 1.4837414965986393,
+    "mean_war_given_up": 1.4185034013605442,
+    "first_season": 2014,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Mike Rizzo",
+    "team_bref": "WSN",
+    "n_trades": 99,
+    "mean_surplus": 0.09151515151515151,
+    "mean_war_received": 1.316363636363636,
+    "mean_war_given_up": 1.2248484848484846,
+    "first_season": 2009,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Dick Williams",
+    "team_bref": "CIN",
+    "n_trades": 61,
+    "mean_surplus": 0.10508196721311468,
+    "mean_war_received": 0.6111475409836066,
+    "mean_war_given_up": 0.5060655737704918,
+    "first_season": 2016,
+    "last_season": 2020
+  },
+  {
+    "gm_name": "Omar Minaya",
+    "team_bref": "NYM",
+    "n_trades": 10,
+    "mean_surplus": 0.128,
+    "mean_war_received": 0.45099999999999996,
+    "mean_war_given_up": 0.32300000000000006,
+    "first_season": 2009,
+    "last_season": 2010
+  },
+  {
+    "gm_name": "Ruben Amaro Jr",
+    "team_bref": "PHI",
+    "n_trades": 33,
+    "mean_surplus": 0.12999999999999995,
+    "mean_war_received": 0.6248484848484848,
+    "mean_war_given_up": 0.4948484848484848,
+    "first_season": 2009,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "Chaim Bloom",
+    "team_bref": "BOS",
+    "n_trades": 62,
+    "mean_surplus": 0.1367741935483872,
+    "mean_war_received": 0.8088709677419356,
+    "mean_war_given_up": 0.6720967741935484,
+    "first_season": 2020,
+    "last_season": 2023
+  },
+  {
+    "gm_name": "Rob Antony",
+    "team_bref": "MIN",
+    "n_trades": 6,
+    "mean_surplus": 0.145,
+    "mean_war_received": 0.14833333333333334,
+    "mean_war_given_up": 0.003333333333333336,
+    "first_season": 2016,
+    "last_season": 2016
+  },
+  {
+    "gm_name": "Alex Anthopoulos",
+    "team_bref": "TOR",
+    "n_trades": 55,
+    "mean_surplus": 0.1787272727272727,
+    "mean_war_received": 1.6849090909090911,
+    "mean_war_given_up": 1.5061818181818183,
+    "first_season": 2010,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "James Click",
+    "team_bref": "HOU",
+    "n_trades": 21,
+    "mean_surplus": 0.18476190476190468,
+    "mean_war_received": 0.9228571428571428,
+    "mean_war_given_up": 0.7380952380952381,
+    "first_season": 2020,
+    "last_season": 2022
+  },
+  {
+    "gm_name": "Dayton Moore",
+    "team_bref": "KCR",
+    "n_trades": 146,
+    "mean_surplus": 0.19143835616438346,
+    "mean_war_received": 0.6191780821917807,
+    "mean_war_given_up": 0.4277397260273974,
+    "first_season": 2009,
+    "last_season": 2022
+  },
+  {
+    "gm_name": "Neal Huntington",
+    "team_bref": "PIT",
+    "n_trades": 159,
+    "mean_surplus": 0.19169811320754732,
+    "mean_war_received": 0.6381761006289308,
+    "mean_war_given_up": 0.4464779874213836,
+    "first_season": 2009,
+    "last_season": 2019
+  },
+  {
+    "gm_name": "Matt Klentak",
+    "team_bref": "PHI",
+    "n_trades": 13,
+    "mean_surplus": 0.20538461538461528,
+    "mean_war_received": 1.6392307692307695,
+    "mean_war_given_up": 1.433846153846154,
+    "first_season": 2015,
+    "last_season": 2015
+  },
+  {
+    "gm_name": "David Dombrowski",
+    "team_bref": "PHI",
+    "n_trades": 78,
+    "mean_surplus": 0.21384615384615388,
+    "mean_war_received": 0.40448717948717955,
+    "mean_war_given_up": 0.19064102564102564,
+    "first_season": 2021,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Andy MacPhail",
+    "team_bref": "PHI",
+    "n_trades": 71,
+    "mean_surplus": 0.2425352112676056,
+    "mean_war_received": 0.5925352112676057,
+    "mean_war_given_up": 0.3500000000000001,
+    "first_season": 2016,
+    "last_season": 2020
+  },
+  {
+    "gm_name": "Jerry Dipoto",
+    "team_bref": "LAA",
+    "n_trades": 38,
+    "mean_surplus": 0.24973684210526312,
+    "mean_war_received": 0.9555263157894738,
+    "mean_war_given_up": 0.7057894736842106,
+    "first_season": 2012,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "Billy Eppler",
+    "team_bref": "NYM",
+    "n_trades": 15,
+    "mean_surplus": 0.25800000000000006,
+    "mean_war_received": 0.42733333333333334,
+    "mean_war_given_up": 0.16933333333333334,
+    "first_season": 2023,
+    "last_season": 2023
+  },
+  {
+    "gm_name": "Jeff Luhnow",
+    "team_bref": "HOU",
+    "n_trades": 81,
+    "mean_surplus": 0.26012345679012344,
+    "mean_war_received": 1.330493827160494,
+    "mean_war_given_up": 1.07037037037037,
+    "first_season": 2012,
+    "last_season": 2019
+  },
+  {
+    "gm_name": "Jerry Dipoto",
+    "team_bref": "SEA",
+    "n_trades": 204,
+    "mean_surplus": 0.2625490196078432,
+    "mean_war_received": 0.9502941176470587,
+    "mean_war_given_up": 0.6877450980392158,
+    "first_season": 2015,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "David Dombrowski",
+    "team_bref": "BOS",
+    "n_trades": 46,
+    "mean_surplus": 0.27434782608695646,
+    "mean_war_received": 0.766086956521739,
+    "mean_war_given_up": 0.49173913043478246,
+    "first_season": 2015,
+    "last_season": 2019
+  },
+  {
+    "gm_name": "Craig Breslow",
+    "team_bref": "BOS",
+    "n_trades": 23,
+    "mean_surplus": 0.28695652173913044,
+    "mean_war_received": 0.5247826086956521,
+    "mean_war_given_up": 0.23782608695652172,
+    "first_season": 2024,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Farhan Zaidi",
+    "team_bref": "SFG",
+    "n_trades": 101,
+    "mean_surplus": 0.2905940594059407,
+    "mean_war_received": 0.45049504950495056,
+    "mean_war_given_up": 0.15990099009900988,
+    "first_season": 2019,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Erik Neander",
+    "team_bref": "TBR",
+    "n_trades": 175,
+    "mean_surplus": 0.29908571428571407,
+    "mean_war_received": 0.9305142857142858,
+    "mean_war_given_up": 0.6314285714285718,
+    "first_season": 2018,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Brian Cashman",
+    "team_bref": "NYY",
+    "n_trades": 209,
+    "mean_surplus": 0.3547846889952152,
+    "mean_war_received": 1.201818181818182,
+    "mean_war_given_up": 0.8470334928229664,
+    "first_season": 2009,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Matt Silverman",
+    "team_bref": "TBR",
+    "n_trades": 50,
+    "mean_surplus": 0.3694000000000001,
+    "mean_war_received": 1.0204000000000004,
+    "mean_war_given_up": 0.6509999999999999,
+    "first_season": 2015,
+    "last_season": 2017
+  },
+  {
+    "gm_name": "Theo Epstein",
+    "team_bref": "CHC",
+    "n_trades": 108,
+    "mean_surplus": 0.39240740740740726,
+    "mean_war_received": 1.1344444444444441,
+    "mean_war_given_up": 0.7420370370370372,
+    "first_season": 2012,
+    "last_season": 2020
+  },
+  {
+    "gm_name": "Dana Brown",
+    "team_bref": "HOU",
+    "n_trades": 18,
+    "mean_surplus": 0.39777777777777773,
+    "mean_war_received": 0.7094444444444444,
+    "mean_war_given_up": 0.3116666666666667,
+    "first_season": 2023,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Josh Byrnes",
+    "team_bref": "SDP",
+    "n_trades": 19,
+    "mean_surplus": 0.4047368421052632,
+    "mean_war_received": 1.256842105263158,
+    "mean_war_given_up": 0.8521052631578948,
+    "first_season": 2012,
+    "last_season": 2013
+  },
+  {
+    "gm_name": "Billy Eppler",
+    "team_bref": "LAA",
+    "n_trades": 91,
+    "mean_surplus": 0.41439560439560447,
+    "mean_war_received": 0.5482417582417581,
+    "mean_war_given_up": 0.1338461538461538,
+    "first_season": 2015,
+    "last_season": 2020
+  },
+  {
+    "gm_name": "Matt Arnold",
+    "team_bref": "MIL",
+    "n_trades": 38,
+    "mean_surplus": 0.41736842105263167,
+    "mean_war_received": 0.7213157894736842,
+    "mean_war_given_up": 0.30394736842105263,
+    "first_season": 2023,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Andy MacPhail",
+    "team_bref": "BAL",
+    "n_trades": 13,
+    "mean_surplus": 0.44307692307692303,
+    "mean_war_received": 1.0992307692307692,
+    "mean_war_given_up": 0.6561538461538462,
+    "first_season": 2009,
+    "last_season": 2011
+  },
+  {
+    "gm_name": "David Forst",
+    "team_bref": "OAK",
+    "n_trades": 46,
+    "mean_surplus": 0.4676086956521738,
+    "mean_war_received": 1.017826086956522,
+    "mean_war_given_up": 0.5502173913043477,
+    "first_season": 2015,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Jed Hoyer",
+    "team_bref": "SDP",
+    "n_trades": 11,
+    "mean_surplus": 0.4709090909090909,
+    "mean_war_received": 2.055454545454545,
+    "mean_war_given_up": 1.5845454545454545,
+    "first_season": 2010,
+    "last_season": 2011
+  },
+  {
+    "gm_name": "Andrew Friedman",
+    "team_bref": "LAD",
+    "n_trades": 172,
+    "mean_surplus": 0.518720930232558,
+    "mean_war_received": 0.9399418604651167,
+    "mean_war_given_up": 0.42122093023255797,
+    "first_season": 2015,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Tony LaCava",
+    "team_bref": "TOR",
+    "n_trades": 19,
+    "mean_surplus": 0.5436842105263158,
+    "mean_war_received": 1.0726315789473686,
+    "mean_war_given_up": 0.5289473684210527,
+    "first_season": 2015,
+    "last_season": 2015
+  },
+  {
+    "gm_name": "David Stearns",
+    "team_bref": "MIL",
+    "n_trades": 118,
+    "mean_surplus": 0.597372881355932,
+    "mean_war_received": 1.1171186440677967,
+    "mean_war_given_up": 0.5197457627118646,
+    "first_season": 2015,
+    "last_season": 2022
+  },
+  {
+    "gm_name": "Brodie Van Wagenen",
+    "team_bref": "NYM",
+    "n_trades": 20,
+    "mean_surplus": 0.645,
+    "mean_war_received": 0.591,
+    "mean_war_given_up": -0.05399999999999999,
+    "first_season": 2019,
+    "last_season": 2020
+  },
+  {
+    "gm_name": "Alex Anthopoulos",
+    "team_bref": "ATL",
+    "n_trades": 98,
+    "mean_surplus": 0.6676530612244899,
+    "mean_war_received": 0.9687755102040817,
+    "mean_war_given_up": 0.30112244897959184,
+    "first_season": 2018,
+    "last_season": 2024
+  },
+  {
+    "gm_name": "Kim Ng",
+    "team_bref": "MIA",
+    "n_trades": 30,
+    "mean_surplus": 0.6826666666666666,
+    "mean_war_received": 1.1053333333333333,
+    "mean_war_given_up": 0.42266666666666663,
+    "first_season": 2022,
+    "last_season": 2023
+  },
+  {
+    "gm_name": "Ned Colletti",
+    "team_bref": "LAD",
+    "n_trades": 55,
+    "mean_surplus": 0.7187272727272727,
+    "mean_war_received": 1.0581818181818181,
+    "mean_war_given_up": 0.3394545454545454,
+    "first_season": 2009,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "David Dombrowski",
+    "team_bref": "DET",
+    "n_trades": 37,
+    "mean_surplus": 0.8191891891891894,
+    "mean_war_received": 2.5129729729729733,
+    "mean_war_given_up": 1.693783783783784,
+    "first_season": 2009,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "Bill Smith",
+    "team_bref": "MIN",
+    "n_trades": 13,
+    "mean_surplus": 0.8484615384615384,
+    "mean_war_received": 1.2676923076923075,
+    "mean_war_given_up": 0.41923076923076924,
+    "first_season": 2009,
+    "last_season": 2011
+  },
+  {
+    "gm_name": "Brian Sabean",
+    "team_bref": "SFG",
+    "n_trades": 23,
+    "mean_surplus": 0.8486956521739132,
+    "mean_war_received": 1.1013043478260869,
+    "mean_war_given_up": 0.2526086956521739,
+    "first_season": 2009,
+    "last_season": 2014
+  },
+  {
+    "gm_name": "Dan Jennings",
+    "team_bref": "MIA",
+    "n_trades": 13,
+    "mean_surplus": 1.0815384615384618,
+    "mean_war_received": 2.577692307692308,
+    "mean_war_given_up": 1.4961538461538462,
+    "first_season": 2014,
+    "last_season": 2014
+  }
+]

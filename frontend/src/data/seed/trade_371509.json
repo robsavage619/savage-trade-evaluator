@@ -1,0 +1,886 @@
+{
+  "trade_event_id": 371509,
+  "trade_season": 2018,
+  "trade_date": "2018-07-27",
+  "teams": [
+    "HOU",
+    "MIN"
+  ],
+  "legs": [
+    {
+      "trade_event_id": 371509,
+      "leg_index": 2,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 665482,
+      "player_name": "Gilberto Celestino",
+      "from_team_id": 117,
+      "from_team_bref": "HOU",
+      "from_team_name": "Houston Astros",
+      "to_team_id": 142,
+      "to_team_bref": "MIN",
+      "to_team_name": "Minnesota Twins",
+      "description": "Minnesota Twins traded RHP Ryan Pressly to Houston Astros for CF Gilberto Celestino and RHP Jorge Alcala."
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 1,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 519151,
+      "player_name": "Ryan Pressly",
+      "from_team_id": 142,
+      "from_team_bref": "MIN",
+      "from_team_name": "Minnesota Twins",
+      "to_team_id": 117,
+      "to_team_bref": "HOU",
+      "to_team_name": "Houston Astros",
+      "description": "Minnesota Twins traded RHP Ryan Pressly to Houston Astros for CF Gilberto Celestino and RHP Jorge Alcala."
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 0,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 660896,
+      "player_name": "Jorge Alcala",
+      "from_team_id": 117,
+      "from_team_bref": "HOU",
+      "from_team_name": "Houston Astros",
+      "to_team_id": 142,
+      "to_team_bref": "MIN",
+      "to_team_name": "Minnesota Twins",
+      "description": "Minnesota Twins traded RHP Ryan Pressly to Houston Astros for CF Gilberto Celestino and RHP Jorge Alcala."
+    }
+  ],
+  "war_window": [
+    {
+      "trade_event_id": 371509,
+      "leg_index": 1,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 519151,
+      "player_name": "Ryan Pressly",
+      "from_team_bref": "MIN",
+      "to_team_bref": "HOU",
+      "war_t_minus_1": -0.04,
+      "war_t_total": 2.0700000000000003,
+      "war_t_with_receiver": 1.34,
+      "war_t_plus_1": 1.68,
+      "war_t_plus_2": 0.22,
+      "war_t_plus_3": 1.87
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 0,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 660896,
+      "player_name": "Jorge Alcala",
+      "from_team_bref": "HOU",
+      "to_team_bref": "MIN",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": 0.05,
+      "war_t_plus_2": 0.43,
+      "war_t_plus_3": 0.29
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 2,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 665482,
+      "player_name": "Gilberto Celestino",
+      "from_team_bref": "HOU",
+      "to_team_bref": "MIN",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": null,
+      "war_t_plus_3": -0.29
+    }
+  ],
+  "arsenal_window": [
+    {
+      "trade_event_id": 371509,
+      "leg_index": 1,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 519151,
+      "player_name": "Ryan Pressly",
+      "from_team_bref": "MIN",
+      "to_team_bref": "HOU",
+      "fb_velocity_t_minus_1": 88.0,
+      "fb_velocity_t_plus_1": 82.0,
+      "fb_spin_t_minus_1": 97.0,
+      "fb_spin_t_plus_1": 98.0,
+      "curve_spin_t_minus_1": 100.0,
+      "curve_spin_t_plus_1": 100.0,
+      "k_percent_t_minus_1": 65.0,
+      "k_percent_t_plus_1": 94.0,
+      "bb_percent_t_minus_1": 64.0,
+      "bb_percent_t_plus_1": 85.0,
+      "whiff_percent_t_minus_1": 69.0,
+      "whiff_percent_t_plus_1": 95.0,
+      "chase_percent_t_minus_1": 75.0,
+      "chase_percent_t_plus_1": 99.0
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 0,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 660896,
+      "player_name": "Jorge Alcala",
+      "from_team_bref": "HOU",
+      "to_team_bref": "MIN",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 2,
+      "date": "2018-07-27",
+      "trade_season": 2018,
+      "mlb_player_id": 665482,
+      "player_name": "Gilberto Celestino",
+      "from_team_bref": "HOU",
+      "to_team_bref": "MIN",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    }
+  ],
+  "pitch_movement_window": [
+    {
+      "trade_event_id": 371509,
+      "leg_index": 1,
+      "trade_season": 2018,
+      "mlb_player_id": 519151,
+      "player_name": "Ryan Pressly",
+      "from_team_bref": "MIN",
+      "to_team_bref": "HOU",
+      "pitch_type": "FF",
+      "speed_t_minus_1": 96.0,
+      "speed_t_plus_1": 95.5,
+      "vert_break_t_minus_1": 8.4,
+      "vert_break_t_plus_1": 13.1,
+      "horiz_break_t_minus_1": 2.8,
+      "horiz_break_t_plus_1": 2.9,
+      "usage_t_minus_1": 0.4449438202247191,
+      "usage_t_plus_1": 0.3574097135740971
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 1,
+      "trade_season": 2018,
+      "mlb_player_id": 519151,
+      "player_name": "Ryan Pressly",
+      "from_team_bref": "MIN",
+      "to_team_bref": "HOU",
+      "pitch_type": "SL",
+      "speed_t_minus_1": 89.7,
+      "speed_t_plus_1": 90.2,
+      "vert_break_t_minus_1": 27.0,
+      "vert_break_t_plus_1": 32.0,
+      "horiz_break_t_minus_1": 3.6,
+      "horiz_break_t_plus_1": 5.2,
+      "usage_t_minus_1": 0.18089887640449437,
+      "usage_t_plus_1": 0.2901618929016189
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 1,
+      "trade_season": 2018,
+      "mlb_player_id": 519151,
+      "player_name": "Ryan Pressly",
+      "from_team_bref": "MIN",
+      "to_team_bref": "HOU",
+      "pitch_type": "CU",
+      "speed_t_minus_1": 83.1,
+      "speed_t_plus_1": 83.0,
+      "vert_break_t_minus_1": 46.4,
+      "vert_break_t_plus_1": 53.8,
+      "horiz_break_t_minus_1": 14.9,
+      "horiz_break_t_plus_1": 16.8,
+      "usage_t_minus_1": 0.2662921348314607,
+      "usage_t_plus_1": 0.35242839352428396
+    }
+  ],
+  "demographics": [
+    {
+      "trade_event_id": 371509,
+      "leg_index": 0,
+      "trade_season": 2018,
+      "mlb_player_id": 660896,
+      "player_name": "Jorge Alcala",
+      "from_team_bref": "HOU",
+      "to_team_bref": "MIN",
+      "birth_date": "1995-07-28",
+      "birth_country": "Dominican Republic",
+      "age_at_trade": 23,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 75,
+      "weight_lbs": 205,
+      "mlb_debut_date": "2019-09-21",
+      "is_international_born": 1
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 1,
+      "trade_season": 2018,
+      "mlb_player_id": 519151,
+      "player_name": "Ryan Pressly",
+      "from_team_bref": "MIN",
+      "to_team_bref": "HOU",
+      "birth_date": "1988-12-15",
+      "birth_country": "USA",
+      "age_at_trade": 30,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 74,
+      "weight_lbs": 207,
+      "mlb_debut_date": "2013-04-04",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 371509,
+      "leg_index": 2,
+      "trade_season": 2018,
+      "mlb_player_id": 665482,
+      "player_name": "Gilberto Celestino",
+      "from_team_bref": "HOU",
+      "to_team_bref": "MIN",
+      "birth_date": "1999-02-13",
+      "birth_country": "Dominican Republic",
+      "age_at_trade": 19,
+      "bat_side": "R",
+      "pitch_hand": "L",
+      "primary_position_code": "8",
+      "primary_position_type": "Outfielder",
+      "height_inches": 72,
+      "weight_lbs": 170,
+      "mlb_debut_date": "2021-06-02",
+      "is_international_born": 1
+    }
+  ],
+  "naive_baseline": [
+    {
+      "trade_event_id": 371509,
+      "trade_season": 2018,
+      "outcome_window_years": 3,
+      "team_bref": "HOU",
+      "war_received": 5.11,
+      "war_given_up": 0.48,
+      "surplus": 4.63,
+      "players_received": "Ryan Pressly",
+      "players_given_up": "Jorge Alcala, Gilberto Celestino",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    },
+    {
+      "trade_event_id": 371509,
+      "trade_season": 2018,
+      "outcome_window_years": 3,
+      "team_bref": "MIN",
+      "war_received": 0.48,
+      "war_given_up": 3.77,
+      "surplus": -3.29,
+      "players_received": "Jorge Alcala, Gilberto Celestino",
+      "players_given_up": "Ryan Pressly",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    }
+  ],
+  "people": [
+    {
+      "mlb_player_id": 660896,
+      "full_name": "Jorge Alcala",
+      "birth_date": "1995-07-28",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 75,
+      "weight_lbs": 205,
+      "birth_country": "Dominican Republic",
+      "mlb_debut_date": "2019-09-21"
+    },
+    {
+      "mlb_player_id": 519151,
+      "full_name": "Ryan Pressly",
+      "birth_date": "1988-12-15",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 74,
+      "weight_lbs": 207,
+      "birth_country": "USA",
+      "mlb_debut_date": "2013-04-04"
+    },
+    {
+      "mlb_player_id": 665482,
+      "full_name": "Gilberto Celestino",
+      "birth_date": "1999-02-13",
+      "primary_position_name": "Outfielder",
+      "primary_position_code": "8",
+      "bat_side": "R",
+      "pitch_hand": "L",
+      "height_inches": 72,
+      "weight_lbs": 170,
+      "birth_country": "Dominican Republic",
+      "mlb_debut_date": "2021-06-02"
+    }
+  ],
+  "coaches": [
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Javier Bracamonte"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Alex Cintron"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Gary Pettis"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Jeff Albert"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Joe Espada"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Brent Strom"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Dave Hudgens"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Doug White"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2018,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "A.J. Hinch"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Nate Dammann"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Jeff Smith"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Gene Glynn"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Rudy Hernandez"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Derek Shelton"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Garvin Alston"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "James Rowson"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Eddie Guardado"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "MAJC",
+      "job_title": "Major League Coach",
+      "person_name": "Jeff Pickler"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "MLRC",
+      "job_title": "Major League Replay Coordinator",
+      "person_name": "Chad Jackson"
+    },
+    {
+      "team_id": 142,
+      "team_bref": "MIN",
+      "season": 2018,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Paul Molitor"
+    }
+  ],
+  "front_office": [
+    {
+      "team_bref": "HOU",
+      "role": "Farm Director",
+      "person_name": "Pete Putila"
+    },
+    {
+      "team_bref": "HOU",
+      "role": "General Manager",
+      "person_name": "Jeff Luhnow"
+    },
+    {
+      "team_bref": "HOU",
+      "role": "Manager",
+      "person_name": "A.J. Hinch"
+    },
+    {
+      "team_bref": "HOU",
+      "role": "Scouting Director",
+      "person_name": "Mike Elias"
+    },
+    {
+      "team_bref": "MIN",
+      "role": "Farm Director",
+      "person_name": "Jeremy Zoll"
+    },
+    {
+      "team_bref": "MIN",
+      "role": "General Manager",
+      "person_name": "Thad Levine"
+    },
+    {
+      "team_bref": "MIN",
+      "role": "Manager",
+      "person_name": "Paul Molitor"
+    },
+    {
+      "team_bref": "MIN",
+      "role": "President",
+      "person_name": "Derek Falvey"
+    },
+    {
+      "team_bref": "MIN",
+      "role": "Scouting Director",
+      "person_name": "Sean Johnson"
+    }
+  ],
+  "career_war_pitching": [
+    {
+      "mlb_player_id": 519151,
+      "year": 2013,
+      "team_id": "MIN",
+      "war": 0.47,
+      "salary": 490000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2014,
+      "team_id": "MIN",
+      "war": 0.67,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2015,
+      "team_id": "MIN",
+      "war": 0.69,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2016,
+      "team_id": "MIN",
+      "war": 1.15,
+      "salary": 520000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2017,
+      "team_id": "MIN",
+      "war": -0.04,
+      "salary": 1175000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2018,
+      "team_id": "HOU",
+      "war": 1.34,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2018,
+      "team_id": "MIN",
+      "war": 0.73,
+      "salary": 1600000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2019,
+      "team_id": "HOU",
+      "war": 1.68,
+      "salary": 2900000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2020,
+      "team_id": "HOU",
+      "war": 0.22,
+      "salary": 8750000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2021,
+      "team_id": "HOU",
+      "war": 1.87,
+      "salary": 8750000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2022,
+      "team_id": "HOU",
+      "war": 0.82,
+      "salary": 10000000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2023,
+      "team_id": "HOU",
+      "war": 0.15,
+      "salary": 14000000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2024,
+      "team_id": "HOU",
+      "war": 0.4,
+      "salary": 14000000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2025,
+      "team_id": "CHC",
+      "war": -0.61,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2019,
+      "team_id": "MIN",
+      "war": 0.05,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2020,
+      "team_id": "MIN",
+      "war": 0.43,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2021,
+      "team_id": "MIN",
+      "war": 0.29,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2022,
+      "team_id": "MIN",
+      "war": 0.12,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2023,
+      "team_id": "MIN",
+      "war": -0.3,
+      "salary": 790000.0
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2024,
+      "team_id": "MIN",
+      "war": 1.39,
+      "salary": 790000.0
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2025,
+      "team_id": "BOS",
+      "war": -0.18,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2025,
+      "team_id": "MIN",
+      "war": -0.84,
+      "salary": 1500000.0
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2025,
+      "team_id": "STL",
+      "war": -0.04,
+      "salary": null
+    }
+  ],
+  "career_war_batting": [
+    {
+      "mlb_player_id": 519151,
+      "year": 2013,
+      "team_id": "MIN",
+      "war": 0.0,
+      "salary": 490000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2014,
+      "team_id": "MIN",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2015,
+      "team_id": "MIN",
+      "war": 0.0,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2016,
+      "team_id": "MIN",
+      "war": 0.0,
+      "salary": 520000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2017,
+      "team_id": "MIN",
+      "war": 0.0,
+      "salary": 1175000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2018,
+      "team_id": "HOU",
+      "war": 0.0,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2018,
+      "team_id": "MIN",
+      "war": 0.0,
+      "salary": 1600000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2019,
+      "team_id": "HOU",
+      "war": 0.0,
+      "salary": 2900000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2020,
+      "team_id": "HOU",
+      "war": null,
+      "salary": 8750000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2021,
+      "team_id": "HOU",
+      "war": 0.0,
+      "salary": 8750000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2022,
+      "team_id": "HOU",
+      "war": null,
+      "salary": 10000000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2023,
+      "team_id": "HOU",
+      "war": 0.0,
+      "salary": 14000000.0
+    },
+    {
+      "mlb_player_id": 519151,
+      "year": 2024,
+      "team_id": "HOU",
+      "war": 0.0,
+      "salary": 14000000.0
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2019,
+      "team_id": "MIN",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2020,
+      "team_id": "MIN",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2021,
+      "team_id": "MIN",
+      "war": 0.0,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2022,
+      "team_id": "MIN",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2023,
+      "team_id": "MIN",
+      "war": null,
+      "salary": 790000.0
+    },
+    {
+      "mlb_player_id": 660896,
+      "year": 2024,
+      "team_id": "MIN",
+      "war": null,
+      "salary": 790000.0
+    },
+    {
+      "mlb_player_id": 665482,
+      "year": 2021,
+      "team_id": "MIN",
+      "war": -0.29,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665482,
+      "year": 2022,
+      "team_id": "MIN",
+      "war": 0.53,
+      "salary": null
+    }
+  ]
+}

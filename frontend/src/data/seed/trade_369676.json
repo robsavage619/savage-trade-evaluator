@@ -1,0 +1,1183 @@
+{
+  "trade_event_id": 369676,
+  "trade_season": 2018,
+  "trade_date": "2018-07-18",
+  "teams": [
+    "BAL",
+    "LAD"
+  ],
+  "legs": [
+    {
+      "trade_event_id": 369676,
+      "leg_index": 0,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 592518,
+      "player_name": "Manny Machado",
+      "from_team_id": 110,
+      "from_team_bref": "BAL",
+      "from_team_name": "Baltimore Orioles",
+      "to_team_id": 119,
+      "to_team_bref": "LAD",
+      "to_team_name": "Los Angeles Dodgers",
+      "description": "Baltimore Orioles traded SS Manny Machado to Los Angeles Dodgers for 2B Breyvic Valera, RF Yusniel Diaz, RHP Zach Pop, RHP Dean Kremer and 3B Rylan Bannon."
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 5,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 647315,
+      "player_name": "Zach Pop",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 110,
+      "to_team_bref": "BAL",
+      "to_team_name": "Baltimore Orioles",
+      "description": "Baltimore Orioles traded SS Manny Machado to Los Angeles Dodgers for 2B Breyvic Valera, RF Yusniel Diaz, RHP Zach Pop, RHP Dean Kremer and 3B Rylan Bannon."
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 4,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 665152,
+      "player_name": "Dean Kremer",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 110,
+      "to_team_bref": "BAL",
+      "to_team_name": "Baltimore Orioles",
+      "description": "Baltimore Orioles traded SS Manny Machado to Los Angeles Dodgers for 2B Breyvic Valera, RF Yusniel Diaz, RHP Zach Pop, RHP Dean Kremer and 3B Rylan Bannon."
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 3,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 676625,
+      "player_name": "Rylan Bannon",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 110,
+      "to_team_bref": "BAL",
+      "to_team_name": "Baltimore Orioles",
+      "description": "Baltimore Orioles traded SS Manny Machado to Los Angeles Dodgers for 2B Breyvic Valera, RF Yusniel Diaz, RHP Zach Pop, RHP Dean Kremer and 3B Rylan Bannon."
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 2,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 666783,
+      "player_name": "Yusniel D\u00edaz",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 110,
+      "to_team_bref": "BAL",
+      "to_team_name": "Baltimore Orioles",
+      "description": "Baltimore Orioles traded SS Manny Machado to Los Angeles Dodgers for 2B Breyvic Valera, RF Yusniel Diaz, RHP Zach Pop, RHP Dean Kremer and 3B Rylan Bannon."
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 1,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 591971,
+      "player_name": "Breyvic Valera",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 110,
+      "to_team_bref": "BAL",
+      "to_team_name": "Baltimore Orioles",
+      "description": "Baltimore Orioles traded SS Manny Machado to Los Angeles Dodgers for 2B Breyvic Valera, RF Yusniel Diaz, RHP Zach Pop, RHP Dean Kremer and 3B Rylan Bannon."
+    }
+  ],
+  "war_window": [
+    {
+      "trade_event_id": 369676,
+      "leg_index": 0,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 592518,
+      "player_name": "Manny Machado",
+      "from_team_bref": "BAL",
+      "to_team_bref": "LAD",
+      "war_t_minus_1": 4.07,
+      "war_t_total": 6.1899999999999995,
+      "war_t_with_receiver": 2.58,
+      "war_t_plus_1": 2.51,
+      "war_t_plus_2": 3.03,
+      "war_t_plus_3": 5.03
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 1,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 591971,
+      "player_name": "Breyvic Valera",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "war_t_minus_1": -0.25,
+      "war_t_total": -0.19,
+      "war_t_with_receiver": 0.01,
+      "war_t_plus_1": 0.13,
+      "war_t_plus_2": null,
+      "war_t_plus_3": -0.02
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 4,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 665152,
+      "player_name": "Dean Kremer",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": 0.48,
+      "war_t_plus_3": -0.87
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 5,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 647315,
+      "player_name": "Zach Pop",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": null,
+      "war_t_plus_3": 0.06
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 3,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 676625,
+      "player_name": "Rylan Bannon",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": null,
+      "war_t_plus_3": null
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 2,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 666783,
+      "player_name": "Yusniel D\u00edaz",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": null,
+      "war_t_plus_3": null
+    }
+  ],
+  "arsenal_window": [
+    {
+      "trade_event_id": 369676,
+      "leg_index": 0,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 592518,
+      "player_name": "Manny Machado",
+      "from_team_bref": "BAL",
+      "to_team_bref": "LAD",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 4,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 665152,
+      "player_name": "Dean Kremer",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 5,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 647315,
+      "player_name": "Zach Pop",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 3,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 676625,
+      "player_name": "Rylan Bannon",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 2,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 666783,
+      "player_name": "Yusniel D\u00edaz",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 1,
+      "date": "2018-07-18",
+      "trade_season": 2018,
+      "mlb_player_id": 591971,
+      "player_name": "Breyvic Valera",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    }
+  ],
+  "pitch_movement_window": [],
+  "demographics": [
+    {
+      "trade_event_id": 369676,
+      "leg_index": 4,
+      "trade_season": 2018,
+      "mlb_player_id": 665152,
+      "player_name": "Dean Kremer",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "birth_date": "1996-01-07",
+      "birth_country": "USA",
+      "age_at_trade": 22,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 74,
+      "weight_lbs": 210,
+      "mlb_debut_date": "2020-09-06",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 2,
+      "trade_season": 2018,
+      "mlb_player_id": 666783,
+      "player_name": "Yusniel D\u00edaz",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "birth_date": "1996-10-07",
+      "birth_country": "Cuba",
+      "age_at_trade": 22,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "8",
+      "primary_position_type": "Outfielder",
+      "height_inches": 72,
+      "weight_lbs": 215,
+      "mlb_debut_date": "2022-08-02",
+      "is_international_born": 1
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 0,
+      "trade_season": 2018,
+      "mlb_player_id": 592518,
+      "player_name": "Manny Machado",
+      "from_team_bref": "BAL",
+      "to_team_bref": "LAD",
+      "birth_date": "1992-07-06",
+      "birth_country": "USA",
+      "age_at_trade": 26,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "5",
+      "primary_position_type": "Infielder",
+      "height_inches": 74,
+      "weight_lbs": 218,
+      "mlb_debut_date": "2012-08-09",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 1,
+      "trade_season": 2018,
+      "mlb_player_id": 591971,
+      "player_name": "Breyvic Valera",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "birth_date": "1992-01-08",
+      "birth_country": "Venezuela",
+      "age_at_trade": 26,
+      "bat_side": "S",
+      "pitch_hand": "R",
+      "primary_position_code": "7",
+      "primary_position_type": "Outfielder",
+      "height_inches": 71,
+      "weight_lbs": 190,
+      "mlb_debut_date": "2017-09-05",
+      "is_international_born": 1
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 5,
+      "trade_season": 2018,
+      "mlb_player_id": 647315,
+      "player_name": "Zach Pop",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "birth_date": "1996-09-20",
+      "birth_country": "Canada",
+      "age_at_trade": 22,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 76,
+      "weight_lbs": 220,
+      "mlb_debut_date": "2021-04-03",
+      "is_international_born": 1
+    },
+    {
+      "trade_event_id": 369676,
+      "leg_index": 3,
+      "trade_season": 2018,
+      "mlb_player_id": 676625,
+      "player_name": "Rylan Bannon",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BAL",
+      "birth_date": "1996-04-22",
+      "birth_country": "USA",
+      "age_at_trade": 22,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "5",
+      "primary_position_type": "Infielder",
+      "height_inches": 68,
+      "weight_lbs": 180,
+      "mlb_debut_date": "2022-05-12",
+      "is_international_born": 0
+    }
+  ],
+  "naive_baseline": [
+    {
+      "trade_event_id": 369676,
+      "trade_season": 2018,
+      "outcome_window_years": 3,
+      "team_bref": "BAL",
+      "war_received": -0.21,
+      "war_given_up": 10.57,
+      "surplus": -10.78,
+      "players_received": "Breyvic Valera, Yusniel D\u00edaz, Rylan Bannon, Dean Kremer, Zach Pop",
+      "players_given_up": "Manny Machado",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    },
+    {
+      "trade_event_id": 369676,
+      "trade_season": 2018,
+      "outcome_window_years": 3,
+      "team_bref": "LAD",
+      "war_received": 13.15,
+      "war_given_up": -0.22,
+      "surplus": 13.37,
+      "players_received": "Manny Machado",
+      "players_given_up": "Breyvic Valera, Yusniel D\u00edaz, Rylan Bannon, Dean Kremer, Zach Pop",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    }
+  ],
+  "people": [
+    {
+      "mlb_player_id": 666783,
+      "full_name": "Yusniel D\u00edaz",
+      "birth_date": "1996-10-07",
+      "primary_position_name": "Outfielder",
+      "primary_position_code": "8",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 72,
+      "weight_lbs": 215,
+      "birth_country": "Cuba",
+      "mlb_debut_date": "2022-08-02"
+    },
+    {
+      "mlb_player_id": 676625,
+      "full_name": "Rylan Bannon",
+      "birth_date": "1996-04-22",
+      "primary_position_name": "Third Base",
+      "primary_position_code": "5",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 68,
+      "weight_lbs": 180,
+      "birth_country": "USA",
+      "mlb_debut_date": "2022-05-12"
+    },
+    {
+      "mlb_player_id": 665152,
+      "full_name": "Dean Kremer",
+      "birth_date": "1996-01-07",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 74,
+      "weight_lbs": 210,
+      "birth_country": "USA",
+      "mlb_debut_date": "2020-09-06"
+    },
+    {
+      "mlb_player_id": 647315,
+      "full_name": "Zach Pop",
+      "birth_date": "1996-09-20",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 76,
+      "weight_lbs": 220,
+      "birth_country": "Canada",
+      "mlb_debut_date": "2021-04-03"
+    },
+    {
+      "mlb_player_id": 592518,
+      "full_name": "Manny Machado",
+      "birth_date": "1992-07-06",
+      "primary_position_name": "Third Base",
+      "primary_position_code": "5",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 74,
+      "weight_lbs": 218,
+      "birth_country": "USA",
+      "mlb_debut_date": "2012-08-09"
+    },
+    {
+      "mlb_player_id": 591971,
+      "full_name": "Breyvic Valera",
+      "birth_date": "1992-01-08",
+      "primary_position_name": "Outfielder",
+      "primary_position_code": "7",
+      "bat_side": "S",
+      "pitch_hand": "R",
+      "height_inches": 71,
+      "weight_lbs": 190,
+      "birth_country": "Venezuela",
+      "mlb_debut_date": "2017-09-05"
+    }
+  ],
+  "coaches": [
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "BPPI",
+      "job_title": "Batting Practice Pitcher",
+      "person_name": "Jett Ruiz"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Wayne Kirby"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Bobby Dickerson"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Howie Clark"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "John Russell"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "COAC",
+      "job_title": "Coach",
+      "person_name": "Einar D\u00edaz"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Roger McDowell"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Scott Coolbaugh"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Alan Mills"
+    },
+    {
+      "team_id": 110,
+      "team_bref": "BAL",
+      "season": 2018,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Buck Showalter"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Steve Cilladi"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Fumi Ishibashi"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "George Lombard"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Chris Woodward"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Luis Ortiz"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Brant Brown"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Bob Geren"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COAC",
+      "job_title": "Coach",
+      "person_name": "Danny Lehmann"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Rick Honeycutt"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Turner Ward"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Mark Prior"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "MLFC",
+      "job_title": "Major League Field Coordinator",
+      "person_name": "Bob Geren"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Dave Roberts"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2018,
+      "job_code": "SBAD",
+      "job_title": "Senior Baseball Advisor",
+      "person_name": "Gerry Hunsicker"
+    }
+  ],
+  "front_office": [
+    {
+      "team_bref": "BAL",
+      "role": "Farm Director",
+      "person_name": "Brian Graham"
+    },
+    {
+      "team_bref": "BAL",
+      "role": "General Manager",
+      "person_name": "Dan Duquette"
+    },
+    {
+      "team_bref": "BAL",
+      "role": "Manager",
+      "person_name": "Buck Showalter"
+    },
+    {
+      "team_bref": "BAL",
+      "role": "Scouting Director",
+      "person_name": "Gary Rajsich"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "Farm Director",
+      "person_name": "Brandon Gomes"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "General Manager",
+      "person_name": "Farhan Zaidi"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "Manager",
+      "person_name": "Dave Roberts"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "President",
+      "person_name": "Andrew Friedman"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "Scouting Director",
+      "person_name": "Billy Gasparino"
+    }
+  ],
+  "career_war_pitching": [
+    {
+      "mlb_player_id": 647315,
+      "year": 2021,
+      "team_id": "MIA",
+      "war": 0.08,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2022,
+      "team_id": "MIA",
+      "war": 0.2,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2022,
+      "team_id": "TOR",
+      "war": 0.51,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2023,
+      "team_id": "TOR",
+      "war": -0.37,
+      "salary": 742200.0
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2024,
+      "team_id": "TOR",
+      "war": -1.3,
+      "salary": 765500.0
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2025,
+      "team_id": "NYM",
+      "war": -0.19,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2025,
+      "team_id": "SEA",
+      "war": -0.4,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2026,
+      "team_id": "PHI",
+      "war": 0.13,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2020,
+      "team_id": "BAL",
+      "war": 0.48,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2021,
+      "team_id": "BAL",
+      "war": -0.87,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2022,
+      "team_id": "BAL",
+      "war": 2.67,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2023,
+      "team_id": "BAL",
+      "war": 1.41,
+      "salary": 731200.0
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2024,
+      "team_id": "BAL",
+      "war": 0.71,
+      "salary": 756600.0
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2025,
+      "team_id": "BAL",
+      "war": 2.3,
+      "salary": 2950000.0
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2026,
+      "team_id": "BAL",
+      "war": -0.07,
+      "salary": 5750000.0
+    }
+  ],
+  "career_war_batting": [
+    {
+      "mlb_player_id": 591971,
+      "year": 2017,
+      "team_id": "STL",
+      "war": -0.25,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 591971,
+      "year": 2018,
+      "team_id": "BAL",
+      "war": 0.01,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 591971,
+      "year": 2018,
+      "team_id": "LAD",
+      "war": -0.2,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 591971,
+      "year": 2019,
+      "team_id": "NYY",
+      "war": 0.01,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 591971,
+      "year": 2019,
+      "team_id": "TOR",
+      "war": 0.12,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 591971,
+      "year": 2021,
+      "team_id": "TOR",
+      "war": -0.02,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2012,
+      "team_id": "BAL",
+      "war": 1.6,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2013,
+      "team_id": "BAL",
+      "war": 5.86,
+      "salary": 495000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2014,
+      "team_id": "BAL",
+      "war": 2.19,
+      "salary": 519000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2015,
+      "team_id": "BAL",
+      "war": 7.26,
+      "salary": 548000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2016,
+      "team_id": "BAL",
+      "war": 7.4,
+      "salary": 5000000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2017,
+      "team_id": "BAL",
+      "war": 4.07,
+      "salary": 11500000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2018,
+      "team_id": "BAL",
+      "war": 3.61,
+      "salary": 16000000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2018,
+      "team_id": "LAD",
+      "war": 2.58,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2019,
+      "team_id": "SDP",
+      "war": 2.51,
+      "salary": 12000000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2020,
+      "team_id": "SDP",
+      "war": 3.03,
+      "salary": 32000000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2021,
+      "team_id": "SDP",
+      "war": 5.03,
+      "salary": 32000000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2022,
+      "team_id": "SDP",
+      "war": 6.78,
+      "salary": 32000000.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2023,
+      "team_id": "SDP",
+      "war": 2.66,
+      "salary": 17090909.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2024,
+      "team_id": "SDP",
+      "war": 3.09,
+      "salary": 17090909.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2025,
+      "team_id": "SDP",
+      "war": 4.06,
+      "salary": 17090909.0
+    },
+    {
+      "mlb_player_id": 592518,
+      "year": 2026,
+      "team_id": "SDP",
+      "war": 0.13,
+      "salary": 25090909.0
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2021,
+      "team_id": "MIA",
+      "war": -0.02,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2022,
+      "team_id": "MIA",
+      "war": 0.0,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2022,
+      "team_id": "TOR",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2023,
+      "team_id": "TOR",
+      "war": null,
+      "salary": 742200.0
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2024,
+      "team_id": "TOR",
+      "war": null,
+      "salary": 765500.0
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2025,
+      "team_id": "SEA",
+      "war": 0.0,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2020,
+      "team_id": "BAL",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2021,
+      "team_id": "BAL",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2022,
+      "team_id": "BAL",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2023,
+      "team_id": "BAL",
+      "war": null,
+      "salary": 731200.0
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2024,
+      "team_id": "BAL",
+      "war": null,
+      "salary": 756600.0
+    },
+    {
+      "mlb_player_id": 666783,
+      "year": 2022,
+      "team_id": "BAL",
+      "war": -0.03,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 676625,
+      "year": 2022,
+      "team_id": "ATL",
+      "war": 0.0,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 676625,
+      "year": 2022,
+      "team_id": "BAL",
+      "war": -0.17,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 676625,
+      "year": 2023,
+      "team_id": "HOU",
+      "war": -0.16,
+      "salary": null
+    }
+  ]
+}

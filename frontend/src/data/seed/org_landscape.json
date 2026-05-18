@@ -1,0 +1,336 @@
+{
+  "dev": [
+    {
+      "team_bref": "ARI",
+      "team_name": "Arizona Diamondbacks",
+      "dev_war_total": 294.3600000000001,
+      "dev_war_avg": 0.4054545454545456
+    },
+    {
+      "team_bref": "ATL",
+      "team_name": "Atlanta Braves",
+      "dev_war_total": 346.8599999999999,
+      "dev_war_avg": 0.46558389261744954
+    },
+    {
+      "team_bref": "BAL",
+      "team_name": "Baltimore Orioles",
+      "dev_war_total": 280.89,
+      "dev_war_avg": 0.4082703488372093
+    },
+    {
+      "team_bref": "BOS",
+      "team_name": "Boston Red Sox",
+      "dev_war_total": 388.07,
+      "dev_war_avg": 0.5906697108066971
+    },
+    {
+      "team_bref": "CHC",
+      "team_name": "Chicago Cubs",
+      "dev_war_total": 358.65999999999997,
+      "dev_war_avg": 0.4794919786096256
+    },
+    {
+      "team_bref": "CHW",
+      "team_name": "Chicago White Sox",
+      "dev_war_total": 240.87,
+      "dev_war_avg": 0.385392
+    },
+    {
+      "team_bref": "CIN",
+      "team_name": "Cincinnati Reds",
+      "dev_war_total": 234.57999999999998,
+      "dev_war_avg": 0.31194148936170213
+    },
+    {
+      "team_bref": "CLE",
+      "team_name": "Cleveland Guardians",
+      "dev_war_total": 384.8599999999999,
+      "dev_war_avg": 0.6435785953177255
+    },
+    {
+      "team_bref": "COL",
+      "team_name": "Colorado Rockies",
+      "dev_war_total": 223.35999999999996,
+      "dev_war_avg": 0.34629457364341076
+    },
+    {
+      "team_bref": "DET",
+      "team_name": "Detroit Tigers",
+      "dev_war_total": 209.32999999999998,
+      "dev_war_avg": 0.34148450244698203
+    },
+    {
+      "team_bref": "HOU",
+      "team_name": "Houston Astros",
+      "dev_war_total": 469.05000000000007,
+      "dev_war_avg": 0.8073149741824441
+    },
+    {
+      "team_bref": "KCR",
+      "team_name": "Kansas City Royals",
+      "dev_war_total": 250.86000000000013,
+      "dev_war_avg": 0.3931974921630096
+    },
+    {
+      "team_bref": "LAA",
+      "team_name": "Los Angeles Angels",
+      "dev_war_total": 262.3900000000001,
+      "dev_war_avg": 0.3634210526315791
+    },
+    {
+      "team_bref": "LAD",
+      "team_name": "Los Angeles Dodgers",
+      "dev_war_total": 468.52000000000004,
+      "dev_war_avg": 0.6374421768707483
+    },
+    {
+      "team_bref": "MIA",
+      "team_name": "Miami Marlins",
+      "dev_war_total": 213.86,
+      "dev_war_avg": 0.29017639077340573
+    },
+    {
+      "team_bref": "MIL",
+      "team_name": "Milwaukee Brewers",
+      "dev_war_total": 318.64999999999986,
+      "dev_war_avg": 0.44256944444444424
+    },
+    {
+      "team_bref": "MIN",
+      "team_name": "Minnesota Twins",
+      "dev_war_total": 314.52,
+      "dev_war_avg": 0.48687306501547983
+    },
+    {
+      "team_bref": "NYM",
+      "team_name": "New York Mets",
+      "dev_war_total": 327.05999999999995,
+      "dev_war_avg": 0.4401884253028263
+    },
+    {
+      "team_bref": "NYY",
+      "team_name": "New York Yankees",
+      "dev_war_total": 415.37999999999994,
+      "dev_war_avg": 0.635137614678899
+    },
+    {
+      "team_bref": "OAK",
+      "team_name": "Athletics",
+      "dev_war_total": 281.6199999999999,
+      "dev_war_avg": 0.4339291217257317
+    },
+    {
+      "team_bref": "PHI",
+      "team_name": "Philadelphia Phillies",
+      "dev_war_total": 290.8999999999998,
+      "dev_war_avg": 0.41029619181946375
+    },
+    {
+      "team_bref": "PIT",
+      "team_name": "Pittsburgh Pirates",
+      "dev_war_total": 203.64999999999992,
+      "dev_war_avg": 0.28128453038674023
+    },
+    {
+      "team_bref": "SDP",
+      "team_name": "San Diego Padres",
+      "dev_war_total": 274.01000000000016,
+      "dev_war_avg": 0.3805694444444447
+    },
+    {
+      "team_bref": "SEA",
+      "team_name": "Seattle Mariners",
+      "dev_war_total": 314.87,
+      "dev_war_avg": 0.4385376044568245
+    },
+    {
+      "team_bref": "SFG",
+      "team_name": "San Francisco Giants",
+      "dev_war_total": 295.73999999999995,
+      "dev_war_avg": 0.41830268741159826
+    },
+    {
+      "team_bref": "STL",
+      "team_name": "St. Louis Cardinals",
+      "dev_war_total": 348.09000000000003,
+      "dev_war_avg": 0.5405124223602485
+    },
+    {
+      "team_bref": "TBR",
+      "team_name": "Tampa Bay Rays",
+      "dev_war_total": 394.75999999999976,
+      "dev_war_avg": 0.5874404761904758
+    },
+    {
+      "team_bref": "TEX",
+      "team_name": "Texas Rangers",
+      "dev_war_total": 284.98,
+      "dev_war_avg": 0.42156804733727815
+    },
+    {
+      "team_bref": "TOR",
+      "team_name": "Toronto Blue Jays",
+      "dev_war_total": 352.5400000000002,
+      "dev_war_avg": 0.5169208211143698
+    },
+    {
+      "team_bref": "WSN",
+      "team_name": "Washington Nationals",
+      "dev_war_total": 314.5300000000001,
+      "dev_war_avg": 0.4666617210682494
+    }
+  ],
+  "trade_results": [
+    {
+      "team_bref": "ARI",
+      "mean_surplus_3yr": -0.11561855670103093,
+      "n_trades": 194
+    },
+    {
+      "team_bref": "ATL",
+      "mean_surplus_3yr": 0.10202764976958514,
+      "n_trades": 217
+    },
+    {
+      "team_bref": "BAL",
+      "mean_surplus_3yr": -0.0017452830188679522,
+      "n_trades": 212
+    },
+    {
+      "team_bref": "BOS",
+      "mean_surplus_3yr": -0.08802884615384611,
+      "n_trades": 208
+    },
+    {
+      "team_bref": "CHC",
+      "mean_surplus_3yr": 0.15153409090909095,
+      "n_trades": 176
+    },
+    {
+      "team_bref": "CHW",
+      "mean_surplus_3yr": 0.009722222222222245,
+      "n_trades": 180
+    },
+    {
+      "team_bref": "CIN",
+      "mean_surplus_3yr": -0.053725490196078474,
+      "n_trades": 153
+    },
+    {
+      "team_bref": "CLE",
+      "mean_surplus_3yr": -0.13160427807486624,
+      "n_trades": 187
+    },
+    {
+      "team_bref": "COL",
+      "mean_surplus_3yr": -0.2914035087719299,
+      "n_trades": 114
+    },
+    {
+      "team_bref": "DET",
+      "mean_surplus_3yr": -0.1428688524590162,
+      "n_trades": 122
+    },
+    {
+      "team_bref": "HOU",
+      "mean_surplus_3yr": 0.2433082706766919,
+      "n_trades": 133
+    },
+    {
+      "team_bref": "KCR",
+      "mean_surplus_3yr": 0.125081081081081,
+      "n_trades": 185
+    },
+    {
+      "team_bref": "LAA",
+      "mean_surplus_3yr": 0.16353932584269656,
+      "n_trades": 178
+    },
+    {
+      "team_bref": "LAD",
+      "mean_surplus_3yr": 0.5671806167400881,
+      "n_trades": 227
+    },
+    {
+      "team_bref": "MIA",
+      "mean_surplus_3yr": -0.01115853658536585,
+      "n_trades": 164
+    },
+    {
+      "team_bref": "MIL",
+      "mean_surplus_3yr": 0.30519125683060105,
+      "n_trades": 183
+    },
+    {
+      "team_bref": "MIN",
+      "mean_surplus_3yr": -0.3190510948905108,
+      "n_trades": 137
+    },
+    {
+      "team_bref": "NYM",
+      "mean_surplus_3yr": 0.14582822085889563,
+      "n_trades": 163
+    },
+    {
+      "team_bref": "NYY",
+      "mean_surplus_3yr": 0.3547846889952152,
+      "n_trades": 209
+    },
+    {
+      "team_bref": "OAK",
+      "mean_surplus_3yr": -0.0006666666666667201,
+      "n_trades": 210
+    },
+    {
+      "team_bref": "PHI",
+      "mean_surplus_3yr": 0.20953846153846153,
+      "n_trades": 195
+    },
+    {
+      "team_bref": "PIT",
+      "mean_surplus_3yr": -0.03777327935222665,
+      "n_trades": 247
+    },
+    {
+      "team_bref": "SDP",
+      "mean_surplus_3yr": 0.11842391304347825,
+      "n_trades": 184
+    },
+    {
+      "team_bref": "SEA",
+      "mean_surplus_3yr": 0.21657142857142864,
+      "n_trades": 245
+    },
+    {
+      "team_bref": "SFG",
+      "mean_surplus_3yr": 0.2949333333333333,
+      "n_trades": 150
+    },
+    {
+      "team_bref": "STL",
+      "mean_surplus_3yr": 0.03397849462365597,
+      "n_trades": 93
+    },
+    {
+      "team_bref": "TBR",
+      "mean_surplus_3yr": 0.2540433212996389,
+      "n_trades": 277
+    },
+    {
+      "team_bref": "TEX",
+      "mean_surplus_3yr": -0.005539906103286374,
+      "n_trades": 213
+    },
+    {
+      "team_bref": "TOR",
+      "mean_surplus_3yr": 0.12725663716814162,
+      "n_trades": 226
+    },
+    {
+      "team_bref": "WSN",
+      "mean_surplus_3yr": 0.09151515151515151,
+      "n_trades": 99
+    }
+  ]
+}

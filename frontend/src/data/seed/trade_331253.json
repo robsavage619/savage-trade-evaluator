@@ -1,0 +1,1094 @@
+{
+  "trade_event_id": 331253,
+  "trade_season": 2017,
+  "trade_date": "2017-08-31",
+  "teams": [
+    "DET",
+    "HOU"
+  ],
+  "legs": [
+    {
+      "trade_event_id": 331253,
+      "leg_index": 0,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 434378,
+      "player_name": "Justin Verlander",
+      "from_team_id": 116,
+      "from_team_bref": "DET",
+      "from_team_name": "Detroit Tigers",
+      "to_team_id": 117,
+      "to_team_bref": "HOU",
+      "to_team_name": "Houston Astros",
+      "description": "Detroit Tigers traded RHP Justin Verlander, cash and Player To Be Named Later to Houston Astros for CF Daz Cameron, RHP Franklin Perez and C Jake Rogers."
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 3,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 668670,
+      "player_name": "Jake Rogers",
+      "from_team_id": 117,
+      "from_team_bref": "HOU",
+      "from_team_name": "Houston Astros",
+      "to_team_id": 116,
+      "to_team_bref": "DET",
+      "to_team_name": "Detroit Tigers",
+      "description": "Detroit Tigers traded RHP Justin Verlander, cash and Player To Be Named Later to Houston Astros for CF Daz Cameron, RHP Franklin Perez and C Jake Rogers."
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 2,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 658530,
+      "player_name": "Franklin P\u00e9rez",
+      "from_team_id": 117,
+      "from_team_bref": "HOU",
+      "from_team_name": "Houston Astros",
+      "to_team_id": 116,
+      "to_team_bref": "DET",
+      "to_team_name": "Detroit Tigers",
+      "description": "Detroit Tigers traded RHP Justin Verlander, cash and Player To Be Named Later to Houston Astros for CF Daz Cameron, RHP Franklin Perez and C Jake Rogers."
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 1,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 663662,
+      "player_name": "Daz Cameron",
+      "from_team_id": 117,
+      "from_team_bref": "HOU",
+      "from_team_name": "Houston Astros",
+      "to_team_id": 116,
+      "to_team_bref": "DET",
+      "to_team_name": "Detroit Tigers",
+      "description": "Detroit Tigers traded RHP Justin Verlander, cash and Player To Be Named Later to Houston Astros for CF Daz Cameron, RHP Franklin Perez and C Jake Rogers."
+    }
+  ],
+  "war_window": [
+    {
+      "trade_event_id": 331253,
+      "leg_index": 0,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 434378,
+      "player_name": "Justin Verlander",
+      "from_team_bref": "DET",
+      "to_team_bref": "HOU",
+      "war_t_minus_1": 7.37,
+      "war_t_total": 6.93,
+      "war_t_with_receiver": 1.83,
+      "war_t_plus_1": 6.31,
+      "war_t_plus_2": 7.34,
+      "war_t_plus_3": 0.16
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 1,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 663662,
+      "player_name": "Daz Cameron",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": null,
+      "war_t_plus_3": -0.48
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 3,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 668670,
+      "player_name": "Jake Rogers",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": -0.63,
+      "war_t_plus_3": null
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 2,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 658530,
+      "player_name": "Franklin P\u00e9rez",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": null,
+      "war_t_plus_3": null
+    }
+  ],
+  "arsenal_window": [
+    {
+      "trade_event_id": 331253,
+      "leg_index": 0,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 434378,
+      "player_name": "Justin Verlander",
+      "from_team_bref": "DET",
+      "to_team_bref": "HOU",
+      "fb_velocity_t_minus_1": 70.0,
+      "fb_velocity_t_plus_1": 80.0,
+      "fb_spin_t_minus_1": 99.0,
+      "fb_spin_t_plus_1": 99.0,
+      "curve_spin_t_minus_1": 89.0,
+      "curve_spin_t_plus_1": 95.0,
+      "k_percent_t_minus_1": 88.0,
+      "k_percent_t_plus_1": 96.0,
+      "bb_percent_t_minus_1": 75.0,
+      "bb_percent_t_plus_1": 96.0,
+      "whiff_percent_t_minus_1": 77.0,
+      "whiff_percent_t_plus_1": 86.0,
+      "chase_percent_t_minus_1": 86.0,
+      "chase_percent_t_plus_1": 84.0
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 2,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 658530,
+      "player_name": "Franklin P\u00e9rez",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 3,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 668670,
+      "player_name": "Jake Rogers",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 1,
+      "date": "2017-08-31",
+      "trade_season": 2017,
+      "mlb_player_id": 663662,
+      "player_name": "Daz Cameron",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    }
+  ],
+  "pitch_movement_window": [
+    {
+      "trade_event_id": 331253,
+      "leg_index": 0,
+      "trade_season": 2017,
+      "mlb_player_id": 434378,
+      "player_name": "Justin Verlander",
+      "from_team_bref": "DET",
+      "to_team_bref": "HOU",
+      "pitch_type": "FF",
+      "speed_t_minus_1": 94.1,
+      "speed_t_plus_1": 95.0,
+      "vert_break_t_minus_1": 14.2,
+      "vert_break_t_plus_1": 11.0,
+      "horiz_break_t_minus_1": 12.1,
+      "horiz_break_t_plus_1": 11.0,
+      "usage_t_minus_1": 0.5782145782145782,
+      "usage_t_plus_1": 0.6116959064327485
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 0,
+      "trade_season": 2017,
+      "mlb_player_id": 434378,
+      "player_name": "Justin Verlander",
+      "from_team_bref": "DET",
+      "to_team_bref": "HOU",
+      "pitch_type": "SL",
+      "speed_t_minus_1": 88.5,
+      "speed_t_plus_1": 86.5,
+      "vert_break_t_minus_1": 26.8,
+      "vert_break_t_plus_1": 34.6,
+      "horiz_break_t_minus_1": 2.6,
+      "horiz_break_t_plus_1": 3.6,
+      "usage_t_minus_1": 0.17772317772317772,
+      "usage_t_plus_1": 0.22280701754385965
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 0,
+      "trade_season": 2017,
+      "mlb_player_id": 434378,
+      "player_name": "Justin Verlander",
+      "from_team_bref": "DET",
+      "to_team_bref": "HOU",
+      "pitch_type": "CU",
+      "speed_t_minus_1": 79.2,
+      "speed_t_plus_1": 79.6,
+      "vert_break_t_minus_1": 55.6,
+      "vert_break_t_plus_1": 58.7,
+      "horiz_break_t_minus_1": 11.7,
+      "horiz_break_t_plus_1": 9.3,
+      "usage_t_minus_1": 0.15915915915915915,
+      "usage_t_plus_1": 0.14473684210526316
+    }
+  ],
+  "demographics": [
+    {
+      "trade_event_id": 331253,
+      "leg_index": 0,
+      "trade_season": 2017,
+      "mlb_player_id": 434378,
+      "player_name": "Justin Verlander",
+      "from_team_bref": "DET",
+      "to_team_bref": "HOU",
+      "birth_date": "1983-02-20",
+      "birth_country": "USA",
+      "age_at_trade": 34,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 77,
+      "weight_lbs": 240,
+      "mlb_debut_date": "2005-07-04",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 3,
+      "trade_season": 2017,
+      "mlb_player_id": 668670,
+      "player_name": "Jake Rogers",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "birth_date": "1995-04-18",
+      "birth_country": "USA",
+      "age_at_trade": 22,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "2",
+      "primary_position_type": "Catcher",
+      "height_inches": 71,
+      "weight_lbs": 201,
+      "mlb_debut_date": "2019-07-30",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 2,
+      "trade_season": 2017,
+      "mlb_player_id": 658530,
+      "player_name": "Franklin P\u00e9rez",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "birth_date": "1997-12-06",
+      "birth_country": "?",
+      "age_at_trade": 20,
+      "bat_side": null,
+      "pitch_hand": null,
+      "primary_position_code": null,
+      "primary_position_type": null,
+      "height_inches": null,
+      "weight_lbs": null,
+      "mlb_debut_date": null,
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 331253,
+      "leg_index": 1,
+      "trade_season": 2017,
+      "mlb_player_id": 663662,
+      "player_name": "Daz Cameron",
+      "from_team_bref": "HOU",
+      "to_team_bref": "DET",
+      "birth_date": "1997-01-15",
+      "birth_country": "USA",
+      "age_at_trade": 20,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "9",
+      "primary_position_type": "Outfielder",
+      "height_inches": 72,
+      "weight_lbs": 185,
+      "mlb_debut_date": "2020-09-09",
+      "is_international_born": 0
+    }
+  ],
+  "naive_baseline": [
+    {
+      "trade_event_id": 331253,
+      "trade_season": 2017,
+      "outcome_window_years": 3,
+      "team_bref": "DET",
+      "war_received": -1.11,
+      "war_given_up": 13.81,
+      "surplus": -14.92,
+      "players_received": "Daz Cameron, Franklin P\u00e9rez, Jake Rogers",
+      "players_given_up": "Justin Verlander",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    },
+    {
+      "trade_event_id": 331253,
+      "trade_season": 2017,
+      "outcome_window_years": 3,
+      "team_bref": "HOU",
+      "war_received": 15.64,
+      "war_given_up": -1.11,
+      "surplus": 16.75,
+      "players_received": "Justin Verlander",
+      "players_given_up": "Daz Cameron, Franklin P\u00e9rez, Jake Rogers",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    }
+  ],
+  "people": [
+    {
+      "mlb_player_id": 668670,
+      "full_name": "Jake Rogers",
+      "birth_date": "1995-04-18",
+      "primary_position_name": "Catcher",
+      "primary_position_code": "2",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 71,
+      "weight_lbs": 201,
+      "birth_country": "USA",
+      "mlb_debut_date": "2019-07-30"
+    },
+    {
+      "mlb_player_id": 663662,
+      "full_name": "Daz Cameron",
+      "birth_date": "1997-01-15",
+      "primary_position_name": "Outfielder",
+      "primary_position_code": "9",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 72,
+      "weight_lbs": 185,
+      "birth_country": "USA",
+      "mlb_debut_date": "2020-09-09"
+    },
+    {
+      "mlb_player_id": 434378,
+      "full_name": "Justin Verlander",
+      "birth_date": "1983-02-20",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 77,
+      "weight_lbs": 240,
+      "birth_country": "USA",
+      "mlb_debut_date": "2005-07-04"
+    }
+  ],
+  "coaches": [
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "John Murrian"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Sam Palace"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "CASC",
+      "job_title": "Catching and Advance Scouting Coordinator",
+      "person_name": "Joe DePastino"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Omar Vizquel"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Dave Clark"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Leon Durham"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Gene Lamont"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Rich Dubee"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Lloyd McClendon"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Mick Billmeyer"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "DEFC",
+      "job_title": "Defensive Coach",
+      "person_name": "Matt Martin"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Brad Ausmus"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "PERF",
+      "job_title": "Performance Coach",
+      "person_name": "Brian Peterson"
+    },
+    {
+      "team_id": 116,
+      "team_bref": "DET",
+      "season": 2017,
+      "job_code": "PERF",
+      "job_title": "Performance Coach",
+      "person_name": "George Carlo"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Carlos Munoz"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Javier Bracamonte"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Rich Dauer"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Gary Pettis"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Alonzo Powell"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Alex Cora"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Brent Strom"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Dave Hudgens"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Craig Bjornson"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "A.J. Hinch"
+    },
+    {
+      "team_id": 117,
+      "team_bref": "HOU",
+      "season": 2017,
+      "job_code": "ROHI",
+      "job_title": "Roving Hitting Instructor",
+      "person_name": "Ralph Dickenson"
+    }
+  ],
+  "front_office": [
+    {
+      "team_bref": "DET",
+      "role": "Farm Director",
+      "person_name": "Dan Lunetta"
+    },
+    {
+      "team_bref": "DET",
+      "role": "General Manager",
+      "person_name": "Al Avila"
+    },
+    {
+      "team_bref": "DET",
+      "role": "Manager",
+      "person_name": "Brad Ausmus"
+    },
+    {
+      "team_bref": "DET",
+      "role": "Scouting Director",
+      "person_name": "Scott Pleis"
+    },
+    {
+      "team_bref": "HOU",
+      "role": "Farm Director",
+      "person_name": "Pete Putila"
+    },
+    {
+      "team_bref": "HOU",
+      "role": "General Manager",
+      "person_name": "Jeff Luhnow"
+    },
+    {
+      "team_bref": "HOU",
+      "role": "Manager",
+      "person_name": "A.J. Hinch"
+    },
+    {
+      "team_bref": "HOU",
+      "role": "Scouting Director",
+      "person_name": "Mike Elias"
+    }
+  ],
+  "career_war_pitching": [
+    {
+      "mlb_player_id": 434378,
+      "year": 2005,
+      "team_id": "DET",
+      "war": -0.21,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2006,
+      "team_id": "DET",
+      "war": 4.04,
+      "salary": 980000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2007,
+      "team_id": "DET",
+      "war": 4.16,
+      "salary": 1030000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2008,
+      "team_id": "DET",
+      "war": 1.78,
+      "salary": 1130000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2009,
+      "team_id": "DET",
+      "war": 5.47,
+      "salary": 3675000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2010,
+      "team_id": "DET",
+      "war": 4.44,
+      "salary": 6850000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2011,
+      "team_id": "DET",
+      "war": 8.62,
+      "salary": 12850000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2012,
+      "team_id": "DET",
+      "war": 8.09,
+      "salary": 20000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2013,
+      "team_id": "DET",
+      "war": 4.4,
+      "salary": 20000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2014,
+      "team_id": "DET",
+      "war": 0.93,
+      "salary": 20000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2015,
+      "team_id": "DET",
+      "war": 2.4,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2016,
+      "team_id": "DET",
+      "war": 7.36,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2017,
+      "team_id": "DET",
+      "war": 5.1,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2017,
+      "team_id": "HOU",
+      "war": 1.83,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2018,
+      "team_id": "HOU",
+      "war": 6.3,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2019,
+      "team_id": "HOU",
+      "war": 7.39,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2020,
+      "team_id": "HOU",
+      "war": 0.16,
+      "salary": 33000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2022,
+      "team_id": "HOU",
+      "war": 5.61,
+      "salary": 25000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2023,
+      "team_id": "HOU",
+      "war": 1.35,
+      "salary": 43333333.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2023,
+      "team_id": "NYM",
+      "war": 2.19,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2024,
+      "team_id": "HOU",
+      "war": -0.25,
+      "salary": 43333333.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2025,
+      "team_id": "SFG",
+      "war": 1.22,
+      "salary": 15000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2026,
+      "team_id": "DET",
+      "war": -0.2,
+      "salary": 7859347.0
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2021,
+      "team_id": "DET",
+      "war": -0.06,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2025,
+      "team_id": "DET",
+      "war": 0.06,
+      "salary": 2640000.0
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2026,
+      "team_id": "DET",
+      "war": 0.05,
+      "salary": 3050000.0
+    }
+  ],
+  "career_war_batting": [
+    {
+      "mlb_player_id": 434378,
+      "year": 2005,
+      "team_id": "DET",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2006,
+      "team_id": "DET",
+      "war": -0.03,
+      "salary": 980000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2007,
+      "team_id": "DET",
+      "war": -0.07,
+      "salary": 1030000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2008,
+      "team_id": "DET",
+      "war": -0.08,
+      "salary": 1130000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2009,
+      "team_id": "DET",
+      "war": -0.06,
+      "salary": 3675000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2010,
+      "team_id": "DET",
+      "war": -0.1,
+      "salary": 6850000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2011,
+      "team_id": "DET",
+      "war": -0.06,
+      "salary": 12850000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2012,
+      "team_id": "DET",
+      "war": -0.11,
+      "salary": 20000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2013,
+      "team_id": "DET",
+      "war": -0.03,
+      "salary": 20000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2014,
+      "team_id": "DET",
+      "war": 0.08,
+      "salary": 20000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2015,
+      "team_id": "DET",
+      "war": null,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2016,
+      "team_id": "DET",
+      "war": 0.01,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2017,
+      "team_id": "DET",
+      "war": 0.0,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2017,
+      "team_id": "HOU",
+      "war": null,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2018,
+      "team_id": "HOU",
+      "war": 0.01,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2019,
+      "team_id": "HOU",
+      "war": -0.05,
+      "salary": 28000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2020,
+      "team_id": "HOU",
+      "war": null,
+      "salary": 33000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2022,
+      "team_id": "HOU",
+      "war": null,
+      "salary": 25000000.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2023,
+      "team_id": "HOU",
+      "war": null,
+      "salary": 43333333.0
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2023,
+      "team_id": "NYM",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 434378,
+      "year": 2024,
+      "team_id": "HOU",
+      "war": null,
+      "salary": 43333333.0
+    },
+    {
+      "mlb_player_id": 663662,
+      "year": 2020,
+      "team_id": "DET",
+      "war": -0.48,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 663662,
+      "year": 2021,
+      "team_id": "DET",
+      "war": -0.26,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 663662,
+      "year": 2022,
+      "team_id": "DET",
+      "war": -0.01,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 663662,
+      "year": 2024,
+      "team_id": "OAK",
+      "war": -0.48,
+      "salary": 740000.0
+    },
+    {
+      "mlb_player_id": 663662,
+      "year": 2025,
+      "team_id": "MIL",
+      "war": -0.46,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2019,
+      "team_id": "DET",
+      "war": -0.63,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2021,
+      "team_id": "DET",
+      "war": 1.18,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2023,
+      "team_id": "DET",
+      "war": 0.82,
+      "salary": 726000.0
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2024,
+      "team_id": "DET",
+      "war": 0.93,
+      "salary": 1700000.0
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2025,
+      "team_id": "DET",
+      "war": 0.18,
+      "salary": 2640000.0
+    },
+    {
+      "mlb_player_id": 668670,
+      "year": 2026,
+      "team_id": "DET",
+      "war": -0.18,
+      "salary": 3050000.0
+    }
+  ]
+}

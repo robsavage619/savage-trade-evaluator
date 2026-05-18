@@ -1,0 +1,1254 @@
+{
+  "trade_event_id": 438093,
+  "trade_season": 2020,
+  "trade_date": "2020-02-10",
+  "teams": [
+    "BOS",
+    "LAD"
+  ],
+  "legs": [
+    {
+      "trade_event_id": 438093,
+      "leg_index": 4,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 605141,
+      "player_name": "Mookie Betts",
+      "from_team_id": 111,
+      "from_team_bref": "BOS",
+      "from_team_name": "Boston Red Sox",
+      "to_team_id": 119,
+      "to_team_bref": "LAD",
+      "to_team_name": "Los Angeles Dodgers",
+      "description": "Los Angeles Dodgers traded CF Alex Verdugo, C Connor Wong and SS Jeter Downs to Boston Red Sox for RF Mookie Betts, LHP David Price and cash."
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 2,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 669023,
+      "player_name": "Jeter Downs",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 111,
+      "to_team_bref": "BOS",
+      "to_team_name": "Boston Red Sox",
+      "description": "Los Angeles Dodgers traded CF Alex Verdugo, C Connor Wong and SS Jeter Downs to Boston Red Sox for RF Mookie Betts, LHP David Price and cash."
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 3,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 456034,
+      "player_name": "David Price",
+      "from_team_id": 111,
+      "from_team_bref": "BOS",
+      "from_team_name": "Boston Red Sox",
+      "to_team_id": 119,
+      "to_team_bref": "LAD",
+      "to_team_name": "Los Angeles Dodgers",
+      "description": "Los Angeles Dodgers traded CF Alex Verdugo, C Connor Wong and SS Jeter Downs to Boston Red Sox for RF Mookie Betts, LHP David Price and cash."
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 1,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 657136,
+      "player_name": "Connor Wong",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 111,
+      "to_team_bref": "BOS",
+      "to_team_name": "Boston Red Sox",
+      "description": "Los Angeles Dodgers traded CF Alex Verdugo, C Connor Wong and SS Jeter Downs to Boston Red Sox for RF Mookie Betts, LHP David Price and cash."
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 0,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 657077,
+      "player_name": "Alex Verdugo",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 111,
+      "to_team_bref": "BOS",
+      "to_team_name": "Boston Red Sox",
+      "description": "Los Angeles Dodgers traded CF Alex Verdugo, C Connor Wong and SS Jeter Downs to Boston Red Sox for RF Mookie Betts, LHP David Price and cash."
+    }
+  ],
+  "war_window": [
+    {
+      "trade_event_id": 438093,
+      "leg_index": 4,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 605141,
+      "player_name": "Mookie Betts",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "war_t_minus_1": 7.23,
+      "war_t_total": 3.67,
+      "war_t_with_receiver": 3.67,
+      "war_t_plus_1": 4.06,
+      "war_t_plus_2": 6.71,
+      "war_t_plus_3": 8.58
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 0,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 657077,
+      "player_name": "Alex Verdugo",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "war_t_minus_1": 2.93,
+      "war_t_total": 2.2,
+      "war_t_with_receiver": 2.2,
+      "war_t_plus_1": 2.24,
+      "war_t_plus_2": 0.92,
+      "war_t_plus_3": 2.72
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 3,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 456034,
+      "player_name": "David Price",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "war_t_minus_1": 1.59,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": 0.8300000000000001,
+      "war_t_plus_2": 0.69,
+      "war_t_plus_3": null
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 1,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 657136,
+      "player_name": "Connor Wong",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": 0.33,
+      "war_t_plus_2": -0.13,
+      "war_t_plus_3": 2.18
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 2,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 669023,
+      "player_name": "Jeter Downs",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": -0.62,
+      "war_t_plus_3": 0.06
+    }
+  ],
+  "arsenal_window": [
+    {
+      "trade_event_id": 438093,
+      "leg_index": 3,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 456034,
+      "player_name": "David Price",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "fb_velocity_t_minus_1": 29.0,
+      "fb_velocity_t_plus_1": 38.0,
+      "fb_spin_t_minus_1": 37.0,
+      "fb_spin_t_plus_1": 7.0,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": 77.0,
+      "k_percent_t_plus_1": 14.0,
+      "bb_percent_t_minus_1": 67.0,
+      "bb_percent_t_plus_1": 54.0,
+      "whiff_percent_t_minus_1": 53.0,
+      "whiff_percent_t_plus_1": 15.0,
+      "chase_percent_t_minus_1": 25.0,
+      "chase_percent_t_plus_1": 8.0
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 0,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 657077,
+      "player_name": "Alex Verdugo",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 2,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 669023,
+      "player_name": "Jeter Downs",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 1,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 657136,
+      "player_name": "Connor Wong",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 4,
+      "date": "2020-02-10",
+      "trade_season": 2020,
+      "mlb_player_id": 605141,
+      "player_name": "Mookie Betts",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    }
+  ],
+  "pitch_movement_window": [
+    {
+      "trade_event_id": 438093,
+      "leg_index": 3,
+      "trade_season": 2020,
+      "mlb_player_id": 456034,
+      "player_name": "David Price",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "pitch_type": "FF",
+      "speed_t_minus_1": 91.9,
+      "speed_t_plus_1": 92.9,
+      "vert_break_t_minus_1": 18.2,
+      "vert_break_t_plus_1": 18.8,
+      "horiz_break_t_minus_1": 10.8,
+      "horiz_break_t_plus_1": 9.0,
+      "usage_t_minus_1": 0.27512090274046214,
+      "usage_t_plus_1": 0.18421052631578946
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 3,
+      "trade_season": 2020,
+      "mlb_player_id": 456034,
+      "player_name": "David Price",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "pitch_type": "SI",
+      "speed_t_minus_1": 91.9,
+      "speed_t_plus_1": 92.8,
+      "vert_break_t_minus_1": 21.9,
+      "vert_break_t_plus_1": 21.8,
+      "horiz_break_t_minus_1": 16.6,
+      "horiz_break_t_plus_1": 14.8,
+      "usage_t_minus_1": 0.26222461042450296,
+      "usage_t_plus_1": 0.3455008488964346
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 3,
+      "trade_season": 2020,
+      "mlb_player_id": 456034,
+      "player_name": "David Price",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "pitch_type": "FC",
+      "speed_t_minus_1": 88.5,
+      "speed_t_plus_1": 88.9,
+      "vert_break_t_minus_1": 26.0,
+      "vert_break_t_plus_1": 26.0,
+      "horiz_break_t_minus_1": 3.3,
+      "horiz_break_t_plus_1": 0.6,
+      "usage_t_minus_1": 0.17302525523911874,
+      "usage_t_plus_1": 0.20203735144312393
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 3,
+      "trade_season": 2020,
+      "mlb_player_id": 456034,
+      "player_name": "David Price",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "pitch_type": "CH",
+      "speed_t_minus_1": 84.1,
+      "speed_t_plus_1": 85.5,
+      "vert_break_t_minus_1": 34.0,
+      "vert_break_t_plus_1": 31.8,
+      "horiz_break_t_minus_1": 16.4,
+      "horiz_break_t_plus_1": 14.7,
+      "usage_t_minus_1": 0.2649113379903278,
+      "usage_t_plus_1": 0.24872665534804753
+    }
+  ],
+  "demographics": [
+    {
+      "trade_event_id": 438093,
+      "leg_index": 3,
+      "trade_season": 2020,
+      "mlb_player_id": 456034,
+      "player_name": "David Price",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "birth_date": "1985-08-26",
+      "birth_country": "USA",
+      "age_at_trade": 35,
+      "bat_side": "L",
+      "pitch_hand": "L",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 77,
+      "weight_lbs": 215,
+      "mlb_debut_date": "2008-09-14",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 0,
+      "trade_season": 2020,
+      "mlb_player_id": 657077,
+      "player_name": "Alex Verdugo",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "birth_date": "1996-05-15",
+      "birth_country": "USA",
+      "age_at_trade": 24,
+      "bat_side": "L",
+      "pitch_hand": "L",
+      "primary_position_code": "7",
+      "primary_position_type": "Outfielder",
+      "height_inches": 72,
+      "weight_lbs": 209,
+      "mlb_debut_date": "2017-09-01",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 1,
+      "trade_season": 2020,
+      "mlb_player_id": 657136,
+      "player_name": "Connor Wong",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "birth_date": "1996-05-19",
+      "birth_country": "USA",
+      "age_at_trade": 24,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "2",
+      "primary_position_type": "Catcher",
+      "height_inches": 70,
+      "weight_lbs": 190,
+      "mlb_debut_date": "2021-06-22",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 2,
+      "trade_season": 2020,
+      "mlb_player_id": 669023,
+      "player_name": "Jeter Downs",
+      "from_team_bref": "LAD",
+      "to_team_bref": "BOS",
+      "birth_date": "1998-07-27",
+      "birth_country": "Colombia",
+      "age_at_trade": 22,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "6",
+      "primary_position_type": "Infielder",
+      "height_inches": 70,
+      "weight_lbs": 197,
+      "mlb_debut_date": "2022-06-22",
+      "is_international_born": 1
+    },
+    {
+      "trade_event_id": 438093,
+      "leg_index": 4,
+      "trade_season": 2020,
+      "mlb_player_id": 605141,
+      "player_name": "Mookie Betts",
+      "from_team_bref": "BOS",
+      "to_team_bref": "LAD",
+      "birth_date": "1992-10-07",
+      "birth_country": "USA",
+      "age_at_trade": 28,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "6",
+      "primary_position_type": "Infielder",
+      "height_inches": 69,
+      "weight_lbs": 180,
+      "mlb_debut_date": "2014-06-29",
+      "is_international_born": 0
+    }
+  ],
+  "naive_baseline": [
+    {
+      "trade_event_id": 438093,
+      "trade_season": 2020,
+      "outcome_window_years": 3,
+      "team_bref": "BOS",
+      "war_received": 9.9,
+      "war_given_up": 20.87,
+      "surplus": -10.97,
+      "players_received": "Alex Verdugo, Connor Wong, Jeter Downs",
+      "players_given_up": "David Price, Mookie Betts",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    },
+    {
+      "trade_event_id": 438093,
+      "trade_season": 2020,
+      "outcome_window_years": 3,
+      "team_bref": "LAD",
+      "war_received": 24.54,
+      "war_given_up": 7.7,
+      "surplus": 16.84,
+      "players_received": "David Price, Mookie Betts",
+      "players_given_up": "Alex Verdugo, Connor Wong, Jeter Downs",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    }
+  ],
+  "people": [
+    {
+      "mlb_player_id": 669023,
+      "full_name": "Jeter Downs",
+      "birth_date": "1998-07-27",
+      "primary_position_name": "Shortstop",
+      "primary_position_code": "6",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 70,
+      "weight_lbs": 197,
+      "birth_country": "Colombia",
+      "mlb_debut_date": "2022-06-22"
+    },
+    {
+      "mlb_player_id": 657077,
+      "full_name": "Alex Verdugo",
+      "birth_date": "1996-05-15",
+      "primary_position_name": "Outfielder",
+      "primary_position_code": "7",
+      "bat_side": "L",
+      "pitch_hand": "L",
+      "height_inches": 72,
+      "weight_lbs": 209,
+      "birth_country": "USA",
+      "mlb_debut_date": "2017-09-01"
+    },
+    {
+      "mlb_player_id": 456034,
+      "full_name": "David Price",
+      "birth_date": "1985-08-26",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "L",
+      "pitch_hand": "L",
+      "height_inches": 77,
+      "weight_lbs": 215,
+      "birth_country": "USA",
+      "mlb_debut_date": "2008-09-14"
+    },
+    {
+      "mlb_player_id": 657136,
+      "full_name": "Connor Wong",
+      "birth_date": "1996-05-19",
+      "primary_position_name": "Catcher",
+      "primary_position_code": "2",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 70,
+      "weight_lbs": 190,
+      "birth_country": "USA",
+      "mlb_debut_date": "2021-06-22"
+    },
+    {
+      "mlb_player_id": 605141,
+      "full_name": "Mookie Betts",
+      "birth_date": "1992-10-07",
+      "primary_position_name": "Shortstop",
+      "primary_position_code": "6",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 69,
+      "weight_lbs": 180,
+      "birth_country": "USA",
+      "mlb_debut_date": "2014-06-29"
+    }
+  ],
+  "coaches": [
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "AHCO",
+      "job_title": "Assistant Hitting Coordinator",
+      "person_name": "Reed Gragnani"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Alejandro Mart\u00ecnez"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Tom Goodwin"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Carlos Febles"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Peter Fatse"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Jerry Narron"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COAC",
+      "job_title": "Coach",
+      "person_name": "Ram\u00f3n V\u00e1zquez"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Dave Bush"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Tim Hyers"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Craig Bjornson"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "COPA",
+      "job_title": "Assistant Pitching Coach",
+      "person_name": "Kevin Walker"
+    },
+    {
+      "team_id": 111,
+      "team_bref": "BOS",
+      "season": 2020,
+      "job_code": "NTRM",
+      "job_title": "Interim Manager",
+      "person_name": "Ron Roenicke"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Steve Cilladi"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "George Lombard"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Dino Ebel"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Aaron Bates"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Bob Geren"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Danny Lehmann"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COAC",
+      "job_title": "Coach",
+      "person_name": "Danny Lehmann"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Mark Prior"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Brant Brown"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Robert Van Scoyoc"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Josh Bard"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "COPA",
+      "job_title": "Assistant Pitching Coach",
+      "person_name": "Connor McGuiness"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "MLFC",
+      "job_title": "Major League Field Coordinator",
+      "person_name": "Bob Geren"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2020,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Dave Roberts"
+    }
+  ],
+  "front_office": [
+    {
+      "team_bref": "BOS",
+      "role": "Farm Director",
+      "person_name": "Ben Crockett"
+    },
+    {
+      "team_bref": "BOS",
+      "role": "General Manager",
+      "person_name": "Brian O'Halloran"
+    },
+    {
+      "team_bref": "BOS",
+      "role": "Manager",
+      "person_name": "Ron Roenicke"
+    },
+    {
+      "team_bref": "BOS",
+      "role": "President",
+      "person_name": "Chaim Bloom"
+    },
+    {
+      "team_bref": "BOS",
+      "role": "Scouting Director",
+      "person_name": "Mike Rikard"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "Farm Director",
+      "person_name": "William Rhymes"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "Manager",
+      "person_name": "Dave Roberts"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "President",
+      "person_name": "Andrew Friedman"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "Scouting Director",
+      "person_name": "Billy Gasparino"
+    }
+  ],
+  "career_war_pitching": [
+    {
+      "mlb_player_id": 456034,
+      "year": 2008,
+      "team_id": "TBR",
+      "war": 0.49,
+      "salary": 650000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2009,
+      "team_id": "TBR",
+      "war": 0.91,
+      "salary": 750000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2010,
+      "team_id": "TBR",
+      "war": 4.67,
+      "salary": 1834671.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2011,
+      "team_id": "TBR",
+      "war": 3.31,
+      "salary": 2084671.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2012,
+      "team_id": "TBR",
+      "war": 6.63,
+      "salary": 4350000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2013,
+      "team_id": "TBR",
+      "war": 2.62,
+      "salary": 10112500.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2014,
+      "team_id": "DET",
+      "war": 1.67,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2014,
+      "team_id": "TBR",
+      "war": 2.71,
+      "salary": 14000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2015,
+      "team_id": "DET",
+      "war": 3.75,
+      "salary": 19750000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2015,
+      "team_id": "TOR",
+      "war": 2.58,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2016,
+      "team_id": "BOS",
+      "war": 2.88,
+      "salary": 30000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2017,
+      "team_id": "BOS",
+      "war": 1.54,
+      "salary": 30000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2018,
+      "team_id": "BOS",
+      "war": 3.69,
+      "salary": 30000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2019,
+      "team_id": "BOS",
+      "war": 1.54,
+      "salary": 31000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": 0.67,
+      "salary": 32000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2022,
+      "team_id": "LAD",
+      "war": 0.69,
+      "salary": 32000000.0
+    }
+  ],
+  "career_war_batting": [
+    {
+      "mlb_player_id": 456034,
+      "year": 2008,
+      "team_id": "TBR",
+      "war": null,
+      "salary": 650000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2009,
+      "team_id": "TBR",
+      "war": 0.02,
+      "salary": 750000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2010,
+      "team_id": "TBR",
+      "war": -0.02,
+      "salary": 1834671.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2011,
+      "team_id": "TBR",
+      "war": -0.01,
+      "salary": 2084671.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2012,
+      "team_id": "TBR",
+      "war": 0.0,
+      "salary": 4350000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2013,
+      "team_id": "TBR",
+      "war": -0.09,
+      "salary": 10112500.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2014,
+      "team_id": "DET",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2014,
+      "team_id": "TBR",
+      "war": -0.05,
+      "salary": 14000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2015,
+      "team_id": "DET",
+      "war": -0.07,
+      "salary": 19750000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2015,
+      "team_id": "TOR",
+      "war": -0.08,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2016,
+      "team_id": "BOS",
+      "war": -0.1,
+      "salary": 30000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2017,
+      "team_id": "BOS",
+      "war": 0.06,
+      "salary": 30000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2018,
+      "team_id": "BOS",
+      "war": null,
+      "salary": 30000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2019,
+      "team_id": "BOS",
+      "war": 0.05,
+      "salary": 31000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": 0.16,
+      "salary": 32000000.0
+    },
+    {
+      "mlb_player_id": 456034,
+      "year": 2022,
+      "team_id": "LAD",
+      "war": 0.0,
+      "salary": 32000000.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2014,
+      "team_id": "BOS",
+      "war": 2.28,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2015,
+      "team_id": "BOS",
+      "war": 6.01,
+      "salary": 514500.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2016,
+      "team_id": "BOS",
+      "war": 9.79,
+      "salary": 566000.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2017,
+      "team_id": "BOS",
+      "war": 6.49,
+      "salary": 950000.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2018,
+      "team_id": "BOS",
+      "war": 10.74,
+      "salary": 10500000.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2019,
+      "team_id": "BOS",
+      "war": 7.23,
+      "salary": 20000000.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2020,
+      "team_id": "LAD",
+      "war": 3.67,
+      "salary": 27000000.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": 4.06,
+      "salary": 22916667.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2022,
+      "team_id": "LAD",
+      "war": 6.71,
+      "salary": 22916666.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2023,
+      "team_id": "LAD",
+      "war": 8.58,
+      "salary": 25416667.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2024,
+      "team_id": "LAD",
+      "war": 4.64,
+      "salary": 30416667.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2025,
+      "team_id": "LAD",
+      "war": 4.89,
+      "salary": 30416666.0
+    },
+    {
+      "mlb_player_id": 605141,
+      "year": 2026,
+      "team_id": "LAD",
+      "war": 0.15,
+      "salary": 30416667.0
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2017,
+      "team_id": "LAD",
+      "war": -0.37,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2018,
+      "team_id": "LAD",
+      "war": 0.41,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2019,
+      "team_id": "LAD",
+      "war": 2.93,
+      "salary": 560000.0
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2020,
+      "team_id": "BOS",
+      "war": 2.2,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2021,
+      "team_id": "BOS",
+      "war": 2.24,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2022,
+      "team_id": "BOS",
+      "war": 0.92,
+      "salary": 3550000.0
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2023,
+      "team_id": "BOS",
+      "war": 2.72,
+      "salary": 6300000.0
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2024,
+      "team_id": "NYY",
+      "war": 0.87,
+      "salary": 8700000.0
+    },
+    {
+      "mlb_player_id": 657077,
+      "year": 2025,
+      "team_id": "ATL",
+      "war": -0.26,
+      "salary": 1500000.0
+    },
+    {
+      "mlb_player_id": 657136,
+      "year": 2021,
+      "team_id": "BOS",
+      "war": 0.33,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 657136,
+      "year": 2022,
+      "team_id": "BOS",
+      "war": -0.13,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 657136,
+      "year": 2023,
+      "team_id": "BOS",
+      "war": 2.18,
+      "salary": 722000.0
+    },
+    {
+      "mlb_player_id": 657136,
+      "year": 2024,
+      "team_id": "BOS",
+      "war": 1.76,
+      "salary": 760000.0
+    },
+    {
+      "mlb_player_id": 657136,
+      "year": 2025,
+      "team_id": "BOS",
+      "war": -0.59,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 657136,
+      "year": 2026,
+      "team_id": "BOS",
+      "war": 0.49,
+      "salary": 1375000.0
+    },
+    {
+      "mlb_player_id": 669023,
+      "year": 2022,
+      "team_id": "BOS",
+      "war": -0.62,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 669023,
+      "year": 2023,
+      "team_id": "WSN",
+      "war": 0.06,
+      "salary": null
+    }
+  ]
+}

@@ -1,0 +1,1360 @@
+{
+  "trade_event_id": 508180,
+  "trade_season": 2021,
+  "trade_date": "2021-07-30",
+  "teams": [
+    "LAD",
+    "WSN"
+  ],
+  "legs": [
+    {
+      "trade_event_id": 508180,
+      "leg_index": 4,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 661541,
+      "player_name": "Donovan Casey",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 120,
+      "to_team_bref": "WSN",
+      "to_team_name": "Washington Nationals",
+      "description": "Washington Nationals traded RHP Max Scherzer and SS Trea Turner to Los Angeles Dodgers for C Keibert Ruiz, RHP Josiah Gray, RHP Gerardo Carrillo and OF Donovan Casey."
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_id": 120,
+      "from_team_bref": "WSN",
+      "from_team_name": "Washington Nationals",
+      "to_team_id": 119,
+      "to_team_bref": "LAD",
+      "to_team_name": "Los Angeles Dodgers",
+      "description": "Washington Nationals traded RHP Max Scherzer and SS Trea Turner to Los Angeles Dodgers for C Keibert Ruiz, RHP Josiah Gray, RHP Gerardo Carrillo and OF Donovan Casey."
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 2,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 672629,
+      "player_name": "Gerardo Carrillo",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 120,
+      "to_team_bref": "WSN",
+      "to_team_name": "Washington Nationals",
+      "description": "Washington Nationals traded RHP Max Scherzer and SS Trea Turner to Los Angeles Dodgers for C Keibert Ruiz, RHP Josiah Gray, RHP Gerardo Carrillo and OF Donovan Casey."
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 3,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 607208,
+      "player_name": "Trea Turner",
+      "from_team_id": 120,
+      "from_team_bref": "WSN",
+      "from_team_name": "Washington Nationals",
+      "to_team_id": 119,
+      "to_team_bref": "LAD",
+      "to_team_name": "Los Angeles Dodgers",
+      "description": "Washington Nationals traded RHP Max Scherzer and SS Trea Turner to Los Angeles Dodgers for C Keibert Ruiz, RHP Josiah Gray, RHP Gerardo Carrillo and OF Donovan Casey."
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 1,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 680686,
+      "player_name": "Josiah Gray",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 120,
+      "to_team_bref": "WSN",
+      "to_team_name": "Washington Nationals",
+      "description": "Washington Nationals traded RHP Max Scherzer and SS Trea Turner to Los Angeles Dodgers for C Keibert Ruiz, RHP Josiah Gray, RHP Gerardo Carrillo and OF Donovan Casey."
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 0,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 660688,
+      "player_name": "Keibert Ruiz",
+      "from_team_id": 119,
+      "from_team_bref": "LAD",
+      "from_team_name": "Los Angeles Dodgers",
+      "to_team_id": 120,
+      "to_team_bref": "WSN",
+      "to_team_name": "Washington Nationals",
+      "description": "Washington Nationals traded RHP Max Scherzer and SS Trea Turner to Los Angeles Dodgers for C Keibert Ruiz, RHP Josiah Gray, RHP Gerardo Carrillo and OF Donovan Casey."
+    }
+  ],
+  "war_window": [
+    {
+      "trade_event_id": 508180,
+      "leg_index": 0,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 660688,
+      "player_name": "Keibert Ruiz",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "war_t_minus_1": 0.06,
+      "war_t_total": 0.53,
+      "war_t_with_receiver": 0.53,
+      "war_t_plus_1": 1.49,
+      "war_t_plus_2": 1.39,
+      "war_t_plus_3": 0.55
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "war_t_minus_1": 2.18,
+      "war_t_total": 5.33,
+      "war_t_with_receiver": 2.47,
+      "war_t_plus_1": 5.26,
+      "war_t_plus_2": 3.05,
+      "war_t_plus_3": 0.33
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 3,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 607208,
+      "player_name": "Trea Turner",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "war_t_minus_1": 2.83,
+      "war_t_total": 6.5,
+      "war_t_with_receiver": 2.4,
+      "war_t_plus_1": 5.22,
+      "war_t_plus_2": 3.5,
+      "war_t_plus_3": 2.82
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 1,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 680686,
+      "player_name": "Josiah Gray",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "war_t_minus_1": null,
+      "war_t_total": -0.30000000000000004,
+      "war_t_with_receiver": -0.16,
+      "war_t_plus_1": 0.58,
+      "war_t_plus_2": 3.04,
+      "war_t_plus_3": -0.54
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 2,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 672629,
+      "player_name": "Gerardo Carrillo",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": null,
+      "war_t_plus_3": null
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 4,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 661541,
+      "player_name": "Donovan Casey",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "war_t_minus_1": null,
+      "war_t_total": null,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": null,
+      "war_t_plus_2": null,
+      "war_t_plus_3": null
+    }
+  ],
+  "arsenal_window": [
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "fb_velocity_t_minus_1": 74.0,
+      "fb_velocity_t_plus_1": 52.0,
+      "fb_spin_t_minus_1": 91.0,
+      "fb_spin_t_plus_1": 87.0,
+      "curve_spin_t_minus_1": 78.0,
+      "curve_spin_t_plus_1": 86.0,
+      "k_percent_t_minus_1": 84.0,
+      "k_percent_t_plus_1": 89.0,
+      "bb_percent_t_minus_1": 60.0,
+      "bb_percent_t_plus_1": 96.0,
+      "whiff_percent_t_minus_1": 81.0,
+      "whiff_percent_t_plus_1": 83.0,
+      "chase_percent_t_minus_1": 70.0,
+      "chase_percent_t_plus_1": 90.0
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 1,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 680686,
+      "player_name": "Josiah Gray",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": 59.0,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": 48.0,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": 48.0,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": 57.0,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": 17.0,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": 61.0,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": 27.0
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 3,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 607208,
+      "player_name": "Trea Turner",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 0,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 660688,
+      "player_name": "Keibert Ruiz",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 2,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 672629,
+      "player_name": "Gerardo Carrillo",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 4,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 661541,
+      "player_name": "Donovan Casey",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "fb_velocity_t_minus_1": null,
+      "fb_velocity_t_plus_1": null,
+      "fb_spin_t_minus_1": null,
+      "fb_spin_t_plus_1": null,
+      "curve_spin_t_minus_1": null,
+      "curve_spin_t_plus_1": null,
+      "k_percent_t_minus_1": null,
+      "k_percent_t_plus_1": null,
+      "bb_percent_t_minus_1": null,
+      "bb_percent_t_plus_1": null,
+      "whiff_percent_t_minus_1": null,
+      "whiff_percent_t_plus_1": null,
+      "chase_percent_t_minus_1": null,
+      "chase_percent_t_plus_1": null
+    }
+  ],
+  "pitch_movement_window": [
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "pitch_type": "FF",
+      "speed_t_minus_1": 94.7,
+      "speed_t_plus_1": 94.0,
+      "vert_break_t_minus_1": 15.0,
+      "vert_break_t_plus_1": 15.0,
+      "horiz_break_t_minus_1": 10.5,
+      "horiz_break_t_plus_1": 11.1,
+      "usage_t_minus_1": 0.4600164880461665,
+      "usage_t_plus_1": 0.45408398707891096
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "pitch_type": "FC",
+      "speed_t_minus_1": 91.1,
+      "speed_t_plus_1": 89.3,
+      "vert_break_t_minus_1": 23.8,
+      "vert_break_t_plus_1": 25.9,
+      "horiz_break_t_minus_1": 0.8,
+      "horiz_break_t_plus_1": 0.3,
+      "usage_t_minus_1": 0.09645507007419621,
+      "usage_t_plus_1": 0.0904476234425473
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "pitch_type": "SL",
+      "speed_t_minus_1": 85.5,
+      "speed_t_plus_1": 85.0,
+      "vert_break_t_minus_1": 34.9,
+      "vert_break_t_plus_1": 34.6,
+      "horiz_break_t_minus_1": 4.1,
+      "horiz_break_t_plus_1": 3.2,
+      "usage_t_minus_1": 0.19291014014839242,
+      "usage_t_plus_1": 0.23765574526995847
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "pitch_type": "CU",
+      "speed_t_minus_1": 77.1,
+      "speed_t_plus_1": 75.0,
+      "vert_break_t_minus_1": 55.0,
+      "vert_break_t_plus_1": 58.4,
+      "horiz_break_t_minus_1": 14.4,
+      "horiz_break_t_plus_1": 16.6,
+      "usage_t_minus_1": 0.09068425391591096,
+      "usage_t_plus_1": 0.09229349330872173
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "pitch_type": "CH",
+      "speed_t_minus_1": 84.9,
+      "speed_t_plus_1": 84.1,
+      "vert_break_t_minus_1": 35.0,
+      "vert_break_t_plus_1": 34.9,
+      "horiz_break_t_minus_1": 14.5,
+      "horiz_break_t_plus_1": 14.9,
+      "usage_t_minus_1": 0.15993404781533388,
+      "usage_t_plus_1": 0.12551915089986157
+    }
+  ],
+  "demographics": [
+    {
+      "trade_event_id": 508180,
+      "leg_index": 5,
+      "trade_season": 2021,
+      "mlb_player_id": 453286,
+      "player_name": "Max Scherzer",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "birth_date": "1984-07-27",
+      "birth_country": "USA",
+      "age_at_trade": 37,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 75,
+      "weight_lbs": 208,
+      "mlb_debut_date": "2008-04-29",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 3,
+      "trade_season": 2021,
+      "mlb_player_id": 607208,
+      "player_name": "Trea Turner",
+      "from_team_bref": "WSN",
+      "to_team_bref": "LAD",
+      "birth_date": "1993-06-30",
+      "birth_country": "USA",
+      "age_at_trade": 28,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "6",
+      "primary_position_type": "Infielder",
+      "height_inches": 73,
+      "weight_lbs": 185,
+      "mlb_debut_date": "2015-08-21",
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 4,
+      "trade_season": 2021,
+      "mlb_player_id": 661541,
+      "player_name": "Donovan Casey",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "birth_date": "1996-02-23",
+      "birth_country": "?",
+      "age_at_trade": 25,
+      "bat_side": null,
+      "pitch_hand": null,
+      "primary_position_code": null,
+      "primary_position_type": null,
+      "height_inches": null,
+      "weight_lbs": null,
+      "mlb_debut_date": null,
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 2,
+      "trade_season": 2021,
+      "mlb_player_id": 672629,
+      "player_name": "Gerardo Carrillo",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "birth_date": "1998-09-13",
+      "birth_country": "?",
+      "age_at_trade": 23,
+      "bat_side": null,
+      "pitch_hand": null,
+      "primary_position_code": null,
+      "primary_position_type": null,
+      "height_inches": null,
+      "weight_lbs": null,
+      "mlb_debut_date": null,
+      "is_international_born": 0
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 0,
+      "trade_season": 2021,
+      "mlb_player_id": 660688,
+      "player_name": "Keibert Ruiz",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "birth_date": "1998-07-20",
+      "birth_country": "Venezuela",
+      "age_at_trade": 23,
+      "bat_side": "S",
+      "pitch_hand": "R",
+      "primary_position_code": "2",
+      "primary_position_type": "Catcher",
+      "height_inches": 71,
+      "weight_lbs": 238,
+      "mlb_debut_date": "2020-08-16",
+      "is_international_born": 1
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 1,
+      "trade_season": 2021,
+      "mlb_player_id": 680686,
+      "player_name": "Josiah Gray",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "birth_date": "1997-12-21",
+      "birth_country": "USA",
+      "age_at_trade": 24,
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "primary_position_code": "1",
+      "primary_position_type": "Pitcher",
+      "height_inches": 73,
+      "weight_lbs": 209,
+      "mlb_debut_date": "2021-07-20",
+      "is_international_born": 0
+    }
+  ],
+  "naive_baseline": [
+    {
+      "trade_event_id": 508180,
+      "trade_season": 2021,
+      "outcome_window_years": 3,
+      "team_bref": "LAD",
+      "war_received": 25.05,
+      "war_given_up": 6.51,
+      "surplus": 18.54,
+      "players_received": "Trea Turner, Max Scherzer",
+      "players_given_up": "Keibert Ruiz, Josiah Gray, Gerardo Carrillo, Donovan Casey",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    },
+    {
+      "trade_event_id": 508180,
+      "trade_season": 2021,
+      "outcome_window_years": 3,
+      "team_bref": "WSN",
+      "war_received": 6.88,
+      "war_given_up": 20.18,
+      "surplus": -13.3,
+      "players_received": "Keibert Ruiz, Josiah Gray, Gerardo Carrillo, Donovan Casey",
+      "players_given_up": "Trea Turner, Max Scherzer",
+      "evaluated_at": "2026-05-15T21:41:15.399118"
+    }
+  ],
+  "people": [
+    {
+      "mlb_player_id": 453286,
+      "full_name": "Max Scherzer",
+      "birth_date": "1984-07-27",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 75,
+      "weight_lbs": 208,
+      "birth_country": "USA",
+      "mlb_debut_date": "2008-04-29"
+    },
+    {
+      "mlb_player_id": 660688,
+      "full_name": "Keibert Ruiz",
+      "birth_date": "1998-07-20",
+      "primary_position_name": "Catcher",
+      "primary_position_code": "2",
+      "bat_side": "S",
+      "pitch_hand": "R",
+      "height_inches": 71,
+      "weight_lbs": 238,
+      "birth_country": "Venezuela",
+      "mlb_debut_date": "2020-08-16"
+    },
+    {
+      "mlb_player_id": 607208,
+      "full_name": "Trea Turner",
+      "birth_date": "1993-06-30",
+      "primary_position_name": "Shortstop",
+      "primary_position_code": "6",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 73,
+      "weight_lbs": 185,
+      "birth_country": "USA",
+      "mlb_debut_date": "2015-08-21"
+    },
+    {
+      "mlb_player_id": 680686,
+      "full_name": "Josiah Gray",
+      "birth_date": "1997-12-21",
+      "primary_position_name": "Pitcher",
+      "primary_position_code": "1",
+      "bat_side": "R",
+      "pitch_hand": "R",
+      "height_inches": 73,
+      "weight_lbs": 209,
+      "birth_country": "USA",
+      "mlb_debut_date": "2021-07-20"
+    }
+  ],
+  "coaches": [
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "BCAT",
+      "job_title": "Bullpen Catcher",
+      "person_name": "Steve Cilladi"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Clayton McCullough"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Dino Ebel"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Aaron Bates"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Bob Geren"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Danny Lehmann"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COAC",
+      "job_title": "Coach",
+      "person_name": "Danny Lehmann"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Mark Prior"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Brant Brown"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Robert Van Scoyoc"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Josh Bard"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "COPA",
+      "job_title": "Assistant Pitching Coach",
+      "person_name": "Connor McGuiness"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "MLFC",
+      "job_title": "Major League Field Coordinator",
+      "person_name": "Bob Geren"
+    },
+    {
+      "team_id": 119,
+      "team_bref": "LAD",
+      "season": 2021,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Dave Roberts"
+    },
+    {
+      "team_id": 120,
+      "team_bref": "WSN",
+      "season": 2021,
+      "job_code": "COA1",
+      "job_title": "First Base Coach",
+      "person_name": "Randy Knorr"
+    },
+    {
+      "team_id": 120,
+      "team_bref": "WSN",
+      "season": 2021,
+      "job_code": "COA3",
+      "job_title": "Third Base Coach",
+      "person_name": "Bob Henley"
+    },
+    {
+      "team_id": 120,
+      "team_bref": "WSN",
+      "season": 2021,
+      "job_code": "COAA",
+      "job_title": "Assistant Hitting Coach",
+      "person_name": "Pat Roessler"
+    },
+    {
+      "team_id": 120,
+      "team_bref": "WSN",
+      "season": 2021,
+      "job_code": "COAB",
+      "job_title": "Bench Coach",
+      "person_name": "Tim Bogar"
+    },
+    {
+      "team_id": 120,
+      "team_bref": "WSN",
+      "season": 2021,
+      "job_code": "COAP",
+      "job_title": "Pitching Coach",
+      "person_name": "Jim Hickey"
+    },
+    {
+      "team_id": 120,
+      "team_bref": "WSN",
+      "season": 2021,
+      "job_code": "COAT",
+      "job_title": "Hitting Coach",
+      "person_name": "Kevin Long"
+    },
+    {
+      "team_id": 120,
+      "team_bref": "WSN",
+      "season": 2021,
+      "job_code": "COAU",
+      "job_title": "Bullpen Coach",
+      "person_name": "Henry Blanco"
+    },
+    {
+      "team_id": 120,
+      "team_bref": "WSN",
+      "season": 2021,
+      "job_code": "MNGR",
+      "job_title": "Manager",
+      "person_name": "Dave Martinez"
+    }
+  ],
+  "front_office": [
+    {
+      "team_bref": "LAD",
+      "role": "Farm Director",
+      "person_name": "William Rhymes"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "Manager",
+      "person_name": "Dave Roberts"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "President",
+      "person_name": "Andrew Friedman"
+    },
+    {
+      "team_bref": "LAD",
+      "role": "Scouting Director",
+      "person_name": "Billy Gasparino"
+    },
+    {
+      "team_bref": "WSN",
+      "role": "Farm Director",
+      "person_name": "Ryan Thomas"
+    },
+    {
+      "team_bref": "WSN",
+      "role": "General Manager",
+      "person_name": "Mike Rizzo"
+    },
+    {
+      "team_bref": "WSN",
+      "role": "Manager",
+      "person_name": "Dave Martinez"
+    },
+    {
+      "team_bref": "WSN",
+      "role": "Scouting Director",
+      "person_name": "Eddie Longosz"
+    }
+  ],
+  "career_war_pitching": [
+    {
+      "mlb_player_id": 453286,
+      "year": 2008,
+      "team_id": "ARI",
+      "war": 1.24,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2009,
+      "team_id": "ARI",
+      "war": 1.31,
+      "salary": 1450000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2010,
+      "team_id": "DET",
+      "war": 3.37,
+      "salary": 1500000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2011,
+      "team_id": "DET",
+      "war": 1.4,
+      "salary": 600000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2012,
+      "team_id": "DET",
+      "war": 4.35,
+      "salary": 3750000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2013,
+      "team_id": "DET",
+      "war": 6.49,
+      "salary": 6725000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2014,
+      "team_id": "DET",
+      "war": 5.75,
+      "salary": 15525000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2015,
+      "team_id": "WSN",
+      "war": 6.94,
+      "salary": 17142000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2016,
+      "team_id": "WSN",
+      "war": 6.28,
+      "salary": 22143000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2017,
+      "team_id": "WSN",
+      "war": 7.18,
+      "salary": 22143000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2018,
+      "team_id": "WSN",
+      "war": 7.91,
+      "salary": 22143000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2019,
+      "team_id": "WSN",
+      "war": 5.28,
+      "salary": 37505562.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2020,
+      "team_id": "WSN",
+      "war": 2.18,
+      "salary": 35920616.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": 2.79,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2021,
+      "team_id": "WSN",
+      "war": 3.28,
+      "salary": 34503480.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2022,
+      "team_id": "NYM",
+      "war": 5.26,
+      "salary": 43333333.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2023,
+      "team_id": "NYM",
+      "war": 2.06,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2023,
+      "team_id": "TEX",
+      "war": 0.99,
+      "salary": 43333333.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2024,
+      "team_id": "TEX",
+      "war": 0.33,
+      "salary": 43333334.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2025,
+      "team_id": "TOR",
+      "war": 0.25,
+      "salary": 15500000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2026,
+      "team_id": "TOR",
+      "war": -0.76,
+      "salary": 3000000.0
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": -0.1,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2021,
+      "team_id": "WSN",
+      "war": -0.06,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2022,
+      "team_id": "WSN",
+      "war": 0.58,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2023,
+      "team_id": "WSN",
+      "war": 3.04,
+      "salary": 730000.0
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2024,
+      "team_id": "WSN",
+      "war": -0.54,
+      "salary": 757400.0
+    }
+  ],
+  "career_war_batting": [
+    {
+      "mlb_player_id": 453286,
+      "year": 2008,
+      "team_id": "ARI",
+      "war": -0.15,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2009,
+      "team_id": "ARI",
+      "war": 0.27,
+      "salary": 1450000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2010,
+      "team_id": "DET",
+      "war": -0.03,
+      "salary": 1500000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2011,
+      "team_id": "DET",
+      "war": -0.06,
+      "salary": 600000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2012,
+      "team_id": "DET",
+      "war": -0.06,
+      "salary": 3750000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2013,
+      "team_id": "DET",
+      "war": 0.06,
+      "salary": 6725000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2014,
+      "team_id": "DET",
+      "war": -0.05,
+      "salary": 15525000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2015,
+      "team_id": "WSN",
+      "war": 0.47,
+      "salary": 17142000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2016,
+      "team_id": "WSN",
+      "war": 0.11,
+      "salary": 22143000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2017,
+      "team_id": "WSN",
+      "war": 0.31,
+      "salary": 22143000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2018,
+      "team_id": "WSN",
+      "war": 0.77,
+      "salary": 22143000.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2019,
+      "team_id": "WSN",
+      "war": 0.02,
+      "salary": 37505562.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2020,
+      "team_id": "WSN",
+      "war": null,
+      "salary": 35920616.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": -0.32,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2021,
+      "team_id": "WSN",
+      "war": -0.42,
+      "salary": 34503480.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2022,
+      "team_id": "NYM",
+      "war": null,
+      "salary": 43333333.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2023,
+      "team_id": "NYM",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2023,
+      "team_id": "TEX",
+      "war": null,
+      "salary": 43333333.0
+    },
+    {
+      "mlb_player_id": 453286,
+      "year": 2024,
+      "team_id": "TEX",
+      "war": null,
+      "salary": 43333334.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2015,
+      "team_id": "WSN",
+      "war": 0.29,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2016,
+      "team_id": "WSN",
+      "war": 3.31,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2017,
+      "team_id": "WSN",
+      "war": 2.92,
+      "salary": 554900.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2018,
+      "team_id": "WSN",
+      "war": 4.87,
+      "salary": 577200.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2019,
+      "team_id": "WSN",
+      "war": 4.0,
+      "salary": 3725000.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2020,
+      "team_id": "WSN",
+      "war": 2.83,
+      "salary": 7450000.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": 2.4,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2021,
+      "team_id": "WSN",
+      "war": 4.1,
+      "salary": 13000000.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2022,
+      "team_id": "LAD",
+      "war": 5.22,
+      "salary": 21000000.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2023,
+      "team_id": "PHI",
+      "war": 3.5,
+      "salary": 27272727.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2024,
+      "team_id": "PHI",
+      "war": 2.82,
+      "salary": 27272727.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2025,
+      "team_id": "PHI",
+      "war": 5.44,
+      "salary": 27272727.0
+    },
+    {
+      "mlb_player_id": 607208,
+      "year": 2026,
+      "team_id": "PHI",
+      "war": 0.03,
+      "salary": 27272727.0
+    },
+    {
+      "mlb_player_id": 660688,
+      "year": 2020,
+      "team_id": "LAD",
+      "war": 0.06,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660688,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": 0.0,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660688,
+      "year": 2021,
+      "team_id": "WSN",
+      "war": 0.53,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660688,
+      "year": 2022,
+      "team_id": "WSN",
+      "war": 1.49,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 660688,
+      "year": 2023,
+      "team_id": "WSN",
+      "war": 1.39,
+      "salary": 1375000.0
+    },
+    {
+      "mlb_player_id": 660688,
+      "year": 2024,
+      "team_id": "WSN",
+      "war": 0.55,
+      "salary": 6375000.0
+    },
+    {
+      "mlb_player_id": 660688,
+      "year": 2025,
+      "team_id": "WSN",
+      "war": 0.82,
+      "salary": 5375000.0
+    },
+    {
+      "mlb_player_id": 660688,
+      "year": 2026,
+      "team_id": "WSN",
+      "war": 0.01,
+      "salary": 5375000.0
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2021,
+      "team_id": "LAD",
+      "war": -0.04,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2021,
+      "team_id": "WSN",
+      "war": -0.1,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2022,
+      "team_id": "WSN",
+      "war": null,
+      "salary": null
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2023,
+      "team_id": "WSN",
+      "war": null,
+      "salary": 730000.0
+    },
+    {
+      "mlb_player_id": 680686,
+      "year": 2024,
+      "team_id": "WSN",
+      "war": null,
+      "salary": 757400.0
+    }
+  ]
+}
