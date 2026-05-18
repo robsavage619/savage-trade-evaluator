@@ -41,7 +41,7 @@ function TopNav() {
           <div style={{ width: 1, height: 26, background: 'var(--color-ink-700)', flexShrink: 0 }} />
           {/* Wordmark */}
           <div className="leading-none">
-            <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em', color: 'var(--color-ink-100)' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--color-ink-100)' }}>
               Savage Analytics
             </div>
             <div style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.18em', color: 'var(--color-ink-500)', textTransform: 'uppercase', marginTop: 3 }}>
