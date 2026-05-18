@@ -18,6 +18,7 @@ from savage_trade_evaluator.ingest import (
     draft,
     fortification,
     front_office,
+    milb_stats,
     prospects,
     retrosheet_gamelogs,
     retrosheet_transactions,
@@ -108,6 +109,29 @@ def catalog_(
         )
         if e.notes:
             typer.echo(f"    {e.notes}")
+
+
+@ingest_app.command("milb")
+def ingest_milb(
+    season: int | None = typer.Option(None, help="Single season to ingest."),
+    start: int = typer.Option(2010, help="First season (inclusive)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season (inclusive)."),
+    sport_ids: str = typer.Option(
+        "11,12,13,14",
+        help="Comma-separated MLB sportIds (11=AAA, 12=AA, 13=Hi-A, 14=Lo-A).",
+    ),
+) -> None:
+    """Pull MiLB hitting + pitching seasonal stats from the MLB Stats API.
+
+    Defaults to all four full-season minor leagues, 2010 → current backtester end.
+    """
+    configure_logging()
+    sports = tuple(int(s) for s in sport_ids.split(",") if s.strip())
+    seasons = [season] if season else list(range(start, end + 1))
+    total = 0
+    for s in seasons:
+        total += milb_stats.ingest_season(s, sport_ids=sports)
+    typer.echo(f"ingested {total} milb rows across {len(seasons)} season(s)")
 
 
 @ingest_app.command("transactions")

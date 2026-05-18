@@ -743,6 +743,106 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         ON r.team = h.team AND r.season = h.season
     """,
     """
+    CREATE OR REPLACE VIEW milb_player_season_aggregate AS
+    -- Collapse multi-stint MiLB rows to one row per (player, season, group)
+    -- at the HIGHEST level the player reached that year. Highest = lowest
+    -- sport_id (11=AAA, 12=AA, 13=Hi-A, 14=Lo-A). Aggregate stats are PA-
+    -- weighted within that level.
+    WITH best_level AS (
+        SELECT mlb_player_id, season, group_name, MIN(sport_id) AS top_sport_id
+        FROM milb_player_seasons
+        GROUP BY mlb_player_id, season, group_name
+    )
+    SELECT
+        m.mlb_player_id,
+        m.season,
+        m.group_name,
+        m.sport_id AS top_sport_id,
+        SUM(m.plate_appearances) AS pa,
+        SUM(m.at_bats) AS ab,
+        SUM(m.hits) AS hits,
+        SUM(m.home_runs) AS hr,
+        SUM(m.strikeouts) AS k,
+        SUM(m.walks) AS bb,
+        -- PA-weighted OPS (some rows have NULL OPS — drop those).
+        SUM(m.ops * m.plate_appearances) / NULLIF(SUM(
+            CASE WHEN m.ops IS NOT NULL THEN m.plate_appearances ELSE 0 END
+        ), 0) AS ops_pa_weighted,
+        AVG(m.age) AS age,
+        SUM(m.innings_pitched) AS ip,
+        SUM(m.era * m.innings_pitched) / NULLIF(SUM(
+            CASE WHEN m.era IS NOT NULL THEN m.innings_pitched ELSE 0 END
+        ), 0) AS era_ip_weighted
+    FROM milb_player_seasons m
+    INNER JOIN best_level bl
+        ON bl.mlb_player_id = m.mlb_player_id
+        AND bl.season = m.season
+        AND bl.group_name = m.group_name
+        AND bl.top_sport_id = m.sport_id
+    GROUP BY m.mlb_player_id, m.season, m.group_name, m.sport_id
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_milb_quality AS
+    -- Per (trade_event, receiver): aggregate MiLB-quality signal for the
+    -- acquired players, using the prior-season stats at their highest level.
+    -- Level multiplier reflects how MLB-translatable performance at each
+    -- level is (rough MLE-style weighting). MiLB age-vs-level signal kept
+    -- as a separate column.
+    WITH leveled AS (
+        SELECT
+            t.trade_event_id,
+            t.to_team_bref AS receiver_bref,
+            t.mlb_player_id,
+            t.trade_season,
+            a.top_sport_id,
+            a.pa,
+            a.ip,
+            a.ops_pa_weighted,
+            a.era_ip_weighted,
+            a.age,
+            CASE a.top_sport_id
+                WHEN 11 THEN 1.00  -- AAA
+                WHEN 12 THEN 0.85  -- AA
+                WHEN 13 THEN 0.70  -- Hi-A
+                WHEN 14 THEN 0.55  -- Lo-A
+                ELSE 0.40
+            END AS level_mult,
+            CASE a.top_sport_id
+                WHEN 11 THEN 25  -- typical AAA age
+                WHEN 12 THEN 23
+                WHEN 13 THEN 21
+                WHEN 14 THEN 20
+                ELSE 22
+            END AS expected_age
+        FROM trade_player_unified t
+        LEFT JOIN milb_player_season_aggregate a
+            ON a.mlb_player_id = t.mlb_player_id
+            AND a.season = t.trade_season - 1
+        WHERE t.to_team_bref IS NOT NULL
+    ),
+    per_player AS (
+        SELECT
+            trade_event_id, receiver_bref,
+            CASE WHEN pa >= 50 THEN ops_pa_weighted * level_mult END AS hit_quality,
+            CASE WHEN ip >= 20 AND era_ip_weighted > 0
+                THEN (5.00 / era_ip_weighted) * level_mult END AS pitch_quality,
+            CASE WHEN COALESCE(pa, ip) IS NOT NULL
+                THEN expected_age - age END AS age_advantage,
+            top_sport_id
+        FROM leveled
+    )
+    SELECT
+        trade_event_id,
+        receiver_bref,
+        AVG(hit_quality) AS receiver_acquired_milb_hit_quality,
+        AVG(pitch_quality) AS receiver_acquired_milb_pitch_quality,
+        AVG(age_advantage) AS receiver_acquired_milb_age_advantage,
+        MIN(top_sport_id) AS receiver_acquired_milb_highest_level,
+        COUNT(top_sport_id) AS receiver_acquired_n_with_milb_data
+    FROM per_player
+    GROUP BY trade_event_id, receiver_bref
+    """,
+    """
     CREATE OR REPLACE VIEW trade_acquired_player_pedigree AS
     -- Per (trade_event, receiver) aggregate of acquired-player career awards
     -- (strictly prior to the trade season — no leakage). Awards count as a

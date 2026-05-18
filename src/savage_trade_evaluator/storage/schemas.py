@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 19
+SCHEMA_VERSION = 20
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -766,6 +766,59 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_spotrac_team_payroll_season
         ON spotrac_team_payroll(season)
+    """,
+    """
+    -- MiLB seasonal stats from MLB Stats API sportId={11,12,13,14}.
+    -- One row per (player, season, sport_id, team_id, group) tuple — same
+    -- player can appear at multiple levels in one season (promotions /
+    -- demotions). 'group' is 'hitting' or 'pitching'.
+    CREATE TABLE IF NOT EXISTS milb_player_seasons (
+        mlb_player_id INTEGER NOT NULL,
+        season INTEGER NOT NULL,
+        sport_id INTEGER NOT NULL,
+        team_id INTEGER NOT NULL,
+        group_name VARCHAR NOT NULL,
+        player_name VARCHAR,
+        team_name VARCHAR,
+        league_id INTEGER,
+        position VARCHAR,
+        age INTEGER,
+        games_played INTEGER,
+        plate_appearances INTEGER,
+        at_bats INTEGER,
+        runs INTEGER,
+        hits INTEGER,
+        doubles INTEGER,
+        triples INTEGER,
+        home_runs INTEGER,
+        rbi INTEGER,
+        stolen_bases INTEGER,
+        strikeouts INTEGER,
+        walks INTEGER,
+        hbp INTEGER,
+        avg DOUBLE,
+        obp DOUBLE,
+        slg DOUBLE,
+        ops DOUBLE,
+        babip DOUBLE,
+        innings_pitched DOUBLE,
+        era DOUBLE,
+        wins INTEGER,
+        losses INTEGER,
+        saves INTEGER,
+        games_started INTEGER,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (mlb_player_id, season, sport_id, team_id, group_name)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_milb_player_seasons_season
+        ON milb_player_seasons(season, sport_id)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_milb_player_seasons_player
+        ON milb_player_seasons(mlb_player_id, season)
     """,
 )
 

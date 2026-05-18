@@ -744,6 +744,26 @@ CATALOG: tuple[StatSource, ...] = (
         notes="40-man roster snapshots per team-season. 22,549 rows.",
     ),
     StatSource(
+        name="milb-player-stats",
+        source="mlb-stats-api",
+        granularity="player-season-stint",
+        era_start=2010,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.milb_stats.ingest_season",
+        primary_columns=(
+            "mlb_player_id", "season", "sport_id", "team_id", "group_name",
+            "plate_appearances", "ops", "babip", "innings_pitched", "era",
+            "strikeouts", "walks",
+        ),
+        target_table="milb_player_seasons",
+        ingested=True,
+        notes=(
+            "Per (player, season, sport_id, team_id, group) MiLB hitting + "
+            "pitching stats from MLB Stats API sportId={11,12,13,14}. Same "
+            "MLBAM player_id as MLB stats — direct join. Backfilled 2010-2024."
+        ),
+    ),
+    StatSource(
         name="team-season-stats",
         source="mlb-stats-api",
         granularity="team-season",
