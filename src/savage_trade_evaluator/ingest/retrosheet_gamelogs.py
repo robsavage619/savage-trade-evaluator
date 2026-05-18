@@ -54,7 +54,10 @@ def _download_year(client: httpx.Client, year: int) -> Path:
 def _read_txt(zip_path: Path) -> str:
     """Extract the single .txt file in the zip."""
     with zipfile.ZipFile(zip_path) as zf:
-        name = next(n for n in zf.namelist() if n.endswith(".txt"))
+        name = next(
+            n for n in zf.namelist()
+            if n.endswith(".txt") and "/" not in n and "\\" not in n
+        )
         with zf.open(name) as f:
             return io.TextIOWrapper(f, encoding="latin-1").read()
 

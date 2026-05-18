@@ -37,7 +37,7 @@ BR_BASE = "https://www.baseball-reference.com/teams"
 
 HEADERS = {
     "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "Mozilla/5.0 (compatible; savage-trade-evaluator/0.1; research only) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     ),
     "Accept": "text/html,application/xhtml+xml",
