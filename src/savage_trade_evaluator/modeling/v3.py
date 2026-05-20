@@ -152,6 +152,7 @@ def fit_v3(
     chains: int = 4,
     seed: int = 137,
     target_accept: float = 0.99,
+    sigma_prior: float = 1.0,
 ) -> V3FitResult:
     """Fit V3 (single-level Bayesian regression) on one outcome."""
     means = train[list(feature_cols)].mean()
@@ -166,7 +167,7 @@ def fit_v3(
     with pm.Model(coords=coords):
         alpha0 = pm.Normal("alpha0", mu=0.0, sigma=1.0)
         beta = pm.Normal("beta", mu=0.0, sigma=0.3, dims="feature")
-        sigma = pm.HalfNormal("sigma", sigma=1.0)
+        sigma = pm.HalfNormal("sigma", sigma=sigma_prior)
         mu = alpha0 + pm.math.dot(x, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
@@ -230,6 +231,7 @@ def backtest_outcome_v3(
     minimum_features_present: int | None = None,
     combined: pd.DataFrame | None = None,
     meaningful_trades_only: bool = False,
+    sigma_prior: float = 1.0,
 ) -> V3BacktestResult:
     """Run V3 train/test backtest for one outcome."""
     cols = feature_cols if feature_cols is not None else V3_OUTCOME_FEATURES[outcome]
@@ -243,7 +245,7 @@ def backtest_outcome_v3(
         )
         raise ValueError(msg)
 
-    fit = fit_v3(train, outcome, cols)
+    fit = fit_v3(train, outcome, cols, sigma_prior=sigma_prior)
     test_pred = predict(fit, test)
     y_test = test[outcome].to_numpy(dtype=float)
 
