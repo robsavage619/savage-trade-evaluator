@@ -185,21 +185,45 @@ def fit_v3(
     )
 
 
-def predict(fit: V3FitResult, df: pd.DataFrame) -> np.ndarray:
-    """Posterior-predictive samples for a held-out set. Shape (n_rows, n_samples)."""
+def predict(
+    fit: V3FitResult,
+    df: pd.DataFrame,
+    era_cutoff: int | None = None,
+) -> np.ndarray:
+    """Posterior-predictive samples for a held-out set. Shape (n_rows, n_samples).
+
+    Args:
+        fit: Fitted V3 result (flat or heteroscedastic).
+        df: Test DataFrame. Must contain ``trade_season`` if ``era_cutoff`` is set.
+        era_cutoff: When set, compute per-row post_era from df["trade_season"] and
+            use it to reconstruct the heteroscedastic sigma. Pass None (default)
+            for flat-sigma fits.
+    """
     cols = list(fit.feature_cols)
     x_test = ((df[cols] - fit.feature_means) / fit.feature_stds).to_numpy(dtype=float)
     post = fit.trace.posterior
     n_samples = post["alpha0"].shape[0] * post["alpha0"].shape[1]
     alpha0_s = post["alpha0"].values.reshape(n_samples)
-    sigma_s = post["sigma"].values.reshape(n_samples)
     beta_s = post["beta"].values.reshape(n_samples, len(cols))
     n_test = len(df)
     out = np.zeros((n_test, n_samples))
+
+    heteroscedastic = era_cutoff is not None and "log_sigma_base" in post
+    if heteroscedastic:
+        log_sigma_base_s = post["log_sigma_base"].values.reshape(n_samples)
+        beta_sigma_era_s = post["beta_sigma_era"].values.reshape(n_samples)
+        post_era_vec = (df["trade_season"].to_numpy() >= era_cutoff).astype(float)
+    else:
+        sigma_s = post["sigma"].values.reshape(n_samples)
+
     for i in range(n_test):
         mu = alpha0_s + beta_s @ x_test[i]
         rng = np.random.default_rng(seed=137 + i)
-        noise = rng.normal(0.0, sigma_s)
+        if heteroscedastic:
+            sigma_i = np.exp(log_sigma_base_s + beta_sigma_era_s * post_era_vec[i])
+            noise = rng.normal(0.0, sigma_i)
+        else:
+            noise = rng.normal(0.0, sigma_s)
         out[i] = (mu + noise) * fit.y_std + fit.y_mean
     return out
 
@@ -253,6 +277,100 @@ def backtest_outcome_v3(
 
     fit = fit_v3(train, outcome, cols, sigma_prior=sigma_prior)
     test_pred = predict(fit, test)
+    y_test = test[outcome].to_numpy(dtype=float)
+
+    mean_pred = test_pred.mean(axis=1)
+    mae = float(np.mean(np.abs(mean_pred - y_test)))
+    crps = _crps_empirical(y_test, test_pred)
+    p05 = np.percentile(test_pred, 5, axis=1)
+    p95 = np.percentile(test_pred, 95, axis=1)
+    cov = float(((y_test >= p05) & (y_test <= p95)).mean())
+
+    test_predictions = test[["trade_event_id", "receiver_bref", "trade_season"]].copy()
+    test_predictions["y_true"] = y_test
+    test_predictions["y_pred_mean"] = mean_pred
+    test_predictions["y_pred_p05"] = p05
+    test_predictions["y_pred_p95"] = p95
+
+    return V3BacktestResult(
+        outcome=outcome, fit=fit,
+        train_n=len(train), test_n=len(test),
+        test_mae=mae, test_crps=crps, coverage_90=cov,
+        credible_features=coefficient_summary(fit),
+        test_predictions=test_predictions,
+    )
+
+
+def fit_v3_heteroscedastic(
+    train: pd.DataFrame,
+    outcome: str,
+    feature_cols: tuple[str, ...],
+    era_cutoff: int = 2021,
+    draws: int = 1500,
+    tune: int = 2000,
+    chains: int = 4,
+    seed: int = 137,
+    target_accept: float = 0.99,
+) -> V3FitResult:
+    """Fit V3 with era-heteroscedastic sigma on one outcome.
+
+    sigma = exp(log_sigma_base + beta_sigma_era * post_era)
+
+    where post_era = 1 if trade_season >= era_cutoff else 0.
+    Allows the model to learn that post-rule-change era has lower residual variance.
+    """
+    means = train[list(feature_cols)].mean()
+    stds = train[list(feature_cols)].std().replace(0, 1.0)
+    x = ((train[list(feature_cols)] - means) / stds).to_numpy(dtype=float)
+    y = train[outcome].to_numpy(dtype=float)
+    y_mean = float(y.mean())
+    y_std = float(y.std()) or 1.0
+    y_z = (y - y_mean) / y_std
+
+    post_era = (train["trade_season"].to_numpy() >= era_cutoff).astype(float)
+
+    coords = {"feature": list(feature_cols)}
+    with pm.Model(coords=coords):
+        alpha0 = pm.Normal("alpha0", mu=0.0, sigma=1.0)
+        beta = pm.Normal("beta", mu=0.0, sigma=0.3, dims="feature")
+        log_sigma_base = pm.Normal("log_sigma_base", mu=0.0, sigma=1.0)
+        beta_sigma_era = pm.Normal("beta_sigma_era", mu=0.0, sigma=1.0)
+        sigma = pm.math.exp(log_sigma_base + beta_sigma_era * post_era)
+        mu = alpha0 + pm.math.dot(x, beta)
+        pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
+        trace = pm.sample(
+            draws=draws, tune=tune, chains=chains, random_seed=seed,
+            progressbar=False, target_accept=target_accept,
+        )
+    return V3FitResult(
+        trace=trace, feature_cols=feature_cols,
+        feature_means=means, feature_stds=stds,
+        y_mean=y_mean, y_std=y_std,
+    )
+
+
+def backtest_outcome_v3_heteroscedastic(
+    outcome: str,
+    train_end_season: int = 2020,
+    test_end_season: int = 2024,
+    feature_cols: tuple[str, ...] | None = None,
+    minimum_features_present: int | None = None,
+    combined: pd.DataFrame | None = None,
+    meaningful_trades_only: bool = False,
+    era_cutoff: int = 2021,
+) -> V3BacktestResult:
+    """Run V3 heteroscedastic-sigma train/test backtest for one outcome."""
+    cols = feature_cols if feature_cols is not None else V3_OUTCOME_FEATURES[outcome]
+    train, test = _split_and_impute(
+        outcome, cols, train_end_season, test_end_season, minimum_features_present,
+        combined=combined, meaningful_trades_only=meaningful_trades_only,
+    )
+    if len(train) < 50:
+        msg = f"V3 outcome={outcome}: only {len(train)} train rows after filtering"
+        raise ValueError(msg)
+
+    fit = fit_v3_heteroscedastic(train, outcome, cols, era_cutoff=era_cutoff)
+    test_pred = predict(fit, test, era_cutoff=era_cutoff)
     y_test = test[outcome].to_numpy(dtype=float)
 
     mean_pred = test_pred.mean(axis=1)
