@@ -117,6 +117,7 @@ def _split_and_impute(
     minimum_features_present: int | None = None,
     combined: pd.DataFrame | None = None,
     meaningful_trades_only: bool = False,
+    train_start_season: int = 2010,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     if combined is None:
         combined = assemble_v3_combined()
@@ -135,7 +136,10 @@ def _split_and_impute(
     for c in feature_cols:
         complete[c] = complete[c].astype("float64")
         complete[c] = complete[c].fillna(complete[c].mean())
-    train = complete[complete["trade_season"] <= train_end_season].reset_index(drop=True)
+    train = complete[
+        (complete["trade_season"] >= train_start_season)
+        & (complete["trade_season"] <= train_end_season)
+    ].reset_index(drop=True)
     test = complete[
         (complete["trade_season"] > train_end_season)
         & (complete["trade_season"] <= test_end_season)
@@ -232,12 +236,14 @@ def backtest_outcome_v3(
     combined: pd.DataFrame | None = None,
     meaningful_trades_only: bool = False,
     sigma_prior: float = 1.0,
+    train_start_season: int = 2010,
 ) -> V3BacktestResult:
     """Run V3 train/test backtest for one outcome."""
     cols = feature_cols if feature_cols is not None else V3_OUTCOME_FEATURES[outcome]
     train, test = _split_and_impute(
         outcome, cols, train_end_season, test_end_season, minimum_features_present,
         combined=combined, meaningful_trades_only=meaningful_trades_only,
+        train_start_season=train_start_season,
     )
     if len(train) < 50:
         msg = (
