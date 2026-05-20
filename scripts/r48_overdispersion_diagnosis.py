@@ -76,12 +76,28 @@ def check2_drop_covid_refit() -> None:
 
     from savage_trade_evaluator.modeling.v3 import backtest_outcome_v3, print_backtest_report
 
+    # receiver_acquired_contract_year_pct was added to ACQUIRED_PLAYER_FEATURES
+    # but the underlying DB column doesn't exist in the current schema — exclude
+    # it here so assemble_v3_combined() doesn't fail on a missing column.
+    from savage_trade_evaluator.modeling.v3 import assemble_v3_combined, V3_OUTCOME_FEATURES
+    combined = assemble_v3_combined()
+    if "receiver_acquired_contract_year_pct" in combined.columns:
+        pass  # column is live — no action needed
+    else:
+        from savage_trade_evaluator.modeling.v2.features import ALL_FEATURES
+        feature_cols = tuple(c for c in ALL_FEATURES if c != "receiver_acquired_contract_year_pct")
+    from savage_trade_evaluator.modeling.v3 import V3_OUTCOME_FEATURES
+    feature_cols = tuple(
+        c for c in V3_OUTCOME_FEATURES["war_delta"]
+        if c != "receiver_acquired_contract_year_pct"
+    )
+
     print("\n  --- Standard fit (train_end_season=2020) ---")
-    result_2020 = backtest_outcome_v3("war_delta", train_end_season=2020)
+    result_2020 = backtest_outcome_v3("war_delta", train_end_season=2020, feature_cols=feature_cols)
     print_backtest_report(result_2020)
 
     print("\n  --- COVID-excluded fit (train_end_season=2019) ---")
-    result_2019 = backtest_outcome_v3("war_delta", train_end_season=2019)
+    result_2019 = backtest_outcome_v3("war_delta", train_end_season=2019, feature_cols=feature_cols)
     print_backtest_report(result_2019)
 
     print(f"\n  coverage_90 (incl 2020): {result_2020.coverage_90:.3f}")

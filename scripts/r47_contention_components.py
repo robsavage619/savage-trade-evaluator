@@ -80,10 +80,17 @@ def _contention_verdicts(result: V3BacktestResult) -> list[dict]:
 
 
 def main() -> None:
+    from savage_trade_evaluator.modeling.v3 import assemble_v3_combined
+    _combined = assemble_v3_combined()
+
+    def _strip_missing(cols: tuple[str, ...]) -> tuple[str, ...]:
+        return tuple(c for c in cols if c in _combined.columns)
+
     outcome = "war_delta"
     summary_rows: list[dict] = []
 
     for label, feature_cols in ABLATIONS:
+        feature_cols = _strip_missing(feature_cols)
         print()
         print("=" * 88)
         print(f"R-47 ablation: {label}  ({len(feature_cols)} features)")

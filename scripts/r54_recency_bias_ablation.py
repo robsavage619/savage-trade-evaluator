@@ -43,18 +43,22 @@ def _section(title: str) -> None:
 
 def run_ablation(run_mcmc: bool) -> None:
     """Run the full R-54 ablation."""
+    from savage_trade_evaluator.modeling.v3 import assemble_v3_combined
+    combined = assemble_v3_combined()
+    feature_cols = tuple(c for c in _FEATURE_COLS if c in combined.columns)
+
     _section("R-54 — Recency-bias K-trajectory ablation (kpct_delta)")
 
     if not run_mcmc:
         print("\n  SKIPPED — pass --run-mcmc to execute MCMC fit.\n")
-        print(f"  Feature set ({len(_FEATURE_COLS)} features):")
-        for f in _FEATURE_COLS:
+        print(f"  Feature set ({len(feature_cols)} features):")
+        for f in feature_cols:
             marker = " <-- NEW" if f == _RECENCY_FEATURE else ""
             print(f"    {f}{marker}")
         return
 
-    print(f"\n  Running backtest on kpct_delta with {len(_FEATURE_COLS)} features ...")
-    result = backtest_outcome_v3("kpct_delta", feature_cols=_FEATURE_COLS)
+    print(f"\n  Running backtest on kpct_delta with {len(feature_cols)} features ...")
+    result = backtest_outcome_v3("kpct_delta", feature_cols=feature_cols, combined=combined)
     print_backtest_report(result)
 
     _section("D-26 Credibility — receiver_org_pitcher_k_jump_recency_bias")

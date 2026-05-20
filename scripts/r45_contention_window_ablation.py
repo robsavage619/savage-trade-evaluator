@@ -85,8 +85,6 @@ def main() -> None:
             result = backtest_outcome_v3(
                 outcome=outcome,
                 feature_cols=feature_cols,
-                draws=1500,
-                tune=2000,
             )
         except ValueError as exc:
             print(f"  SKIPPED: {exc}")
