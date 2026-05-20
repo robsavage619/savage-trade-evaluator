@@ -62,6 +62,9 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     # Front-office alumni network (Reiter 2018: STL→HOU→BAL pipeline).
     # 1.0 = GM/dir is a direct pioneer-org alumnus; 0.5 = director-level alumnus now GM.
     "receiver_alumni_network_score",
+    # R-54: ewma − flat-3yr delta for org pitcher K-jump. Positive = org has been
+    # accelerating its pitcher dev recently; negative = coasting on historical signal.
+    "receiver_org_pitcher_k_jump_recency_bias",
 )
 
 ORIGIN_FEATURES: tuple[str, ...] = (
@@ -130,7 +133,9 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 -- Technology adoption earliness (Reiter/Longenhagen)
                 twc.receiver_tech_adoption_lead_years,
                 -- Front-office alumni network (Reiter 2018: pioneer-org lineage)
-                twc.receiver_alumni_network_score
+                twc.receiver_alumni_network_score,
+                -- R-54: recency-bias signal (ewma − flat-3yr) for org pitcher K-jump
+                twc.receiver_org_pitcher_k_jump_recency_bias
             FROM trade_with_context twc
             LEFT JOIN trade_receiver_demographic_mix trdm
                 ON trdm.trade_event_id = twc.trade_event_id

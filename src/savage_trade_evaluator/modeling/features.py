@@ -160,22 +160,64 @@ def compute_all() -> int:
             """
         ).df()
         if not dev_history.empty:
-            # rolling 3-year mean per team
+            import math as _math
+            # R-49 found the flat 3yr signal decayed from r=-0.62 (2015-17) to
+            # r=+0.05 (2022-24) as PITCHf/x dev-strategy edges were competed away
+            # league-wide by ~2021. Exponential decay (half-life=2yr) weights recent
+            # trades more heavily, so teams that recently started or stopped
+            # developing pitchers well get credit/penalty faster than a flat mean.
+            _LAMBDA = _math.log(2) / 2  # half-life 2 years → λ ≈ 0.347
+            _WINDOW = 5  # 5-year lookback; older observations have negligible weight
+
+            def _ewma_k_jump(series: "pd.Series[float]") -> "pd.Series[float]":  # type: ignore[type-arg]
+                """Exponentially-weighted mean of trailing 5 seasons (most-recent = smallest lag)."""
+                import numpy as _np
+                results = []
+                vals = series.to_numpy(dtype=float)
+                for i in range(len(vals)):
+                    start = max(0, i - _WINDOW + 1)
+                    segment = vals[start : i + 1]
+                    # lag[0] = current season, lag[1] = 1 season ago, ... measured from end
+                    lags = _np.arange(len(segment) - 1, -1, -1, dtype=float)
+                    weights = _np.exp(-_LAMBDA * lags)
+                    mask = ~_np.isnan(segment)
+                    if mask.sum() == 0:
+                        results.append(float("nan"))
+                    else:
+                        results.append(float(_np.dot(weights[mask], segment[mask]) / weights[mask].sum()))
+                return series._constructor(results, index=series.index)
+
             dev_history = dev_history.sort_values(["bref_code", "trade_season"])
-            dev_history["k_jump_3yr"] = (
+            # flat 3yr (kept for recency_bias delta)
+            dev_history["k_jump_flat_3yr"] = (
                 dev_history.groupby("bref_code")["k_jump_avg"]
                 .rolling(window=3, min_periods=1)
                 .mean()
                 .reset_index(level=0, drop=True)
             )
+            # exponentially-weighted 5yr
+            dev_history["k_jump_3yr"] = (
+                dev_history.groupby("bref_code")["k_jump_avg"]
+                .transform(_ewma_k_jump)
+            )
+            # recency bias = ewma − flat: positive → org improving recently (accelerating)
+            dev_history["k_jump_recency_bias"] = (
+                dev_history["k_jump_3yr"] - dev_history["k_jump_flat_3yr"]
+            )
             # shift forward so feature is "what we knew BEFORE this season"
             dev_history["season"] = dev_history["trade_season"] + 1
-            dev_history = dev_history[["bref_code", "season", "k_jump_3yr"]].rename(
-                columns={"k_jump_3yr": "org_pitcher_k_jump_3yr"}
+            dev_history = dev_history[
+                ["bref_code", "season", "k_jump_3yr", "k_jump_recency_bias"]
+            ].rename(
+                columns={
+                    "k_jump_3yr": "org_pitcher_k_jump_3yr",
+                    "k_jump_recency_bias": "org_pitcher_k_jump_recency_bias",
+                }
             )
             team_season = team_season.merge(dev_history, on=["bref_code", "season"], how="left")
         else:
             team_season["org_pitcher_k_jump_3yr"] = None
+            team_season["org_pitcher_k_jump_recency_bias"] = None
 
         # === MVP Machine Ch 5 thesis: per-team historical xwOBA-jump on acquired hitters ===
         # Hitting-side analog. For each (team t, season s), avg of
@@ -197,12 +239,31 @@ def compute_all() -> int:
             """
         ).df()
         if not hit_history.empty:
+            import math as _math
+            _LAMBDA_H = _math.log(2) / 2
+            _WINDOW_H = 5
+
+            def _ewma_xwoba_jump(series: "pd.Series[float]") -> "pd.Series[float]":  # type: ignore[type-arg]
+                """Exponentially-weighted mean of trailing 5 seasons (same decay as pitcher)."""
+                import numpy as _np
+                results = []
+                vals = series.to_numpy(dtype=float)
+                for i in range(len(vals)):
+                    start = max(0, i - _WINDOW_H + 1)
+                    segment = vals[start : i + 1]
+                    lags = _np.arange(len(segment) - 1, -1, -1, dtype=float)
+                    weights = _np.exp(-_LAMBDA_H * lags)
+                    mask = ~_np.isnan(segment)
+                    if mask.sum() == 0:
+                        results.append(float("nan"))
+                    else:
+                        results.append(float(_np.dot(weights[mask], segment[mask]) / weights[mask].sum()))
+                return series._constructor(results, index=series.index)
+
             hit_history = hit_history.sort_values(["bref_code", "trade_season"])
             hit_history["xwoba_jump_3yr"] = (
                 hit_history.groupby("bref_code")["xwoba_jump_avg"]
-                .rolling(window=3, min_periods=1)
-                .mean()
-                .reset_index(level=0, drop=True)
+                .transform(_ewma_xwoba_jump)
             )
             hit_history["season"] = hit_history["trade_season"] + 1
             hit_history = hit_history[["bref_code", "season", "xwoba_jump_3yr"]].rename(
@@ -352,6 +413,7 @@ def compute_all() -> int:
                 "tech_adoption_lead_years",
                 "origin_sunk_cost_pressure",
                 "alumni_network_score",
+                "org_pitcher_k_jump_recency_bias",
             ]
         ]
 
@@ -364,13 +426,15 @@ def compute_all() -> int:
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
                 "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years, "
-                "origin_sunk_cost_pressure, alumni_network_score) "
+                "origin_sunk_cost_pressure, alumni_network_score, "
+                "org_pitcher_k_jump_recency_bias) "
                 "SELECT team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
                 "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years, "
-                "origin_sunk_cost_pressure, alumni_network_score "
+                "origin_sunk_cost_pressure, alumni_network_score, "
+                "org_pitcher_k_jump_recency_bias "
                 "FROM _staging_tsf"
             )
         finally:
