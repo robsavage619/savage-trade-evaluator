@@ -59,6 +59,9 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     "receiver_contention_window_score",
     # Technology adoption earliness (Reiter/Longenhagen: early TrackMan adopters).
     "receiver_tech_adoption_lead_years",
+    # Front-office alumni network (Reiter 2018: STL→HOU→BAL pipeline).
+    # 1.0 = GM/dir is a direct pioneer-org alumnus; 0.5 = director-level alumnus now GM.
+    "receiver_alumni_network_score",
 )
 
 ORIGIN_FEATURES: tuple[str, ...] = (
@@ -125,7 +128,9 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 tamq.receiver_acquired_milb_pitch_quality,
                 tamq.receiver_acquired_milb_age_advantage,
                 -- Technology adoption earliness (Reiter/Longenhagen)
-                twc.receiver_tech_adoption_lead_years
+                twc.receiver_tech_adoption_lead_years,
+                -- Front-office alumni network (Reiter 2018: pioneer-org lineage)
+                twc.receiver_alumni_network_score
             FROM trade_with_context twc
             LEFT JOIN trade_receiver_demographic_mix trdm
                 ON trdm.trade_event_id = twc.trade_event_id

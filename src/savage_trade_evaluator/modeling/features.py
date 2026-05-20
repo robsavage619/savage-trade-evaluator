@@ -351,6 +351,7 @@ def compute_all() -> int:
                 "coach_hitter_xwoba_jump_3yr",
                 "tech_adoption_lead_years",
                 "origin_sunk_cost_pressure",
+                "alumni_network_score",
             ]
         ]
 
@@ -363,13 +364,13 @@ def compute_all() -> int:
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
                 "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years, "
-                "origin_sunk_cost_pressure) "
+                "origin_sunk_cost_pressure, alumni_network_score) "
                 "SELECT team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
                 "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years, "
-                "origin_sunk_cost_pressure "
+                "origin_sunk_cost_pressure, alumni_network_score "
                 "FROM _staging_tsf"
             )
         finally:

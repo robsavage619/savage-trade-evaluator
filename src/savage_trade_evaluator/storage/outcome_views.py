@@ -561,6 +561,7 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         tsf.org_hitter_xwoba_jump_3yr AS receiver_org_hitter_xwoba_jump_3yr,
         tsf.coach_hitter_xwoba_jump_3yr AS receiver_coach_hitter_xwoba_jump_3yr,
         tsf.tech_adoption_lead_years AS receiver_tech_adoption_lead_years,
+        tsf.alumni_network_score AS receiver_alumni_network_score,
         tp.receiver_best_draft_pick,
         tp.receiver_avg_draft_pick,
         tdc.receiver_acquired_from_dev_cluster_score,
