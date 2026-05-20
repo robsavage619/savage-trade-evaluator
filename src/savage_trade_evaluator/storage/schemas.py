@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 22
+SCHEMA_VERSION = 23
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -274,6 +274,7 @@ DDL_STATEMENTS: tuple[str, ...] = (
         tech_adoption_lead_years REAL,
         alumni_network_score DOUBLE,
         origin_sunk_cost_pressure DOUBLE,
+        org_pitcher_k_jump_recency_bias DOUBLE,
         computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (team_id, season)
     )
@@ -822,6 +823,52 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_milb_player_seasons_player
         ON milb_player_seasons(mlb_player_id, season)
+    """,
+    # --- Retrosheet event-log derived tables (adapter in ingest/retrosheet_events.py) ---
+    """
+    CREATE TABLE IF NOT EXISTS retrosheet_game_appearances (
+        team VARCHAR NOT NULL,
+        season INTEGER NOT NULL,
+        game_id VARCHAR NOT NULL,
+        pitcher_id VARCHAR NOT NULL,
+        is_reliever BOOLEAN NOT NULL,
+        n_batters_faced INTEGER NOT NULL,
+        avg_li DOUBLE,
+        leverage_ge_1_5_pct DOUBLE,
+        leverage_lt_0_7_pct DOUBLE,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (game_id, pitcher_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_rga_team_season
+        ON retrosheet_game_appearances(team, season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_rga_reliever
+        ON retrosheet_game_appearances(season, is_reliever)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS retrosheet_pa_matchups (
+        team VARCHAR NOT NULL,
+        season INTEGER NOT NULL,
+        game_id VARCHAR NOT NULL,
+        bat_hand VARCHAR NOT NULL,
+        pit_hand VARCHAR NOT NULL,
+        event_cd INTEGER NOT NULL,
+        runs_scored INTEGER NOT NULL,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_rpm_team_season
+        ON retrosheet_pa_matchups(team, season)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_rpm_matchup
+        ON retrosheet_pa_matchups(season, bat_hand, pit_hand)
     """,
 )
 

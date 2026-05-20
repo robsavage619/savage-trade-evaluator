@@ -732,6 +732,32 @@ CATALOG: tuple[StatSource, ...] = (
         notes="Per-game logs 1990-2024. 80,798 games.",
     ),
     StatSource(
+        name="retrosheet-events",
+        source="retrosheet",
+        granularity="player-game",
+        era_start=1921,
+        era_end=2024,
+        fetcher="savage_trade_evaluator.ingest.retrosheet_events.ingest",
+        primary_columns=(
+            "game_id",
+            "pitcher_id",
+            "avg_li",
+            "leverage_ge_1_5_pct",
+            "bat_hand",
+            "pit_hand",
+            "event_cd",
+        ),
+        target_table="retrosheet_game_appearances",
+        ingested=False,
+        notes=(
+            "Play-by-play event logs (.EVA / .EVN). Adapter scaffolded; "
+            "data download pending (retrosheet.org/game.htm). Unlocks "
+            "reliever leverage-deployment rate (#6) and platoon-deployment "
+            "skill (#7) features. Download season ZIPs manually and pass "
+            "the directory to ingest.retrosheet_events.ingest()."
+        ),
+    ),
+    StatSource(
         name="team-40man-rosters",
         source="mlb-stats-api",
         granularity="team-season",
