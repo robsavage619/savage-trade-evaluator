@@ -36,6 +36,13 @@ ACQUIRED_PLAYER_FEATURES: tuple[str, ...] = (
     "receiver_acquired_milb_hit_quality",
     "receiver_acquired_milb_pitch_quality",
     "receiver_acquired_milb_age_advantage",
+    # Contract-year bias flag (approximated from bWAR salary coverage — see D-29).
+    # Fraction of acquired players whose salary record ends at the trade season
+    # (no salary entry for trade_season+1) and who have a non-null salary at
+    # trade_season (rules out rookie-deal unknowns). Limitation: we don't have
+    # Cot's Contracts; this is a proxy and will miss multi-year deals that happen
+    # to have no next-season salary row due to data gaps.
+    "receiver_acquired_contract_year_pct",
 )
 
 RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
@@ -121,6 +128,41 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
             LEFT JOIN trade_acquired_milb_quality tamq
                 ON tamq.trade_event_id = twc.trade_event_id
                 AND tamq.receiver_bref = twc.receiver_bref
+            LEFT JOIN (
+                -- Contract-year bias flag: fraction of acquired players whose
+                -- bWAR salary record covers the trade season but NOT the next
+                -- season. Approximation only — Cot's Contracts not available.
+                -- Join path: tpu.mlb_player_id → bwar_player_seasons.mlb_id.
+                SELECT
+                    tpu.trade_event_id,
+                    tpu.to_team_bref AS receiver_bref,
+                    SUM(CASE
+                        WHEN has_salary_now = 1 AND has_salary_next = 0 THEN 1
+                        ELSE 0
+                    END)::DOUBLE / NULLIF(COUNT(*), 0)
+                        AS receiver_acquired_contract_year_pct
+                FROM trade_player_unified tpu
+                LEFT JOIN (
+                    SELECT mlb_id, year_id,
+                        MAX(CASE WHEN salary IS NOT NULL THEN 1 ELSE 0 END) AS has_salary_now
+                    FROM bwar_player_seasons
+                    GROUP BY mlb_id, year_id
+                ) bps_now
+                    ON bps_now.mlb_id = tpu.mlb_player_id
+                    AND bps_now.year_id = tpu.trade_season
+                LEFT JOIN (
+                    SELECT mlb_id, year_id,
+                        MAX(CASE WHEN salary IS NOT NULL THEN 1 ELSE 0 END) AS has_salary_next
+                    FROM bwar_player_seasons
+                    GROUP BY mlb_id, year_id
+                ) bps_next
+                    ON bps_next.mlb_id = tpu.mlb_player_id
+                    AND bps_next.year_id = tpu.trade_season + 1
+                WHERE tpu.to_team_bref IS NOT NULL
+                GROUP BY tpu.trade_event_id, tpu.to_team_bref
+            ) cy
+                ON cy.trade_event_id = twc.trade_event_id
+                AND cy.receiver_bref  = twc.receiver_bref
             WHERE twc.trade_season BETWEEN {start_season} AND {end_season}
             """
         ).df()
