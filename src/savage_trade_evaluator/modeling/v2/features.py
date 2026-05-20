@@ -49,30 +49,23 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     "receiver_prior_year_war",
     "receiver_dev_fit_pitching",
     "receiver_dev_fit_hitting",
-    "receiver_prior_year_pyth_pct",
     "receiver_org_pitcher_k_jump_3yr",
     "receiver_org_hitter_xwoba_jump_3yr",
     "receiver_total_payroll",
-    # Contention window features (thesis core: payroll room × win probability).
-    "receiver_payroll_pct_of_cap",
-    "receiver_payroll_trend_3yr",
-    "receiver_contention_window_score",
-    # Technology adoption earliness (Reiter/Longenhagen: early TrackMan adopters).
+    # Contention window features: D-32 (R-47) — all null on war_delta; dropped.
+    # payroll_pct_of_cap, payroll_trend_3yr, prior_year_pyth_pct, contention_window_score
+    # are still columns in the DB but removed from ALL_FEATURES.
+    # Technology adoption earliness — credible on kpct_delta + xwoba_delta (D-33/R-53).
     "receiver_tech_adoption_lead_years",
-    # Front-office alumni network (Reiter 2018: STL→HOU→BAL pipeline).
-    # 1.0 = GM/dir is a direct pioneer-org alumnus; 0.5 = director-level alumnus now GM.
+    # Front-office alumni network — credible on kpct_delta (D-33/R-53).
     "receiver_alumni_network_score",
-    # R-54: ewma − flat-3yr delta for org pitcher K-jump. Positive = org has been
-    # accelerating its pitcher dev recently; negative = coasting on historical signal.
-    "receiver_org_pitcher_k_jump_recency_bias",
+    # receiver_org_pitcher_k_jump_recency_bias: D-34 (R-54) — null; market-efficiency
+    # decay unrecoverable by EWMA. Column kept in DB; removed from feature sets.
 )
 
 ORIGIN_FEATURES: tuple[str, ...] = (
     "receiver_acquired_from_dev_cluster_score",
-    # Sunk-cost trap: origin team's prior-year bad-contract payroll pressure.
-    # High values → origin team is an eager/distorted seller (Law, Inside Game).
-    # Joined on the origin (from_team_bref), not the receiver.
-    "origin_sunk_cost_pressure",
+    # origin_sunk_cost_pressure: null on all outcomes (R-52/R-53). Column kept in DB.
 )
 
 ALL_FEATURES: tuple[str, ...] = ACQUIRED_PLAYER_FEATURES + RECEIVER_TEAM_FEATURES + ORIGIN_FEATURES
