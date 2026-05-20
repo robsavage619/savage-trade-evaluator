@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from savage_trade_evaluator.modeling.alumni_network import team_alumni_score
 from savage_trade_evaluator.modeling.tech_adoption import tech_adoption_score
 from savage_trade_evaluator.storage import db, schemas
 
@@ -112,6 +113,34 @@ def compute_all() -> int:
             lambda row: tech_adoption_score(row["bref_code"], row["season"] - 1),
             axis=1,
         )
+
+        # === Reiter 2018 (Astroball): front-office alumni network score ===
+        # For each (team, season), find every GM/Director in the front_office
+        # table at season-1 and score by pioneer-org lineage. Uses hardcoded
+        # PIONEER_LINEAGE because the table records who was where, not where
+        # they came from — career-path lineage requires a separate scrape.
+        fo_df = conn.execute(
+            """
+            SELECT bref_code, season + 1 AS season, person_name, role
+            FROM front_office
+            WHERE role IN ('General Manager', 'President',
+                           'Scouting Director', 'Farm Director')
+            """
+        ).df()
+        if not fo_df.empty:
+            fo_grouped = fo_df.groupby(["bref_code", "season"])
+            alumni_records = []
+            for (bref_code_key, season_key), group in fo_grouped:
+                rows_list = list(zip(group["person_name"], group["role"]))
+                score = team_alumni_score(str(bref_code_key), int(season_key), rows_list)
+                alumni_records.append(
+                    {"bref_code": bref_code_key, "season": season_key, "alumni_network_score": score}
+                )
+            import pandas as _pd
+            alumni_df = _pd.DataFrame(alumni_records)
+            team_season = team_season.merge(alumni_df, on=["bref_code", "season"], how="left")
+        else:
+            team_season["alumni_network_score"] = 0.0
 
         # === MVP Machine Ch 9 thesis: per-team historical K-jump on acquired pitchers ===
         # For each (team t, season s), avg of (k_percent_t_plus_1 - k_percent_t_minus_1)
@@ -257,6 +286,53 @@ def compute_all() -> int:
         else:
             team_season["coach_hitter_xwoba_jump_3yr"] = None
 
+        # === Law "Inside Game" thesis: sunk-cost trap payroll pressure (origin-side) ===
+        # For each (team, season), count players on that team in season-1 with
+        # salary > $12M AND war < 0. Score = n_bad × mean(bad_salary) / 1e7.
+        # Measures how much payroll deadweight the origin team is carrying —
+        # teams with higher scores are systematically more eager to shed assets,
+        # making them distorted counterparties regardless of the traded player's value.
+        # Both batting and pitching tables are unioned so the same player isn't
+        # double-counted: we take the max salary row per (player, team, year).
+        sunk_cost_df = conn.execute(
+            """
+            WITH combined AS (
+                SELECT mlb_id, team_id AS bref_code, year_id AS season, salary, war
+                FROM bwar_batting
+                WHERE salary IS NOT NULL AND war IS NOT NULL AND mlb_id IS NOT NULL
+                UNION ALL
+                SELECT mlb_id, team_id AS bref_code, year_id AS season, salary, war
+                FROM bwar_pitching
+                WHERE salary IS NOT NULL AND war IS NOT NULL AND mlb_id IS NOT NULL
+            ),
+            deduped AS (
+                SELECT bref_code, season, mlb_id,
+                    MAX(salary) AS salary,
+                    SUM(war) AS war
+                FROM combined
+                GROUP BY bref_code, season, mlb_id
+            ),
+            bad_contracts AS (
+                SELECT bref_code,
+                    season + 1 AS feature_season,
+                    COUNT(*) AS n_bad_contracts,
+                    AVG(salary) AS mean_bad_salary
+                FROM deduped
+                WHERE salary > 12000000 AND war < 0
+                GROUP BY bref_code, season
+            )
+            SELECT bref_code,
+                feature_season AS season,
+                ROUND(n_bad_contracts * mean_bad_salary / 1e7, 4) AS origin_sunk_cost_pressure
+            FROM bad_contracts
+            """
+        ).df()
+
+        if not sunk_cost_df.empty:
+            team_season = team_season.merge(sunk_cost_df, on=["bref_code", "season"], how="left")
+        else:
+            team_season["origin_sunk_cost_pressure"] = None
+
         rows = team_season[
             [
                 "team_id",
@@ -274,6 +350,7 @@ def compute_all() -> int:
                 "org_hitter_xwoba_jump_3yr",
                 "coach_hitter_xwoba_jump_3yr",
                 "tech_adoption_lead_years",
+                "origin_sunk_cost_pressure",
             ]
         ]
 
@@ -285,12 +362,14 @@ def compute_all() -> int:
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
-                "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years) "
+                "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years, "
+                "origin_sunk_cost_pressure) "
                 "SELECT team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
-                "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years "
+                "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years, "
+                "origin_sunk_cost_pressure "
                 "FROM _staging_tsf"
             )
         finally:

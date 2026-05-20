@@ -61,7 +61,13 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     "receiver_tech_adoption_lead_years",
 )
 
-ORIGIN_FEATURES: tuple[str, ...] = ("receiver_acquired_from_dev_cluster_score",)
+ORIGIN_FEATURES: tuple[str, ...] = (
+    "receiver_acquired_from_dev_cluster_score",
+    # Sunk-cost trap: origin team's prior-year bad-contract payroll pressure.
+    # High values → origin team is an eager/distorted seller (Law, Inside Game).
+    # Joined on the origin (from_team_bref), not the receiver.
+    "origin_sunk_cost_pressure",
+)
 
 ALL_FEATURES: tuple[str, ...] = ACQUIRED_PLAYER_FEATURES + RECEIVER_TEAM_FEATURES + ORIGIN_FEATURES
 
@@ -107,6 +113,10 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                     AS receiver_contention_window_score,
                 -- Origin features
                 twc.receiver_acquired_from_dev_cluster_score,
+                -- Sunk-cost trap: origin team's pre-trade bad-contract pressure.
+                -- Joined on from_team_bref at trade_season (season-1 pressure baked in
+                -- during team_season_features computation — feature_season = season+1).
+                tsf_origin.origin_sunk_cost_pressure,
                 -- Pedigree (NEW from mlb_awards)
                 tpp.avg_prior_awards AS receiver_acquired_avg_prior_awards,
                 tpp.pct_awarded_players AS receiver_acquired_pct_awarded,
@@ -132,6 +142,24 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
             LEFT JOIN trade_acquired_milb_quality tamq
                 ON tamq.trade_event_id = twc.trade_event_id
                 AND tamq.receiver_bref = twc.receiver_bref
+            LEFT JOIN (
+                -- Resolve origin team per (trade_event_id, receiver_bref): the
+                -- primary team giving players TO the receiver. In multi-team trades
+                -- this picks the first non-receiver sender by FIRST() — good enough
+                -- for a continuous pressure score that will be averaged in the model.
+                SELECT tpu.trade_event_id,
+                    tpu.to_team_bref AS receiver_bref,
+                    FIRST(tpu.from_team_bref) AS from_team_bref
+                FROM trade_player_unified tpu
+                WHERE tpu.from_team_bref IS NOT NULL
+                    AND tpu.from_team_bref != tpu.to_team_bref
+                GROUP BY tpu.trade_event_id, tpu.to_team_bref
+            ) origin_map
+                ON origin_map.trade_event_id = twc.trade_event_id
+                AND origin_map.receiver_bref  = twc.receiver_bref
+            LEFT JOIN team_season_features tsf_origin
+                ON tsf_origin.bref_code = origin_map.from_team_bref
+                AND tsf_origin.season   = twc.trade_season
             LEFT JOIN (
                 -- Contract-year bias flag: fraction of acquired players whose
                 -- bWAR salary record covers the trade season but NOT the next
