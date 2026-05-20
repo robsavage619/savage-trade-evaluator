@@ -22,6 +22,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from savage_trade_evaluator.modeling.tech_adoption import tech_adoption_score
 from savage_trade_evaluator.storage import db, schemas
 
 if TYPE_CHECKING:
@@ -104,6 +105,13 @@ def compute_all() -> int:
 
         team_season["prior_year_run_diff"] = None  # needs game-log adapter
         team_season["farm_war_top_10"] = None  # needs prospect FV (Phase 2.5)
+
+        # Tech adoption earliness: seasons ahead of league mandate at season-1
+        # (prior year — what we knew before the trade).
+        team_season["tech_adoption_lead_years"] = team_season.apply(
+            lambda row: tech_adoption_score(row["bref_code"], row["season"] - 1),
+            axis=1,
+        )
 
         # === MVP Machine Ch 9 thesis: per-team historical K-jump on acquired pitchers ===
         # For each (team t, season s), avg of (k_percent_t_plus_1 - k_percent_t_minus_1)
@@ -265,6 +273,7 @@ def compute_all() -> int:
                 "org_pitcher_k_jump_3yr",
                 "org_hitter_xwoba_jump_3yr",
                 "coach_hitter_xwoba_jump_3yr",
+                "tech_adoption_lead_years",
             ]
         ]
 
@@ -276,12 +285,12 @@ def compute_all() -> int:
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
-                "coach_hitter_xwoba_jump_3yr) "
+                "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years) "
                 "SELECT team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
-                "coach_hitter_xwoba_jump_3yr "
+                "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years "
                 "FROM _staging_tsf"
             )
         finally:

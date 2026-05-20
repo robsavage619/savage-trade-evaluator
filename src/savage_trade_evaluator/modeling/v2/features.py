@@ -57,6 +57,8 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     "receiver_payroll_pct_of_cap",
     "receiver_payroll_trend_3yr",
     "receiver_contention_window_score",
+    # Technology adoption earliness (Reiter/Longenhagen: early TrackMan adopters).
+    "receiver_tech_adoption_lead_years",
 )
 
 ORIGIN_FEATURES: tuple[str, ...] = ("receiver_acquired_from_dev_cluster_score",)
@@ -111,7 +113,9 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 -- MiLB quality (NEW from trade_acquired_milb_quality)
                 tamq.receiver_acquired_milb_hit_quality,
                 tamq.receiver_acquired_milb_pitch_quality,
-                tamq.receiver_acquired_milb_age_advantage
+                tamq.receiver_acquired_milb_age_advantage,
+                -- Technology adoption earliness (Reiter/Longenhagen)
+                twc.receiver_tech_adoption_lead_years
             FROM trade_with_context twc
             LEFT JOIN trade_receiver_demographic_mix trdm
                 ON trdm.trade_event_id = twc.trade_event_id
