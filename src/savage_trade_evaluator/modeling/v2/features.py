@@ -61,6 +61,11 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     "receiver_alumni_network_score",
     # receiver_org_pitcher_k_jump_recency_bias: D-34 (R-54) — null; market-efficiency
     # decay unrecoverable by EWMA. Column kept in DB; removed from feature sets.
+    # Retrosheet leverage + platoon deployment (#6, #7 — Tango/FutureValue thesis).
+    # reliever_leverage_ge_1_5_pct: fraction of reliever PAs in high-LI situations.
+    # platoon_woba_diff: opposite-hand wOBA − same-hand wOBA (positive = platoon skill).
+    "receiver_reliever_leverage_ge_1_5_pct",
+    "receiver_platoon_woba_diff",
 )
 
 ORIGIN_FEATURES: tuple[str, ...] = (

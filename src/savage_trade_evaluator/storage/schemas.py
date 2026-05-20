@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 23
+SCHEMA_VERSION = 24
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -275,6 +275,10 @@ DDL_STATEMENTS: tuple[str, ...] = (
         alumni_network_score DOUBLE,
         origin_sunk_cost_pressure DOUBLE,
         org_pitcher_k_jump_recency_bias DOUBLE,
+        -- Retrosheet derived (v24): leverage deployment + platoon skill (#6, #7)
+        reliever_leverage_ge_1_5_pct DOUBLE,
+        reliever_leverage_lt_0_7_pct DOUBLE,
+        platoon_woba_diff DOUBLE,
         computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (team_id, season)
     )

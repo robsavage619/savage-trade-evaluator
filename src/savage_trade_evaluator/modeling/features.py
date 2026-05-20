@@ -22,6 +22,10 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from savage_trade_evaluator.ingest.retrosheet_events import (
+    derive_team_season_leverage_features,
+    derive_team_season_platoon_features,
+)
 from savage_trade_evaluator.modeling.alumni_network import team_alumni_score
 from savage_trade_evaluator.modeling.tech_adoption import tech_adoption_score
 from savage_trade_evaluator.storage import db, schemas
@@ -40,6 +44,20 @@ def compute_all() -> int:
     Returns:
         Number of rows written.
     """
+    # Fetch Retrosheet-derived data before opening the write connection —
+    # DuckDB's exclusive write lock blocks concurrent read-only connections.
+    try:
+        _lev_df = derive_team_season_leverage_features()
+        _plat_df = derive_team_season_platoon_features()
+        logger.info(
+            "loaded retrosheet features: %d leverage rows, %d platoon rows",
+            len(_lev_df), len(_plat_df),
+        )
+    except Exception as exc:
+        logger.warning("retrosheet features unavailable (%s) — filling with NULL", exc)
+        _lev_df = None
+        _plat_df = None
+
     with db.connect() as conn:
         schemas.initialize(conn)
 
@@ -394,6 +412,24 @@ def compute_all() -> int:
         else:
             team_season["origin_sunk_cost_pressure"] = None
 
+        # Join Retrosheet leverage + platoon features (2015-2024 coverage only).
+        if _lev_df is not None and _plat_df is not None:
+            team_season = team_season.merge(
+                _lev_df[["bref_code", "season", "reliever_leverage_ge_1_5_pct",
+                          "reliever_leverage_lt_0_7_pct"]],
+                on=["bref_code", "season"],
+                how="left",
+            )
+            team_season = team_season.merge(
+                _plat_df[["bref_code", "season", "platoon_woba_diff"]],
+                on=["bref_code", "season"],
+                how="left",
+            )
+        else:
+            team_season["reliever_leverage_ge_1_5_pct"] = None
+            team_season["reliever_leverage_lt_0_7_pct"] = None
+            team_season["platoon_woba_diff"] = None
+
         rows = team_season[
             [
                 "team_id",
@@ -414,6 +450,9 @@ def compute_all() -> int:
                 "origin_sunk_cost_pressure",
                 "alumni_network_score",
                 "org_pitcher_k_jump_recency_bias",
+                "reliever_leverage_ge_1_5_pct",
+                "reliever_leverage_lt_0_7_pct",
+                "platoon_woba_diff",
             ]
         ]
 
@@ -427,14 +466,16 @@ def compute_all() -> int:
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
                 "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years, "
                 "origin_sunk_cost_pressure, alumni_network_score, "
-                "org_pitcher_k_jump_recency_bias) "
+                "org_pitcher_k_jump_recency_bias, reliever_leverage_ge_1_5_pct, "
+                "reliever_leverage_lt_0_7_pct, platoon_woba_diff) "
                 "SELECT team_id, bref_code, season, prior_year_wins, prior_year_losses, "
                 "prior_year_run_diff, prior_year_pyth_pct, prior_year_war, "
                 "farm_war_top_10, org_dev_fit_pitching, org_dev_fit_hitting, "
                 "org_pitcher_k_jump_3yr, org_hitter_xwoba_jump_3yr, "
                 "coach_hitter_xwoba_jump_3yr, tech_adoption_lead_years, "
                 "origin_sunk_cost_pressure, alumni_network_score, "
-                "org_pitcher_k_jump_recency_bias "
+                "org_pitcher_k_jump_recency_bias, reliever_leverage_ge_1_5_pct, "
+                "reliever_leverage_lt_0_7_pct, platoon_woba_diff "
                 "FROM _staging_tsf"
             )
         finally:

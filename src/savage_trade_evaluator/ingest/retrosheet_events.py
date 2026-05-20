@@ -1,72 +1,45 @@
 """Retrosheet play-by-play event log ingestion.
 
-Parses Retrosheet .EVA (AL) and .EVN (NL) event files into three derived
+Parses native Retrosheet .EVA (AL) and .EVN (NL) event files into two derived
 tables that unlock the leverage-deployment and platoon-deployment features.
 
 Data source: https://www.retrosheet.org/game.htm
-Download: season event files (e.g. 2015EVA.zip, 2015EVN.zip)
-Unzip to a local directory and pass the path to ingest().
+Download: combined season event ZIPs (e.g. 2015EVE.zip) from
+  https://www.retrosheet.org/events/<year>eve.zip
+Each zip contains per-team .EVA / .EVN files and .ROS roster files.
+
+Native format (NOT Chadwick CSV output):
+  id,<game_id>              → starts a new game
+  info,visteam,<code>       → visiting team code
+  start,<id>,<name>,<team_side(0/1)>,<bat_order>,<pos>  → starter
+  sub,<id>,<name>,<team_side>,<bat_order>,<pos>          → substitution
+  play,<inn>,<half>,<bat_id>,<count>,<pitches>,<event>   → plate appearance
+  data,er,<pit_id>,<n>                                   → earned runs
 
 Tables produced:
   retrosheet_game_appearances — one row per pitcher appearance per game
-    (team, season, game_id, pitcher_id, is_reliever, n_batters_faced,
-     avg_li, leverage_ge_1_5_pct, leverage_lt_0_7_pct)
-
   retrosheet_pa_matchups — one row per plate appearance
-    (team, season, game_id, bat_hand, pit_hand, event_cd, runs_scored)
-
-Schema version bump required — add SCHEMA_VERSION bump in storage/schemas.py
-and DDL for both tables.
 """
 
 from __future__ import annotations
 
-import csv
-import io
 import logging
 import zipfile
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator
+from typing import Iterator
 
 import pandas as pd
 
 from savage_trade_evaluator.storage import db
-
-if TYPE_CHECKING:
-    pass
 
 logger = logging.getLogger(__name__)
 
 SOURCE = "retrosheet"
 
 # ---------------------------------------------------------------------------
-# Column indices (0-based) in the standard Retrosheet event file format.
-# Reference: retrosheet.org/datause.html / Chadwick output column order.
-# ---------------------------------------------------------------------------
-COL_GAME_ID = 0
-COL_VISITING_TEAM = 1
-COL_INN_CT = 2
-COL_INN_HALF = 3  # 0=top (visitor bats), 1=bottom (home bats)
-COL_OUTS_CT = 5
-COL_BALLS_CT = 6
-COL_STRIKES_CT = 7
-COL_BAT_HAND_CD = 10
-COL_RESP_BAT_ID = 11
-COL_RESP_BAT_HAND_CD = 12
-COL_RESP_PIT_ID = 13
-COL_RESP_PIT_HAND_CD = 14
-COL_EVENT_CD = 34
-COL_EVENT_RUNS_CT = 58
-COL_BASE1_RUN_ID = 83
-COL_BASE2_RUN_ID = 84
-COL_BASE3_RUN_ID = 85
-
-# Minimum column count — rows shorter than this are malformed and skipped.
-MIN_COLS = 86
-
 # Events that constitute a completed plate appearance (not just baserunning).
-# Reference: retrosheet.org/eventfile.htm
+# ---------------------------------------------------------------------------
 PA_EVENT_CODES = frozenset({
     2,   # Generic out
     3,   # Strikeout
@@ -77,7 +50,11 @@ PA_EVENT_CODES = frozenset({
     21,  # Double
     22,  # Triple
     23,  # Home run
-    24,  # Other advance / balk (counts some PA)
+})
+
+# Standalone record types that are NOT plate appearances (baserunning only).
+_NON_PA_PREFIXES = frozenset({
+    "BK", "CS", "DI", "OA", "PB", "PO", "POCS", "SB", "WP", "NP",
 })
 
 # ---------------------------------------------------------------------------
@@ -155,63 +132,264 @@ def compute_leverage_index(
     return round(li, 3)
 
 
-def parse_event_file(path: Path) -> Iterator[dict]:
-    """Parse a single Retrosheet event file (.EVA or .EVN) into dicts.
+def _load_handedness(zip_path: Path) -> dict[str, dict[str, str]]:
+    """Load player handedness from .ROS roster files inside a season zip.
 
-    Retrosheet event files have no header row. Column positions follow the
-    standard Chadwick output order documented at retrosheet.org/datause.html.
-    Each yielded dict contains only the fields needed for leverage-deployment
-    and platoon-deployment feature derivation.
+    .ROS format: player_id,last,first,bat_hand,pit_hand,...
 
     Args:
-        path: Path to a plain-text Retrosheet event file.
+        zip_path: Path to a Retrosheet season zip (e.g. 2015EVE.zip).
+
+    Returns:
+        Dict mapping player_id → {"bat_hand": "L"|"R"|"", "pit_hand": ...}.
+    """
+    result: dict[str, dict[str, str]] = {}
+    try:
+        with zipfile.ZipFile(zip_path) as zf:
+            for name in zf.namelist():
+                if name.upper().endswith(".ROS"):
+                    with zf.open(name) as fh:
+                        for line in fh.read().decode("latin-1").splitlines():
+                            parts = line.strip().split(",")
+                            if len(parts) < 5:
+                                continue
+                            pid = parts[0].strip()
+                            bat = parts[3].strip().upper()
+                            pit = parts[4].strip().upper()
+                            result[pid] = {
+                                "bat_hand": bat if bat in ("L", "R") else "",
+                                "pit_hand": pit if pit in ("L", "R") else "",
+                            }
+    except (zipfile.BadZipFile, OSError) as exc:
+        logger.warning("could not load handedness from %s: %s", zip_path.name, exc)
+    return result
+
+
+def _parse_event_code(event_str: str) -> tuple[int, bool, int]:
+    """Parse a Retrosheet native event description string.
+
+    Args:
+        event_str: The event field from a play record (e.g. "S7", "K", "HR/7").
+
+    Returns:
+        Tuple of (event_cd, is_pa, outs_recorded).
+        event_cd: integer event code matching PA_EVENT_CODES conventions.
+        is_pa: True if this event is a completed plate appearance.
+        outs_recorded: 0, 1, 2, or 3 outs made on this play.
+    """
+    # Strip trailing whitespace and notes after '+' (multi-event plays handled below)
+    raw = event_str.strip()
+
+    # Split on '.' to separate advance codes; work with the play portion only.
+    play_part = raw.split(".")[0]
+
+    # Extract the base event type: everything before '/' (modifiers) or '+'.
+    base = play_part.split("/")[0].split("+")[0].strip()
+
+    # Non-PA baserunning events — match any suffix (SB2, CS3H, POCS2, etc.).
+    for prefix in _NON_PA_PREFIXES:
+        if base.startswith(prefix):
+            return 0, False, 0
+
+    # Double-play / triple-play modifier → extra outs.
+    extra_outs = 0
+    upper_raw = raw.upper()
+    if "/TP" in upper_raw or "/GTP" in upper_raw:
+        extra_outs = 2
+    elif "/GDP" in upper_raw or "/DP" in upper_raw or "/LDP" in upper_raw or "/FDP" in upper_raw:
+        extra_outs = 1
+
+    # Home run variants.
+    if base.startswith("HR") or base == "H":
+        return 23, True, 0
+
+    if base.startswith("T"):
+        return 22, True, 0
+
+    if base.startswith("D") and not base.startswith("DI"):
+        return 21, True, 0
+
+    if base.startswith("S") and not base.startswith("SB"):
+        return 20, True, 0
+
+    if base.startswith("HP"):
+        return 16, True, 0
+
+    if base.startswith("IW") or base == "I":
+        return 15, True, 0
+
+    if base.startswith("W") and not base.startswith("WP"):
+        return 14, True, 0
+
+    if base.startswith("K"):
+        # Strikeout: batter still may reach on WP/PB/E (K+WP, K+PB).
+        # Either way it is a PA and records 1 out (the K).
+        return 3, True, 1 + extra_outs
+
+    if base.startswith("FC"):
+        # Fielder's choice — batter reaches, 1 out on the basepaths.
+        return 2, True, 1 + extra_outs
+
+    if base.startswith("E"):
+        # Error — batter reaches, 0 outs (unless DP).
+        return 2, True, extra_outs
+
+    if base.startswith("C"):
+        # Catcher's interference — batter reaches.
+        return 2, True, extra_outs
+
+    # Generic out (groundout, flyout, lineout, popup codes like "53", "F8", "L6", etc.).
+    return 2, True, 1 + extra_outs
+
+
+def parse_event_file(
+    path: Path,
+    handedness: dict[str, dict[str, str]] | None = None,
+) -> Iterator[dict]:
+    """Parse a single Retrosheet native event file (.EVA or .EVN).
+
+    Handles the native Retrosheet event format (id/info/start/sub/play records),
+    not Chadwick CSV output. Player handedness is resolved from the .ROS data
+    bundled in the season zip; pass the result of _load_handedness() here.
+
+    Args:
+        path: Path to a native .EVA or .EVN event file.
+        handedness: Dict from _load_handedness(). If None, bat/pit hand fields
+            will be empty strings.
 
     Yields:
-        One dict per play-by-play row with keys:
+        One dict per completed plate appearance with keys:
             game_id, visiting_team, inning, half, outs, bat_hand,
             resp_bat_id, resp_bat_hand, resp_pit_id, resp_pit_hand,
             event_cd, event_runs_ct, base1_run_id, base2_run_id,
             base3_run_id, base_state.
     """
-    with path.open(encoding="latin-1", newline="") as fh:
-        reader = csv.reader(fh)
-        for row in reader:
-            if len(row) < MIN_COLS:
+    if handedness is None:
+        handedness = {}
+
+    game_id = ""
+    visiting_team = ""
+    inning = 1
+    half = 0
+    outs = 0
+    base1 = base2 = base3 = ""
+    # Current pitcher indexed by fielding team side: "0"=visitor, "1"=home.
+    cur_pitcher: dict[str, str] = {"0": "", "1": ""}
+
+    try:
+        lines = path.read_text(encoding="latin-1").splitlines()
+    except OSError as exc:
+        logger.warning("cannot read %s: %s", path.name, exc)
+        return
+
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split(",")
+        rec = parts[0]
+
+        if rec == "id":
+            game_id = parts[1].strip() if len(parts) > 1 else ""
+            # Retrosheet game_id: first 3 chars are home-team code.
+            inning = 1
+            half = 0
+            outs = 0
+            base1 = base2 = base3 = ""
+            cur_pitcher = {"0": "", "1": ""}
+
+        elif rec == "info":
+            if len(parts) >= 3 and parts[1].strip() == "visteam":
+                visiting_team = parts[2].strip()
+
+        elif rec in ("start", "sub"):
+            # format: start,player_id,name,team_side(0=vis/1=home),bat_order,position
+            if len(parts) >= 6 and parts[5].strip() == "1":
+                side = parts[3].strip()  # "0" or "1"
+                cur_pitcher[side] = parts[1].strip()
+
+        elif rec == "play":
+            # play,inning,half,batter_id,count,pitches,event
+            if len(parts) < 7:
                 continue
             try:
-                base_state = (
-                    (1 if row[COL_BASE1_RUN_ID].strip() else 0)
-                    | (2 if row[COL_BASE2_RUN_ID].strip() else 0)
-                    | (4 if row[COL_BASE3_RUN_ID].strip() else 0)
-                )
-                yield {
-                    "game_id": row[COL_GAME_ID].strip(),
-                    "visiting_team": row[COL_VISITING_TEAM].strip(),
-                    "inning": int(row[COL_INN_CT]),
-                    "half": int(row[COL_INN_HALF]),
-                    "outs": int(row[COL_OUTS_CT]),
-                    "bat_hand": row[COL_BAT_HAND_CD].strip(),
-                    "resp_bat_id": row[COL_RESP_BAT_ID].strip(),
-                    "resp_bat_hand": row[COL_RESP_BAT_HAND_CD].strip(),
-                    "resp_pit_id": row[COL_RESP_PIT_ID].strip(),
-                    "resp_pit_hand": row[COL_RESP_PIT_HAND_CD].strip(),
-                    "event_cd": int(row[COL_EVENT_CD]),
-                    "event_runs_ct": int(row[COL_EVENT_RUNS_CT] or 0),
-                    "base1_run_id": row[COL_BASE1_RUN_ID].strip(),
-                    "base2_run_id": row[COL_BASE2_RUN_ID].strip(),
-                    "base3_run_id": row[COL_BASE3_RUN_ID].strip(),
-                    "base_state": base_state,
-                }
-            except (ValueError, IndexError):
-                logger.debug("skipping malformed event row in %s", path.name)
+                new_inn = int(parts[1])
+                new_half = int(parts[2])
+            except ValueError:
                 continue
+
+            # Reset outs and bases at each new half-inning.
+            if (new_inn, new_half) != (inning, half):
+                inning = new_inn
+                half = new_half
+                outs = 0
+                base1 = base2 = base3 = ""
+
+            batter_id = parts[3].strip()
+            event_str = parts[6].strip() if len(parts) > 6 else ""
+            if not event_str:
+                continue
+
+            try:
+                event_cd, is_pa, n_outs = _parse_event_code(event_str)
+            except Exception:
+                logger.debug("unparseable event '%s' in %s", event_str, path.name)
+                continue
+
+            if not is_pa:
+                continue
+
+            # Fielding team is opposite of batting half.
+            # half=0 → top → visitor bats → home (side "1") fields.
+            fielding_side = "1" if half == 0 else "0"
+            pit_id = cur_pitcher.get(fielding_side, "")
+
+            pit_info = handedness.get(pit_id, {})
+            bat_info = handedness.get(batter_id, {})
+            pit_hand = pit_info.get("pit_hand", "")
+            bat_hand = bat_info.get("bat_hand", "")
+
+            base_state = (
+                (1 if base1 else 0)
+                | (2 if base2 else 0)
+                | (4 if base3 else 0)
+            )
+            home_team = game_id[:3] if len(game_id) >= 3 else ""
+
+            yield {
+                "game_id": game_id,
+                "visiting_team": visiting_team,
+                "home_team": home_team,
+                "inning": inning,
+                "half": half,
+                "outs": outs,
+                "bat_hand": bat_hand,
+                "resp_bat_id": batter_id,
+                "resp_bat_hand": bat_hand,
+                "resp_pit_id": pit_id,
+                "resp_pit_hand": pit_hand,
+                "event_cd": event_cd,
+                "event_runs_ct": 0,
+                "base1_run_id": base1,
+                "base2_run_id": base2,
+                "base3_run_id": base3,
+                "base_state": base_state,
+            }
+
+            outs += n_outs
+            if outs >= 3:
+                outs = 0
+                base1 = base2 = base3 = ""
 
 
 def _extract_event_files(zip_path: Path) -> list[Path]:
-    """Extract .EVA / .EVN files from a zip into a sibling temp directory.
+    """Extract .EVA / .EVN files from a Retrosheet season zip.
+
+    Handles both combined `{year}EVE.zip` (AL+NL) and separate
+    `{year}EVA.zip` / `{year}EVN.zip` naming conventions.
 
     Args:
-        zip_path: Path to a Retrosheet season zip (e.g. 2015EVA.zip).
+        zip_path: Path to a Retrosheet season zip.
 
     Returns:
         List of extracted event file paths.
@@ -219,14 +397,21 @@ def _extract_event_files(zip_path: Path) -> list[Path]:
     out_dir = zip_path.parent / zip_path.stem
     out_dir.mkdir(exist_ok=True)
     extracted: list[Path] = []
-    with zipfile.ZipFile(zip_path) as zf:
-        for name in zf.namelist():
-            upper = name.upper()
-            if upper.endswith(".EVA") or upper.endswith(".EVN"):
-                dest = out_dir / name
-                if not dest.exists():
-                    zf.extract(name, out_dir)
-                extracted.append(dest)
+    try:
+        with zipfile.ZipFile(zip_path) as zf:
+            for name in zf.namelist():
+                upper = name.upper()
+                if upper.endswith(".EVA") or upper.endswith(".EVN"):
+                    dest = out_dir / Path(name).name
+                    if not dest.exists():
+                        zf.extract(name, out_dir)
+                        # ZipFile may create subdirectories; find the file.
+                        extracted_dest = out_dir / name
+                        if extracted_dest != dest and extracted_dest.exists():
+                            extracted_dest.rename(dest)
+                    extracted.append(dest)
+    except zipfile.BadZipFile as exc:
+        logger.error("bad zip %s: %s", zip_path.name, exc)
     return extracted
 
 
@@ -299,6 +484,7 @@ def _process_event_file(
     season: int,
     game_state: _GameState,
     pa_rows: list[dict],
+    handedness: dict[str, dict[str, str]] | None = None,
 ) -> None:
     """Parse one event file, appending to game_state and pa_rows in-place.
 
@@ -307,21 +493,18 @@ def _process_event_file(
         season: Calendar year (used for row tagging).
         game_state: Mutable appearance accumulator.
         pa_rows: List to append plate-appearance dicts to.
+        handedness: Player handedness dict from _load_handedness().
     """
-    # game_id format: TMM{YYYYMMDD}{N} where TMM is the home-team Retrosheet code.
-    run_scores: dict[str, int] = defaultdict(int)  # game_id → cumulative runs per half
+    run_scores: dict[str, int] = defaultdict(int)
 
-    for row in parse_event_file(path):
+    for row in parse_event_file(path, handedness=handedness):
         game_id = row["game_id"]
-        home_team = game_id[:3]  # first 3 chars of GAME_ID = home team Retro code
+        home_team = row["home_team"]
         visiting_team = row["visiting_team"]
 
-        # Batting team is visiting if half==0, home if half==1.
-        batting_team = visiting_team if row["half"] == 0 else home_team
+        # half=0 → top (visitor bats); half=1 → bottom (home bats).
         fielding_team = home_team if row["half"] == 0 else visiting_team
 
-        # Run differential from batting team's perspective.
-        half_key = f"{game_id}_{row['half']}"
         run_diff = run_scores.get(f"{game_id}_bat", 0) - run_scores.get(f"{game_id}_field", 0)
 
         li = compute_leverage_index(
@@ -333,13 +516,10 @@ def _process_event_file(
         )
 
         game_state.update(row, li, visiting_team, home_team)
-
-        # Accumulate runs for subsequent LI calculations.
         run_scores[f"{game_id}_bat"] += row["event_runs_ct"]
 
-        # Record PA-level matchup row (fielding team = pitcher's team).
         if row["event_cd"] in PA_EVENT_CODES:
-            bat_hand = row["bat_hand"] or row["resp_bat_hand"]
+            bat_hand = row["bat_hand"]
             pit_hand = row["resp_pit_hand"]
             if bat_hand in ("L", "R") and pit_hand in ("L", "R"):
                 pa_rows.append({
@@ -393,6 +573,8 @@ def ingest(event_dir: Path, seasons: list[int] | None = None) -> int:
                 continue
 
             logger.info("processing %s", zip_path.name)
+            handedness = _load_handedness(zip_path)
+            logger.debug("  loaded handedness for %d players", len(handedness))
             event_files = _extract_event_files(zip_path)
             if not event_files:
                 logger.warning("no event files found in %s", zip_path.name)
@@ -403,7 +585,7 @@ def ingest(event_dir: Path, seasons: list[int] | None = None) -> int:
 
             for ef in event_files:
                 logger.debug("  parsing %s", ef.name)
-                _process_event_file(ef, season, game_state, pa_rows)
+                _process_event_file(ef, season, game_state, pa_rows, handedness=handedness)
 
             appearance_rows = game_state.to_appearance_rows(season)
 
@@ -449,6 +631,24 @@ def ingest(event_dir: Path, seasons: list[int] | None = None) -> int:
     return total_rows
 
 
+# Retrosheet uses legacy team codes for franchises that moved or have historical
+# abbreviations. Map to Baseball Reference codes for the join in team_season_features.
+_RETRO_TO_BREF: dict[str, str] = {
+    "ANA": "LAA",   # Angels
+    "CHA": "CHW",   # White Sox
+    "CHN": "CHC",   # Cubs
+    "KCA": "KCR",   # Royals
+    "LAN": "LAD",   # Dodgers
+    "NYA": "NYY",   # Yankees
+    "NYN": "NYM",   # Mets
+    "SDN": "SDP",   # Padres
+    "SFN": "SFG",   # Giants
+    "SLN": "STL",   # Cardinals
+    "TBA": "TBR",   # Rays
+    "WAS": "WSN",   # Nationals
+}
+
+
 def derive_team_season_leverage_features() -> pd.DataFrame:
     """Query retrosheet_game_appearances and return team-season leverage metrics.
 
@@ -474,7 +674,9 @@ def derive_team_season_leverage_features() -> pd.DataFrame:
         ORDER BY season, team
     """
     with db.connect(read_only=True) as conn:
-        return conn.execute(sql).df()
+        df = conn.execute(sql).df()
+    df["bref_code"] = df["bref_code"].replace(_RETRO_TO_BREF)
+    return df
 
 
 def derive_team_season_platoon_features() -> pd.DataFrame:
@@ -537,4 +739,6 @@ def derive_team_season_platoon_features() -> pd.DataFrame:
         ORDER BY season, bref_code
     """
     with db.connect(read_only=True) as conn:
-        return conn.execute(sql).df()
+        df = conn.execute(sql).df()
+    df["bref_code"] = df["bref_code"].replace(_RETRO_TO_BREF)
+    return df
