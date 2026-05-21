@@ -925,6 +925,98 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         ON stp3.team_bref = stp.team_bref
         AND stp3.season   = stp.season - 3
     """,
+    # D-42: Origin year-to-date WAR for acquired players (R-61).
+    # Uses the bWAR stint with the FROM team in the trade_season to capture
+    # within-season form. For deadline trades this is the pre-trade partial season;
+    # for offseason trades it is the prior team's full season (same year as trade_season
+    # for players traded before the season ends) or zero if no stint exists.
+    # Catches Correa 2025: T-1 quality = 3.65 WAR (2024), but origin YTD = 0.14 WAR.
+    """
+    CREATE OR REPLACE VIEW trade_acquired_origin_ytd_war AS
+    WITH per_player AS (
+        SELECT
+            tpu.trade_event_id,
+            tpu.to_team_bref AS receiver_bref,
+            COALESCE(bb.war, bp.war, 0.0) AS origin_ytd_war
+        FROM trade_player_unified tpu
+        LEFT JOIN bwar_batting bb
+            ON bb.mlb_id   = tpu.mlb_player_id
+            AND bb.year_ID  = tpu.trade_season
+            AND bb.team_ID  = tpu.from_team_bref
+        LEFT JOIN bwar_pitching bp
+            ON bp.mlb_id   = tpu.mlb_player_id
+            AND bp.year_ID  = tpu.trade_season
+            AND bp.team_ID  = tpu.from_team_bref
+        WHERE tpu.to_team_bref  IS NOT NULL
+          AND tpu.from_team_bref IS NOT NULL
+          AND tpu.from_team_bref != tpu.to_team_bref
+    )
+    SELECT
+        trade_event_id,
+        receiver_bref,
+        AVG(origin_ytd_war) AS receiver_acquired_origin_ytd_war
+    FROM per_player
+    GROUP BY trade_event_id, receiver_bref
+    """,
+    # D-44: WAR trajectory acceleration — second derivative of WAR curve (R-63).
+    # acceleration = [W(T-1) − W(T-2)] − [W(T-2) − W(T-3)] = W(T-1) − 2·W(T-2) + W(T-3).
+    # Negative = declining faster each year (accelerating collapse).
+    # Catches Semien: trajectory −3.2 (1st deriv), acceleration adding further signal.
+    """
+    CREATE OR REPLACE VIEW trade_acquired_war_acceleration AS
+    WITH season_war AS (
+        SELECT mlb_id, year_id, SUM(war) AS war
+        FROM bwar_player_seasons
+        WHERE mlb_id IS NOT NULL
+        GROUP BY mlb_id, year_id
+    ),
+    per_player AS (
+        SELECT
+            tpu.trade_event_id,
+            tpu.to_team_bref AS receiver_bref,
+            (w1.war - 2.0 * w2.war + w3.war) AS war_acceleration
+        FROM trade_player_unified tpu
+        LEFT JOIN season_war w1
+            ON w1.mlb_id = tpu.mlb_player_id AND w1.year_id = tpu.trade_season - 1
+        LEFT JOIN season_war w2
+            ON w2.mlb_id = tpu.mlb_player_id AND w2.year_id = tpu.trade_season - 2
+        LEFT JOIN season_war w3
+            ON w3.mlb_id = tpu.mlb_player_id AND w3.year_id = tpu.trade_season - 3
+        WHERE tpu.to_team_bref IS NOT NULL
+    )
+    SELECT
+        trade_event_id,
+        receiver_bref,
+        AVG(war_acceleration) AS receiver_acquired_war_acceleration
+    FROM per_player
+    WHERE war_acceleration IS NOT NULL
+    GROUP BY trade_event_id, receiver_bref
+    """,
+    # D-45: Receiving team 3-year rolling park factor (R-64).
+    # Aggregates multi-park seasons by home_games weight; 3-year rolling average
+    # reduces single-season noise. Indexed at 1.0 = neutral.
+    # BOS Fenway ~1.10, SFG Oracle ~0.93 — captures the full Devers park shift.
+    """
+    CREATE OR REPLACE VIEW team_park_factor AS
+    WITH yearly AS (
+        SELECT
+            team,
+            season,
+            SUM(park_factor_raw * home_games) / NULLIF(SUM(home_games), 0) AS park_factor_yr
+        FROM team_season_run_environment
+        WHERE park_factor_raw IS NOT NULL AND home_games >= 10
+        GROUP BY team, season
+    )
+    SELECT
+        team,
+        season,
+        AVG(park_factor_yr) OVER (
+            PARTITION BY team
+            ORDER BY season
+            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS receiver_park_factor_3yr
+    FROM yearly
+    """,
 )
 
 
