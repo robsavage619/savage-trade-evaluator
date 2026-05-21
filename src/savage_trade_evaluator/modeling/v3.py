@@ -97,6 +97,8 @@ class V3FitResult:
     feature_cols: tuple[str, ...]
     feature_means: pd.Series
     feature_stds: pd.Series
+    feature_clip_lo: pd.Series   # training mean - 5*std  (winsorization bounds)
+    feature_clip_hi: pd.Series   # training mean + 5*std
     y_mean: float
     y_std: float
 
@@ -140,18 +142,28 @@ def _split_and_impute(
     min_present = minimum_features_present if minimum_features_present is not None else 5
     present = combined[list(feature_cols)].notna().sum(axis=1)
     complete = combined[present >= min_present].copy()
-    for c in feature_cols:
-        complete[c] = complete[c].astype("float64")
-        complete[c] = complete[c].fillna(complete[c].mean())
-    train = complete[
+
+    # Temporal split BEFORE imputation so train stats don't leak from test.
+    train_mask = (
         (complete["trade_season"] >= train_start_season)
         & (complete["trade_season"] <= train_end_season)
-    ].reset_index(drop=True)
-    test = complete[
+    )
+    test_mask = (
         (complete["trade_season"] > train_end_season)
         & (complete["trade_season"] <= test_end_season)
-    ].reset_index(drop=True)
-    return train, test
+    )
+    train_raw = complete[train_mask].copy()
+    test_raw  = complete[test_mask].copy()
+
+    # Compute imputation fill values from training set only.
+    for c in feature_cols:
+        fill = float(train_raw[c].astype("float64").mean())
+        if np.isnan(fill):
+            fill = 0.0
+        train_raw[c] = train_raw[c].astype("float64").fillna(fill)
+        test_raw[c]  = test_raw[c].astype("float64").fillna(fill)
+
+    return train_raw.reset_index(drop=True), test_raw.reset_index(drop=True)
 
 
 def fit_v3(
@@ -168,7 +180,11 @@ def fit_v3(
     """Fit V3 (single-level Bayesian regression) on one outcome."""
     means = train[list(feature_cols)].mean()
     stds = train[list(feature_cols)].std().replace(0, 1.0)
-    x = ((train[list(feature_cols)] - means) / stds).to_numpy(dtype=float)
+    # Winsorization bounds: clip test features to ±5 SD of training distribution
+    # to prevent catastrophic linear extrapolation on out-of-distribution inputs.
+    clip_lo = means - 5.0 * stds
+    clip_hi = means + 5.0 * stds
+    x = ((train[list(feature_cols)].clip(lower=clip_lo, upper=clip_hi, axis=1) - means) / stds).to_numpy(dtype=float)
     y = train[outcome].to_numpy(dtype=float)
     y_mean = float(y.mean())
     y_std = float(y.std()) or 1.0
@@ -188,6 +204,7 @@ def fit_v3(
     return V3FitResult(
         trace=trace, feature_cols=feature_cols,
         feature_means=means, feature_stds=stds,
+        feature_clip_lo=clip_lo, feature_clip_hi=clip_hi,
         y_mean=y_mean, y_std=y_std,
     )
 
@@ -207,7 +224,10 @@ def predict(
             for flat-sigma fits.
     """
     cols = list(fit.feature_cols)
-    x_test = ((df[cols] - fit.feature_means) / fit.feature_stds).to_numpy(dtype=float)
+    # Clip test features to training ±5 SD bounds before standardizing.
+    # Prevents catastrophic linear extrapolation on out-of-distribution inputs.
+    df_clipped = df[cols].clip(lower=fit.feature_clip_lo, upper=fit.feature_clip_hi, axis=1)
+    x_test = ((df_clipped - fit.feature_means) / fit.feature_stds).to_numpy(dtype=float)
     post = fit.trace.posterior
     n_samples = post["alpha0"].shape[0] * post["alpha0"].shape[1]
     alpha0_s = post["alpha0"].values.reshape(n_samples)
@@ -328,7 +348,9 @@ def fit_v3_heteroscedastic(
     """
     means = train[list(feature_cols)].mean()
     stds = train[list(feature_cols)].std().replace(0, 1.0)
-    x = ((train[list(feature_cols)] - means) / stds).to_numpy(dtype=float)
+    clip_lo = means - 5.0 * stds
+    clip_hi = means + 5.0 * stds
+    x = ((train[list(feature_cols)].clip(lower=clip_lo, upper=clip_hi, axis=1) - means) / stds).to_numpy(dtype=float)
     y = train[outcome].to_numpy(dtype=float)
     y_mean = float(y.mean())
     y_std = float(y.std()) or 1.0
@@ -352,6 +374,7 @@ def fit_v3_heteroscedastic(
     return V3FitResult(
         trace=trace, feature_cols=feature_cols,
         feature_means=means, feature_stds=stds,
+        feature_clip_lo=clip_lo, feature_clip_hi=clip_hi,
         y_mean=y_mean, y_std=y_std,
     )
 
