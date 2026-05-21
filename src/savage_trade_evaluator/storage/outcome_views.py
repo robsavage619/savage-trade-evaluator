@@ -563,6 +563,8 @@ VIEW_STATEMENTS: tuple[str, ...] = (
         tsf.tech_adoption_lead_years AS receiver_tech_adoption_lead_years,
         tsf.alumni_network_score AS receiver_alumni_network_score,
         tsf.org_pitcher_k_jump_recency_bias AS receiver_org_pitcher_k_jump_recency_bias,
+        tsf.reliever_leverage_ge_1_5_pct AS receiver_reliever_leverage_ge_1_5_pct,
+        tsf.platoon_woba_diff AS receiver_platoon_woba_diff,
         tp.receiver_best_draft_pick,
         tp.receiver_avg_draft_pick,
         tdc.receiver_acquired_from_dev_cluster_score,
