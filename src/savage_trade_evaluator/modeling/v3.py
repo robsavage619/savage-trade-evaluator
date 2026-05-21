@@ -73,39 +73,34 @@ def assemble_v3_combined() -> pd.DataFrame:
     """Feature + outcome matrix with V3-specific window choices for war_delta."""
     return assemble_combined(outcomes_df=_build_v3_outcomes())
 
-# Per-outcome feature subsets — CONFIRMED by walk-forward CV (R-57 / D-37).
-# Only features that cleared the walk-forward bar (mass ≥ 97.5%, consistent sign,
-# credible in ≥ K/N sufficient folds) are included.
+# Per-outcome feature subsets.
 #
-# xwoba_delta and kpct_delta have only 1 CV fold (Statcast era limitation).
-# Their results are temporal robustness checks, not multi-fold confirmation.
-# Treat as EXPLORATORY per EXPERIMENT_PROTOCOL.md.
+# war_delta and dollar_surplus use ALL_FEATURES (23 features). R-57 walk-forward CV
+# was run on the full set; the confirmed betas listed below are valid in the full-model
+# context (Bayesian regularization via N(0,0.3) prior handles the null features).
+# Pruning to a 4-feature model changes the model context — confirmed betas from the
+# full model do not transfer to a smaller model without re-validation (D-38).
+#
+# R-57 confirmed features in full-model context (for annotation purposes):
+#   war_delta:     acquired_player_quality (5/5), dev_fit_hitting (5/5),
+#                  avg_age_at_trade (4/5), pct_international_born (4/5)
+#   dollar_surplus: acquired_player_quality (5/5), acquired_pct_awarded (4/5),
+#                  pct_international_born (4/5), pct_left_handed_bat (4/5)
+#
+# xwoba_delta and kpct_delta use acquired-player-only subsets (R-35) + credible
+# team features from R-53/R-55. Limited to 1 CV fold (Statcast era) → EXPLORATORY.
 V3_OUTCOME_FEATURES: dict[str, tuple[str, ...]] = {
-    # war_delta CONFIRMED (5 folds): quality × dev-system fit × demographics
-    "war_delta": (
-        "receiver_acquired_player_quality",      # 5/5 folds  β=+0.10
-        "receiver_dev_fit_hitting",              # 5/5 folds  β=+0.07
-        "receiver_avg_age_at_trade",             # 4/5 folds  β=-0.07 (younger → better)
-        "receiver_pct_international_born",       # 4/5 folds  β=+0.07
+    "war_delta": ALL_FEATURES,
+    "dollar_surplus": ALL_FEATURES,
+    # xwoba_delta EXPLORATORY-1FOLD: pitcher deployment + tech context (R-53/R-55/R-57)
+    "xwoba_delta": ACQUIRED_PLAYER_FEATURES + (
+        "receiver_tech_adoption_lead_years",
+        "receiver_platoon_woba_diff",
     ),
-    # xwoba_delta EXPLORATORY-1FOLD: pitcher deployment + tech context
-    "xwoba_delta": (
-        "receiver_acquired_pitcher_arsenal_volatility",  # 1/1 fold  β=+0.15
-        "receiver_pct_pitchers",                         # 1/1 fold  β=+0.11
-        "receiver_tech_adoption_lead_years",             # 1/1 fold  β=+0.14
-        "receiver_platoon_woba_diff",                    # 1/1 fold  β=+0.10
-    ),
-    # kpct_delta EXPLORATORY-1FOLD: pitcher-specific features only
-    "kpct_delta": (
-        "receiver_acquired_pitcher_k_trajectory",        # 1/1 fold  β=-0.30
-        "receiver_acquired_milb_pitch_quality",          # 1/1 fold  β=+0.17
-    ),
-    # dollar_surplus CONFIRMED (5 folds): quality + diversity + pedigree
-    "dollar_surplus": (
-        "receiver_acquired_player_quality",      # 5/5 folds  β=+0.14
-        "receiver_pct_international_born",       # 4/5 folds  β=+0.05
-        "receiver_pct_left_handed_bat",          # 4/5 folds  β=+0.04
-        "receiver_acquired_pct_awarded",         # 4/5 folds  β=+0.14
+    # kpct_delta EXPLORATORY-1FOLD: pitcher-specific features only (R-57)
+    "kpct_delta": ACQUIRED_PLAYER_FEATURES + (
+        "receiver_alumni_network_score",
+        "receiver_tech_adoption_lead_years",
     ),
 }
 
