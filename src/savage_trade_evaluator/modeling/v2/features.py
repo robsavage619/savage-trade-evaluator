@@ -36,12 +36,10 @@ ACQUIRED_PLAYER_FEATURES: tuple[str, ...] = (
     "receiver_acquired_milb_hit_quality",
     "receiver_acquired_milb_pitch_quality",
     "receiver_acquired_milb_age_advantage",
-    # D-42 (R-61): within-season WAR with origin team at trade time.
-    # Catches mid-season collapses masked by T-1 full-season quality (e.g. Correa 2025).
-    "receiver_acquired_origin_ytd_war",
-    # D-44 (R-63): WAR trajectory second derivative — acceleration of improvement/decline.
-    # W(T-1) − 2·W(T-2) + W(T-3). Negative = accelerating decline.
-    "receiver_acquired_war_acceleration",
+    # receiver_acquired_origin_ytd_war: D-42 (R-61) — NULL (avg mass 72-75%); collinear
+    # with acquired_player_quality; bWAR stint is annual, not date-stamped. Dropped.
+    # receiver_acquired_war_acceleration: D-44 (R-63) — NULL (avg mass 53-57%); collinear
+    # with avg_war_trajectory + only 30% non-null. Dropped.
     # receiver_acquired_contract_year_pct: D-36 (R-56) — null on all outcomes;
     # bWAR salary proxy too sparse without Cot's Contracts. Dropped from feature set.
 )
@@ -67,13 +65,10 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     "receiver_platoon_woba_diff",
     # receiver_reliever_leverage_ge_1_5_pct: D-35 (R-55) — null on all outcomes; dropped.
     # Column kept in team_season_features for exploratory use.
-    # D-43 (R-62): dev_fit_hitting × max(0, 32 − avg_age_at_trade).
-    # Positive for under-32 players at high dev-fit orgs; zero for 32+.
-    # Catches Semien (35, NYM high dev_fit) — dev environments can't reverse aging.
-    "receiver_devfit_x_peak_age",
-    # D-45 (R-64): 3-year rolling park factor for receiving team home park.
-    # Indexed at 1.0 = neutral. BOS ~1.10, SFG ~0.93. Catches Devers park shift.
-    "receiver_park_factor_3yr",
+    # receiver_devfit_x_peak_age: D-43 (R-62) — NULL (avg mass 54-68%); collinear with
+    # dev_fit_hitting + avg_age_at_trade; age gate at 32 too coarse. Dropped.
+    # receiver_park_factor_3yr: D-45 (R-64) — NULL (avg mass 51-52%); signal absorbed by
+    # existing receiver-team features; overall run factor too coarse. Dropped.
 )
 
 ORIGIN_FEATURES: tuple[str, ...] = (
