@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeftRight, Brain, Terminal, Trash2, BadgePlus, Coins, Gauge } from 'lucide-react'
+import { ArrowLeftRight, Brain, Terminal, Trash2, BadgePlus, Coins, Gauge, TrendingUp, TrendingDown, XCircle, Minus } from 'lucide-react'
 import { type CurrentPlayer, type CurrentTeam } from '../data/players'
 import { useRoster, useTeamsByBref } from '../lib/rosterStore'
 import { useIdentityStore, TEAM_THEME } from '../lib/identityStore'
@@ -10,7 +10,7 @@ import { RefreshRostersButton } from '../components/RefreshRostersButton'
 import { PosteriorViolin } from '../components/PosteriorViolin'
 import { Section, Stat } from '../components/Section'
 import { TeamLogo } from '../components/TeamLogo'
-import { computeVerdict } from '../lib/hypothetical'
+import { computeVerdict, type Verdict } from '../lib/hypothetical'
 import { composeHypotheticalPrompt } from '../lib/composeHypothetical'
 import { fmtSigned, fmtMoney } from '../lib/format'
 import { useReasoningStore, parseReasoningResponse } from '../lib/reasoningStore'
@@ -20,6 +20,162 @@ import { X, Copy, ClipboardCheck, AlertCircle, CheckCircle2, RotateCcw, Sparkles
 /** Pseudo-id namespace for hypothetical trades — kept negative to avoid colliding
  *  with real trade_event_ids. */
 const HYPO_BASE = -1_000_000
+
+type SignalEntry = { label: string; Icon: React.ElementType; color: string; bg: string; border: string; glyph: string }
+const SIGNAL_CONFIG: Record<Verdict['recommendation'], SignalEntry> = {
+  'strong-buy':  { label: 'ACCEPT THIS TRADE',      Icon: CheckCircle2, color: 'text-positive-500', bg: 'bg-positive-500/10',     border: 'border-positive-500/30', glyph: '✓' },
+  'lean-buy':    { label: 'LEAN ACCEPT',             Icon: TrendingUp,   color: 'text-positive-500', bg: 'bg-positive-500/[0.06]', border: 'border-positive-500/20', glyph: '↑' },
+  'neutral':     { label: 'HOLD — REQUEST COUNTER',  Icon: Minus,        color: 'text-ink-200',      bg: 'bg-ink-700/20',          border: 'border-ink-600/30',      glyph: '—' },
+  'lean-pass':   { label: 'COUNTER OR WALK',         Icon: TrendingDown, color: 'text-accent-400',   bg: 'bg-accent-500/[0.06]',  border: 'border-accent-500/20',   glyph: '↓' },
+  'strong-pass': { label: 'DO NOT ACCEPT',           Icon: XCircle,      color: 'text-negative-500', bg: 'bg-negative-500/10',    border: 'border-negative-500/30', glyph: '✗' },
+}
+
+function TradeComparison({
+  sendingPlayers,
+  receivingPlayers,
+  yourBref,
+  partnerBref,
+  verdict,
+}: {
+  sendingPlayers: CurrentPlayer[]
+  receivingPlayers: CurrentPlayer[]
+  yourBref: string
+  partnerBref: string
+  verdict: Verdict
+}) {
+  const allWars = [...sendingPlayers, ...receivingPlayers].map((p) => p.last_war ?? 0.5)
+  const maxWar = Math.max(...allWars, 1)
+
+  const allSalaries = [...sendingPlayers, ...receivingPlayers].map((p) => p.last_salary ?? 1_500_000)
+  const maxSalary = Math.max(...allSalaries, 1_500_000)
+
+  const rawWarSent = sendingPlayers.reduce((a, p) => a + (p.last_war ?? 0.5), 0)
+  const rawWarReceived = receivingPlayers.reduce((a, p) => a + (p.last_war ?? 0.5), 0)
+  const warDelta = rawWarReceived - rawWarSent
+
+  function PlayerRow({ player, side }: { player: CurrentPlayer; side: 'sent' | 'received' }) {
+    const war = player.last_war ?? 0.5
+    const salary = player.last_salary ?? 1_500_000
+    const warPct = Math.max(0, Math.min(1, war / maxWar))
+    const salaryPct = Math.max(0, Math.min(1, salary / maxSalary))
+    const barColor = side === 'received' ? 'bg-positive-500/70' : 'bg-negative-500/50'
+    const salaryBarColor = side === 'received' ? 'bg-baseline-500/50' : 'bg-ink-500/60'
+    return (
+      <div className="rounded-md border border-ink-700 bg-ink-800/40 px-3 py-2.5">
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="truncate text-[13px] font-semibold text-ink-100">{player.name}</span>
+            {player.position_abbr && (
+              <span className="shrink-0 rounded bg-ink-700 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-ink-300">
+                {player.position_abbr}
+              </span>
+            )}
+          </div>
+          <span className={`mono shrink-0 text-[12px] font-semibold tabular ${side === 'received' ? 'text-positive-500' : 'text-negative-500'}`}>
+            {war >= 0 ? '+' : ''}{war.toFixed(1)} WAR
+          </span>
+        </div>
+        {/* WAR bar */}
+        <div className="mb-1 h-1.5 w-full overflow-hidden rounded-full bg-ink-700">
+          <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${warPct * 100}%` }} />
+        </div>
+        {/* Salary bar */}
+        <div className="flex items-center gap-2">
+          <div className="h-1 flex-1 overflow-hidden rounded-full bg-ink-700/60">
+            <div className={`h-full rounded-full ${salaryBarColor}`} style={{ width: `${salaryPct * 100}%` }} />
+          </div>
+          <span className="mono shrink-0 text-[10px] text-ink-400">{fmtMoney(salary)}</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Player-by-player comparison</div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Sending */}
+        <div>
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-negative-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-negative-500/70" />
+            {yourBref} sends ({sendingPlayers.length})
+          </div>
+          <div className="space-y-2">
+            {sendingPlayers.length > 0
+              ? sendingPlayers.map((p) => <PlayerRow key={p.mlb_player_id} player={p} side="sent" />)
+              : <div className="rounded-md border border-dashed border-ink-700 p-3 text-[12px] text-ink-500">No players selected</div>
+            }
+          </div>
+          {sendingPlayers.length > 0 && (
+            <div className="mt-2 flex items-center justify-between rounded-md bg-ink-700/30 px-3 py-1.5">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Total</span>
+              <div className="flex items-center gap-4">
+                <span className="mono text-[12px] font-semibold text-negative-500">−{rawWarSent.toFixed(1)} WAR</span>
+                <span className="mono text-[12px] text-ink-300">{fmtMoney(verdict.costSent)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Receiving */}
+        <div>
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-positive-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-positive-500/70" />
+            {yourBref} receives ({receivingPlayers.length})
+          </div>
+          <div className="space-y-2">
+            {receivingPlayers.length > 0
+              ? receivingPlayers.map((p) => <PlayerRow key={p.mlb_player_id} player={p} side="received" />)
+              : <div className="rounded-md border border-dashed border-ink-700 p-3 text-[12px] text-ink-500">No players selected</div>
+            }
+          </div>
+          {receivingPlayers.length > 0 && (
+            <div className="mt-2 flex items-center justify-between rounded-md bg-ink-700/30 px-3 py-1.5">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Total</span>
+              <div className="flex items-center gap-4">
+                <span className="mono text-[12px] font-semibold text-positive-500">+{rawWarReceived.toFixed(1)} WAR</span>
+                <span className="mono text-[12px] text-ink-300">{fmtMoney(verdict.costReceived)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Balance bar */}
+      {sendingPlayers.length > 0 && receivingPlayers.length > 0 && (
+        <div className="mt-4">
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-ink-400">
+            <span>{yourBref} sends more</span>
+            <span className={`mono font-semibold ${warDelta >= 0 ? 'text-positive-500' : 'text-negative-500'}`}>
+              Net WAR: {warDelta >= 0 ? '+' : ''}{warDelta.toFixed(1)}
+            </span>
+            <span>{partnerBref} sends more</span>
+          </div>
+          <div className="relative h-3 overflow-hidden rounded-full bg-ink-700">
+            <div className="absolute inset-0 flex">
+              {/* Left half = sent (red) */}
+              <div className="h-full w-1/2">
+                <div
+                  className="absolute right-1/2 h-full bg-negative-500/60 rounded-l-full transition-all"
+                  style={{ width: `${Math.min(50, (rawWarSent / (rawWarSent + rawWarReceived || 1)) * 100)}%` }}
+                />
+              </div>
+              {/* Right half = received (green) */}
+              <div className="h-full w-1/2">
+                <div
+                  className="absolute left-1/2 h-full bg-positive-500/60 rounded-r-full transition-all"
+                  style={{ width: `${Math.min(50, (rawWarReceived / (rawWarSent + rawWarReceived || 1)) * 100)}%` }}
+                />
+              </div>
+            </div>
+            {/* Center line */}
+            <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-ink-500" />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function TradeBuilder() {
   const yourBref = useIdentityStore((s) => s.activeTeam)
@@ -160,37 +316,76 @@ export default function TradeBuilder() {
       </motion.div>
 
       {/* Verdict band */}
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card mb-6 p-5">
-        {verdict ? (
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Live verdict — {yourBref} perspective</div>
-              <div className="mt-1 text-[20px] font-semibold tracking-tight text-ink-100">{verdict.recommendationLabel}</div>
-              <div className="mt-1 text-[12px] text-ink-400">
-                Sent {sendingPlayers.length} · Received {receivingPlayers.length} · {yourBref} dev-multiplier {verdict.acquirerDevMultiplier.toFixed(2)}× applied to acquired players
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card mb-6 overflow-hidden">
+        {verdict ? (() => {
+          const signal = SIGNAL_CONFIG[verdict.recommendation]
+          const SignalIcon = signal.Icon
+          const rawWarSent = sendingPlayers.reduce((a, p) => a + (p.last_war ?? 0.5), 0)
+          const rawWarReceived = receivingPlayers.reduce((a, p) => a + (p.last_war ?? 0.5), 0)
+          const dollarPerWarSent = rawWarSent > 0 ? verdict.costSent / rawWarSent / 1_000_000 : null
+          const dollarPerWarReceived = rawWarReceived > 0 ? verdict.costReceived / rawWarReceived / 1_000_000 : null
+          const salaryDelta = verdict.costReceived - verdict.costSent
+          return (
+            <>
+              {/* GM Signal Banner */}
+              <div className={`border-b px-5 py-4 ${signal.bg} ${signal.border}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 ${signal.border}`}>
+                      <SignalIcon className={`h-6 w-6 ${signal.color}`} strokeWidth={2.5} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">GM Decision Signal · {yourBref} perspective</div>
+                      <div className={`text-[26px] font-bold tracking-tight leading-tight ${signal.color}`}>{signal.label}</div>
+                      <div className="text-[12px] text-ink-400">{verdict.recommendationLabel} · dev-multiplier {verdict.acquirerDevMultiplier.toFixed(2)}× applied to incoming players</div>
+                    </div>
+                  </div>
+                  <div className={`select-none font-black leading-none ${signal.color} opacity-[0.13]`} style={{ fontSize: 72 }}>{signal.glyph}</div>
+                </div>
               </div>
-            </div>
-            <div className="flex items-end gap-7">
-              <Stat label="3-yr surplus" value={fmtSigned(verdict.surplusMean)} sub={`90% [${verdict.surplusLo.toFixed(2)}, ${verdict.surplusHi.toFixed(2)}]`} tone={verdict.reasoningTone} />
-              <Stat label="P(positive)" value={`${Math.round(verdict.pPositive * 100)}%`} sub="Posterior > 0" tone={verdict.reasoningTone} />
-              <Stat label="WAR Δ" value={fmtSigned(verdict.warReceived - verdict.warSent, 1)} sub={`R ${verdict.warReceived.toFixed(1)} · S ${verdict.warSent.toFixed(1)}`} tone="neutral" />
-              <Stat label="Salary Δ" value={`${verdict.costReceived - verdict.costSent >= 0 ? '+' : ''}${fmtMoney(Math.abs(verdict.costReceived - verdict.costSent))}`.replace('$', verdict.costReceived - verdict.costSent >= 0 ? '$' : '−$')} sub={`R ${fmtMoney(verdict.costReceived)} · S ${fmtMoney(verdict.costSent)}`} tone="neutral" />
-            </div>
-            <div className="w-full pt-1 md:w-[420px]">
-              <PosteriorViolin
-                mean={verdict.surplusMean}
-                sd={verdict.surplusSd}
-                min={Math.min(verdict.surplusLo, -3)}
-                max={Math.max(verdict.surplusHi, 3)}
-                accent={verdict.reasoningTone}
-                unit=" WAR"
-                width={420}
-                height={70}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 text-[13px] text-ink-300">
+
+              {/* Metrics row */}
+              <div className="flex flex-wrap items-end justify-between gap-6 p-5">
+                <div className="flex flex-wrap items-end gap-7">
+                  <Stat label="3-yr surplus" value={fmtSigned(verdict.surplusMean)} sub={`90% [${verdict.surplusLo.toFixed(2)}, ${verdict.surplusHi.toFixed(2)}]`} tone={verdict.reasoningTone} />
+                  <Stat label="P(accept)" value={`${Math.round(verdict.pPositive * 100)}%`} sub="Posterior > 0" tone={verdict.reasoningTone} />
+                  <Stat label="WAR in (adj)" value={`+${verdict.warReceived.toFixed(1)}`} sub={`raw ${rawWarReceived.toFixed(1)} × dev ${verdict.acquirerDevMultiplier.toFixed(2)}×`} tone="pos" />
+                  <Stat label="WAR out (adj)" value={`−${verdict.warSent.toFixed(1)}`} sub={`partner dev-adjusted`} tone="neg" />
+                  <Stat label="Net WAR Δ" value={fmtSigned(verdict.warReceived - verdict.warSent, 1)} sub="dev-adjusted" tone={verdict.reasoningTone} />
+                  <Stat label="Salary Δ" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(verdict.costReceived)} · Out ${fmtMoney(verdict.costSent)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
+                  {dollarPerWarSent != null && <Stat label="$/WAR out" value={`$${dollarPerWarSent.toFixed(1)}M`} sub="cost/WAR of players sent" tone="neutral" />}
+                  {dollarPerWarReceived != null && <Stat label="$/WAR in" value={`$${dollarPerWarReceived.toFixed(1)}M`} sub={dollarPerWarReceived < 9 ? 'below market ~$9M ✓' : 'above market ~$9M'} tone={dollarPerWarReceived < 9 ? 'pos' : 'neg'} />}
+                </div>
+                <div className="w-full pt-1 md:w-[420px]">
+                  <PosteriorViolin
+                    mean={verdict.surplusMean}
+                    sd={verdict.surplusSd}
+                    min={Math.min(verdict.surplusLo, -3)}
+                    max={Math.max(verdict.surplusHi, 3)}
+                    accent={verdict.reasoningTone}
+                    unit=" WAR surplus"
+                    width={420}
+                    height={70}
+                  />
+                </div>
+              </div>
+
+              {/* Player comparison */}
+              {(sendingPlayers.length > 0 || receivingPlayers.length > 0) && (
+                <div className="border-t border-ink-700 px-5 pb-5 pt-4">
+                  <TradeComparison
+                    sendingPlayers={sendingPlayers}
+                    receivingPlayers={receivingPlayers}
+                    yourBref={yourBref}
+                    partnerBref={partnerBref}
+                    verdict={verdict}
+                  />
+                </div>
+              )}
+            </>
+          )
+        })() : (
+          <div className="flex items-center gap-3 p-5 text-[13px] text-ink-300">
             <BadgePlus className="h-4 w-4 text-accent-400" />
             Add a player to either basket below to begin. The verdict updates live as you build.
           </div>

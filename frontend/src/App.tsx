@@ -39,32 +39,55 @@ function TopNav() {
         <span>Powered by Claude</span>
       </div>
       <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-6 px-6 py-3">
+        <div className="flex items-center gap-4">
         <NavLink to="/" className="group flex items-center gap-3 select-none">
-          {/* Geometric mark — scatter trend */}
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
-            {/* Regression trend line */}
-            <line x1="4" y1="27" x2="28" y2="5"
-              stroke="#ff8a3d" strokeWidth="1" strokeOpacity="0.35"
-              strokeDasharray="3 2.5" strokeLinecap="round" />
-            {/* Data nodes — ascending scatter */}
-            <circle cx="4"  cy="26" r="2"   fill="#e0e5f4" fillOpacity="0.25" />
-            <circle cx="12" cy="20" r="2"   fill="#e0e5f4" fillOpacity="0.35" />
-            <circle cx="20" cy="13" r="2"   fill="#e0e5f4" fillOpacity="0.5"  />
-            {/* Top-right node — the credible finding */}
-            <circle cx="27" cy="7"  r="2.5" fill="#ff8a3d" />
+          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" aria-hidden>
+            <defs>
+              <filter id="logo-glow" x="-80%" y="-80%" width="260%" height="260%">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <g filter="url(#logo-glow)">
+              <path d="M 16,2 L 22,10 L 30,16 L 22,22 L 16,30 L 10,22 L 2,16 L 10,10 Z"
+                    stroke="#dce3f5" strokeWidth="1" strokeLinejoin="miter"/>
+              <path d="M 10,10 L 22,10 L 22,22 L 10,22 Z"
+                    stroke="#c8d4ee" strokeWidth="0.6" strokeOpacity="0.7"/>
+              <line x1="10" y1="10" x2="22" y2="22" stroke="#c8d4ee" strokeWidth="0.6" strokeOpacity="0.5"/>
+              <line x1="22" y1="10" x2="10" y2="22" stroke="#c8d4ee" strokeWidth="0.6" strokeOpacity="0.5"/>
+              <line x1="16" y1="2" x2="16" y2="30" stroke="#dce3f5" strokeWidth="0.4" strokeOpacity="0.35"/>
+              <line x1="2" y1="16" x2="30" y2="16" stroke="#dce3f5" strokeWidth="0.4" strokeOpacity="0.35"/>
+            </g>
           </svg>
-          {/* Separator */}
           <div style={{ width: 1, height: 26, background: 'var(--color-ink-700)', flexShrink: 0 }} />
-          {/* Wordmark */}
           <div className="leading-none">
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--color-ink-100)' }}>
-              Savage Analytics
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, letterSpacing: '0.28em', color: 'var(--color-ink-100)', textShadow: '0 0 14px rgba(220,227,245,0.35)' }}>
+              SAVAGE
             </div>
-            <div style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.18em', color: 'var(--color-ink-500)', textTransform: 'uppercase', marginTop: 3 }}>
-              Baseball Intelligence
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '0.28em', color: 'var(--color-ink-400)', marginTop: 5 }}>
+              ANALYTICS
             </div>
           </div>
         </NavLink>
+          <div style={{ width: 1, height: 36, background: 'var(--color-ink-700)', flexShrink: 0 }} />
+          <span style={{
+            fontFamily: "'Chakra Petch', sans-serif",
+            fontSize: 22,
+            fontWeight: 400,
+            letterSpacing: '0.1em',
+            whiteSpace: 'nowrap',
+            color: '#ff8a3d',
+            textShadow: '0 0 18px rgba(255,138,61,0.55), 0 0 6px rgba(255,138,61,0.35)',
+            textTransform: 'uppercase',
+          }}>
+            Trade Lab
+          </span>
+        </div>
         <nav className="flex items-center gap-1">
           {items.map(({ to, label, icon: Icon }) => {
             const base = to.split('/').slice(0, 3).join('/')
