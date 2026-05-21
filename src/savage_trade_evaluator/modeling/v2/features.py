@@ -36,13 +36,8 @@ ACQUIRED_PLAYER_FEATURES: tuple[str, ...] = (
     "receiver_acquired_milb_hit_quality",
     "receiver_acquired_milb_pitch_quality",
     "receiver_acquired_milb_age_advantage",
-    # Contract-year bias flag (approximated from bWAR salary coverage — see D-29).
-    # Fraction of acquired players whose salary record ends at the trade season
-    # (no salary entry for trade_season+1) and who have a non-null salary at
-    # trade_season (rules out rookie-deal unknowns). Limitation: we don't have
-    # Cot's Contracts; this is a proxy and will miss multi-year deals that happen
-    # to have no next-season salary row due to data gaps.
-    "receiver_acquired_contract_year_pct",
+    # receiver_acquired_contract_year_pct: D-36 (R-56) — null on all outcomes;
+    # bWAR salary proxy too sparse without Cot's Contracts. Dropped from feature set.
 )
 
 RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
