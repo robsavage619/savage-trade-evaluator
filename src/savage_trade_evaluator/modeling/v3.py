@@ -73,19 +73,40 @@ def assemble_v3_combined() -> pd.DataFrame:
     """Feature + outcome matrix with V3-specific window choices for war_delta."""
     return assemble_combined(outcomes_df=_build_v3_outcomes())
 
-# Per-outcome feature subsets per R-35.
+# Per-outcome feature subsets — CONFIRMED by walk-forward CV (R-57 / D-37).
+# Only features that cleared the walk-forward bar (mass ≥ 97.5%, consistent sign,
+# credible in ≥ K/N sufficient folds) are included.
+#
+# xwoba_delta and kpct_delta have only 1 CV fold (Statcast era limitation).
+# Their results are temporal robustness checks, not multi-fold confirmation.
+# Treat as EXPLORATORY per EXPERIMENT_PROTOCOL.md.
 V3_OUTCOME_FEATURES: dict[str, tuple[str, ...]] = {
-    # R-53/R-55: component-outcome-credible team features wired per D-33/D-35.
-    "xwoba_delta": ACQUIRED_PLAYER_FEATURES + (
-        "receiver_tech_adoption_lead_years",
-        "receiver_platoon_woba_diff",      # D-35/R-55: β=+0.099, mass=97%
+    # war_delta CONFIRMED (5 folds): quality × dev-system fit × demographics
+    "war_delta": (
+        "receiver_acquired_player_quality",      # 5/5 folds  β=+0.10
+        "receiver_dev_fit_hitting",              # 5/5 folds  β=+0.07
+        "receiver_avg_age_at_trade",             # 4/5 folds  β=-0.07 (younger → better)
+        "receiver_pct_international_born",       # 4/5 folds  β=+0.07
     ),
-    "kpct_delta": ACQUIRED_PLAYER_FEATURES + (
-        "receiver_alumni_network_score",
-        "receiver_tech_adoption_lead_years",
+    # xwoba_delta EXPLORATORY-1FOLD: pitcher deployment + tech context
+    "xwoba_delta": (
+        "receiver_acquired_pitcher_arsenal_volatility",  # 1/1 fold  β=+0.15
+        "receiver_pct_pitchers",                         # 1/1 fold  β=+0.11
+        "receiver_tech_adoption_lead_years",             # 1/1 fold  β=+0.14
+        "receiver_platoon_woba_diff",                    # 1/1 fold  β=+0.10
     ),
-    "war_delta": ALL_FEATURES,
-    "dollar_surplus": ALL_FEATURES,
+    # kpct_delta EXPLORATORY-1FOLD: pitcher-specific features only
+    "kpct_delta": (
+        "receiver_acquired_pitcher_k_trajectory",        # 1/1 fold  β=-0.30
+        "receiver_acquired_milb_pitch_quality",          # 1/1 fold  β=+0.17
+    ),
+    # dollar_surplus CONFIRMED (5 folds): quality + diversity + pedigree
+    "dollar_surplus": (
+        "receiver_acquired_player_quality",      # 5/5 folds  β=+0.14
+        "receiver_pct_international_born",       # 4/5 folds  β=+0.05
+        "receiver_pct_left_handed_bat",          # 4/5 folds  β=+0.04
+        "receiver_acquired_pct_awarded",         # 4/5 folds  β=+0.14
+    ),
 }
 
 
