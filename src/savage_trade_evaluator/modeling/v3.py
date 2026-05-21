@@ -75,8 +75,11 @@ def assemble_v3_combined() -> pd.DataFrame:
 
 # Per-outcome feature subsets per R-35.
 V3_OUTCOME_FEATURES: dict[str, tuple[str, ...]] = {
-    # R-53: alumni_network + tech_adoption credible on component outcomes (D-33).
-    "xwoba_delta": ACQUIRED_PLAYER_FEATURES + ("receiver_tech_adoption_lead_years",),
+    # R-53/R-55: component-outcome-credible team features wired per D-33/D-35.
+    "xwoba_delta": ACQUIRED_PLAYER_FEATURES + (
+        "receiver_tech_adoption_lead_years",
+        "receiver_platoon_woba_diff",      # D-35/R-55: β=+0.099, mass=97%
+    ),
     "kpct_delta": ACQUIRED_PLAYER_FEATURES + (
         "receiver_alumni_network_score",
         "receiver_tech_adoption_lead_years",

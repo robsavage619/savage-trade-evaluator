@@ -61,11 +61,11 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     "receiver_alumni_network_score",
     # receiver_org_pitcher_k_jump_recency_bias: D-34 (R-54) — null; market-efficiency
     # decay unrecoverable by EWMA. Column kept in DB; removed from feature sets.
-    # Retrosheet leverage + platoon deployment (#6, #7 — Tango/FutureValue thesis).
-    # reliever_leverage_ge_1_5_pct: fraction of reliever PAs in high-LI situations.
+    # Retrosheet platoon deployment (#7 — D-35/R-55: credible on xwoba_delta).
     # platoon_woba_diff: opposite-hand wOBA − same-hand wOBA (positive = platoon skill).
-    "receiver_reliever_leverage_ge_1_5_pct",
     "receiver_platoon_woba_diff",
+    # receiver_reliever_leverage_ge_1_5_pct: D-35 (R-55) — null on all outcomes; dropped.
+    # Column kept in team_season_features for exploratory use.
 )
 
 ORIGIN_FEATURES: tuple[str, ...] = (
@@ -134,9 +134,10 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 twc.receiver_alumni_network_score,
                 -- R-54: recency-bias signal (ewma − flat-3yr) for org pitcher K-jump
                 twc.receiver_org_pitcher_k_jump_recency_bias,
-                -- Retrosheet leverage + platoon deployment (#6, #7)
-                twc.receiver_reliever_leverage_ge_1_5_pct,
-                twc.receiver_platoon_woba_diff
+                -- Retrosheet platoon deployment (#7 — D-35/R-55: credible on xwoba_delta)
+                twc.receiver_platoon_woba_diff,
+                -- Contract-year selection bias (ATT correction proxy, #11)
+                cy.receiver_acquired_contract_year_pct
             FROM trade_with_context twc
             LEFT JOIN trade_receiver_demographic_mix trdm
                 ON trdm.trade_event_id = twc.trade_event_id
