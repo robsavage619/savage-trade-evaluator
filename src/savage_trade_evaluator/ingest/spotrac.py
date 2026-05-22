@@ -28,6 +28,7 @@ import logging
 import re
 import time
 import unicodedata
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -88,6 +89,16 @@ TEAM_SLUG_BY_BREF: dict[str, str] = {
 
 PAYROLL_URL_CURRENT = "https://www.spotrac.com/mlb/{slug}/payroll/"
 PAYROLL_URL_HISTORICAL = "https://www.spotrac.com/mlb/{slug}/payroll/_/year/{year}"
+
+
+def _current_mlb_season() -> int:
+    """Live MLB season (calendar year). Only this season uses the no-year URL.
+
+    The current-payroll page reflects today's roster; requesting a past season
+    from it silently returns current-roster data mislabeled with that year.
+    Past seasons must use the historical (``/_/year/<YYYY>``) URL.
+    """
+    return datetime.now(UTC).year
 
 # Spotrac money string patterns
 MONEY_RE = re.compile(r"\$?([\d,]+(?:\.\d+)?)")
@@ -201,7 +212,7 @@ def fetch_team_payroll(
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Fetch + parse one team's payroll page. Returns (contract rows, totals)."""
     slug = TEAM_SLUG_BY_BREF[team_bref]
-    if season >= 2025:
+    if season >= _current_mlb_season():
         url = PAYROLL_URL_CURRENT.format(slug=slug)
     else:
         url = PAYROLL_URL_HISTORICAL.format(slug=slug, year=season)
