@@ -1,14 +1,14 @@
 import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRightLeft, Building2, Briefcase, FlaskConical, Hammer } from 'lucide-react'
+import { Radar, Building2, Briefcase, FlaskConical, Hammer } from 'lucide-react'
 import PresslyCase from './routes/PresslyCase'
 import Research from './routes/Research'
 import TradeWorkspace from './routes/TradeWorkspace'
+import WarRoom from './routes/WarRoom'
 import OrgExplorer from './routes/OrgExplorer'
 import TradeBuilder from './routes/TradeBuilder'
 import OrgScout from './routes/OrgScout'
 import PlayerProfile from './routes/PlayerProfile'
-import { PRESSLY_TRADE_ID } from './data'
 import { TeamIdentitySwitcher } from './components/TeamIdentitySwitcher'
 
 function ClaudeLogo({ size = 14 }: { size?: number }) {
@@ -26,8 +26,8 @@ function ClaudeLogo({ size = 14 }: { size?: number }) {
 function TopNav() {
   const loc = useLocation()
   const items = [
+    { to: '/warroom', label: 'War Room', icon: Radar },
     { to: '/build', label: 'Trade Builder', icon: Hammer },
-    { to: `/trade/${PRESSLY_TRADE_ID}`, label: 'Pipeline', icon: ArrowRightLeft },
     { to: '/orgs', label: 'Org Explorer', icon: Building2 },
     { to: '/case/pressly', label: 'Case Study', icon: Briefcase },
     { to: '/research', label: 'Research', icon: FlaskConical },
@@ -126,7 +126,8 @@ export default function App() {
     <div className="min-h-screen bg-ink-950">
       <TopNav />
       <Routes>
-        <Route path="/" element={<Navigate to="/build" replace />} />
+        <Route path="/" element={<Navigate to="/warroom" replace />} />
+        <Route path="/warroom" element={<WarRoom />} />
         <Route path="/build" element={<TradeBuilder />} />
         <Route path="/case/pressly" element={<PresslyCase />} />
         <Route path="/trade/:id" element={<TradeWorkspace />} />
@@ -134,7 +135,7 @@ export default function App() {
         <Route path="/orgs/:bref" element={<OrgScout />} />
         <Route path="/research" element={<Research />} />
         <Route path="/player/:id" element={<PlayerProfile />} />
-        <Route path="*" element={<Navigate to="/build" replace />} />
+        <Route path="*" element={<Navigate to="/warroom" replace />} />
       </Routes>
       <footer className="border-t border-ink-700 px-6 py-6 text-[11px] text-ink-400">
         <div className="mx-auto flex max-w-[1480px] flex-wrap items-center justify-between gap-3">
