@@ -200,6 +200,101 @@ def fetch_awards(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[int, d
     return out
 
 
+_PARTIAL_SEASON_THRESHOLD = 100  # max-g below this → treat season as in-progress
+_WAR_WEIGHTS = {0: 0.50, 1: 0.30, 2: 0.20}  # offset from most-recent completed season
+
+
+def _fetch_war_history(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[int, dict[str, Any]]:
+    """Compute war_3yr_wtd / war_current_pace / war_trend for each player.
+
+    Excludes the current partial season from the weighted baseline, then
+    annualises it separately as war_current_pace so the trend comparison is
+    against full-season equivalents.
+    """
+    if not ids:
+        return {}
+    # Detect partial season
+    row = conn.execute("""
+        WITH ym AS (SELECT year_id, MAX(g) AS mg FROM
+            (SELECT year_id, g FROM bwar_batting
+             UNION ALL SELECT year_id, g FROM bwar_pitching)
+        GROUP BY year_id)
+        SELECT year_id, mg FROM ym ORDER BY year_id DESC LIMIT 1
+    """).fetchone()
+    partial_year: int | None = None
+    pace_factor: float | None = None
+    if row and float(row[1]) < _PARTIAL_SEASON_THRESHOLD:
+        partial_year = int(row[0])
+        pace_factor = 162.0 / float(row[1])
+
+    placeholders = ",".join(["?"] * len(ids))
+    year_filter = f"WHERE year_id != {partial_year}" if partial_year else ""
+    rows = conn.execute(
+        f"""
+        WITH seasons AS (
+            SELECT mlb_id, year_id, SUM(war) AS war
+            FROM (
+                SELECT mlb_id, year_id, war FROM bwar_batting  WHERE mlb_id IN ({placeholders})
+                UNION ALL
+                SELECT mlb_id, year_id, war FROM bwar_pitching WHERE mlb_id IN ({placeholders})
+            ) GROUP BY mlb_id, year_id
+        ),
+        completed AS (SELECT mlb_id, year_id, war FROM seasons {year_filter}),
+        latest AS (SELECT mlb_id, MAX(year_id) AS last_y FROM completed GROUP BY mlb_id),
+        ranked AS (
+            SELECT c.mlb_id, c.year_id, c.war, (l.last_y - c.year_id) AS off
+            FROM completed c JOIN latest l ON l.mlb_id = c.mlb_id
+            WHERE c.year_id >= l.last_y - 2
+        )
+        SELECT mlb_id, off, war FROM ranked ORDER BY mlb_id, off
+        """,
+        ids + ids,
+    ).fetchall()
+
+    partial_war_map: dict[int, float] = {}
+    if partial_year:
+        p_rows = conn.execute(
+            f"""SELECT mlb_id, SUM(war) FROM (
+                SELECT mlb_id, war FROM bwar_batting  WHERE mlb_id IN ({placeholders}) AND year_id={partial_year}
+                UNION ALL
+                SELECT mlb_id, war FROM bwar_pitching WHERE mlb_id IN ({placeholders}) AND year_id={partial_year}
+            ) GROUP BY mlb_id""",
+            ids + ids,
+        ).fetchall()
+        partial_war_map = {int(r[0]): float(r[1]) if r[1] is not None else 0.0 for r in p_rows}
+
+    by_id: dict[int, list[tuple[int, float]]] = {}
+    for mlb_id, off, war in rows:
+        by_id.setdefault(int(mlb_id), []).append((int(off), float(war) if war is not None else 0.0))
+
+    out: dict[int, dict[str, Any]] = {}
+    for mlb_id in set(by_id) | set(partial_war_map):
+        entries = by_id.get(mlb_id, [])
+        total_w = sum(_WAR_WEIGHTS.get(o, 0.0) for o, _ in entries)
+        wtd = (
+            round(sum(_WAR_WEIGHTS.get(o, 0.0) * w for o, w in entries) / total_w, 3)
+            if total_w > 0 else None
+        )
+        pace = (
+            round(partial_war_map[mlb_id] * pace_factor, 3)
+            if (mlb_id in partial_war_map and pace_factor is not None) else None
+        )
+        if pace is not None and wtd is not None:
+            trend: float | None = round(pace - wtd, 3)
+        elif wtd is not None:
+            last = partial_war_map.get(mlb_id) or next((w for o, w in entries if o == 0), None)
+            trend = round(last - wtd, 3) if last is not None else None
+        else:
+            trend = None
+        out[mlb_id] = {
+            "war_3yr_wtd": wtd,
+            "war_current_pace": pace,
+            "war_trend": trend,
+            "war_years": len(entries),
+        }
+    return out
+
+
 def fetch_recent_war(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[int, dict[str, Any]]:
     """For each player, last-season WAR + salary across batting/pitching."""
     if not ids:
@@ -265,12 +360,14 @@ def main() -> None:
     # Join with bWAR + Spotrac + awards
     db_path = _resolve_db()
     war_by_id: dict[int, dict[str, Any]] = {}
+    war_history_by_id: dict[int, dict[str, Any]] = {}
     spotrac_by_id: dict[int, dict[str, Any]] = {}
     awards_by_id: dict[int, dict[str, Any]] = {}
     if db_path:
         logger.info("Joining bWAR + Spotrac contracts + awards from %s", db_path)
         with duckdb.connect(str(db_path), read_only=True) as conn:
             war_by_id = fetch_recent_war(conn, all_ids)
+            war_history_by_id = _fetch_war_history(conn, all_ids)
             spotrac_by_id = fetch_spotrac(conn, all_ids)
             awards_by_id = fetch_awards(conn, all_ids)
     else:
@@ -287,6 +384,7 @@ def main() -> None:
             bio = by_id.get(person_id, {})
             pos = entry.get("position", {})
             war = war_by_id.get(person_id, {})
+            wh = war_history_by_id.get(person_id, {})
             players.append(
                 {
                     "mlb_player_id": person_id,
@@ -309,6 +407,11 @@ def main() -> None:
                     "last_year": war.get("last_year"),
                     "last_war": war.get("last_war"),
                     "last_salary": war.get("last_salary"),
+                    # Multi-year WAR baseline (see enrich_player_war.py for methodology)
+                    "war_3yr_wtd": wh.get("war_3yr_wtd"),
+                    "war_current_pace": wh.get("war_current_pace"),
+                    "war_trend": wh.get("war_trend"),
+                    "war_years": wh.get("war_years", 0),
                     # Spotrac contract overlay (most recent ingested season)
                     "spotrac_season": spotrac_by_id.get(person_id, {}).get("spotrac_season"),
                     "contract_status": spotrac_by_id.get(person_id, {}).get("contract_status"),
