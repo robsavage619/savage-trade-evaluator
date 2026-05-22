@@ -1,0 +1,183 @@
+{
+  "team": "MIL",
+  "context": {
+    "standingsLine": "29-18 (0.617), 0.0 GB \u00b7 NL Central",
+    "windowPosture": "buy",
+    "postureRationale": "In the hunt (0.0 GB, 0.617) \u2014 marginal wins are high-leverage.",
+    "citation": {
+      "label": "Click & Keri \u00b7 BBtN \u00b7 ch9 (Beane playoffs)",
+      "detail": "Contention-window framing: marginal win value spikes near a playoff berth."
+    },
+    "payroll": {
+      "committed": 122896126,
+      "cbtThreshold": 244000000,
+      "headroom": 121103874
+    },
+    "expiringContracts": [
+      {
+        "player": "Christian Yelich",
+        "position": "LF",
+        "capHit": 24032605,
+        "status": "Veteran"
+      },
+      {
+        "player": "Brandon Woodruff",
+        "position": "SP",
+        "capHit": 22025000,
+        "status": "Veteran"
+      },
+      {
+        "player": "Brandon Woodruff",
+        "position": "SP",
+        "capHit": 10000000,
+        "status": ""
+      },
+      {
+        "player": "William Contreras",
+        "position": "C",
+        "capHit": 9400000,
+        "status": "Arbitration 2"
+      },
+      {
+        "player": "Andrew Vaughn",
+        "position": "1B",
+        "capHit": 7650000,
+        "status": "Arbitration 3"
+      },
+      {
+        "player": "Jackson Chourio",
+        "position": "LF",
+        "capHit": 7250000,
+        "status": "Pre-Arbitration Bypassed"
+      }
+    ],
+    "blend": {
+      "w2026": 0.433,
+      "w2025": 0.567,
+      "citation": {
+        "label": "McElreath \u00b7 Statistical Rethinking \u00b7 ch12-13",
+        "detail": "Partial pooling: small 2026 samples shrunk toward the 2025 full-season prior."
+      }
+    }
+  },
+  "holes": [
+    {
+      "position": "SS",
+      "rosteredWar": 0.65,
+      "farmWar": 0.22,
+      "replacementBaseline": 2.5,
+      "holeScore": 1.63,
+      "severity": "critical",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      }
+    },
+    {
+      "position": "3B",
+      "rosteredWar": 0.87,
+      "farmWar": 0.13,
+      "replacementBaseline": 2.5,
+      "holeScore": 1.5,
+      "severity": "critical",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      }
+    },
+    {
+      "position": "CF",
+      "rosteredWar": 0.2,
+      "farmWar": 1.2,
+      "replacementBaseline": 2.5,
+      "holeScore": 1.1,
+      "severity": "warning",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      }
+    },
+    {
+      "position": "SP",
+      "rosteredWar": 10.23,
+      "farmWar": 0.79,
+      "replacementBaseline": 12.0,
+      "holeScore": 0.98,
+      "severity": "ok",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      }
+    }
+  ],
+  "surpluses": [
+    {
+      "position": "RP",
+      "rosteredWar": 8.69,
+      "farmWar": 1.51,
+      "replacementBaseline": 4.0,
+      "holeScore": -6.2,
+      "severity": "ok",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      },
+      "surplus": 6.2
+    },
+    {
+      "position": "2B",
+      "rosteredWar": 6.2,
+      "farmWar": 0.07,
+      "replacementBaseline": 2.0,
+      "holeScore": -4.27,
+      "severity": "ok",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      },
+      "surplus": 4.27
+    },
+    {
+      "position": "C",
+      "rosteredWar": 3.53,
+      "farmWar": 1.95,
+      "replacementBaseline": 2.0,
+      "holeScore": -3.48,
+      "severity": "ok",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      },
+      "surplus": 3.48
+    },
+    {
+      "position": "LF",
+      "rosteredWar": 2.87,
+      "farmWar": 1.2,
+      "replacementBaseline": 2.0,
+      "holeScore": -2.07,
+      "severity": "ok",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      },
+      "surplus": 2.07
+    },
+    {
+      "position": "DH",
+      "rosteredWar": 2.81,
+      "farmWar": 0.0,
+      "replacementBaseline": 1.5,
+      "holeScore": -1.31,
+      "severity": "ok",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      },
+      "surplus": 1.31
+    }
+  ],
+  "buyLow": [],
+  "scenarios": [],
+  "lenses": []
+}
