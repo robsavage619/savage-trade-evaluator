@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import logging
-
-import typer
-
 import webbrowser
 from pathlib import Path
+
+import typer
 
 from savage_trade_evaluator.analysis import backtest, trade_summary
 from savage_trade_evaluator.config import (
@@ -42,15 +42,19 @@ analyze_app = typer.Typer(no_args_is_help=True, help="Read-only analysis helpers
 backtest_app = typer.Typer(
     no_args_is_help=True, help="Backtest harness — run models over historical trades."
 )
-v2_app = typer.Typer(no_args_is_help=True, help="V2 multilevel-model commands (deprecated — see R-33/34/35).")
+v2_app = typer.Typer(
+    no_args_is_help=True, help="V2 multilevel-model commands (deprecated — see R-33/34/35)."
+)
 v3_app = typer.Typer(no_args_is_help=True, help="V3 single-level Bayesian regression (current).")
 report_app = typer.Typer(no_args_is_help=True, help="Generate HTML research reports.")
+brief_app = typer.Typer(no_args_is_help=True, help="War Room AI brief persistence + export.")
 app.add_typer(ingest_app, name="ingest")
 app.add_typer(analyze_app, name="analyze")
 app.add_typer(backtest_app, name="backtest")
 app.add_typer(v2_app, name="v2")
 app.add_typer(v3_app, name="v3")
 app.add_typer(report_app, name="report")
+app.add_typer(brief_app, name="brief")
 
 V2_OUTCOMES: tuple[str, ...] = ("xwoba_delta", "kpct_delta", "war_delta", "dollar_surplus")
 
@@ -67,6 +71,41 @@ def init() -> None:
         trade_views.create_all(conn)
         outcome_views.create_all(conn)
     typer.echo("schema initialized")
+
+
+@brief_app.command("ingest")
+def brief_ingest(
+    team: str = typer.Argument(..., help="Team code, e.g. NYM."),
+    file: Path = typer.Option(..., "--file", "-f", help="Path to the brief JSON."),
+    model: str | None = typer.Option(None, "--model", help="Model that generated it."),
+    source: str = typer.Option("skill", "--source", help="Origin: skill | app | manual."),
+) -> None:
+    """Persist a generated brief into DuckDB and write the frontend inbox file."""
+    configure_logging()
+    from savage_trade_evaluator.warroom import briefs
+
+    brief = json.loads(file.read_text())
+    out = briefs.save_brief(team, brief, model=model, source=source)
+    typer.echo(f"brief ingested for {team.upper()} -> DuckDB war_room_briefs + {out}")
+
+
+@brief_app.command("export")
+def brief_export(
+    team: str | None = typer.Option(None, "--team", help="Team code to export."),
+    all_teams: bool = typer.Option(False, "--all", help="Export the latest brief for every team."),
+) -> None:
+    """Re-emit stored brief(s) from DuckDB to the frontend inbox."""
+    configure_logging()
+    from savage_trade_evaluator.warroom import briefs
+
+    if all_teams:
+        count = briefs.export_all()
+        typer.echo(f"exported {count} brief(s)")
+    elif team:
+        ok = briefs.export_brief(team)
+        typer.echo("exported" if ok else f"no stored brief for {team.upper()}")
+    else:
+        raise typer.BadParameter("provide --team CODE or --all")
 
 
 @app.command(name="catalog")
@@ -800,7 +839,9 @@ def v3_fit(
     configure_logging()
     _v2_validate_outcome(outcome)
     result = v3_module.backtest_outcome_v3(
-        outcome=outcome, train_end_season=train_end, test_end_season=test_end,
+        outcome=outcome,
+        train_end_season=train_end,
+        test_end_season=test_end,
     )
     v3_module.print_backtest_report(result)
 
@@ -827,7 +868,9 @@ def v3_backtest_all(
         typer.echo("#" * 88)
         try:
             result = v3_module.backtest_outcome_v3(
-                outcome=o, train_end_season=train_end, test_end_season=test_end,
+                outcome=o,
+                train_end_season=train_end,
+                test_end_season=test_end,
             )
         except ValueError as e:
             typer.echo(f"  SKIPPED: {e}")
@@ -851,14 +894,18 @@ def v3_backtest_all(
 
 # ── Report commands ──────────────────────────────────────────────────────────
 
+
 @report_app.command("findings")
 def report_findings(
     out: Path = typer.Option(Path("trade-eval-findings.html"), "--out", help="Output HTML path."),
-    open_browser: bool = typer.Option(True, "--open/--no-open", help="Open in browser after generating."),
+    open_browser: bool = typer.Option(
+        True, "--open/--no-open", help="Open in browser after generating."
+    ),
 ) -> None:
     """Generate the research findings HTML report (org quality map + sell-high + methodology)."""
     configure_logging()
     from savage_trade_evaluator.reports import builder
+
     typer.echo("building findings report…")
     path = builder.build_findings_report(out)
     typer.echo(f"wrote {path}")
@@ -870,7 +917,9 @@ def report_findings(
 def report_backtest(
     outcome: str = typer.Option("all", "--outcome", help="'all' or a specific outcome name."),
     out: Path = typer.Option(Path("trade-eval-backtest.html"), "--out", help="Output HTML path."),
-    open_browser: bool = typer.Option(True, "--open/--no-open", help="Open in browser after generating."),
+    open_browser: bool = typer.Option(
+        True, "--open/--no-open", help="Open in browser after generating."
+    ),
     train_end: int = typer.Option(2020, "--train-end", help="Last training season."),
     test_end: int = typer.Option(2024, "--test-end", help="Last test season."),
 ) -> None:
@@ -882,8 +931,11 @@ def report_backtest(
         _v2_validate_outcome(outcome)
         outcomes = [outcome]
     from savage_trade_evaluator.reports import builder
+
     typer.echo(f"building backtest report for {outcomes}…")
-    path = builder.build_backtest_report(outcomes=outcomes, out_path=out, train_end=train_end, test_end=test_end)
+    path = builder.build_backtest_report(
+        outcomes=outcomes, out_path=out, train_end=train_end, test_end=test_end
+    )
     typer.echo(f"wrote {path}")
     if open_browser:
         webbrowser.open(path.resolve().as_uri())

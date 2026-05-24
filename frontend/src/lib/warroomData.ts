@@ -12,3 +12,13 @@ export async function loadTeamPayload(bref: string): Promise<TeamPayload | null>
   const mod = await loader()
   return mod.default
 }
+
+export async function loadAllTeamPayloads(): Promise<Record<string, TeamPayload>> {
+  const entries = await Promise.all(
+    warRoomIndex.teams.map(async (t) => {
+      const payload = await loadTeamPayload(t.code)
+      return [t.code, payload] as const
+    }),
+  )
+  return Object.fromEntries(entries.filter(([, v]) => v !== null)) as Record<string, TeamPayload>
+}

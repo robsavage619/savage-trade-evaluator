@@ -13,6 +13,7 @@ import { TeamLogo } from '../components/TeamLogo'
 import { computeVerdict, type Verdict } from '../lib/hypothetical'
 import { composeHypotheticalPrompt } from '../lib/composeHypothetical'
 import { fmtSigned, fmtMoney } from '../lib/format'
+import { forecastArb, isControlled } from '../lib/arbForecast'
 import { useReasoningStore, parseReasoningResponse } from '../lib/reasoningStore'
 import { AnimatePresence } from 'framer-motion'
 import { X, Copy, ClipboardCheck, AlertCircle, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react'
@@ -60,6 +61,10 @@ function TradeComparison({
     const salaryPct = Math.max(0, Math.min(1, salary / maxSalary))
     const barColor = side === 'received' ? 'bg-positive-500/70' : 'bg-negative-500/50'
     const salaryBarColor = side === 'received' ? 'bg-baseline-500/50' : 'bg-ink-500/60'
+    const arb = forecastArb(player.contract_status, player.last_war, player.cap_hit)
+    const showRamp = isControlled(arb.currentClass)
+    const rampColor = side === 'received' ? 'bg-positive-500' : 'bg-ink-400'
+    const maxRamp = Math.max(...arb.projections, salary)
     return (
       <div className="rounded-md border border-ink-700 bg-ink-800/40 px-3 py-2.5">
         <div className="mb-1.5 flex items-center justify-between gap-2">
@@ -68,6 +73,11 @@ function TradeComparison({
             {player.position_abbr && (
               <span className="shrink-0 rounded bg-ink-700 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-ink-300">
                 {player.position_abbr}
+              </span>
+            )}
+            {showRamp && (
+              <span className="shrink-0 rounded bg-accent-500/15 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-accent-400">
+                {arb.currentClass === 'pre-arb' ? 'Pre-Arb' : arb.currentClass.toUpperCase()} · {arb.yearsControlled}yr ctrl
               </span>
             )}
           </div>
@@ -86,6 +96,30 @@ function TradeComparison({
           </div>
           <span className="mono shrink-0 text-[10px] text-ink-400">{fmtMoney(salary)}</span>
         </div>
+        {/* Arb salary ramp (only for cost-controlled players) */}
+        {showRamp && (
+          <div className="mt-2 border-t border-ink-700/50 pt-2">
+            <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-500">Projected arb cost ramp</div>
+            <div className="flex gap-2">
+              {arb.projections.map((proj, i) => {
+                const pct = Math.max(0.04, proj / maxRamp)
+                const label = ['Yr+1', 'Yr+2', 'Yr+3'][i]
+                return (
+                  <div key={i} className="flex flex-1 flex-col items-center gap-0.5">
+                    <div className="flex w-full flex-col justify-end" style={{ height: 20 }}>
+                      <div
+                        className={`w-full rounded-sm ${rampColor} opacity-60`}
+                        style={{ height: `${pct * 100}%`, minHeight: 3 }}
+                      />
+                    </div>
+                    <span className="mono text-[8px] text-ink-500">{label}</span>
+                    <span className="mono text-[9px] font-medium text-ink-300">{fmtMoney(proj)}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -325,6 +359,14 @@ export default function TradeBuilder() {
           const dollarPerWarSent = rawWarSent > 0 ? verdict.costSent / rawWarSent / 1_000_000 : null
           const dollarPerWarReceived = rawWarReceived > 0 ? verdict.costReceived / rawWarReceived / 1_000_000 : null
           const salaryDelta = verdict.costReceived - verdict.costSent
+          const receivedArbTotal = receivingPlayers.reduce((acc, p) => {
+            const a = forecastArb(p.contract_status, p.last_war, p.cap_hit)
+            return acc + (isControlled(a.currentClass) ? a.totalCost3yr : 0)
+          }, 0)
+          const sentArbTotal = sendingPlayers.reduce((acc, p) => {
+            const a = forecastArb(p.contract_status, p.last_war, p.cap_hit)
+            return acc + (isControlled(a.currentClass) ? a.totalCost3yr : 0)
+          }, 0)
           return (
             <>
               {/* GM Signal Banner */}
@@ -355,6 +397,7 @@ export default function TradeBuilder() {
                   <Stat label="Salary Δ" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(verdict.costReceived)} · Out ${fmtMoney(verdict.costSent)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
                   {dollarPerWarSent != null && <Stat label="$/WAR out" value={`$${dollarPerWarSent.toFixed(1)}M`} sub="cost/WAR of players sent" tone="neutral" />}
                   {dollarPerWarReceived != null && <Stat label="$/WAR in" value={`$${dollarPerWarReceived.toFixed(1)}M`} sub={dollarPerWarReceived < 9 ? 'below market ~$9M ✓' : 'above market ~$9M'} tone={dollarPerWarReceived < 9 ? 'pos' : 'neg'} />}
+                  {receivedArbTotal > 0 && <Stat label="3yr arb cost (in)" value={fmtMoney(receivedArbTotal)} sub={sentArbTotal > 0 ? `vs ${fmtMoney(sentArbTotal)} out` : 'proj. controlled cost'} tone={receivedArbTotal < sentArbTotal || sentArbTotal === 0 ? 'pos' : 'neutral'} />}
                 </div>
                 <div className="w-full pt-1 md:w-[420px]">
                   <PosteriorViolin

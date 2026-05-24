@@ -15,13 +15,24 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 24
+SCHEMA_VERSION = 25
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE TABLE IF NOT EXISTS schema_version (
         version INTEGER NOT NULL,
         applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS war_room_briefs (
+        team VARCHAR NOT NULL,
+        as_of DATE NOT NULL,
+        generated_at TIMESTAMP NOT NULL,
+        model VARCHAR,
+        source VARCHAR,
+        brief_json JSON NOT NULL,
+        PRIMARY KEY (team, as_of)
     )
     """,
     """
