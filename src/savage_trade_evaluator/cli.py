@@ -48,6 +48,9 @@ v2_app = typer.Typer(
 v3_app = typer.Typer(no_args_is_help=True, help="V3 single-level Bayesian regression (current).")
 report_app = typer.Typer(no_args_is_help=True, help="Generate HTML research reports.")
 brief_app = typer.Typer(no_args_is_help=True, help="War Room AI brief persistence + export.")
+research_app = typer.Typer(
+    no_args_is_help=True, help="RAG over the research corpus (vector retrieval + grounded answers)."
+)
 app.add_typer(ingest_app, name="ingest")
 app.add_typer(analyze_app, name="analyze")
 app.add_typer(backtest_app, name="backtest")
@@ -55,6 +58,7 @@ app.add_typer(v2_app, name="v2")
 app.add_typer(v3_app, name="v3")
 app.add_typer(report_app, name="report")
 app.add_typer(brief_app, name="brief")
+app.add_typer(research_app, name="research")
 
 V2_OUTCOMES: tuple[str, ...] = ("xwoba_delta", "kpct_delta", "war_delta", "dollar_surplus")
 
@@ -923,7 +927,7 @@ def report_backtest(
     train_end: int = typer.Option(2020, "--train-end", help="Last training season."),
     test_end: int = typer.Option(2024, "--test-end", help="Last test season."),
 ) -> None:
-    """Fit V3 across outcomes and generate a calibration + feature-credibility HTML report (slow — runs MCMC)."""
+    """Fit V3 across outcomes; emit a calibration + feature-credibility report (slow — MCMC)."""
     configure_logging()
     if outcome == "all":
         outcomes: list[str] = list(V2_OUTCOMES)
@@ -939,3 +943,42 @@ def report_backtest(
     typer.echo(f"wrote {path}")
     if open_browser:
         webbrowser.open(path.resolve().as_uri())
+
+
+@research_app.command(name="index")
+def research_index() -> None:
+    """Build the vector index over the research corpus (RESEARCH_LOG + docs)."""
+    configure_logging()
+    from savage_trade_evaluator.rag import store
+    from savage_trade_evaluator.rag.embed import Model2VecEmbedder
+
+    typer.echo("loading embedder…")
+    embedder = Model2VecEmbedder()
+    typer.echo("chunking + embedding corpus…")
+    n = store.build_index(embedder)
+    typer.echo(f"indexed {n} chunks → {store.RAG_DB_PATH}")
+
+
+@research_app.command(name="ask")
+def research_ask(
+    question: str = typer.Argument(..., help="Natural-language question about the project."),
+    k: int = typer.Option(5, "--k", help="Number of passages to retrieve."),
+) -> None:
+    """Retrieve the most relevant passages and synthesise a grounded, cited answer.
+
+    Retrieval always runs first. If ANTHROPIC_API_KEY is set, Claude synthesises
+    a cited answer from the retrieved passages; otherwise the ranked passages are
+    printed directly. The model never answers without retrieved context.
+    """
+    configure_logging()
+    from savage_trade_evaluator.rag import answer, store
+    from savage_trade_evaluator.rag.embed import Model2VecEmbedder
+
+    embedder = Model2VecEmbedder()
+    hits = store.search(embedder, question, k=k)
+    result = answer.synthesise(question, hits)
+    typer.echo(result.text)
+    if result.generated:
+        typer.echo("\nsources:")
+        for i, h in enumerate(hits, start=1):
+            typer.echo(f"  [{i}] {h.source} > {h.heading}  ({h.score:.3f})")

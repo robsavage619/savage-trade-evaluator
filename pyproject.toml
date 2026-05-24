@@ -22,6 +22,11 @@ dependencies = [
     "typer>=0.12",
 ]
 
+[project.optional-dependencies]
+# RAG over the research corpus. model2vec gives real static embeddings with no
+# torch and no API key, so `ste research index/ask` runs cold after one clone.
+rag = ["model2vec>=0.3"]
+
 [dependency-groups]
 dev = [
     "pyright>=1.1.380",

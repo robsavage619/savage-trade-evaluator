@@ -133,6 +133,41 @@ Five methodology corrections (rate-based outcomes over WAR for research; cluster
 
 ---
 
+## AI engineering — retrieval, agents, and grounding
+
+> *Two production-shaped AI surfaces, both built on one discipline: **retrieve before you generate**, and never let the model be the source of a fact.*
+
+### 1. RAG over the project's own research corpus
+
+A full retrieval-augmented-generation pipeline — **ingest → chunk → embed → index → retrieve → generate** — over the 35-round research log and design docs. Ask a natural-language question; get a grounded, cited answer.
+
+```bash
+uv sync --extra rag
+uv run ste research index                       # chunk + embed + build the vector index
+uv run ste research ask "Was the system-tax thesis confirmed or rejected?"
+```
+
+| Stage | Implementation |
+|---|---|
+| **Ingest + chunk** | Heading-aware markdown sectioning with word-windowed overlap, preserving a citable heading trail — [`rag/corpus.py`](src/savage_trade_evaluator/rag/corpus.py) |
+| **Embed** | `model2vec` static embeddings (256-dim, CPU-only, no API key) behind a swappable `Embedder` protocol — [`rag/embed.py`](src/savage_trade_evaluator/rag/embed.py) |
+| **Index + retrieve** | **DuckDB `vss` HNSW** vector index, cosine ranking, model-version pinned to the index — [`rag/store.py`](src/savage_trade_evaluator/rag/store.py) |
+| **Generate** | Grounded synthesis with inline `[n]` citations; **retrieval-only fallback** when no LLM key is set, so the model never answers without retrieved context — [`rag/answer.py`](src/savage_trade_evaluator/rag/answer.py) |
+
+The whole thing runs cold after one clone — no key, no GPU. The HNSW choice mirrors how vector search is done at scale (e.g. Databricks Vector Search); here it stays DuckDB-native to match the rest of the stack.
+
+### 2. Agentic, structured-output report generation
+
+The War Room's **AI Intelligence Brief** is an agentic workflow: it reads a club's live roster, payroll, and need model, then emits a **strict structured-JSON** GM brief (executive summary → highest-leverage move → ranked recommendations → trade packages with two-sided surplus accounting → counterparty leverage → risk radar). The frontend renders that JSON directly — see [`analysisPrompt.ts`](frontend/src/lib/analysisPrompt.ts), [`IntelligenceReport.tsx`](frontend/src/components/IntelligenceReport.tsx).
+
+Delivery is an **MCP-style connector**: a skill generates the brief and drops a JSON file into a watched inbox (`frontend/public/brief-inbox/<TEAM>.json`) that the app picks up automatically — tool-mediated, file-boundary integration rather than a hardcoded API call. The Python side persists and re-exports briefs via [`warroom/briefs.py`](src/savage_trade_evaluator/warroom/briefs.py) (`ste brief ingest` / `ste brief export`).
+
+### Grounding discipline
+
+Both surfaces follow the same rule the rest of the pipeline does: **outputs carry provenance, generation is gated on retrieval, and the schema is enforced.** It's the public, runnable version of the retrieve-before-generate / structured-output / guardrailed-agent patterns this kind of work demands in production.
+
+---
+
 ## The data layer
 
 **29 tables · 1.29M+ rows · DuckDB · schema v25**
