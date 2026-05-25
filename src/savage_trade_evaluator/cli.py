@@ -245,17 +245,17 @@ def ingest_front_office(
 @ingest_app.command("prospects")
 def ingest_prospects(
     year: int | None = typer.Option(None, help="Single year to ingest."),
-    start: int = typer.Option(2018, help="First year (MLB Pipeline coverage starts ~2018)."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+    start: int = typer.Option(2017, help="First year of FanGraphs The Board cache."),
+    end: int = typer.Option(2024, help="Last year."),
 ) -> None:
-    """Scrape MLB Pipeline top-100 prospect rankings per year."""
+    """Load FanGraphs The Board FV grades from data/prospect_fv_cache/ CSVs."""
     configure_logging()
     if year is not None:
         n = prospects.ingest_year(year)
-        typer.echo(f"ingested {n} prospects for {year}")
+        typer.echo(f"ingested {n} prospect FV rows for {year}")
     else:
         n = prospects.ingest_range(start, end)
-        typer.echo(f"ingested {n} prospects across {end - start + 1} year(s)")
+        typer.echo(f"ingested {n} prospect FV rows across {end - start + 1} year(s)")
 
 
 @ingest_app.command("game-logs")

@@ -18,6 +18,11 @@ export type ModelCard = {
   season: number
   role: 'covered' | 'tail_miss'
   acquired_players: string[]
+  // wins headline (surplus_wins)
+  wins_posterior: PosteriorSummary | null
+  wins_realized: number | null
+  wins_realized_in_90ci: boolean | null
+  // dollar anchor (dollar_surplus)
   posterior: PosteriorSummary
   realized: number
   realized_in_90ci: boolean
@@ -29,6 +34,9 @@ export type ModelScoreboard = {
   crps: number
   coverage_90: number
   mae: number
+  wins_crps: number
+  wins_coverage_90: number
+  wins_mae: number
 }
 
 export type CredibleFeature = {
@@ -59,11 +67,14 @@ export type ModelComparison = {
 export type ModelPosteriors = {
   generated_at: string
   outcome: string
+  wins_outcome: string
   unit: string
+  wins_unit: string
   train_window: [number, number]
   test_window: [number, number]
   scoreboard: ModelScoreboard
   comparison: ModelComparison
+  wins_comparison: ModelComparison
   credible_features: CredibleFeature[]
   cards: ModelCard[]
 }
@@ -72,14 +83,22 @@ export const modelPosteriors = raw as ModelPosteriors
 
 /** Human-readable feature labels for the "what the model weighted" panel. */
 export const FEATURE_LABELS: Record<string, string> = {
-  receiver_acquired_player_quality: 'Acquired player quality (prior-season WAR)',
-  receiver_pct_international_born: 'Acquired share internationally-born',
-  receiver_acquired_milb_hit_quality: 'Acquired hitters’ minor-league quality',
-  receiver_acquired_player_avg_war_trajectory: 'Acquired player WAR trend',
-  receiver_acquired_pct_awarded: 'Acquired share with prior awards',
-  receiver_acquired_milb_age_advantage: 'Acquired players young for their level',
-  receiver_dev_fit_hitting: 'Receiving team’s hitter-development track record',
-  receiver_org_pitcher_k_jump_3yr: 'Receiving team’s pitcher strikeout gains (3yr)',
+  // V3 credible features (directional mass >= 0.95)
+  receiver_acquired_player_quality: "Acquired player quality (prior-season WAR)",
+  receiver_pct_pitchers: "Acquired share who are pitchers",
+  receiver_avg_age_at_trade: "Average age of acquired players at trade",
+  receiver_acquired_from_dev_cluster_score: "Origin org development quality",
+  receiver_acquired_pitcher_k_trajectory: "Acquired pitcher strikeout trend",
+  receiver_dev_fit_hitting: "Receiving team hitter-development track record",
+  // Other features that may appear
+  receiver_pct_international_born: "Acquired share internationally-born",
+  receiver_acquired_milb_hit_quality: "Acquired hitters minor-league quality",
+  receiver_acquired_player_avg_war_trajectory: "Acquired player WAR trend",
+  receiver_acquired_pct_awarded: "Acquired share with prior awards",
+  receiver_acquired_milb_age_advantage: "Acquired players young for their level",
+  receiver_org_pitcher_k_jump_3yr: "Receiving team pitcher strikeout gains (3yr)",
+  receiver_acquired_avg_fv: "Acquired prospect avg FV grade (FanGraphs)",
+  receiver_acquired_max_fv: "Top acquired prospect FV grade (FanGraphs)",
 }
 
 export function featureLabel(feature: string): string {
@@ -90,6 +109,15 @@ export function featureLabel(feature: string): string {
 export type TradePosterior = {
   season: number
   split: 'in_sample' | 'held_out'
+  // wins headline (surplus_wins)
+  wins_mean: number | null
+  wins_sd: number | null
+  wins_p05: number | null
+  wins_p50: number | null
+  wins_p95: number | null
+  wins_realized: number | null
+  wins_realized_in_90ci: boolean | null
+  // dollar anchor (dollar_surplus)
   mean: number
   sd: number
   p05: number

@@ -571,17 +571,20 @@ CATALOG: tuple[StatSource, ...] = (
         name="fangraphs-prospects",
         source="fangraphs",
         granularity="player-season",
-        era_start=2014,
-        era_end=None,
-        fetcher="fangraphs (Playwright)",
-        primary_columns=("FV", "Risk", "ETA", "tool_grades"),
-        target_table=None,
-        ingested=False,
-        blocked=True,
+        era_start=2017,
+        era_end=2024,
+        fetcher="savage_trade_evaluator.ingest.prospects.ingest_range",
+        primary_columns=("fv", "risk", "eta", "fangraphs_player_id"),
+        target_table="prospect_rankings",
+        ingested=True,
+        blocked=False,
         notes=(
-            "Prospect FV grades and tool grades - load-bearing for the "
-            "prospect-valuation layer. FG is the canonical public source. "
-            "Will need Playwright scraping when Phase 2 prospect work begins."
+            "FanGraphs The Board preseason top-100 FV grades (2017-2024). "
+            "Accessible without login via Firecrawl stealth proxy. "
+            "Scraped once with scripts/parse_fg_prospects.py → cached to "
+            "data/prospect_fv_cache/fangraphs_{year}.csv. Joined to trades "
+            "via normalized player-name match in trade_acquired_prospect_fv "
+            "view. Features: receiver_acquired_avg_fv, receiver_acquired_max_fv."
         ),
     ),
     StatSource(

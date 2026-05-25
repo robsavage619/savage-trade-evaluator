@@ -36,6 +36,10 @@ ACQUIRED_PLAYER_FEATURES: tuple[str, ...] = (
     "receiver_acquired_milb_hit_quality",
     "receiver_acquired_milb_pitch_quality",
     "receiver_acquired_milb_age_advantage",
+    # FanGraphs The Board FV grades (2017-2024, trade_acquired_prospect_fv view).
+    # NULL when no listed prospect in the trade (pre-2017 or no board match).
+    "receiver_acquired_avg_fv",
+    "receiver_acquired_max_fv",
     # receiver_acquired_origin_ytd_war: D-42 (R-61) — NULL (avg mass 72-75%); collinear
     # with acquired_player_quality; bWAR stint is annual, not date-stamped. Dropped.
     # receiver_acquired_war_acceleration: D-44 (R-63) — NULL (avg mass 53-57%); collinear
@@ -131,6 +135,9 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 tamq.receiver_acquired_milb_hit_quality,
                 tamq.receiver_acquired_milb_pitch_quality,
                 tamq.receiver_acquired_milb_age_advantage,
+                -- FanGraphs The Board FV grades (2017-2024)
+                tapf.receiver_acquired_avg_fv,
+                tapf.receiver_acquired_max_fv,
                 -- D-42 (R-61): origin-team year-to-date WAR at trade time
                 oyw.receiver_acquired_origin_ytd_war,
                 -- D-44 (R-63): WAR trajectory second derivative (acceleration)
@@ -167,6 +174,9 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
             LEFT JOIN trade_acquired_milb_quality tamq
                 ON tamq.trade_event_id = twc.trade_event_id
                 AND tamq.receiver_bref = twc.receiver_bref
+            LEFT JOIN trade_acquired_prospect_fv tapf
+                ON tapf.trade_event_id = twc.trade_event_id
+                AND tapf.receiver_bref  = twc.receiver_bref
             LEFT JOIN (
                 -- Resolve origin team per (trade_event_id, receiver_bref): the
                 -- primary team giving players TO the receiver. In multi-team trades

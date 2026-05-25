@@ -1,0 +1,51 @@
+rank_year,rank,player_name,player_name_norm,fangraphs_player_id,org,position,level,fv,risk,eta
+2018,1,Shohei Ohtani,shohei ohtani,19755,LAA,RHP,MLB,70,Low,2018
+2018,2,Ronald Acuña Jr.,ronald acuna jr,18401,ATL,CF,MLB,65,Low,2018
+2018,3,Vladimir Guerrero Jr.,vladimir guerrero jr,19611,TOR,1B,MLB,65,Low,2019
+2018,4,Victor Robles,victor robles,18363,WSN,CF,MLB,65,Low,2018
+2018,5,Fernando Tatis Jr.,fernando tatis jr,19709,SDP,3B,MLB,65,Medium,2019
+2018,6,Eloy Jiménez,eloy jimenez,17484,CHW,RF,,65,Medium,2019
+2018,7,Nick Senzel,nick senzel,19293,CIN,3B,,60,Low,2018
+2018,8,Forrest Whitley,forrest whitley,19586,HOU,RHP,,60,Medium,2018
+2018,9,Bo Bichette,bo bichette,19612,TOR,2B,MLB,60,Medium,2019
+2018,10,Kyle Tucker,kyle tucker,18345,HOU,RF,MLB,60,Low,2019
+2018,11,Willy Adames,willy adames,15986,TBR,SS,MLB,60,Low,2018
+2018,12,Gleyber Torres,gleyber torres,16997,NYY,SS,MLB,60,Low,2018
+2018,13,Lewis Brinson,lewis brinson,14352,MIA,CF,AAA,60,Medium,2018
+2018,14,Miguel Andujar,miguel andujar,15878,NYY,3B,MLB,60,Medium,2018
+2018,15,Brent Honeywell,brent honeywell,16466,TBR,RHP,,60,Low,2018
+2018,16,Alex Reyes,alex reyes,15015,STL,RHP,,60,Medium,2018
+2018,17,Francisco Mejía,francisco mejia,16403,CLE,C/3B,AAA,60,High,2019
+2018,18,Brendan Rodgers,brendan rodgers,17907,COL,SS,AAA,60,Medium,2019
+2018,19,Sixto Sánchez,sixto sanchez,19680,PHI,RHP,AAA,60,Medium,2020
+2018,20,Michael Kopech,michael kopech,17282,CHW,RHP,,60,Medium,2019
+2018,21,Luis Robert Jr.,luis robert jr,20043,CHW,CF,MLB,60,High,2020
+2018,22,Brendan McKay,brendan mckay,20186,TBR,LHP/1B,,60,Medium,2019
+2018,23,Mitch Keller,mitch keller,17594,PIT,RHP,MLB,60,Medium,2019
+2018,24,Keston Hiura,keston hiura,20003,MIL,2B,,55,Medium,2019
+2018,25,Scott Kingery,scott kingery,17975,PHI,2B,AAA,55,Low,2018
+2018,26,Kyle Wright,kyle wright,sa293098,ATL,RHP,,55,Medium,2018
+2018,27,Walker Buehler,walker buehler,19374,LAD,RHP,MLB,55,Medium,2018
+2018,28,Luis Urías,luis urias,16622,SDP,2B,AAA,55,Low,2018
+2018,29,J.P. Crawford,jp crawford,15491,PHI,SS,MLB,55,Low,2018
+2018,30,A.J. Puk,aj puk,19343,OAK,LHP,CPX,55,Medium,2018
+2018,31,Luiz Gohara,luiz gohara,15166,ATL,LHP,,55,Medium,2018
+2018,32,Franklin Barreto,franklin barreto,15519,OAK,CF,ST,55,Medium,2018
+2018,33,MacKenzie Gore,mackenzie gore,22201,SDP,LHP,MLB,55,Medium,2020
+2018,34,Michael Soroka,michael soroka,18383,ATL,RHP,MLB,55,Low,2018
+2018,35,Corbin Burnes,corbin burnes,19361,MIL,RHP,MLB,55,Medium,2019
+2018,36,Anthony Alford,anthony alford,14329,TOR,CF,AA,55,Medium,2018
+2018,37,Cristian Pache,cristian pache,19948,ATL,CF,AAA,55,High,2020
+2018,38,Royce Lewis,royce lewis,20437,MIN,CF,AAA,55,High,2020
+2018,39,Justus Sheffield,justus sheffield,17285,NYY,LHP,AAA,55,Low,2018
+2018,40,Carter Kieboom,carter kieboom,19958,WSN,3B,AAA,55,Medium,2021
+2018,41,Michel Baez,michel baez,20100,SDP,RHP,AAA,55,High,2020
+2018,42,Hunter Greene,hunter greene,22182,CIN,RHP,MLB,55,High,2021
+2018,43,Jake Bauers,jake bauers,15194,TBR,RF,MLB,50,Low,2018
+2018,44,Yordan Alvarez,yordan alvarez,19556,HOU,LF,MLB,50,Medium,2020
+2018,45,Ian Anderson,ian anderson,19951,ATL,RHP,,50,Medium,2020
+2018,46,Willie Calhoun,willie calhoun,17838,TEX,DH,,50,Low,2018
+2018,47,Austin Meadows,austin meadows,15672,PIT,OF,,50,Low,2018
+2018,48,Alex Verdugo,alex verdugo,17027,LAD,RF,,50,Low,2018
+2018,49,Jesús Sánchez,jesus sanchez,19913,TBR,RF,MLB,50,High,2020
+2018,50,Juan Soto,juan soto,20123,WSN,OF,MLB,50,Medium,2020

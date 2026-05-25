@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 25
+SCHEMA_VERSION = 26
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -315,25 +315,42 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE TABLE IF NOT EXISTS prospect_rankings (
-        rank_year INTEGER NOT NULL,
-        rank INTEGER NOT NULL,
-        mlb_player_id INTEGER NOT NULL,
-        player_name VARCHAR NOT NULL,
-        position VARCHAR,
-        team_id INTEGER,
-        team_name VARCHAR,
-        level VARCHAR,
-        age INTEGER,
-        source VARCHAR NOT NULL,
-        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (rank_year, mlb_player_id)
+        rank_year       INTEGER NOT NULL,
+        rank            INTEGER NOT NULL,
+        fangraphs_player_id VARCHAR NOT NULL,
+        player_name     VARCHAR NOT NULL,
+        player_name_norm VARCHAR NOT NULL,
+        org             VARCHAR,
+        position        VARCHAR,
+        level           VARCHAR,
+        fv              INTEGER,
+        risk            VARCHAR,
+        eta             INTEGER,
+        source          VARCHAR NOT NULL,
+        ingested_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (rank_year, fangraphs_player_id)
     )
     """,
     """
-    CREATE INDEX IF NOT EXISTS idx_prospects_player ON prospect_rankings(mlb_player_id)
+    CREATE INDEX IF NOT EXISTS idx_prospects_year ON prospect_rankings(rank_year)
     """,
     """
-    CREATE INDEX IF NOT EXISTS idx_prospects_year ON prospect_rankings(rank_year)
+    CREATE INDEX IF NOT EXISTS idx_prospects_norm ON prospect_rankings(player_name_norm)
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_prospect_fv AS
+    SELECT
+        tpu.trade_event_id,
+        tpu.to_team_bref                          AS receiver_bref,
+        AVG(COALESCE(pr.fv, 0))::DOUBLE           AS receiver_acquired_avg_fv,
+        MAX(COALESCE(pr.fv, 0))::INTEGER          AS receiver_acquired_max_fv
+    FROM trade_player_unified tpu
+    LEFT JOIN prospect_rankings pr
+        ON  pr.rank_year       = tpu.trade_season
+        AND pr.player_name_norm
+            = regexp_replace(lower(trim(tpu.player_name)), '[^a-z0-9 ]', '', 'g')
+    WHERE tpu.to_team_bref IS NOT NULL
+    GROUP BY tpu.trade_event_id, tpu.to_team_bref
     """,
     """
     CREATE TABLE IF NOT EXISTS draft_picks (
@@ -888,12 +905,31 @@ DDL_STATEMENTS: tuple[str, ...] = (
 )
 
 
+def _migrate_v25_to_v26(conn: duckdb.DuckDBPyConnection) -> None:
+    """Drop prospect_rankings if it has the v25 schema (missing fv column).
+
+    The table has always been empty so this is safe. The CREATE TABLE IF NOT
+    EXISTS in DDL_STATEMENTS will recreate it with the new schema.
+    """
+    cols = {
+        r[0]
+        for r in conn.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name = 'prospect_rankings'"
+        ).fetchall()
+    }
+    if cols and "fv" not in cols:
+        conn.execute("DROP TABLE IF EXISTS prospect_rankings")
+        logger.info("migration 25→26: dropped prospect_rankings for schema update")
+
+
 def initialize(conn: duckdb.DuckDBPyConnection) -> None:
     """Apply all DDL idempotently and record the schema version.
 
     Args:
         conn: An open DuckDB connection.
     """
+    _migrate_v25_to_v26(conn)
     for stmt in DDL_STATEMENTS:
         conn.execute(stmt)
 

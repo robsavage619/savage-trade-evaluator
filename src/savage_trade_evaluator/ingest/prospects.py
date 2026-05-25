@@ -1,163 +1,94 @@
-"""Ingest MLB Pipeline top-100 prospect rankings.
+"""Ingest FanGraphs The Board prospect FV grades from pre-scraped CSV cache.
 
-MLB.com (mlb.com/milb/prospects/<year>) publishes an annual top-100 prospect list.
-The data is server-rendered HTML in a clean `<table>` structure. Each row has
-the rank, the player's name and MLB Stats API player_id (extractable from the
-headshot URL), team_id (extractable from the team-logo URL), position, current
-level, and age.
+FanGraphs publishes an annual preseason top-100 prospect list ("The Board")
+with Future Value (FV) grades on the 20-80 scouting scale. The data is
+accessible without login via Firecrawl stealth proxy for 2017-2024 but
+there is no Python API key available for live scraping.
 
-**Notable absence:** MLB Pipeline does **not** publish FV grades. Only the rank.
-This is a coarse proxy — top-10 ranks roughly correspond to 55+ FV per industry
-norms; top-50 to ~50 FV; 50-100 to 45-50 FV. The rank itself is the feature.
+Workflow:
+  1. Scrape: run ``scripts/parse_fg_prospects.py`` to populate
+     ``data/prospect_fv_cache/fangraphs_{year}.csv`` (one-time).
+  2. Ingest: ``ste ingest prospects`` reads from that cache into
+     ``prospect_rankings``.
 
-FanGraphs prospect grades (which include FV + variance + tool grades) are
-Cloudflare-blocked. MLB Pipeline is the cleanest publicly-scrapeable substitute.
-
-Coverage probe confirmed pages 200 OK for 2018-2025.
+The view ``trade_acquired_prospect_fv`` (defined in schemas.py) joins these
+grades to ``trade_player_unified`` using a normalized-name match, and computes
+``receiver_acquired_avg_fv`` and ``receiver_acquired_max_fv`` per
+(trade_event_id, receiver_bref).
 """
-
-# pyright: reportAttributeAccessIssue=false, reportCallIssue=false
 
 from __future__ import annotations
 
 import logging
-import re
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import httpx
+import pandas as pd
 
-from savage_trade_evaluator.storage import db, schemas, teams
+from savage_trade_evaluator.storage import db, schemas
 
 if TYPE_CHECKING:
     import duckdb
 
 logger = logging.getLogger(__name__)
 
-SOURCE = "mlb-pipeline"
-HTTP_TIMEOUT_SECONDS = 30.0
-RATE_LIMIT_SECONDS = 2.0  # MLB.com is fast but polite
+SOURCE = "fangraphs-the-board"
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    ),
-    "Accept": "text/html,application/xhtml+xml",
-}
-
-
-# Each <tr> in the rankings table follows the pattern:
-#   <tr><td>RANK</td><td>...<a href="...stories/PLAYER-SLUG-PLAYER_ID">...</a>
-#       <div>NAME</div></td><td>POSITION</td>
-#       <td>...team-cap-on-light/TEAM_ID.svg...<div>TEAM_NAME</div></td>
-#       <td>...<div>LEVEL</div>...</td><td>AGE</td><td>BATS</td><td>...</td></tr>
-ROW_PATTERN = re.compile(
-    r"<tr[^>]*>\s*"
-    r"<td[^>]*>(\d+)</td>\s*"  # rank
-    r"<td[^>]*>.*?href=\"[^\"]*?/people/(\d+)/headshot[^\"]*\""  # player_id from headshot URL
-    r".*?<div[^>]*>([^<]+)</div>"  # player name in the inner <div>
-    r"\s*</td>\s*"
-    r"<td[^>]*>([^<]*)</td>\s*"  # position
-    r"<td[^>]*>.*?team-cap-on-light/(\d+)\.svg.*?<div[^>]*>([^<]+)</div>"  # team_id + name
-    r".*?</td>\s*"
-    r"<td[^>]*>.*?<div[^>]*>([^<]+)</div>"  # level
-    r".*?</td>\s*"
-    r"<td[^>]*>(\d+)</td>",  # age
-    re.DOTALL,
-)
-
-
-def fetch_year(year: int, client: httpx.Client | None = None) -> str:
-    """Fetch the raw HTML for one year's top-100 page."""
-    owns = client is None
-    client = client or httpx.Client(timeout=HTTP_TIMEOUT_SECONDS, headers=HEADERS)
-    try:
-        url = f"https://www.mlb.com/milb/prospects/{year}"
-        r = client.get(url, follow_redirects=True)
-        r.raise_for_status()
-        return r.text
-    finally:
-        if owns:
-            client.close()
-
-
-def parse_rankings(html: str, year: int) -> list[dict[str, Any]]:
-    """Extract (rank, player_id, name, position, team_id, team_name, level, age) rows."""
-    out: list[dict[str, Any]] = []
-    for match in ROW_PATTERN.finditer(html):
-        rank = int(match.group(1))
-        player_id = int(match.group(2))
-        name = match.group(3).strip()
-        position = match.group(4).strip()
-        team_id = int(match.group(5))
-        team_name = match.group(6).strip()
-        level = match.group(7).strip()
-        age = int(match.group(8))
-        out.append(
-            {
-                "rank_year": year,
-                "rank": rank,
-                "mlb_player_id": player_id,
-                "player_name": name,
-                "position": position,
-                "team_id": team_id,
-                "team_name": team_name,
-                "level": level,
-                "age": age,
-                "source": SOURCE,
-            }
-        )
-    return out
+DEFAULT_CACHE_DIR = Path(__file__).parent.parent.parent.parent / "data" / "prospect_fv_cache"
 
 
 def upsert(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> int:
-    """Insert prospect-rank rows; ignore PK conflicts."""
+    """Insert FV rows; ignore PK conflicts (rank_year, fangraphs_player_id)."""
     if not rows:
         return 0
-    import pandas as pd  # local
 
     df = pd.DataFrame(rows)
-    conn.register("_staging_prospects", df)
+    conn.register("_staging_fv", df)
     try:
         conn.execute(
-            "INSERT INTO prospect_rankings "
-            "(rank_year, rank, mlb_player_id, player_name, position, "
-            "team_id, team_name, level, age, source) "
-            "SELECT rank_year, rank, mlb_player_id, player_name, position, "
-            "team_id, team_name, level, age, source "
-            "FROM _staging_prospects "
-            "ON CONFLICT (rank_year, mlb_player_id) DO NOTHING"
+            """
+            INSERT INTO prospect_rankings
+                (rank_year, rank, fangraphs_player_id, player_name, player_name_norm,
+                 org, position, level, fv, risk, eta, source)
+            SELECT
+                rank_year, rank, fangraphs_player_id, player_name, player_name_norm,
+                org, position, level, fv, risk, eta, source
+            FROM _staging_fv
+            ON CONFLICT (rank_year, fangraphs_player_id) DO NOTHING
+            """
         )
     finally:
-        conn.unregister("_staging_prospects")
+        conn.unregister("_staging_fv")
     return len(rows)
 
 
-def ingest_year(year: int, client: httpx.Client | None = None) -> int:
-    """End-to-end: fetch + parse + store one year's top-100."""
-    html = fetch_year(year, client=client)
-    rows = parse_rankings(html, year)
-    if not rows:
-        logger.warning("no prospect rows parsed for %d", year)
+def ingest_year(year: int, cache_dir: Path | None = None) -> int:
+    """Load one year's FV grades from the CSV cache into prospect_rankings."""
+    cache_dir = cache_dir or DEFAULT_CACHE_DIR
+    csv_path = cache_dir / f"fangraphs_{year}.csv"
+    if not csv_path.exists():
+        logger.warning("FV cache missing for %d: %s", year, csv_path)
         return 0
+
+    df = pd.read_csv(csv_path, dtype={"fangraphs_player_id": str, "eta": "Int64"})
+    df["source"] = SOURCE
+    rows = df.to_dict(orient="records")
+
     with db.connect() as conn:
         schemas.initialize(conn)
-        teams.initialize(conn)
-        upsert(conn, rows)
-    logger.info("ingested %d prospect rows for year %d", len(rows), year)
-    return len(rows)
+        n = upsert(conn, rows)
+
+    logger.info("ingested %d FV rows for %d", n, year)
+    return n
 
 
-def ingest_range(start_year: int, end_year: int) -> int:
-    """Ingest a contiguous range of prospect-ranking years. Rate-limited politely."""
-    import time
-
+def ingest_range(
+    start_year: int = 2017,
+    end_year: int = 2024,
+    cache_dir: Path | None = None,
+) -> int:
+    """Load all cached FV grades for a range of years."""
     total = 0
-    with httpx.Client(timeout=HTTP_TIMEOUT_SECONDS, headers=HEADERS) as client:
-        for year in range(start_year, end_year + 1):
-            try:
-                total += ingest_year(year, client=client)
-            except httpx.HTTPError as exc:
-                logger.error("failed %d: %s", year, exc)
-            time.sleep(RATE_LIMIT_SECONDS)
+    for year in range(start_year, end_year + 1):
+        total += ingest_year(year, cache_dir=cache_dir)
     return total
