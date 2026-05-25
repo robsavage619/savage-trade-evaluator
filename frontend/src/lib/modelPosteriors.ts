@@ -72,14 +72,14 @@ export const modelPosteriors = raw as ModelPosteriors
 
 /** Human-readable feature labels for the "what the model weighted" panel. */
 export const FEATURE_LABELS: Record<string, string> = {
-  receiver_acquired_player_quality: 'Acquired-player quality (T-1 WAR tier)',
-  receiver_pct_international_born: 'Acquired share intl-born',
-  receiver_acquired_milb_hit_quality: 'Acquired MiLB hit quality',
-  receiver_acquired_player_avg_war_trajectory: 'Acquired WAR trajectory',
-  receiver_acquired_pct_awarded: 'Acquired share award-winning',
-  receiver_acquired_milb_age_advantage: 'Acquired MiLB age advantage',
-  receiver_dev_fit_hitting: 'Receiving-org hitting dev-fit',
-  receiver_org_pitcher_k_jump_3yr: 'Receiving-org pitcher K-jump (3yr)',
+  receiver_acquired_player_quality: 'Acquired player quality (prior-season WAR)',
+  receiver_pct_international_born: 'Acquired share internationally-born',
+  receiver_acquired_milb_hit_quality: 'Acquired hitters’ minor-league quality',
+  receiver_acquired_player_avg_war_trajectory: 'Acquired player WAR trend',
+  receiver_acquired_pct_awarded: 'Acquired share with prior awards',
+  receiver_acquired_milb_age_advantage: 'Acquired players young for their level',
+  receiver_dev_fit_hitting: 'Receiving team’s hitter-development track record',
+  receiver_org_pitcher_k_jump_3yr: 'Receiving team’s pitcher strikeout gains (3yr)',
 }
 
 export function featureLabel(feature: string): string {

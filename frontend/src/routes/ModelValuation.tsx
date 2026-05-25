@@ -1,9 +1,74 @@
 import { motion } from 'framer-motion'
-import { Target, CheckCircle2, AlertTriangle, Sigma } from 'lucide-react'
+import { Target, CheckCircle2, AlertTriangle, Sigma, Coins, BarChart3, Eye } from 'lucide-react'
 import { Section, Stat } from '../components/Section'
 import { TeamLogo } from '../components/TeamLogo'
 import { PosteriorCurve, fmtM } from '../components/PosteriorCurve'
 import { modelPosteriors, featureLabel, type ModelCard } from '../lib/modelPosteriors'
+
+/** Plain-English primer so the page reads without a stats background. */
+function HowToRead() {
+  const items = [
+    {
+      icon: Coins,
+      title: 'What the model predicts',
+      body: 'Dollar surplus: the on-field value an acquiring club gets from a trade, converted to dollars, minus the salary it pays — over the 3 years after the deal. Positive = the club came out ahead.',
+    },
+    {
+      icon: BarChart3,
+      title: 'Why a curve, not a number',
+      body: 'The model outputs a range of belief, not a single guess. The orange curve is its full distribution; the wider it is, the less certain. The 90% interval is where it thinks the result will land 9 times out of 10.',
+    },
+    {
+      icon: Eye,
+      title: 'How to tell if it was right',
+      body: 'The green line is what actually happened. These trades were held out — the model never saw their outcomes. Green inside the orange interval = a good call. A model is "calibrated" if reality lands inside its interval about as often as it claims.',
+    },
+  ]
+  return (
+    <div className="mb-6 rounded-lg border border-ink-700 bg-ink-900/40 p-5">
+      <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-300">
+        How to read this page
+      </div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        {items.map(({ icon: Icon, title, body }) => (
+          <div key={title} className="flex gap-3">
+            <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-accent-500/15 text-accent-400">
+              <Icon className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-[12px] font-semibold text-ink-100">{title}</div>
+              <div className="mt-1 text-[12px] leading-relaxed text-ink-400">{body}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** Compact key for the posterior charts. */
+function ChartKey() {
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-ink-400">
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-2.5 w-4 rounded-sm" style={{ background: 'rgba(255,138,61,0.35)', border: '1px solid rgba(255,138,61,0.9)' }} />
+        model's predicted range
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-3 w-0.5" style={{ background: '#ff8a3d' }} />
+        most likely value (mean)
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-1 w-4 rounded" style={{ background: 'rgba(255,138,61,0.55)' }} />
+        90% interval
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-3 w-0.5" style={{ background: '#3ddc97' }} />
+        what actually happened
+      </span>
+    </div>
+  )
+}
 
 function ModelTradeCard({ card }: { card: ModelCard }) {
   const tail = card.role === 'tail_miss'
@@ -56,10 +121,10 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
 
       {tail ? (
         <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-[11px] leading-relaxed text-ink-300">
-          <span className="font-semibold text-amber-300">Known limitation.</span> The model shrinks extreme-tail
-          blockbusters toward the regime mean — the realized $150M surplus on Soto sits well above the 90% interval.
-          This is expected behavior for a regularized hierarchical model (see validation philosophy), not a fitting
-          bug. We show it deliberately: the model is calibrated on the bulk and conservative on the tail.
+          <span className="font-semibold text-amber-300">Known limitation.</span> On rare, once-a-decade
+          blockbusters, the model pulls its estimate toward the typical trade — Soto's real $150M surplus sits well
+          above its predicted range. That's the model being cautious about extreme outliers by design, not a bug. We
+          show it on purpose: it's accurate on ordinary trades and deliberately conservative on the giants.
         </div>
       ) : null}
     </div>
@@ -87,13 +152,15 @@ export default function ModelValuation() {
         </p>
       </motion.div>
 
+      <HowToRead />
+
       {/* Scoreboard */}
-      <Section eyebrow="Calibration scoreboard" title="How the model does across all held-out trades" hint="The headline number is coverage: a calibrated 90% interval should contain the realized outcome ~90% of the time.">
+      <Section eyebrow="Calibration scoreboard" title="How the model does across all held-out trades" hint="Across every trade it never trained on, how close did it get — and was it honest about its own uncertainty?">
         <div className="card flex flex-wrap items-end gap-10 p-5">
-          <Stat label="90% coverage" value={`${(scoreboard.coverage_90 * 100).toFixed(0)}%`} sub="target 90% — well calibrated" tone="pos" />
-          <Stat label="CRPS" value={fmtM(scoreboard.crps)} sub="lower is better" />
-          <Stat label="MAE" value={fmtM(scoreboard.mae)} sub="mean abs error" />
-          <Stat label="Held-out trades" value={scoreboard.test_n.toLocaleString()} sub={`${scoreboard.train_n.toLocaleString()} train`} />
+          <Stat label="90% coverage" value={`${(scoreboard.coverage_90 * 100).toFixed(0)}%`} sub="of outcomes landed inside the predicted range — target is 90%, so it's honest about uncertainty" tone="pos" />
+          <Stat label="CRPS" value={fmtM(scoreboard.crps)} sub="typical prediction error, penalizing overconfidence — lower is better" />
+          <Stat label="MAE" value={fmtM(scoreboard.mae)} sub="average dollar miss of the center estimate" />
+          <Stat label="Held-out trades" value={scoreboard.test_n.toLocaleString()} sub={`scored · ${scoreboard.train_n.toLocaleString()} used for training`} />
         </div>
       </Section>
 
@@ -101,7 +168,7 @@ export default function ModelValuation() {
       <Section
         eyebrow="Does context actually help?"
         title="Context-aware vs. the baselines it has to beat"
-        hint="Walk-forward CV (R-58), the methodology behind the D-41 thesis test. Two honest references: the naive 'just rate the player' model, and a 'predict the mean' floor."
+        hint="The whole thesis is that the same player is worth different amounts to different teams. To prove it earns its keep, the model is raced against two simpler ones on trades none of them trained on. Higher % = bigger edge."
       >
         <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="card p-5">
@@ -110,8 +177,9 @@ export default function ModelValuation() {
               +{(comparison.mean_skill_vs_quality_ex_break * 100).toFixed(0)}%
             </div>
             <div className="mt-1.5 text-[12px] leading-relaxed text-ink-400">
-              Lower CRPS than rating the player in isolation (stable folds). Receiving-team context is the difference —
-              this is the thesis, validated.
+              The baseline that rates the player alone and ignores which team acquires him. Our model is{' '}
+              <span className="text-ink-200">~30% more accurate</span> — adding receiving-team context is what does it.
+              This is the thesis, validated.
             </div>
           </div>
           <div className="card p-5">
@@ -121,8 +189,8 @@ export default function ModelValuation() {
               {(comparison.mean_skill_vs_intercept_ex_break * 100).toFixed(1)}%
             </div>
             <div className="mt-1.5 text-[12px] leading-relaxed text-ink-400">
-              Roughly at parity on raw dollar magnitude — the blockbuster tail dominates CRPS for any model. We don't
-              oversell this number.
+              The floor that guesses the league-average surplus every time. We're about even here on raw dollars — a few
+              huge blockbusters swamp this metric for any model — so we don't oversell it.
             </div>
           </div>
         </div>
@@ -160,7 +228,8 @@ export default function ModelValuation() {
       </Section>
 
       {/* Covered cards */}
-      <Section eyebrow="Held-out predictions" title="Predicted distribution vs. what happened" hint="Orange = model posterior with 90% interval; green = realized surplus. The model never saw these outcomes.">
+      <Section eyebrow="Held-out predictions" title="Predicted distribution vs. what happened" hint="Each trade was kept out of training. Did reality (green) land inside the model's predicted range (orange)?">
+        <ChartKey />
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {covered.map((c) => (
             <ModelTradeCard key={`${c.trade_event_id}-${c.receiver_bref}`} card={c} />
@@ -180,7 +249,7 @@ export default function ModelValuation() {
       ) : null}
 
       {/* Credible features */}
-      <Section eyebrow="Why" title="What the model weighted" hint="Credible features (90% directional mass) driving the dollar-surplus posterior. Receiving-team context, not just player quality.">
+      <Section eyebrow="Why" title="What moves the valuation" hint="The inputs the model leans on most — the ones it's confident actually matter. Note how many describe the receiving team, not just the player.">
         <div className="card divide-y divide-ink-800 p-0">
           {credible_features.map((f) => (
             <div key={f.feature} className="flex items-center justify-between gap-4 px-5 py-2.5">
@@ -189,10 +258,10 @@ export default function ModelValuation() {
                 <span className="text-[13px] text-ink-200">{featureLabel(f.feature)}</span>
               </div>
               <div className="flex items-center gap-5">
-                <span className="mono text-[12px] tabular text-ink-300">
-                  β {f.beta >= 0 ? '+' : ''}{f.beta.toFixed(3)}
+                <span className={`mono text-[12px] tabular ${f.beta >= 0 ? 'text-positive-500' : 'text-negative-500'}`}>
+                  {f.beta >= 0 ? 'raises value' : 'lowers value'}
                 </span>
-                <span className="mono text-[11px] tabular text-ink-500">{(f.directional_mass * 100).toFixed(0)}% mass</span>
+                <span className="mono text-[11px] tabular text-ink-500">{(f.directional_mass * 100).toFixed(0)}% confident</span>
               </div>
             </div>
           ))}
