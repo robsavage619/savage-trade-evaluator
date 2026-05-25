@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, AlertTriangle, Shield, TrendingUp } from 'lucide-react'
+import { ArrowRight, Shield, CheckCircle2, Sigma } from 'lucide-react'
 import { getTrade, PRESSLY_TRADE_ID } from '../data'
 import { getPipelineEntry } from '../data/pipeline'
 import { useReasoningStore } from '../lib/reasoningStore'
@@ -9,7 +9,8 @@ import { ClaudeCodeDrawer } from '../components/ClaudeCodeDrawer'
 import type { TradeLeg } from '../types'
 import { PlayerCard } from '../components/PlayerCard'
 import { PersonnelTriangle } from '../components/PersonnelTriangle'
-import { PosteriorViolin } from '../components/PosteriorViolin'
+import { PosteriorCurve, fmtM } from '../components/PosteriorCurve'
+import { loadTradePosterior, type TradePosterior } from '../lib/modelPosteriors'
 import { ContextChips, CONTEXT_ICONS } from '../components/ContextChips'
 import { Section, Stat } from '../components/Section'
 import { TeamLogo } from '../components/TeamLogo'
@@ -31,17 +32,59 @@ const CHIP_ICON_BY_LABEL: Record<string, keyof typeof CONTEXT_ICONS> = {
   'Integration risk': 'Wand2',
 }
 
-/** Synthetic posteriors derived from real WAR-window means; sd hand-tuned to
- *  ~realistic uncertainty for a single-reliever / single-prospect projection.
- *  Replaced by V2 model posteriors when backend lands. */
-function syntheticPosteriors(meanWar: number | null, isAcquirer: boolean) {
-  if (meanWar == null) return null
-  const sd = 0.9
-  return {
-    currentRoster: { mean: meanWar * 0.78, sd: sd * 1.1 },
-    tradeAcquirer: { mean: isAcquirer ? meanWar * 1.18 : meanWar * 0.72, sd },
-    nextFa: { mean: meanWar * 0.55, sd: sd * 1.25 },
-  }
+/** Standard-normal CDF via erf approximation (Abramowitz & Stegun 7.1.26). */
+function normalCdf(z: number): number {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z))
+  const d = 0.3989422804014327 * Math.exp(-z * z / 2)
+  const p = d * t * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))))
+  return z > 0 ? 1 - p : p
+}
+
+/** P(dollar surplus < 0) from the Gaussian posterior. */
+function pLoss(post: TradePosterior): number {
+  return normalCdf((0 - post.mean) / post.sd)
+}
+
+/** Real team-side dollar-surplus posterior for one receiving team. Reads the V3
+ *  model export; renders the actual posterior with the realized outcome marked. */
+function TeamSurplusCard({ team, post }: { team: string; post: TradePosterior }) {
+  const held = post.split === 'held_out'
+  return (
+    <div className="card p-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <TeamLogo team={team} size={32} />
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Receiving team · dollar surplus</div>
+            <div className="text-[14px] font-semibold tracking-tight text-ink-100">
+              {post.acquired_players.slice(0, 3).join(', ')}
+            </div>
+          </div>
+        </div>
+        <span className="chip shrink-0 whitespace-nowrap" style={held
+          ? { color: '#3ddc97', borderColor: 'rgba(61,220,151,0.4)' }
+          : { color: '#8a96c0', borderColor: 'rgba(138,150,192,0.35)' }}>
+          {held ? <CheckCircle2 className="h-3 w-3" /> : <Sigma className="h-3 w-3" />}
+          {held ? 'held out' : 'in-sample'}
+        </span>
+      </div>
+      <PosteriorCurve post={post} realized={post.realized} width={320} height={130} />
+      <div className="mt-3 grid grid-cols-3 gap-2 border-t border-ink-700 pt-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Model mean</div>
+          <div className="mono text-[14px] font-semibold tabular text-ink-100">{fmtM(post.mean, true)}</div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">90% interval</div>
+          <div className="mono text-[12px] tabular text-ink-300">[{fmtM(post.p05)}, {fmtM(post.p95)}]</div>
+        </div>
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Realized</div>
+          <div className="mono text-[14px] font-semibold tabular" style={{ color: '#3ddc97' }}>{fmtM(post.realized)}</div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function TradeFlow({ legsLeft, legsRight, teamLeft, teamRight }: { legsLeft: TradeLeg[]; legsRight: TradeLeg[]; teamLeft: string; teamRight: string }) {
@@ -95,34 +138,34 @@ export default function TradeWorkspace() {
   const params = useParams<{ id: string }>()
   const id = Number(params.id ?? PRESSLY_TRADE_ID)
   const trade = getTrade(id)
-  if (!trade) return <Navigate to={`/trade/${PRESSLY_TRADE_ID}`} replace />
-  const pipeline = getPipelineEntry(id)
+  const pipeline = trade ? getPipelineEntry(id) : undefined
+  // All hooks must run unconditionally (rules of hooks) — the early return for a
+  // missing trade comes after them.
   const [drawerOpen, setDrawerOpen] = useState(false)
   const override = useReasoningStore((s) => (pipeline ? s.overrides[pipeline.tradeId] : undefined))
+  const [posteriors, setPosteriors] = useState<Record<string, TradePosterior | null>>({})
+  const teams = trade?.teams
+  useEffect(() => {
+    if (!teams) return
+    let alive = true
+    Promise.all(teams.map(async (t) => [t, await loadTradePosterior(id, t)] as const)).then(
+      (pairs) => {
+        if (alive) setPosteriors(Object.fromEntries(pairs))
+      },
+    )
+    return () => {
+      alive = false
+    }
+  }, [id, teams])
+
+  if (!trade) return <Navigate to={`/trade/${PRESSLY_TRADE_ID}`} replace />
   const activeReasoning = override?.reasoning ?? pipeline?.reasoning
 
   // Teams: assume two-team trade for V1
   const [teamA, teamB] = trade.teams
   const aSending = trade.legs.filter((l) => l.from_team_bref === teamA)
   const bSending = trade.legs.filter((l) => l.from_team_bref === teamB)
-
-  // Acquired-side player to feature in the three-valuation panel: the most
-  // valuable acquired player for each receiving team. For Pressly that's
-  // Pressly himself going to HOU.
-  const acquiredPlayers = trade.legs.map((leg) => {
-    const war = trade.war_window.find((w) => w.leg_index === leg.leg_index)
-    const career = leg.from_team_bref === teamA ? trade.career_war_pitching : trade.career_war_pitching
-    return { leg, war, career }
-  })
-  // Sort by realized WAR delta (T+1..T+3 sum) — feature top 1 per team
-  const featured = acquiredPlayers
-    .map((p) => ({
-      ...p,
-      score:
-        (p.war?.war_t_plus_1 ?? 0) + (p.war?.war_t_plus_2 ?? 0) + (p.war?.war_t_plus_3 ?? 0),
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 2)
+  const scoredTeams = trade.teams.filter((t) => posteriors[t] != null)
 
   // Verdict numbers from naive_baseline (real)
   const naiveByTeam: Record<string, { war_received: number; surplus: number } | undefined> = {}
@@ -235,71 +278,26 @@ export default function TradeWorkspace() {
           </Section>
         </div>
 
-        {/* Center: Three-valuation panel + arsenal */}
+        {/* Center: real model posteriors + arsenal */}
         <div className="space-y-6">
           <Section
-            eyebrow="Decision-09 · Three Valuations"
-            title="Same player, different value-capture surfaces"
-            hint="Current-roster · Trade-acquirer · Next-FA window. 90% credible intervals shown; naive baseline drawn as the blue dashed line."
+            eyebrow="V3 Model · Context-aware valuation"
+            title="What this trade is worth to each acquiring club"
+            hint="Real posterior over 3-year dollar surplus from the frozen V3 model. Orange = predicted distribution + 90% interval; green = realized outcome."
           >
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-              {featured.map(({ leg, war }) => {
-                const post = syntheticPosteriors(war?.war_t_plus_1 ?? null, true)
-                if (!post) return null
-                const naiveLine = (naiveByTeam[leg.to_team_bref]?.war_received ?? 0) / Math.max(1, bSending.length)
-                return (
-                  <div key={leg.leg_index} className="card p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div>
-                        <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">
-                          {leg.from_team_bref} → {leg.to_team_bref}
-                        </div>
-                        <div className="text-[14px] font-semibold tracking-tight text-ink-100">{leg.player_name}</div>
-                      </div>
-                      <span className="chip chip-accent">
-                        <TrendingUp className="h-3 w-3" />
-                        Posterior shown
-                      </span>
-                    </div>
-                    <div className="space-y-3.5">
-                      <PosteriorViolin
-                        label="Current-roster value (if retained)"
-                        mean={post.currentRoster.mean}
-                        sd={post.currentRoster.sd}
-                        min={-2}
-                        max={6}
-                        baseline={naiveLine}
-                        accent="neutral"
-                        unit=" WAR"
-                        width={300}
-                      />
-                      <PosteriorViolin
-                        label="Trade-acquirer value (this trade)"
-                        mean={post.tradeAcquirer.mean}
-                        sd={post.tradeAcquirer.sd}
-                        min={-2}
-                        max={6}
-                        baseline={naiveLine}
-                        accent="pos"
-                        unit=" WAR"
-                        width={300}
-                      />
-                      <PosteriorViolin
-                        label="Next-FA acquirer value (open market)"
-                        mean={post.nextFa.mean}
-                        sd={post.nextFa.sd}
-                        min={-2}
-                        max={6}
-                        baseline={naiveLine}
-                        accent="neg"
-                        unit=" WAR"
-                        width={300}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+            {scoredTeams.length ? (
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                {scoredTeams.map((t) => (
+                  <TeamSurplusCard key={t} team={t} post={posteriors[t] as TradePosterior} />
+                ))}
+              </div>
+            ) : (
+              <div className="card p-5 text-[12px] text-ink-400">
+                No V3 posterior for this trade — it was filtered from the model's
+                training/test set (too few features present). The model only scores
+                trades it can condition on; we don't fabricate a number here.
+              </div>
+            )}
           </Section>
 
           <Section
@@ -324,18 +322,20 @@ export default function TradeWorkspace() {
             />
           </Section>
 
-          <Section eyebrow="Risk" title="Loss tail" hint="P(this trade nets negative WAR over 3yr).">
+          <Section eyebrow="Risk" title="Loss tail" hint="P(this trade nets negative 3-yr dollar surplus for the primary acquirer).">
             <div className="card flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-ink-300" />
                 <div>
                   <div className="text-[11px] uppercase tracking-[0.12em] text-ink-400">P( surplus &lt; 0 )</div>
-                  <div className="mono text-[22px] font-semibold tabular text-ink-100">14%</div>
+                  <div className="mono text-[22px] font-semibold tabular text-ink-100">
+                    {posteriors[primaryAcquirer] ? `${(pLoss(posteriors[primaryAcquirer] as TradePosterior) * 100).toFixed(0)}%` : '—'}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-[11px] text-ink-400">
-                <AlertTriangle className="h-3.5 w-3.5 text-accent-400" />
-                <span>Pre-V2 illustrative</span>
+                <Sigma className="h-3.5 w-3.5 text-accent-400" />
+                <span>{posteriors[primaryAcquirer] ? `from V3 posterior · ${primaryAcquirer}` : 'not scored'}</span>
               </div>
             </div>
           </Section>
@@ -348,7 +348,7 @@ export default function TradeWorkspace() {
               </div>
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Feature snapshot</span>
-                <span className="mono text-ink-100">11 features · all pre-trade</span>
+                <span className="mono text-ink-100">23 features · all pre-trade</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Leakage check</span>

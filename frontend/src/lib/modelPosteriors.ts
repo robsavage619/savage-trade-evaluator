@@ -85,3 +85,37 @@ export const FEATURE_LABELS: Record<string, string> = {
 export function featureLabel(feature: string): string {
   return FEATURE_LABELS[feature] ?? feature
 }
+
+/** Compact per-trade posterior (no embedded draws — Gaussian, so mean/sd suffice). */
+export type TradePosterior = {
+  season: number
+  split: 'in_sample' | 'held_out'
+  mean: number
+  sd: number
+  p05: number
+  p50: number
+  p95: number
+  realized: number
+  realized_in_90ci: boolean
+  acquired_players: string[]
+  sender_bref: string | null
+}
+
+type ByTradePayload = {
+  by_trade: Record<string, TradePosterior>
+}
+
+let _byTrade: Record<string, TradePosterior> | null = null
+
+/** Lazy-load the 5k-entry per-trade posterior lookup (1.2MB) — only the Trade
+ *  Workspace needs it, so it stays out of the main bundle. */
+export async function loadTradePosterior(
+  tradeEventId: number,
+  receiverBref: string,
+): Promise<TradePosterior | null> {
+  if (_byTrade == null) {
+    const mod = (await import('../data/model/by_trade.json')) as { default: ByTradePayload }
+    _byTrade = mod.default.by_trade
+  }
+  return _byTrade[`${tradeEventId}:${receiverBref}`] ?? null
+}

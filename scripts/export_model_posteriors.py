@@ -38,7 +38,7 @@ from savage_trade_evaluator.storage.db import connect
 # Reuse the validated R-58 fold comparison (same methodology that produced the
 # D-39/D-41 thesis numbers) rather than re-deriving a single-split baseline.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from r58_baseline_comparison import run_fold_comparison  # noqa: E402
+from r58_baseline_comparison import run_fold_comparison
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +53,9 @@ OUT_DIR = Path(__file__).resolve().parent.parent / "frontend" / "src" / "data" /
 #                 toward the regime mean (CLAUDE.md validation philosophy). Shown
 #                 deliberately so the demo is honest about where V3 fails.
 FEATURED: tuple[tuple[int, str, str], ...] = (
-    (808316, "CHC", "covered"),    # Kyle Tucker → Cubs, 2024 (headline)
-    (768021, "SDP", "covered"),    # Luis Arraez → Padres, 2024
-    (739097, "BAL", "covered"),    # Corbin Burnes → Orioles, 2024
+    (808316, "CHC", "covered"),  # Kyle Tucker → Cubs, 2024 (headline)
+    (768021, "SDP", "covered"),  # Luis Arraez → Padres, 2024
+    (739097, "BAL", "covered"),  # Corbin Burnes → Orioles, 2024
     (642337, "SDP", "tail_miss"),  # Juan Soto + Josh Bell → Padres, 2022 (under-predicted)
 )
 
@@ -71,7 +71,7 @@ def _player_labels() -> dict[tuple[int, str], list[str]]:
             SELECT trade_event_id, to_team_bref AS receiver_bref,
                    from_team_bref AS sender_bref, player_name
             FROM trade_player_unified
-            WHERE trade_season BETWEEN 2021 AND 2024
+            WHERE trade_season BETWEEN 2010 AND 2024
             """,
         ).df()
     labels: dict[tuple[int, str], list[str]] = {}
@@ -79,9 +79,10 @@ def _player_labels() -> dict[tuple[int, str], list[str]]:
     for r in rows.itertuples():
         key = (int(r.trade_event_id), r.receiver_bref)
         labels.setdefault(key, [])
-        if r.player_name and r.player_name not in labels[key]:
+        # NULL player names arrive as float nan (which is truthy) — guard on str.
+        if isinstance(r.player_name, str) and r.player_name not in labels[key]:
             labels[key].append(r.player_name)
-        if r.sender_bref:
+        if isinstance(r.sender_bref, str):
             senders[key] = r.sender_bref
     _player_labels._senders = senders  # type: ignore[attr-defined]
     return labels
@@ -107,22 +108,28 @@ def _walk_forward_comparison() -> dict[str, object]:
     folds = []
     for sp in splits:
         r = run_fold_comparison(
-            OUTCOME, feature_cols, combined=combined,
-            train_end=sp.train_end, test_end=sp.test_end,
-            train_start=sp.train_start, min_n=min_n,
+            OUTCOME,
+            feature_cols,
+            combined=combined,
+            train_end=sp.train_end,
+            test_end=sp.test_end,
+            train_start=sp.train_start,
+            min_n=min_n,
         )
         # The 2017-18 fold is the documented structural break (D-40).
         is_break = sp.test_start <= 2017 <= sp.test_end
-        folds.append({
-            "label": f"{sp.test_start}–{sp.test_end}",
-            "n_test": int(r["n_test"]),
-            "crps_context": round(float(r["crps_model"]), 1),
-            "crps_quality": round(float(r["crps_quality"]), 1),
-            "crps_intercept": round(float(r["crps_intercept"]), 1),
-            "skill_vs_quality": round(float(r["skill_model_vs_quality"]), 4),
-            "skill_vs_intercept": round(float(r["skill_vs_bayes_intercept"]), 4),
-            "structural_break": is_break,
-        })
+        folds.append(
+            {
+                "label": f"{sp.test_start}–{sp.test_end}",  # noqa: RUF001
+                "n_test": int(r["n_test"]),
+                "crps_context": round(float(r["crps_model"]), 1),
+                "crps_quality": round(float(r["crps_quality"]), 1),
+                "crps_intercept": round(float(r["crps_intercept"]), 1),
+                "skill_vs_quality": round(float(r["skill_model_vs_quality"]), 4),
+                "skill_vs_intercept": round(float(r["skill_vs_bayes_intercept"]), 4),
+                "structural_break": is_break,
+            }
+        )
 
     stable = [f for f in folds if not f["structural_break"]]
 
@@ -142,7 +149,9 @@ def _walk_forward_comparison() -> dict[str, object]:
 def _summarize(draws: np.ndarray) -> dict[str, object]:
     """Posterior summary for a single trade's predictive draws (1D array)."""
     rng = np.random.default_rng(137)
-    embed = draws if draws.size <= N_DRAWS_EMBED else rng.choice(draws, N_DRAWS_EMBED, replace=False)
+    embed = (
+        draws if draws.size <= N_DRAWS_EMBED else rng.choice(draws, N_DRAWS_EMBED, replace=False)
+    )
     return {
         "mean": float(draws.mean()),
         "sd": float(draws.std()),
@@ -156,18 +165,30 @@ def _summarize(draws: np.ndarray) -> dict[str, object]:
 
 
 def main() -> None:
+    """Fit V3 dollar-surplus, score held-out trades, write the frontend JSON exports."""
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     cols = V3_OUTCOME_FEATURES[OUTCOME]
 
-    logger.info("Fitting V3 %s on %d-%d, scoring %d-%d ...", OUTCOME, 2010, TRAIN_END, TRAIN_END + 1, TEST_END)
+    logger.info(
+        "Fitting V3 %s on %d-%d, scoring %d-%d ...",
+        OUTCOME,
+        2010,
+        TRAIN_END,
+        TRAIN_END + 1,
+        TEST_END,
+    )
     result = backtest_outcome_v3(OUTCOME, train_end_season=TRAIN_END, test_end_season=TEST_END)
     logger.info(
         "  train_n=%d test_n=%d  CRPS=%.0f  coverage_90=%.2f",
-        result.train_n, result.test_n, result.test_crps, result.coverage_90,
+        result.train_n,
+        result.test_n,
+        result.test_crps,
+        result.coverage_90,
     )
 
-    # Re-derive the test split so we can predict full draws for featured trades.
-    _, test = _split_and_impute(OUTCOME, cols, TRAIN_END, TEST_END)
+    # Re-derive the split so we can predict full draws for featured trades and
+    # build a per-trade posterior lookup for the whole dataset.
+    train, test = _split_and_impute(OUTCOME, cols, TRAIN_END, TEST_END)
 
     logger.info("Running walk-forward baseline comparison (R-58 methodology) ...")
     comparison = _walk_forward_comparison()
@@ -175,13 +196,18 @@ def main() -> None:
         flag = "  [structural break]" if f["structural_break"] else ""
         logger.info(
             "  fold %s  n=%d  vs_quality=%+.1f%%  vs_intercept=%+.1f%%%s",
-            f["label"], f["n_test"],
-            f["skill_vs_quality"] * 100, f["skill_vs_intercept"] * 100, flag,
+            f["label"],
+            f["n_test"],
+            f["skill_vs_quality"] * 100,
+            f["skill_vs_intercept"] * 100,
+            flag,
         )
     logger.info(
-        "  mean skill vs quality=%+.1f%% (ex-break %+.1f%%) · vs intercept=%+.1f%% (ex-break %+.1f%%)",
-        comparison["mean_skill_vs_quality"] * 100, comparison["mean_skill_vs_quality_ex_break"] * 100,
-        comparison["mean_skill_vs_intercept"] * 100, comparison["mean_skill_vs_intercept_ex_break"] * 100,
+        "  mean skill vs quality=%+.1f%% (ex-break %+.1f%%) · vs intercept=%+.1f%% (ex-break %+.1f%%)",  # noqa: E501
+        comparison["mean_skill_vs_quality"] * 100,
+        comparison["mean_skill_vs_quality_ex_break"] * 100,
+        comparison["mean_skill_vs_intercept"] * 100,
+        comparison["mean_skill_vs_intercept_ex_break"] * 100,
     )
 
     labels = _player_labels()
@@ -209,23 +235,55 @@ def main() -> None:
         realized = float(row[OUTCOME].iloc[0])
         summary = _summarize(draws)
         in_ci = summary["p05"] <= realized <= summary["p95"]
-        cards.append({
-            "trade_event_id": int(event_id),
-            "receiver_bref": recv,
-            "sender_bref": senders.get((event_id, recv)),
-            "season": int(row["trade_season"].iloc[0]),
-            "role": role,
-            "acquired_players": labels.get((event_id, recv), []),
-            "posterior": summary,
-            "realized": round(realized, 1),
-            "realized_in_90ci": bool(in_ci),
-        })
+        cards.append(
+            {
+                "trade_event_id": int(event_id),
+                "receiver_bref": recv,
+                "sender_bref": senders.get((event_id, recv)),
+                "season": int(row["trade_season"].iloc[0]),
+                "role": role,
+                "acquired_players": labels.get((event_id, recv), []),
+                "posterior": summary,
+                "realized": round(realized, 1),
+                "realized_in_90ci": bool(in_ci),
+            }
+        )
         logger.info(
             "  %s/%s  pred=$%.1fM [%.1f, %.1f]  realized=$%.1fM  in90CI=%s",
-            event_id, recv,
-            summary["mean"] / 1e6, summary["p05"] / 1e6, summary["p95"] / 1e6,
-            realized / 1e6, in_ci,
+            event_id,
+            recv,
+            summary["mean"] / 1e6,
+            summary["p05"] / 1e6,
+            summary["p95"] / 1e6,
+            realized / 1e6,
+            in_ci,
         )
+
+    # Per-trade posterior lookup for the whole dataset, so the Trade Workspace can
+    # show a real team-side dollar-surplus posterior for any scored trade instead
+    # of a synthetic one. Compact summary only (the curve is Gaussian — mean/sd
+    # reconstruct it; no embedded draws). Keyed "<event_id>:<receiver_bref>".
+    by_trade: dict[str, dict[str, object]] = {}
+    for split_df, split_name in ((train, "in_sample"), (test, "held_out")):
+        preds = predict(result.fit, split_df)  # (n_rows, n_samples)
+        for i, r in enumerate(split_df.itertuples()):
+            d = preds[i]
+            realized = float(getattr(r, OUTCOME))
+            p05, p50, p95 = (float(np.percentile(d, q)) for q in (5, 50, 95))
+            by_trade[f"{int(r.trade_event_id)}:{r.receiver_bref}"] = {
+                "season": int(r.trade_season),
+                "split": split_name,
+                "mean": round(float(d.mean()), 1),
+                "sd": round(float(d.std()), 1),
+                "p05": round(p05, 1),
+                "p50": round(p50, 1),
+                "p95": round(p95, 1),
+                "realized": round(realized, 1),
+                "realized_in_90ci": bool(p05 <= realized <= p95),
+                "acquired_players": labels.get((int(r.trade_event_id), r.receiver_bref), []),
+                "sender_bref": senders.get((int(r.trade_event_id), r.receiver_bref)),
+            }
+    logger.info("Built %d per-trade posteriors", len(by_trade))
 
     payload = {
         "generated_at": datetime.now(UTC).isoformat(),
@@ -249,6 +307,22 @@ def main() -> None:
     out = OUT_DIR / "posteriors.json"
     out.write_text(json.dumps(payload, indent=2))
     logger.info("Wrote %d cards → %s", len(cards), out)
+
+    # Per-trade lookup ships in its own file so the /model showcase bundle stays
+    # lean — only the Trade Workspace lazy-loads this.
+    bt_payload = {
+        "generated_at": payload["generated_at"],
+        "outcome": OUTCOME,
+        "unit": "usd",
+        "train_window": [2010, TRAIN_END],
+        "test_window": [TRAIN_END + 1, TEST_END],
+        "by_trade": by_trade,
+    }
+    bt_out = OUT_DIR / "by_trade.json"
+    # allow_nan=False so a stray non-finite never produces invalid JSON (NaN tokens
+    # break strict parsers like Vite's). Cleaned upstream; this is the guardrail.
+    bt_out.write_text(json.dumps(bt_payload, separators=(",", ":"), allow_nan=False))
+    logger.info("Wrote %d per-trade posteriors → %s", len(by_trade), bt_out)
 
 
 if __name__ == "__main__":

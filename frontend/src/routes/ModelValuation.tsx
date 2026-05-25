@@ -1,92 +1,9 @@
-import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { scaleLinear } from 'd3-scale'
 import { Target, CheckCircle2, AlertTriangle, Sigma } from 'lucide-react'
 import { Section, Stat } from '../components/Section'
 import { TeamLogo } from '../components/TeamLogo'
-import {
-  modelPosteriors,
-  featureLabel,
-  type ModelCard,
-  type PosteriorSummary,
-} from '../lib/modelPosteriors'
-
-const M = 1_000_000
-
-function fmtM(v: number, signed = false): string {
-  const m = v / M
-  const sign = signed && m >= 0 ? '+' : ''
-  return `${sign}$${m.toFixed(1)}M`
-}
-
-/** Faithful posterior curve. The V3 model is a linear-Gaussian regression, so the
- *  predictive density is Normal(mean, sd) — we render exactly that, with the held-out
- *  realized outcome marked. No hand-tuning: every number comes from the model. */
-function PosteriorCurve({ post, realized }: { post: PosteriorSummary; realized: number }) {
-  const width = 460
-  const height = 150
-  const padX = 8
-
-  // Domain spans the posterior and the realized point, so a tail-miss is visible.
-  const loDomain = Math.min(post.p05, realized) - post.sd * 0.6
-  const hiDomain = Math.max(post.p95, realized) + post.sd * 0.6
-  const x = scaleLinear().domain([loDomain, hiDomain]).range([padX, width - padX])
-
-  const xs = useMemo(
-    () => Array.from({ length: 121 }, (_, i) => loDomain + (i / 120) * (hiDomain - loDomain)),
-    [loDomain, hiDomain],
-  )
-  const pdf = (v: number) => Math.exp(-0.5 * ((v - post.mean) / post.sd) ** 2)
-  const ys = xs.map(pdf)
-  const yMax = Math.max(...ys)
-  const yScale = scaleLinear().domain([0, yMax]).range([0, height - 46])
-  const baseY = height - 26
-
-  const area =
-    `M ${x(xs[0]).toFixed(1)} ${baseY} ` +
-    xs.map((v, i) => `L ${x(v).toFixed(1)} ${(baseY - yScale(ys[i])).toFixed(1)}`).join(' ') +
-    ` L ${x(xs[xs.length - 1]).toFixed(1)} ${baseY} Z`
-
-  const realizedInView = realized >= loDomain && realized <= hiDomain
-
-  return (
-    <svg width={width} height={height} className="block w-full" viewBox={`0 0 ${width} ${height}`}>
-      {/* zero line */}
-      {loDomain < 0 && hiDomain > 0 ? (
-        <line x1={x(0)} x2={x(0)} y1={10} y2={baseY} stroke="rgba(138,150,192,0.3)" strokeDasharray="2 3" />
-      ) : null}
-      {/* 90% CI band */}
-      <rect
-        x={x(post.p05)}
-        y={baseY + 6}
-        width={Math.max(0, x(post.p95) - x(post.p05))}
-        height={4}
-        rx={2}
-        fill="rgba(255,138,61,0.55)"
-      />
-      {/* posterior area */}
-      <path d={area} fill="rgba(255,138,61,0.16)" stroke="rgba(255,138,61,0.9)" strokeWidth={1.3} />
-      {/* predicted mean */}
-      <line x1={x(post.mean)} x2={x(post.mean)} y1={baseY - yScale(yMax)} y2={baseY} stroke="rgba(255,138,61,0.95)" strokeWidth={1.4} />
-      <circle cx={x(post.mean)} cy={baseY - yScale(yMax)} r={3.4} fill="#ff8a3d" stroke="#0b1018" strokeWidth={1.4} />
-      {/* realized outcome */}
-      {realizedInView ? (
-        <g>
-          <line x1={x(realized)} x2={x(realized)} y1={8} y2={baseY} stroke="#3ddc97" strokeWidth={2} />
-          <text x={x(realized)} y={6} fontSize={10} textAnchor="middle" fill="#3ddc97" fontFamily="JetBrains Mono">
-            realized {fmtM(realized)}
-          </text>
-        </g>
-      ) : null}
-      {/* axis ticks */}
-      {[post.p05, post.mean, post.p95].map((v, i) => (
-        <text key={i} x={x(v)} y={height - 8} fontSize={9} textAnchor="middle" fill="rgba(138,150,192,0.8)" fontFamily="JetBrains Mono">
-          {fmtM(v)}
-        </text>
-      ))}
-    </svg>
-  )
-}
+import { PosteriorCurve, fmtM } from '../components/PosteriorCurve'
+import { modelPosteriors, featureLabel, type ModelCard } from '../lib/modelPosteriors'
 
 function ModelTradeCard({ card }: { card: ModelCard }) {
   const tail = card.role === 'tail_miss'

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-25T20:30:19.181809+00:00",
+  "generated_at": "2026-05-25T20:46:35.479491+00:00",
   "outcome": "dollar_surplus",
   "unit": "usd",
   "train_window": [
@@ -13,67 +13,67 @@
   "scoreboard": {
     "train_n": 3578,
     "test_n": 1730,
-    "crps": 14903728.7,
+    "crps": 14901539.8,
     "coverage_90": 0.9434,
-    "mae": 7985699.3
+    "mae": 7983551.2
   },
   "comparison": {
     "folds": [
       {
         "label": "2015\u20132016",
         "n_test": 762,
-        "crps_context": 15961557.5,
-        "crps_quality": 21630004.7,
-        "crps_intercept": 16118376.2,
-        "skill_vs_quality": 0.2621,
+        "crps_context": 15963108.0,
+        "crps_quality": 21635869.9,
+        "crps_intercept": 16119732.7,
+        "skill_vs_quality": 0.2622,
         "skill_vs_intercept": 0.0097,
         "structural_break": false
       },
       {
         "label": "2017\u20132018",
         "n_test": 912,
-        "crps_context": 22131051.8,
-        "crps_quality": 21706997.5,
-        "crps_intercept": 15517391.2,
-        "skill_vs_quality": -0.0195,
-        "skill_vs_intercept": -0.4262,
+        "crps_context": 22135213.1,
+        "crps_quality": 21732890.7,
+        "crps_intercept": 15511066.8,
+        "skill_vs_quality": -0.0185,
+        "skill_vs_intercept": -0.4271,
         "structural_break": true
       },
       {
         "label": "2019\u20132020",
         "n_test": 632,
-        "crps_context": 14917644.0,
-        "crps_quality": 21461617.7,
-        "crps_intercept": 15161695.8,
-        "skill_vs_quality": 0.3049,
+        "crps_context": 14917705.9,
+        "crps_quality": 21453400.0,
+        "crps_intercept": 15161230.4,
+        "skill_vs_quality": 0.3046,
         "skill_vs_intercept": 0.0161,
         "structural_break": false
       },
       {
         "label": "2021\u20132022",
         "n_test": 819,
-        "crps_context": 15898318.1,
-        "crps_quality": 23805264.4,
-        "crps_intercept": 16095548.5,
-        "skill_vs_quality": 0.3322,
-        "skill_vs_intercept": 0.0123,
+        "crps_context": 15896877.8,
+        "crps_quality": 23795503.6,
+        "crps_intercept": 16096308.9,
+        "skill_vs_quality": 0.3319,
+        "skill_vs_intercept": 0.0124,
         "structural_break": false
       },
       {
         "label": "2023\u20132024",
         "n_test": 911,
-        "crps_context": 14443849.5,
-        "crps_quality": 20807420.9,
-        "crps_intercept": 14752468.3,
-        "skill_vs_quality": 0.3058,
-        "skill_vs_intercept": 0.0209,
+        "crps_context": 14437413.9,
+        "crps_quality": 20813267.3,
+        "crps_intercept": 14753486.8,
+        "skill_vs_quality": 0.3063,
+        "skill_vs_intercept": 0.0214,
         "structural_break": false
       }
     ],
-    "mean_skill_vs_quality": 0.2371,
-    "mean_skill_vs_intercept": -0.0734,
+    "mean_skill_vs_quality": 0.2373,
+    "mean_skill_vs_intercept": -0.0735,
     "mean_skill_vs_quality_ex_break": 0.3013,
-    "mean_skill_vs_intercept_ex_break": 0.0147
+    "mean_skill_vs_intercept_ex_break": 0.0149
   },
   "credible_features": [
     {
@@ -128,13 +128,13 @@
         "Kyle Tucker"
       ],
       "posterior": {
-        "mean": 18366865.240093708,
-        "sd": 14830412.03079631,
-        "p05": -5852777.531477413,
-        "p25": 8302935.80636597,
-        "p50": 18392109.157928772,
-        "p75": 28426860.470391214,
-        "p95": 42773676.31102455,
+        "mean": 18366865.240094308,
+        "sd": 14830412.030796712,
+        "p05": -5852777.531434968,
+        "p25": 8302935.806361046,
+        "p50": 18392109.157946162,
+        "p75": 28426860.470402498,
+        "p95": 42773676.311095044,
         "draws": [
           -29605457.3,
           -21110835.1,
@@ -551,13 +551,13 @@
         "Luis Arraez"
       ],
       "posterior": {
-        "mean": 20143265.136734232,
-        "sd": 14823576.18288474,
-        "p05": -4224808.6261351565,
-        "p25": 10056379.233543593,
-        "p50": 20153920.956249118,
-        "p75": 30223675.774568092,
-        "p95": 44280562.401557386,
+        "mean": 20143265.136734758,
+        "sd": 14823576.182884539,
+        "p05": -4224808.626146435,
+        "p25": 10056379.233547596,
+        "p50": 20153920.956243172,
+        "p75": 30223675.774605706,
+        "p95": 44280562.401536666,
         "draws": [
           -24975090.7,
           -17442309.7,
@@ -974,13 +974,13 @@
         "Corbin Burnes"
       ],
       "posterior": {
-        "mean": 13374214.260665871,
-        "sd": 14871581.436344672,
-        "p05": -10689424.644219965,
-        "p25": 3191380.6940116417,
-        "p50": 13215847.301324246,
-        "p75": 23497067.086533472,
-        "p95": 37716995.86356769,
+        "mean": 13374214.260666056,
+        "sd": 14871581.436344812,
+        "p05": -10689424.644178145,
+        "p25": 3191380.6940206196,
+        "p50": 13215847.301340621,
+        "p75": 23497067.08651291,
+        "p95": 37716995.86340838,
         "draws": [
           -33114494.0,
           -28517868.8,
@@ -1398,13 +1398,13 @@
         "Juan Soto"
       ],
       "posterior": {
-        "mean": 11016807.421713252,
-        "sd": 14766538.72153567,
-        "p05": -13136994.534313262,
-        "p25": 966960.6569969741,
-        "p50": 10890192.091466568,
-        "p75": 21045969.545876585,
-        "p95": 35288297.161778726,
+        "mean": 11016807.421713358,
+        "sd": 14766538.721535759,
+        "p05": -13136994.534308922,
+        "p25": 966960.6570252657,
+        "p50": 10890192.091476878,
+        "p75": 21045969.54587282,
+        "p95": 35288297.16163193,
         "draws": [
           -31109453.9,
           -26977984.4,
