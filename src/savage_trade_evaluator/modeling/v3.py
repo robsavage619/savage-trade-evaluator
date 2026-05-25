@@ -73,6 +73,7 @@ def assemble_v3_combined() -> pd.DataFrame:
     """Feature + outcome matrix with V3-specific window choices for war_delta."""
     return assemble_combined(outcomes_df=_build_v3_outcomes())
 
+
 # Per-outcome feature subsets.
 #
 # war_delta and dollar_surplus use ALL_FEATURES (23 features). R-57 walk-forward CV
@@ -93,12 +94,14 @@ V3_OUTCOME_FEATURES: dict[str, tuple[str, ...]] = {
     "war_delta": ALL_FEATURES,
     "dollar_surplus": ALL_FEATURES,
     # xwoba_delta EXPLORATORY-1FOLD: pitcher deployment + tech context (R-53/R-55/R-57)
-    "xwoba_delta": ACQUIRED_PLAYER_FEATURES + (
+    "xwoba_delta": ACQUIRED_PLAYER_FEATURES
+    + (
         "receiver_tech_adoption_lead_years",
         "receiver_platoon_woba_diff",
     ),
     # kpct_delta EXPLORATORY-1FOLD: pitcher-specific features only (R-57)
-    "kpct_delta": ACQUIRED_PLAYER_FEATURES + (
+    "kpct_delta": ACQUIRED_PLAYER_FEATURES
+    + (
         "receiver_alumni_network_score",
         "receiver_tech_adoption_lead_years",
     ),
@@ -113,8 +116,8 @@ class V3FitResult:
     feature_cols: tuple[str, ...]
     feature_means: pd.Series
     feature_stds: pd.Series
-    feature_clip_lo: pd.Series   # training mean - 5*std  (winsorization bounds)
-    feature_clip_hi: pd.Series   # training mean + 5*std
+    feature_clip_lo: pd.Series  # training mean - 5*std  (winsorization bounds)
+    feature_clip_hi: pd.Series  # training mean + 5*std
     y_mean: float
     y_std: float
 
@@ -150,8 +153,10 @@ def _split_and_impute(
         # Q-01: restrict to trades where at least one acquired player had ≥2 WAR
         # in T-1. Uses receiver_acquired_player_quality as an ordinal proxy —
         # the actual war_t_minus_1 filter requires a separate join.
-        combined = combined[combined["receiver_acquired_player_quality"].notna()
-                            & (combined["receiver_acquired_player_quality"] >= 1.0)].copy()
+        combined = combined[
+            combined["receiver_acquired_player_quality"].notna()
+            & (combined["receiver_acquired_player_quality"] >= 1.0)
+        ].copy()
     combined = combined[combined[outcome].notna()].copy()
     # Default 5 matches V2's smoke-test convention; loose enough that
     # large-feature-set outcomes (war / dollar) keep ~3600 train rows.
@@ -160,16 +165,14 @@ def _split_and_impute(
     complete = combined[present >= min_present].copy()
 
     # Temporal split BEFORE imputation so train stats don't leak from test.
-    train_mask = (
-        (complete["trade_season"] >= train_start_season)
-        & (complete["trade_season"] <= train_end_season)
+    train_mask = (complete["trade_season"] >= train_start_season) & (
+        complete["trade_season"] <= train_end_season
     )
-    test_mask = (
-        (complete["trade_season"] > train_end_season)
-        & (complete["trade_season"] <= test_end_season)
+    test_mask = (complete["trade_season"] > train_end_season) & (
+        complete["trade_season"] <= test_end_season
     )
     train_raw = complete[train_mask].copy()
-    test_raw  = complete[test_mask].copy()
+    test_raw = complete[test_mask].copy()
 
     # Compute imputation fill values from training set only.
     for c in feature_cols:
@@ -177,7 +180,7 @@ def _split_and_impute(
         if np.isnan(fill):
             fill = 0.0
         train_raw[c] = train_raw[c].astype("float64").fillna(fill)
-        test_raw[c]  = test_raw[c].astype("float64").fillna(fill)
+        test_raw[c] = test_raw[c].astype("float64").fillna(fill)
 
     return train_raw.reset_index(drop=True), test_raw.reset_index(drop=True)
 
@@ -200,7 +203,9 @@ def fit_v3(
     # to prevent catastrophic linear extrapolation on out-of-distribution inputs.
     clip_lo = means - 5.0 * stds
     clip_hi = means + 5.0 * stds
-    x = ((train[list(feature_cols)].clip(lower=clip_lo, upper=clip_hi, axis=1) - means) / stds).to_numpy(dtype=float)
+    x = (
+        (train[list(feature_cols)].clip(lower=clip_lo, upper=clip_hi, axis=1) - means) / stds
+    ).to_numpy(dtype=float)
     y = train[outcome].to_numpy(dtype=float)
     y_mean = float(y.mean())
     y_std = float(y.std()) or 1.0
@@ -211,17 +216,30 @@ def fit_v3(
         alpha0 = pm.Normal("alpha0", mu=0.0, sigma=1.0)
         beta = pm.Normal("beta", mu=0.0, sigma=0.3, dims="feature")
         sigma = pm.HalfNormal("sigma", sigma=sigma_prior)
+        # Student-t likelihood (A1): nu estimated from data; prior mean ≈ 4 (heavy
+        # tails initially) but can drift toward Normal when outliers are scarce.
+        # Exponential on (nu - 2) keeps nu > 2 (finite variance guaranteed).
+        nu_minus_two = pm.Exponential("nu_minus_two", lam=0.5)
+        nu = nu_minus_two + 2
         mu = alpha0 + pm.math.dot(x, beta)
-        pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
+        pm.StudentT("y_obs", nu=nu, mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
-            draws=draws, tune=tune, chains=chains, random_seed=seed,
-            progressbar=False, target_accept=target_accept,
+            draws=draws,
+            tune=tune,
+            chains=chains,
+            random_seed=seed,
+            progressbar=False,
+            target_accept=target_accept,
         )
     return V3FitResult(
-        trace=trace, feature_cols=feature_cols,
-        feature_means=means, feature_stds=stds,
-        feature_clip_lo=clip_lo, feature_clip_hi=clip_hi,
-        y_mean=y_mean, y_std=y_std,
+        trace=trace,
+        feature_cols=feature_cols,
+        feature_means=means,
+        feature_stds=stds,
+        feature_clip_lo=clip_lo,
+        feature_clip_hi=clip_hi,
+        y_mean=y_mean,
+        y_std=y_std,
     )
 
 
@@ -252,12 +270,15 @@ def predict(
     out = np.zeros((n_test, n_samples))
 
     heteroscedastic = era_cutoff is not None and "log_sigma_base" in post
+    student_t = "nu_minus_two" in post
     if heteroscedastic:
         log_sigma_base_s = post["log_sigma_base"].values.reshape(n_samples)
         beta_sigma_era_s = post["beta_sigma_era"].values.reshape(n_samples)
         post_era_vec = (df["trade_season"].to_numpy() >= era_cutoff).astype(float)
     else:
         sigma_s = post["sigma"].values.reshape(n_samples)
+    if student_t:
+        nu_s = post["nu_minus_two"].values.reshape(n_samples) + 2.0
 
     for i in range(n_test):
         mu = alpha0_s + beta_s @ x_test[i]
@@ -265,6 +286,8 @@ def predict(
         if heteroscedastic:
             sigma_i = np.exp(log_sigma_base_s + beta_sigma_era_s * post_era_vec[i])
             noise = rng.normal(0.0, sigma_i)
+        elif student_t:
+            noise = rng.standard_t(nu_s) * sigma_s
         else:
             noise = rng.normal(0.0, sigma_s)
         out[i] = (mu + noise) * fit.y_std + fit.y_mean
@@ -284,11 +307,17 @@ def coefficient_summary(fit: V3FitResult) -> pd.DataFrame:
         mass = max(mass_pos, 1 - mass_pos)
         ci_excludes_zero = (p05 > 0 and p95 > 0) or (p05 < 0 and p95 < 0)
         credible = ci_excludes_zero and mass >= 0.95
-        rows.append({
-            "feature": name, "mean_beta": mean, "p05": p05, "p95": p95,
-            "directional_mass": mass, "ci_excludes_zero": ci_excludes_zero,
-            "credible": credible,
-        })
+        rows.append(
+            {
+                "feature": name,
+                "mean_beta": mean,
+                "p05": p05,
+                "p95": p95,
+                "directional_mass": mass,
+                "ci_excludes_zero": ci_excludes_zero,
+                "credible": credible,
+            }
+        )
     return (
         pd.DataFrame(rows).sort_values("directional_mass", ascending=False).reset_index(drop=True)
     )
@@ -308,14 +337,17 @@ def backtest_outcome_v3(
     """Run V3 train/test backtest for one outcome."""
     cols = feature_cols if feature_cols is not None else V3_OUTCOME_FEATURES[outcome]
     train, test = _split_and_impute(
-        outcome, cols, train_end_season, test_end_season, minimum_features_present,
-        combined=combined, meaningful_trades_only=meaningful_trades_only,
+        outcome,
+        cols,
+        train_end_season,
+        test_end_season,
+        minimum_features_present,
+        combined=combined,
+        meaningful_trades_only=meaningful_trades_only,
         train_start_season=train_start_season,
     )
     if len(train) < 50:
-        msg = (
-            f"V3 outcome={outcome}: only {len(train)} train rows after filtering"
-        )
+        msg = f"V3 outcome={outcome}: only {len(train)} train rows after filtering"
         raise ValueError(msg)
 
     fit = fit_v3(train, outcome, cols, sigma_prior=sigma_prior)
@@ -336,9 +368,13 @@ def backtest_outcome_v3(
     test_predictions["y_pred_p95"] = p95
 
     return V3BacktestResult(
-        outcome=outcome, fit=fit,
-        train_n=len(train), test_n=len(test),
-        test_mae=mae, test_crps=crps, coverage_90=cov,
+        outcome=outcome,
+        fit=fit,
+        train_n=len(train),
+        test_n=len(test),
+        test_mae=mae,
+        test_crps=crps,
+        coverage_90=cov,
         credible_features=coefficient_summary(fit),
         test_predictions=test_predictions,
     )
@@ -366,7 +402,9 @@ def fit_v3_heteroscedastic(
     stds = train[list(feature_cols)].std().replace(0, 1.0)
     clip_lo = means - 5.0 * stds
     clip_hi = means + 5.0 * stds
-    x = ((train[list(feature_cols)].clip(lower=clip_lo, upper=clip_hi, axis=1) - means) / stds).to_numpy(dtype=float)
+    x = (
+        (train[list(feature_cols)].clip(lower=clip_lo, upper=clip_hi, axis=1) - means) / stds
+    ).to_numpy(dtype=float)
     y = train[outcome].to_numpy(dtype=float)
     y_mean = float(y.mean())
     y_std = float(y.std()) or 1.0
@@ -384,14 +422,22 @@ def fit_v3_heteroscedastic(
         mu = alpha0 + pm.math.dot(x, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
-            draws=draws, tune=tune, chains=chains, random_seed=seed,
-            progressbar=False, target_accept=target_accept,
+            draws=draws,
+            tune=tune,
+            chains=chains,
+            random_seed=seed,
+            progressbar=False,
+            target_accept=target_accept,
         )
     return V3FitResult(
-        trace=trace, feature_cols=feature_cols,
-        feature_means=means, feature_stds=stds,
-        feature_clip_lo=clip_lo, feature_clip_hi=clip_hi,
-        y_mean=y_mean, y_std=y_std,
+        trace=trace,
+        feature_cols=feature_cols,
+        feature_means=means,
+        feature_stds=stds,
+        feature_clip_lo=clip_lo,
+        feature_clip_hi=clip_hi,
+        y_mean=y_mean,
+        y_std=y_std,
     )
 
 
@@ -408,8 +454,13 @@ def backtest_outcome_v3_heteroscedastic(
     """Run V3 heteroscedastic-sigma train/test backtest for one outcome."""
     cols = feature_cols if feature_cols is not None else V3_OUTCOME_FEATURES[outcome]
     train, test = _split_and_impute(
-        outcome, cols, train_end_season, test_end_season, minimum_features_present,
-        combined=combined, meaningful_trades_only=meaningful_trades_only,
+        outcome,
+        cols,
+        train_end_season,
+        test_end_season,
+        minimum_features_present,
+        combined=combined,
+        meaningful_trades_only=meaningful_trades_only,
     )
     if len(train) < 50:
         msg = f"V3 outcome={outcome}: only {len(train)} train rows after filtering"
@@ -433,9 +484,13 @@ def backtest_outcome_v3_heteroscedastic(
     test_predictions["y_pred_p95"] = p95
 
     return V3BacktestResult(
-        outcome=outcome, fit=fit,
-        train_n=len(train), test_n=len(test),
-        test_mae=mae, test_crps=crps, coverage_90=cov,
+        outcome=outcome,
+        fit=fit,
+        train_n=len(train),
+        test_n=len(test),
+        test_mae=mae,
+        test_crps=crps,
+        coverage_90=cov,
         credible_features=coefficient_summary(fit),
         test_predictions=test_predictions,
     )
