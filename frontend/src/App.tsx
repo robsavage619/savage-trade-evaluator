@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Radar, Building2, Briefcase, FlaskConical, Hammer } from 'lucide-react'
+import { Radar, Building2, Briefcase, FlaskConical, Hammer, Sigma } from 'lucide-react'
 import PresslyCase from './routes/PresslyCase'
+import ModelValuation from './routes/ModelValuation'
 import Research from './routes/Research'
 import TradeWorkspace from './routes/TradeWorkspace'
 import WarRoom from './routes/WarRoom'
@@ -27,6 +28,7 @@ function TopNav() {
   const loc = useLocation()
   const items = [
     { to: '/warroom', label: 'War Room', icon: Radar },
+    { to: '/model', label: 'Model', icon: Sigma },
     { to: '/build', label: 'Trade Builder', icon: Hammer },
     { to: '/orgs', label: 'Org Explorer', icon: Building2 },
     { to: '/case/pressly', label: 'Case Study', icon: Briefcase },
@@ -128,6 +130,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/warroom" replace />} />
         <Route path="/warroom" element={<WarRoom />} />
+        <Route path="/model" element={<ModelValuation />} />
         <Route path="/build" element={<TradeBuilder />} />
         <Route path="/case/pressly" element={<PresslyCase />} />
         <Route path="/trade/:id" element={<TradeWorkspace />} />
@@ -143,7 +146,7 @@ export default function App() {
             Sources: MLB Stats API · Baseball Reference · Baseball Savant Statcast · 27 tables · 1.29M rows
           </span>
           <span className="mono">
-            Savage Analytics · Posteriors illustrative pre-V2 model · naive baseline = $/WAR (D-11)
+            Savage Analytics · Model page = real V3 held-out posteriors · Trade Builder posteriors still illustrative
           </span>
         </div>
       </footer>
