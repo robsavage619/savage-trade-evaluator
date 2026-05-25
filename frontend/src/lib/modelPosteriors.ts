@@ -37,6 +37,25 @@ export type CredibleFeature = {
   directional_mass: number
 }
 
+export type ComparisonFold = {
+  label: string
+  n_test: number
+  crps_context: number
+  crps_quality: number
+  crps_intercept: number
+  skill_vs_quality: number
+  skill_vs_intercept: number
+  structural_break: boolean
+}
+
+export type ModelComparison = {
+  folds: ComparisonFold[]
+  mean_skill_vs_quality: number
+  mean_skill_vs_intercept: number
+  mean_skill_vs_quality_ex_break: number
+  mean_skill_vs_intercept_ex_break: number
+}
+
 export type ModelPosteriors = {
   generated_at: string
   outcome: string
@@ -44,6 +63,7 @@ export type ModelPosteriors = {
   train_window: [number, number]
   test_window: [number, number]
   scoreboard: ModelScoreboard
+  comparison: ModelComparison
   credible_features: CredibleFeature[]
   cards: ModelCard[]
 }

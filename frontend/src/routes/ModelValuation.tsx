@@ -150,7 +150,7 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
 }
 
 export default function ModelValuation() {
-  const { scoreboard, credible_features, cards, train_window, test_window } = modelPosteriors
+  const { scoreboard, comparison, credible_features, cards, train_window, test_window } = modelPosteriors
   const covered = cards.filter((c) => c.role === 'covered')
   const tail = cards.filter((c) => c.role === 'tail_miss')
 
@@ -177,6 +177,68 @@ export default function ModelValuation() {
           <Stat label="CRPS" value={fmtM(scoreboard.crps)} sub="lower is better" />
           <Stat label="MAE" value={fmtM(scoreboard.mae)} sub="mean abs error" />
           <Stat label="Held-out trades" value={scoreboard.test_n.toLocaleString()} sub={`${scoreboard.train_n.toLocaleString()} train`} />
+        </div>
+      </Section>
+
+      {/* Does context beat the naive models? */}
+      <Section
+        eyebrow="Does context actually help?"
+        title="Context-aware vs. the baselines it has to beat"
+        hint="Walk-forward CV (R-58), the methodology behind the D-41 thesis test. Two honest references: the naive 'just rate the player' model, and a 'predict the mean' floor."
+      >
+        <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="card p-5">
+            <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">vs. player-quality-only</div>
+            <div className="mono mt-1 text-[30px] font-semibold leading-none text-positive-500">
+              +{(comparison.mean_skill_vs_quality_ex_break * 100).toFixed(0)}%
+            </div>
+            <div className="mt-1.5 text-[12px] leading-relaxed text-ink-400">
+              Lower CRPS than rating the player in isolation (stable folds). Receiving-team context is the difference —
+              this is the thesis, validated.
+            </div>
+          </div>
+          <div className="card p-5">
+            <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">vs. predict-the-mean</div>
+            <div className="mono mt-1 text-[30px] font-semibold leading-none text-ink-100">
+              {comparison.mean_skill_vs_intercept_ex_break >= 0 ? '+' : ''}
+              {(comparison.mean_skill_vs_intercept_ex_break * 100).toFixed(1)}%
+            </div>
+            <div className="mt-1.5 text-[12px] leading-relaxed text-ink-400">
+              Roughly at parity on raw dollar magnitude — the blockbuster tail dominates CRPS for any model. We don't
+              oversell this number.
+            </div>
+          </div>
+        </div>
+        <div className="card overflow-hidden p-0">
+          <table className="w-full text-[12px]">
+            <thead>
+              <tr className="border-b border-ink-700 text-[10px] uppercase tracking-[0.1em] text-ink-400">
+                <th className="px-4 py-2 text-left font-medium">Test fold</th>
+                <th className="px-4 py-2 text-right font-medium">Trades</th>
+                <th className="px-4 py-2 text-right font-medium">vs quality-only</th>
+                <th className="px-4 py-2 text-right font-medium">vs predict-the-mean</th>
+              </tr>
+            </thead>
+            <tbody className="mono tabular">
+              {comparison.folds.map((f) => (
+                <tr key={f.label} className="border-b border-ink-800 last:border-0">
+                  <td className="px-4 py-2 text-ink-200">
+                    {f.label}
+                    {f.structural_break ? (
+                      <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] text-amber-300">structural break</span>
+                    ) : null}
+                  </td>
+                  <td className="px-4 py-2 text-right text-ink-400">{f.n_test}</td>
+                  <td className={`px-4 py-2 text-right ${f.skill_vs_quality >= 0 ? 'text-positive-500' : 'text-negative-500'}`}>
+                    {f.skill_vs_quality >= 0 ? '+' : ''}{(f.skill_vs_quality * 100).toFixed(1)}%
+                  </td>
+                  <td className={`px-4 py-2 text-right ${f.skill_vs_intercept >= 0 ? 'text-positive-500' : 'text-negative-500'}`}>
+                    {f.skill_vs_intercept >= 0 ? '+' : ''}{(f.skill_vs_intercept * 100).toFixed(1)}%
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </Section>
 

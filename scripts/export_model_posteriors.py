@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -27,10 +28,17 @@ import numpy as np
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
     _split_and_impute,
+    assemble_v3_combined,
     backtest_outcome_v3,
     predict,
 )
+from savage_trade_evaluator.modeling.v3_cv import MIN_TEST_N, walk_forward_splits
 from savage_trade_evaluator.storage.db import connect
+
+# Reuse the validated R-58 fold comparison (same methodology that produced the
+# D-39/D-41 thesis numbers) rather than re-deriving a single-split baseline.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from r58_baseline_comparison import run_fold_comparison  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +87,58 @@ def _player_labels() -> dict[tuple[int, str], list[str]]:
     return labels
 
 
+def _walk_forward_comparison() -> dict[str, object]:
+    """Validated walk-forward CV comparison (R-58 methodology, D-39/D-41 numbers).
+
+    Per 2-year fold, scores three models by CRPS (lower is better):
+      * context-aware    — full V3 model (ALL_FEATURES, receiving-team context)
+      * player-quality    — single feature (receiver_acquired_player_quality)
+      * intercept-only    — Bayesian "predict the mean" floor
+
+    Returns per-fold rows plus aggregate skill, computed two honest ways:
+    vs player-quality (the thesis win) and vs intercept-only (parity on raw $).
+    The structural-break fold (2017-18) is flagged, not hidden.
+    """
+    combined = assemble_v3_combined()
+    feature_cols = V3_OUTCOME_FEATURES[OUTCOME]
+    min_n = MIN_TEST_N.get(OUTCOME, 50)
+    splits = walk_forward_splits(OUTCOME, combined)
+
+    folds = []
+    for sp in splits:
+        r = run_fold_comparison(
+            OUTCOME, feature_cols, combined=combined,
+            train_end=sp.train_end, test_end=sp.test_end,
+            train_start=sp.train_start, min_n=min_n,
+        )
+        # The 2017-18 fold is the documented structural break (D-40).
+        is_break = sp.test_start <= 2017 <= sp.test_end
+        folds.append({
+            "label": f"{sp.test_start}–{sp.test_end}",
+            "n_test": int(r["n_test"]),
+            "crps_context": round(float(r["crps_model"]), 1),
+            "crps_quality": round(float(r["crps_quality"]), 1),
+            "crps_intercept": round(float(r["crps_intercept"]), 1),
+            "skill_vs_quality": round(float(r["skill_model_vs_quality"]), 4),
+            "skill_vs_intercept": round(float(r["skill_vs_bayes_intercept"]), 4),
+            "structural_break": is_break,
+        })
+
+    stable = [f for f in folds if not f["structural_break"]]
+
+    def _mean(rows: list[dict], key: str) -> float:
+        vals = [r[key] for r in rows if r[key] == r[key]]  # drop NaN
+        return round(sum(vals) / len(vals), 4) if vals else float("nan")
+
+    return {
+        "folds": folds,
+        "mean_skill_vs_quality": _mean(folds, "skill_vs_quality"),
+        "mean_skill_vs_intercept": _mean(folds, "skill_vs_intercept"),
+        "mean_skill_vs_quality_ex_break": _mean(stable, "skill_vs_quality"),
+        "mean_skill_vs_intercept_ex_break": _mean(stable, "skill_vs_intercept"),
+    }
+
+
 def _summarize(draws: np.ndarray) -> dict[str, object]:
     """Posterior summary for a single trade's predictive draws (1D array)."""
     rng = np.random.default_rng(137)
@@ -108,6 +168,22 @@ def main() -> None:
 
     # Re-derive the test split so we can predict full draws for featured trades.
     _, test = _split_and_impute(OUTCOME, cols, TRAIN_END, TEST_END)
+
+    logger.info("Running walk-forward baseline comparison (R-58 methodology) ...")
+    comparison = _walk_forward_comparison()
+    for f in comparison["folds"]:
+        flag = "  [structural break]" if f["structural_break"] else ""
+        logger.info(
+            "  fold %s  n=%d  vs_quality=%+.1f%%  vs_intercept=%+.1f%%%s",
+            f["label"], f["n_test"],
+            f["skill_vs_quality"] * 100, f["skill_vs_intercept"] * 100, flag,
+        )
+    logger.info(
+        "  mean skill vs quality=%+.1f%% (ex-break %+.1f%%) · vs intercept=%+.1f%% (ex-break %+.1f%%)",
+        comparison["mean_skill_vs_quality"] * 100, comparison["mean_skill_vs_quality_ex_break"] * 100,
+        comparison["mean_skill_vs_intercept"] * 100, comparison["mean_skill_vs_intercept_ex_break"] * 100,
+    )
+
     labels = _player_labels()
     senders: dict[tuple[int, str], str] = _player_labels._senders  # type: ignore[attr-defined]
 
@@ -164,6 +240,7 @@ def main() -> None:
             "coverage_90": round(result.coverage_90, 4),
             "mae": round(result.test_mae, 1),
         },
+        "comparison": comparison,
         "credible_features": credible_features,
         "cards": cards,
     }
