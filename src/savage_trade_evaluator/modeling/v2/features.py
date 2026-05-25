@@ -80,7 +80,16 @@ ORIGIN_FEATURES: tuple[str, ...] = (
     # origin_sunk_cost_pressure: null on all outcomes (R-52/R-53). Column kept in DB.
 )
 
-ALL_FEATURES: tuple[str, ...] = ACQUIRED_PLAYER_FEATURES + RECEIVER_TEAM_FEATURES + ORIGIN_FEATURES
+# Binary indicator for the Statcast/analytics era structural break (~2015).
+# The pre-2015 data has weaker dev-fit signal; including this lets the model
+# absorb the level-shift rather than attributing it to contextual features.
+ERA_FEATURES: tuple[str, ...] = (
+    "post_2015_era",
+)
+
+ALL_FEATURES: tuple[str, ...] = (
+    ACQUIRED_PLAYER_FEATURES + RECEIVER_TEAM_FEATURES + ORIGIN_FEATURES + ERA_FEATURES
+)
 
 
 def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd.DataFrame:
@@ -138,6 +147,8 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 -- FanGraphs The Board FV grades (2017-2024)
                 tapf.receiver_acquired_avg_fv,
                 tapf.receiver_acquired_max_fv,
+                -- Statcast era structural break indicator
+                (twc.trade_season >= 2015)::INTEGER AS post_2015_era,
                 -- D-42 (R-61): origin-team year-to-date WAR at trade time
                 oyw.receiver_acquired_origin_ytd_war,
                 -- D-44 (R-63): WAR trajectory second derivative (acceleration)
