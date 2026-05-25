@@ -153,7 +153,8 @@ def build_outcomes_windowed(
                 wpt.trade_season,
                 wpt.war_delta,
                 wpt.war_received_total * COALESCE(r_recv.dollar_per_war, 8000000)
-                    AS war_value_received_dollars
+                    AS war_value_received_dollars,
+                COALESCE(r_recv.dollar_per_war, 8000000) AS dollar_per_war_season
             FROM war_per_trade wpt
             LEFT JOIN r_recv ON r_recv.season = wpt.trade_season
             """
@@ -172,10 +173,24 @@ def build_outcomes_windowed(
             """
         ).df()
     df = df.merge(cap, on=["trade_event_id", "receiver_bref"], how="left")
-    df["dollar_surplus"] = (
-        df["war_value_received_dollars"].fillna(0.0) - df["total_cap_acquired"].fillna(0.0)
-    )
-    return df[["trade_event_id", "receiver_bref", "trade_season", "war_delta", "dollar_surplus"]]
+    df["dollar_surplus"] = df["war_value_received_dollars"].fillna(0.0) - df[
+        "total_cap_acquired"
+    ].fillna(0.0)
+    # surplus_wins = dollar_surplus expressed in WAR units.
+    # Dividing by the season's market $/WAR converts "dollars above cost" into
+    # "wins above what was paid for" — pre-arb cap hits near zero yield surplus_wins
+    # close to war_received_total, correctly scoring cheap cost-controlled players.
+    df["surplus_wins"] = df["dollar_surplus"] / df["dollar_per_war_season"]
+    return df[
+        [
+            "trade_event_id",
+            "receiver_bref",
+            "trade_season",
+            "war_delta",
+            "dollar_surplus",
+            "surplus_wins",
+        ]
+    ]
 
 
 def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataFrame:
@@ -218,7 +233,8 @@ def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataF
                    (b.war_received * COALESCE(r_recv.dollar_per_war, 8000000))
                        AS war_value_received_dollars,
                    (b.war_given_up * COALESCE(r_recv.dollar_per_war, 8000000))
-                       AS war_value_given_up_dollars
+                       AS war_value_given_up_dollars,
+                   COALESCE(r_recv.dollar_per_war, 8000000) AS dollar_per_war_season
             FROM base b
             LEFT JOIN xwoba x
                 ON x.trade_event_id = b.trade_event_id
@@ -255,6 +271,7 @@ def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataF
     df["dollar_surplus"] = df["war_value_received_dollars"].fillna(0.0) - df[
         "total_cap_acquired"
     ].fillna(0.0)
+    df["surplus_wins"] = df["dollar_surplus"] / df["dollar_per_war_season"]
 
     return df[
         [
@@ -265,5 +282,6 @@ def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataF
             "kpct_delta",
             "war_delta",
             "dollar_surplus",
+            "surplus_wins",
         ]
     ]

@@ -51,20 +51,22 @@ def _build_v3_outcomes() -> pd.DataFrame:
     """Build outcomes with per-outcome window choices (D-Q02/Q07 empirical findings).
 
     war_delta    → T+2..T+5  (skip transition year, extend to 5yr)
+    surplus_wins → T+2..T+5  (same window as war_delta; cost basis from trade season)
     dollar_surplus → T+1..T+3 (standard; shifting hurts it per Q-07)
     xwoba_delta, kpct_delta → from standard build_outcomes()
     """
     import pandas as pd
 
-    # Standard outcomes for xwoba_delta + kpct_delta + dollar_surplus
+    # Standard outcomes for xwoba_delta + kpct_delta + dollar_surplus + surplus_wins(T+1..T+3)
     std = build_outcomes()
-    # war_delta from T+2..T+5
-    war_windowed = build_outcomes_windowed(
+    # war_delta + surplus_wins from T+2..T+5 — surplus_wins uses same window so pre-arb
+    # bargains aren't penalised by the transition-year dip (same reason as war_delta).
+    windowed = build_outcomes_windowed(
         war_window_start=V3_WAR_WINDOW[0],
         war_window_end=V3_WAR_WINDOW[1],
-    )[["trade_event_id", "receiver_bref", "trade_season", "war_delta"]]
-    merged = std.drop(columns=["war_delta"]).merge(
-        war_windowed, on=["trade_event_id", "receiver_bref", "trade_season"], how="left"
+    )[["trade_event_id", "receiver_bref", "trade_season", "war_delta", "surplus_wins"]]
+    merged = std.drop(columns=["war_delta", "surplus_wins"]).merge(
+        windowed, on=["trade_event_id", "receiver_bref", "trade_season"], how="left"
     )
     return merged
 
@@ -93,6 +95,9 @@ def assemble_v3_combined() -> pd.DataFrame:
 V3_OUTCOME_FEATURES: dict[str, tuple[str, ...]] = {
     "war_delta": ALL_FEATURES,
     "dollar_surplus": ALL_FEATURES,
+    # surplus_wins = dollar_surplus / $/WAR — wins above what was paid (Phase B).
+    # Uses ALL_FEATURES; same contextual signal as dollar_surplus but wins-denominated.
+    "surplus_wins": ALL_FEATURES,
     # xwoba_delta EXPLORATORY-1FOLD: pitcher deployment + tech context (R-53/R-55/R-57)
     "xwoba_delta": ACQUIRED_PLAYER_FEATURES
     + (

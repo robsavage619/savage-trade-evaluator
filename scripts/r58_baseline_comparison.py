@@ -87,8 +87,9 @@ def _fit_bayesian_intercept_only(
         alpha0 = pm.Normal("alpha0", mu=0.0, sigma=1.0)
         sigma = pm.HalfNormal("sigma", sigma=1.0)
         pm.Normal("y_obs", mu=alpha0, sigma=sigma, observed=y_z)
-        trace = pm.sample(1500, tune=2000, chains=4, random_seed=137,
-                          progressbar=False, target_accept=0.99)
+        trace = pm.sample(
+            1500, tune=2000, chains=4, random_seed=137, progressbar=False, target_accept=0.99
+        )
 
     post = trace.posterior
     n_samples = post["alpha0"].shape[0] * post["alpha0"].shape[1]
@@ -118,8 +119,12 @@ def run_fold_comparison(
 ) -> dict:
     """One fold: Bayesian intercept-only + player-quality-only + confirmed-feature CRPS."""
     train, test = _split_and_impute(
-        outcome, feature_cols, train_end, test_end,
-        combined=combined, train_start_season=train_start,
+        outcome,
+        feature_cols,
+        train_end,
+        test_end,
+        combined=combined,
+        train_start_season=train_start,
     )
     n_train, n_test = len(train), len(test)
     sufficient = n_test >= min_n
@@ -140,8 +145,12 @@ def run_fold_comparison(
     quality_col = "receiver_acquired_player_quality"
     if quality_col in feature_cols and quality_col in combined.columns:
         train_q, test_q = _split_and_impute(
-            outcome, (quality_col,), train_end, test_end,
-            combined=combined, train_start_season=train_start,
+            outcome,
+            (quality_col,),
+            train_end,
+            test_end,
+            combined=combined,
+            train_start_season=train_start,
             minimum_features_present=1,
         )
         if len(train_q) >= 50:
@@ -164,13 +173,19 @@ def run_fold_comparison(
         "n_train": n_train,
         "n_test": n_test,
         "sufficient": sufficient,
-        "crps_analytic": crps_analytic,   # theoretical lower bound: N(mu, sigma) analytic
-        "crps_intercept": crps_intercept, # Bayesian intercept-only (fair comparison)
+        "crps_analytic": crps_analytic,  # theoretical lower bound: N(mu, sigma) analytic
+        "crps_intercept": crps_intercept,  # Bayesian intercept-only (fair comparison)
         "crps_quality": crps_quality,
         "crps_model": crps_model,
-        "skill_vs_bayes_intercept": 1.0 - (crps_model / crps_intercept) if not np.isnan(crps_intercept) and crps_intercept else float("nan"),
-        "skill_quality_vs_bayes_intercept": 1.0 - (crps_quality / crps_intercept) if not np.isnan(crps_intercept) and crps_intercept else float("nan"),
-        "skill_model_vs_quality": 1.0 - (crps_model / crps_quality) if not np.isnan(crps_quality) and crps_quality else float("nan"),
+        "skill_vs_bayes_intercept": 1.0 - (crps_model / crps_intercept)
+        if not np.isnan(crps_intercept) and crps_intercept
+        else float("nan"),
+        "skill_quality_vs_bayes_intercept": 1.0 - (crps_quality / crps_intercept)
+        if not np.isnan(crps_intercept) and crps_intercept
+        else float("nan"),
+        "skill_model_vs_quality": 1.0 - (crps_model / crps_quality)
+        if not np.isnan(crps_quality) and crps_quality
+        else float("nan"),
     }
 
 
@@ -182,7 +197,9 @@ def print_comparison(rows: list[dict]) -> None:
     print()
     print(sep)
     print("R-58 BASELINE COMPARISON")
-    print("Columns: analytic=N(mu,sigma) theoretical bound | bayes_int=intercept-only MCMC | quality=single-feature | model=confirmed-feature set")
+    print(
+        "Columns: analytic=N(mu,sigma) theoretical bound | bayes_int=intercept-only MCMC | quality=single-feature | model=confirmed-feature set"
+    )
     print("Skill score = 1 − (CRPS_model / CRPS_reference).  Positive = model beats reference.")
     print(sep)
 
@@ -191,21 +208,43 @@ def print_comparison(rows: list[dict]) -> None:
         sufficient = sub[sub["sufficient"]]
         print()
         print(f"  {outcome}  ({len(sub)} folds, {len(sufficient)} sufficient)")
-        print(f"  {'fold window':<15} {'n_test':>7} {'analytic':>10} {'bayes_int':>10} {'quality':>10} {'model':>10}  {'skill(mdl/int)':>14}  {'skill(mdl/qlty)':>15}")
+        print(
+            f"  {'fold window':<15} {'n_test':>7} {'analytic':>10} {'bayes_int':>10} {'quality':>10} {'model':>10}  {'skill(mdl/int)':>14}  {'skill(mdl/qlty)':>15}"
+        )
         print("  " + "-" * 96)
         for _, r in sub.iterrows():
             suf = "" if r["sufficient"] else " INSUF"
-            bi = f"{r['crps_intercept']:>10.4f}" if not np.isnan(r["crps_intercept"]) else "       n/a"
+            bi = (
+                f"{r['crps_intercept']:>10.4f}"
+                if not np.isnan(r["crps_intercept"])
+                else "       n/a"
+            )
             qi = f"{r['crps_quality']:>10.4f}" if not np.isnan(r["crps_quality"]) else "       n/a"
             mi = f"{r['crps_model']:>10.4f}" if not np.isnan(r["crps_model"]) else "       n/a"
-            sk = f"{r['skill_vs_bayes_intercept']:>+13.1%}" if not np.isnan(r["skill_vs_bayes_intercept"]) else "           n/a"
-            smq = f"{r['skill_model_vs_quality']:>+14.1%}" if not np.isnan(r["skill_model_vs_quality"]) else "            n/a"
-            print(f"  {r['test_end']-1}–{r['test_end']:<10} {r['n_test']:>7} {r['crps_analytic']:>10.4f} {bi} {qi} {mi}  {sk}  {smq}{suf}")
+            sk = (
+                f"{r['skill_vs_bayes_intercept']:>+13.1%}"
+                if not np.isnan(r["skill_vs_bayes_intercept"])
+                else "           n/a"
+            )
+            smq = (
+                f"{r['skill_model_vs_quality']:>+14.1%}"
+                if not np.isnan(r["skill_model_vs_quality"])
+                else "            n/a"
+            )
+            print(
+                f"  {r['test_end'] - 1}–{r['test_end']:<10} {r['n_test']:>7} {r['crps_analytic']:>10.4f} {bi} {qi} {mi}  {sk}  {smq}{suf}"
+            )
 
         if not sufficient.empty:
             print()
-            cols_to_agg = ["crps_analytic", "crps_intercept", "crps_quality", "crps_model",
-                           "skill_vs_bayes_intercept", "skill_model_vs_quality"]
+            cols_to_agg = [
+                "crps_analytic",
+                "crps_intercept",
+                "crps_quality",
+                "crps_model",
+                "skill_vs_bayes_intercept",
+                "skill_model_vs_quality",
+            ]
             agg = sufficient[cols_to_agg].mean()
             print(
                 f"  Mean (sufficient):              "
@@ -230,9 +269,10 @@ def main() -> None:
 
     all_rows: list[dict] = []
 
-    # Only run war_delta and dollar_surplus (5 folds each — enough for meaningful comparison).
-    # xwoba/kpct have 1 fold and are already exploratory; baseline comparison adds little.
-    outcomes = ["war_delta", "dollar_surplus"]
+    # war_delta and dollar_surplus: 5 folds, main validation outcomes.
+    # surplus_wins: dollar_surplus / $/WAR — wins-denominated, Phase B.
+    # xwoba/kpct: 1 fold only — exploratory, skip baseline comparison.
+    outcomes = ["war_delta", "dollar_surplus", "surplus_wins"]
 
     for outcome in outcomes:
         feature_cols = V3_OUTCOME_FEATURES[outcome]
@@ -256,8 +296,12 @@ def main() -> None:
             skill = row["skill_vs_bayes_intercept"]
             logger.info(
                 "    analytic=%.4f  bayes_int=%.4f  quality=%.4f  model=%.4f  skill=%.1f%%  (%.1fs)",
-                row["crps_analytic"], row["crps_intercept"], row["crps_quality"], row["crps_model"],
-                (skill * 100) if not np.isnan(skill) else float("nan"), elapsed,
+                row["crps_analytic"],
+                row["crps_intercept"],
+                row["crps_quality"],
+                row["crps_model"],
+                (skill * 100) if not np.isnan(skill) else float("nan"),
+                elapsed,
             )
             all_rows.append(row)
 
