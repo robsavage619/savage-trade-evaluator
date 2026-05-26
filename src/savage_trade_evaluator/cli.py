@@ -19,6 +19,7 @@ from savage_trade_evaluator.ingest import (
     catalog,
     coaches,
     draft,
+    fangraphs_leaders,
     fortification,
     front_office,
     milb_stats,
@@ -26,10 +27,10 @@ from savage_trade_evaluator.ingest import (
     retrosheet_gamelogs,
     retrosheet_transactions,
     spotrac,
-    tjstats,
     standings,
     statcast_extended,
     stats,
+    tjstats,
     transactions,
 )
 from savage_trade_evaluator.modeling import bayesian, context_aware, features, naive_baseline
@@ -257,6 +258,45 @@ def ingest_prospects(
     else:
         n = prospects.ingest_range(start, end)
         typer.echo(f"ingested {n} prospect FV rows across {end - start + 1} year(s)")
+
+
+@ingest_app.command("fangraphs")
+def ingest_fangraphs(
+    stats: str = typer.Option("both", help="'bat', 'pit', or 'both'."),
+    year: int | None = typer.Option(None, help="Single season to ingest."),
+    start: int = typer.Option(2010, help="First season."),
+    end: int = typer.Option(2024, help="Last season."),
+    from_cache: bool = typer.Option(
+        False,
+        "--from-cache",
+        help="Read cached Firecrawl responses from data/fangraphs_cache/ "
+        "instead of fetching via the REST API (no FIRECRAWL_API_KEY needed).",
+    ),
+) -> None:
+    """Load FanGraphs batting/pitching leaderboards.
+
+    Two paths: live REST fetch via the Firecrawl stealth proxy (needs
+    FIRECRAWL_API_KEY), or --from-cache to parse responses already saved to
+    data/fangraphs_cache/{stats}_{season}.json (fetched via the Firecrawl MCP).
+    """
+    configure_logging()
+    types = ("bat", "pit") if stats == "both" else (stats,)
+    if year is not None:
+        for s in types:
+            n = (
+                fangraphs_leaders.ingest_from_cache(s, year)
+                if from_cache
+                else fangraphs_leaders.ingest_year(s, year)
+            )
+            typer.echo(f"fangraphs {s} {year}: {n} rows")
+    else:
+        results = (
+            fangraphs_leaders.ingest_range_from_cache(types, start, end)
+            if from_cache
+            else fangraphs_leaders.ingest_range(types, start, end)
+        )
+        for k, v in results.items():
+            typer.echo(f"fangraphs {k}: {v} rows")
 
 
 @ingest_app.command("tjstats")

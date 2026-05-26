@@ -237,3 +237,6 @@ __pycache__/
 data/static/retrosheet/
 data/static/retrosheet_gl/
 data/retrosheet_events/
+
+# FanGraphs leaderboard raw Firecrawl cache (large staging JSON; DB is the artifact)
+data/fangraphs_cache/

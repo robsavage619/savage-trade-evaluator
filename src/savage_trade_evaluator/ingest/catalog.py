@@ -541,31 +541,41 @@ CATALOG: tuple[StatSource, ...] = (
         name="fangraphs-batting-leaders",
         source="fangraphs",
         granularity="player-season",
-        era_start=1871,
+        era_start=2010,
         era_end=None,
-        fetcher="pybaseball.batting_stats",
-        primary_columns=("wRC+", "wOBA", "WAR", "BsR", "Off", "Def", "Bat", "Fld", "Pos"),
-        target_table=None,
-        ingested=False,
-        blocked=True,
+        fetcher="savage_trade_evaluator.ingest.fangraphs_leaders.ingest_range",
+        primary_columns=(
+            "wRC+", "wOBA", "WAR", "wBsR", "Offense",
+            "Defense", "Batting", "Fielding", "Positional",
+        ),
+        target_table="fangraphs_batting_leaders",
+        ingested=True,
+        blocked=False,
         notes=(
-            "FanGraphs leaderboards. Blocked by Cloudflare; pybaseball / "
-            "curl_cffi / cloudscraper all fail. Playwright-based scraping is "
-            "the only viable path. Substituted by bWAR + Statcast for V1."
+            "FanGraphs batting leaderboards. Cloudflare gate bypassed via Firecrawl "
+            "stealth proxy hitting the /api/leaders/major-league/data endpoint "
+            "(type=8 full bundle). Curated ~50-col subset: park-adjusted rates "
+            "(wRC+/wOBA), component WAR, batted-ball, plate discipline. xMLBAMID "
+            "stored as mlbam_id for direct bridging. Backfilled 2010-2024 "
+            "(verified reachable back to 2005). Requires FIRECRAWL_API_KEY."
         ),
     ),
     StatSource(
         name="fangraphs-pitching-leaders",
         source="fangraphs",
         granularity="player-season",
-        era_start=1871,
+        era_start=2010,
         era_end=None,
-        fetcher="pybaseball.pitching_stats",
+        fetcher="savage_trade_evaluator.ingest.fangraphs_leaders.ingest_range",
         primary_columns=("FIP", "xFIP", "SIERA", "WAR", "K%", "BB%", "GB%"),
-        target_table=None,
-        ingested=False,
-        blocked=True,
-        notes="Same Cloudflare gate. Substituted by bWAR + Savant xERA.",
+        target_table="fangraphs_pitching_leaders",
+        ingested=True,
+        blocked=False,
+        notes=(
+            "FanGraphs pitching leaderboards. Same Firecrawl stealth bypass as "
+            "batting. Curated subset: FIP/xFIP/SIERA, K-BB%, LOB%, batted-ball, "
+            "FBv. Backfilled 2010-2024. Requires FIRECRAWL_API_KEY."
+        ),
     ),
     StatSource(
         name="fangraphs-prospects",

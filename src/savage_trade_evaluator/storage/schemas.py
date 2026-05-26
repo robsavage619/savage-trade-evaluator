@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 27
+SCHEMA_VERSION = 28
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -978,6 +978,116 @@ DDL_STATEMENTS: tuple[str, ...] = (
         report_date     DATE,
         PRIMARY KEY (fetched_at, player_id)
     )
+    """,
+    # === FanGraphs leaderboards (fangraphs.com, via Firecrawl stealth proxy) ===
+    """
+    CREATE TABLE IF NOT EXISTS fangraphs_batting_leaders (
+        season        INTEGER NOT NULL,
+        fg_playerid   VARCHAR NOT NULL,
+        mlbam_id      INTEGER,
+        player_name   VARCHAR,
+        team          VARCHAR,
+        position      VARCHAR,
+        age           DOUBLE,
+        g             INTEGER,
+        pa            INTEGER,
+        ab            INTEGER,
+        avg           DOUBLE,
+        obp           DOUBLE,
+        slg           DOUBLE,
+        ops           DOUBLE,
+        iso           DOUBLE,
+        babip         DOUBLE,
+        woba          DOUBLE,
+        wrc_plus      DOUBLE,
+        war           DOUBLE,
+        war_old       DOUBLE,
+        wraa          DOUBLE,
+        bb_pct        DOUBLE,
+        k_pct         DOUBLE,
+        batting       DOUBLE,
+        fielding      DOUBLE,
+        base_running  DOUBLE,
+        pos_adj       DOUBLE,
+        replacement   DOUBLE,
+        defense       DOUBLE,
+        offense       DOUBLE,
+        rar           DOUBLE,
+        dollars       DOUBLE,
+        spd           DOUBLE,
+        wbsr          DOUBLE,
+        gb_pct        DOUBLE,
+        fb_pct        DOUBLE,
+        ld_pct        DOUBLE,
+        hr_fb         DOUBLE,
+        soft_pct      DOUBLE,
+        med_pct       DOUBLE,
+        hard_pct      DOUBLE,
+        pull_pct      DOUBLE,
+        cent_pct      DOUBLE,
+        oppo_pct      DOUBLE,
+        o_swing_pct   DOUBLE,
+        z_swing_pct   DOUBLE,
+        swing_pct     DOUBLE,
+        contact_pct   DOUBLE,
+        swstr_pct     DOUBLE,
+        zone_pct      DOUBLE,
+        f_strike_pct  DOUBLE,
+        PRIMARY KEY (season, fg_playerid)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_fg_bat_mlbam
+        ON fangraphs_batting_leaders(mlbam_id, season)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS fangraphs_pitching_leaders (
+        season        INTEGER NOT NULL,
+        fg_playerid   VARCHAR NOT NULL,
+        mlbam_id      INTEGER,
+        player_name   VARCHAR,
+        team          VARCHAR,
+        age           DOUBLE,
+        w             INTEGER,
+        l             INTEGER,
+        g             INTEGER,
+        gs            INTEGER,
+        ip            DOUBLE,
+        tbf           INTEGER,
+        era           DOUBLE,
+        fip           DOUBLE,
+        xfip          DOUBLE,
+        siera         DOUBLE,
+        whip          DOUBLE,
+        war           DOUBLE,
+        rar           DOUBLE,
+        dollars       DOUBLE,
+        k_9           DOUBLE,
+        bb_9          DOUBLE,
+        hr_9          DOUBLE,
+        k_pct         DOUBLE,
+        bb_pct        DOUBLE,
+        k_bb_pct      DOUBLE,
+        lob_pct       DOUBLE,
+        babip         DOUBLE,
+        gb_pct        DOUBLE,
+        fb_pct        DOUBLE,
+        ld_pct        DOUBLE,
+        hr_fb         DOUBLE,
+        soft_pct      DOUBLE,
+        hard_pct      DOUBLE,
+        o_swing_pct   DOUBLE,
+        swstr_pct     DOUBLE,
+        zone_pct      DOUBLE,
+        f_strike_pct  DOUBLE,
+        contact_pct   DOUBLE,
+        fbv           DOUBLE,
+        PRIMARY KEY (season, fg_playerid)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_fg_pit_mlbam
+        ON fangraphs_pitching_leaders(mlbam_id, season)
     """,
 )
 
