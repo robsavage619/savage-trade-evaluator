@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 28
+SCHEMA_VERSION = 29
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -1088,6 +1088,41 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_fg_pit_mlbam
         ON fangraphs_pitching_leaders(mlbam_id, season)
+    """,
+    # === MLB Pipeline prospect rankings (mlb.com, public; current snapshot) ===
+    """
+    CREATE TABLE IF NOT EXISTS mlb_pipeline_prospects (
+        fetched_at       TIMESTAMP NOT NULL,
+        mlbam_id         INTEGER   NOT NULL,
+        rank             INTEGER,
+        player_name      VARCHAR,
+        player_name_norm VARCHAR,
+        team             VARCHAR,
+        parent_org_id    INTEGER,
+        position         VARCHAR,
+        age              DOUBLE,
+        eta              INTEGER,
+        overall_grade    DOUBLE,
+        hit              DOUBLE,
+        power            DOUBLE,
+        run              DOUBLE,
+        arm              DOUBLE,
+        field            DOUBLE,
+        fastball         DOUBLE,
+        slider           DOUBLE,
+        curveball        DOUBLE,
+        changeup         DOUBLE,
+        control          DOUBLE,
+        bat_side         VARCHAR,
+        throw_side       VARCHAR,
+        drafted          VARCHAR,
+        signed           VARCHAR,
+        PRIMARY KEY (fetched_at, mlbam_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_mlbpipe_mlbam
+        ON mlb_pipeline_prospects(mlbam_id, fetched_at)
     """,
 )
 

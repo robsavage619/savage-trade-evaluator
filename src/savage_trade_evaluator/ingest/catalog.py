@@ -905,6 +905,32 @@ CATALOG: tuple[StatSource, ...] = (
             "offensive evaluation where Statcast coverage is limited."
         ),
     ),
+    # === MLB Pipeline (mlb.com/prospects, public; current snapshot) ===
+    StatSource(
+        name="mlb-pipeline-prospects",
+        source="mlb-pipeline",
+        granularity="player-season",
+        era_start=2026,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.mlb_pipeline.ingest",
+        primary_columns=(
+            "mlbam_id", "rank", "overall_grade", "eta",
+            "hit", "power", "run", "arm", "field",
+            "fastball", "slider", "curveball", "changeup", "control",
+        ),
+        target_table="mlb_pipeline_prospects",
+        ingested=True,
+        notes=(
+            "MLB Pipeline current top-100 with 20-80 scouting grades. Plain httpx "
+            "(no Cloudflare/Firecrawl): rankings page embeds a 'data' JS global; "
+            "per-player /scouting-report endpoint carries tool grades + Overall "
+            "(FV-equivalent) + ETA in prose. player_id is MLBAM (no bridging). "
+            "Third independent current FV source alongside FG Board + TJStats. "
+            "Current snapshot only — page is current-only; keyed (fetched_at, "
+            "mlbam_id). Historical pre-2017 prospect rankings remain a known gap "
+            "(no clean free source; FG Board covers 2017+)."
+        ),
+    ),
 )
 
 

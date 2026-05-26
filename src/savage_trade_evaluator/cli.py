@@ -23,6 +23,7 @@ from savage_trade_evaluator.ingest import (
     fortification,
     front_office,
     milb_stats,
+    mlb_pipeline,
     prospects,
     retrosheet_gamelogs,
     retrosheet_transactions,
@@ -297,6 +298,18 @@ def ingest_fangraphs(
         )
         for k, v in results.items():
             typer.echo(f"fangraphs {k}: {v} rows")
+
+
+@ingest_app.command("mlb-pipeline")
+def ingest_mlb_pipeline(
+    no_grades: bool = typer.Option(
+        False, "--no-grades", help="Skip per-player scouting-report fetches (faster)."
+    ),
+) -> None:
+    """Fetch MLB Pipeline current top-100 + 20-80 scouting grades (mlb.com, public)."""
+    configure_logging()
+    n = mlb_pipeline.ingest(with_grades=not no_grades)
+    typer.echo(f"mlb-pipeline: {n} prospect rows ingested")
 
 
 @ingest_app.command("tjstats")
