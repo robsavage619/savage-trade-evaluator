@@ -27,6 +27,8 @@ import pandas as pd
 
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
+    _SIGNED_LOG_OUTCOMES,
+    _inv_signed_log,
     _split_and_impute,
     assemble_v3_combined,
     backtest_outcome_v3,
@@ -149,14 +151,19 @@ def _walk_forward_comparison(
     }
 
 
-def _summarize(draws: np.ndarray) -> dict[str, object]:
-    """Posterior summary for a single trade's predictive draws (1D array)."""
+def _summarize(draws: np.ndarray, use_median: bool = False) -> dict[str, object]:
+    """Posterior summary for a single trade's predictive draws (1D array).
+
+    use_median=True for Cauchy-dominated outcomes (e.g. dollar_surplus after
+    signed-log transform) where mean is unstable.
+    """
     rng = np.random.default_rng(137)
     embed = (
         draws if draws.size <= N_DRAWS_EMBED else rng.choice(draws, N_DRAWS_EMBED, replace=False)
     )
+    central = float(np.median(draws)) if use_median else float(draws.mean())
     return {
-        "mean": float(draws.mean()),
+        "mean": central,
         "sd": float(draws.std()),
         "p05": float(np.percentile(draws, 5)),
         "p25": float(np.percentile(draws, 25)),
@@ -251,9 +258,10 @@ def main() -> None:
             logger.warning("  SKIP %s/%s — not in dollar held-out split", event_id, recv)
             continue
         row_d = test_d[mask_d]
-        draws_d = predict(result_d.fit, row_d)[0]
+        _draws_d_raw = predict(result_d.fit, row_d)[0]
+        draws_d = _inv_signed_log(_draws_d_raw) if OUTCOME in _SIGNED_LOG_OUTCOMES else _draws_d_raw
         realized_d = float(row_d[OUTCOME].iloc[0])
-        summary_d = _summarize(draws_d)
+        summary_d = _summarize(draws_d, use_median=(OUTCOME in _SIGNED_LOG_OUTCOMES))
         in_ci_d = summary_d["p05"] <= realized_d <= summary_d["p95"]
 
         wins_idx = wins_index.get((event_id, recv))
@@ -329,12 +337,16 @@ def main() -> None:
             round(float(getattr(r, WINS_OUTCOME)), 3),
         )
 
+    _dollar_transform = OUTCOME in _SIGNED_LOG_OUTCOMES
     for split_df, split_name in ((train_d, "in_sample"), (test_d, "held_out")):
-        preds = predict(result_d.fit, split_df)
+        _preds_raw = predict(result_d.fit, split_df)
+        preds = _inv_signed_log(_preds_raw) if _dollar_transform else _preds_raw
         for i, r in enumerate(split_df.itertuples()):
             d = preds[i]
             realized = float(getattr(r, OUTCOME))
             p05, p50, p95 = (float(np.percentile(d, q)) for q in (5, 50, 95))
+            # Use median as central tendency for Cauchy-dominated dollar predictions.
+            central = float(np.median(d)) if _dollar_transform else float(d.mean())
             key = f"{int(r.trade_event_id)}:{r.receiver_bref}"
             w = wins_pred_map.get(key)
             by_trade[key] = {
@@ -349,7 +361,7 @@ def main() -> None:
                 "wins_realized": w[5] if w else None,
                 "wins_realized_in_90ci": bool(w[2] <= w[5] <= w[4]) if w else None,
                 # dollar fields (anchor)
-                "mean": round(float(d.mean()), 1),
+                "mean": round(central, 1),
                 "sd": round(float(d.std()), 1),
                 "p05": round(p05, 1),
                 "p50": round(p50, 1),

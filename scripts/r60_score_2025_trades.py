@@ -42,6 +42,9 @@ from savage_trade_evaluator.modeling.v2.features import (
 )
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
+    _SIGNED_LOG_OUTCOMES,
+    _inv_signed_log,
+    _signed_log,
     assemble_v3_combined,
     fit_v3,
     predict,
@@ -126,16 +129,23 @@ def score_outcome(
             fill = 0.0
         train[col] = train[col].astype("float64").fillna(fill)
 
+    # Apply signed-log transform before fitting for zero-inflated outcomes.
+    use_transform = outcome in _SIGNED_LOG_OUTCOMES
+    if use_transform:
+        train = train.copy()
+        train[outcome] = _signed_log(train[outcome].to_numpy(dtype=float))
+
     fit = fit_v3(train, outcome, feature_cols)
 
     # Impute 2025 features with training means
     test = impute_with_training_means(features_2025, feature_cols, fit.feature_means)
 
-    # Generate posterior predictive samples
-    preds = predict(fit, test)  # (n_test, n_samples)
+    # Generate posterior predictive samples and inverse-transform if needed.
+    preds_t = predict(fit, test)  # (n_test, n_samples)
+    preds = _inv_signed_log(preds_t) if use_transform else preds_t
 
-    # Summarize
-    mean_ = preds.mean(axis=1)
+    # Summarize — use median for Cauchy-dominated outcomes (mean undefined for nu≈2)
+    mean_ = np.median(preds, axis=1) if use_transform else preds.mean(axis=1)
     p10 = np.percentile(preds, 10, axis=1)
     p25 = np.percentile(preds, 25, axis=1)
     p50 = np.percentile(preds, 50, axis=1)
