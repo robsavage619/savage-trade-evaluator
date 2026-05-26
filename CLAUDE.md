@@ -47,7 +47,7 @@ Earlier docs over-indexed on the Pressly case — don't.
 
 - **WAR currency = bWAR** (Baseball Reference). Has full 1871+ history including stints, which we need for trade-year splits.
 - **Park-adjusted / regression-baseline stats = Baseball Savant Statcast** (xwOBA, xERA, percentile ranks). 2015+ only but covers the modern dev-fit era.
-- **FanGraphs is blocked.** Cloudflare-gated; pybaseball + curl_cffi + cloudscraper all 403. Don't waste cycles trying again — substitutes already in place. The only remaining FG-specific need is prospect FV grades for Phase 2 prospect work, which would require Playwright.
+- **FanGraphs leaderboards are blocked.** Cloudflare-gated; pybaseball + curl_cffi + cloudscraper all 403. Don't waste cycles trying again — substitutes already in place (bWAR + Savant xERA). **FanGraphs The Board (prospect FV grades) is ingested** — The Board doesn't require login, so Firecrawl stealth proxy worked. 2017–2024 scraped via `scripts/parse_fg_prospects.py` → cached to `data/prospect_fv_cache/fangraphs_{year}.csv` → `prospect_rankings` table → `trade_acquired_prospect_fv` view. For forward scoring (2025+) use TJStats instead (MLBAM IDs, no bridging needed).
 - **Personnel: two sources.** MLB Stats API `/teams/{id}/coaches` for managers + assistants (fast). Baseball Reference per-season team pages for GM + POBO + Farm/Scouting Director (slow scrape).
 - **Lahman is broken** (zip-file unzip error in pybaseball). Don't try to use it.
 
