@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 26
+SCHEMA_VERSION = 27
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -901,6 +901,83 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_rpm_matchup
         ON retrosheet_pa_matchups(season, bat_hand, pit_hand)
+    """,
+    # === TJStats tables (tjstats.ca) ===
+    """
+    CREATE TABLE IF NOT EXISTS tjstats_prospect_rankings (
+        fetched_at       TIMESTAMP NOT NULL,
+        player_id        VARCHAR   NOT NULL,
+        rank_value       INTEGER,
+        prev_rank        INTEGER,
+        player_name      VARCHAR   NOT NULL,
+        player_name_norm VARCHAR,
+        position         VARCHAR,
+        parent_org_id    VARCHAR,
+        fv               DOUBLE,
+        age              DOUBLE,
+        height           VARCHAR,
+        weight           DOUBLE,
+        bat_side         VARCHAR,
+        throw_side       VARCHAR,
+        report           VARCHAR,
+        PRIMARY KEY (fetched_at, player_id)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_tjstats_rank_playerid
+        ON tjstats_prospect_rankings(player_id, fetched_at)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS tjstats_scout_pitchers (
+        fetched_at      TIMESTAMP NOT NULL,
+        player_id       VARCHAR   NOT NULL,
+        player_name     VARCHAR,
+        rank_value      INTEGER,
+        fv              DOUBLE,
+        fastball_pv     DOUBLE,
+        fastball_fv     DOUBLE,
+        cutter_pv       DOUBLE,
+        cutter_fv       DOUBLE,
+        slider_pv       DOUBLE,
+        slider_fv       DOUBLE,
+        curveball_pv    DOUBLE,
+        curveball_fv    DOUBLE,
+        changeup_pv     DOUBLE,
+        changeup_fv     DOUBLE,
+        splitter_pv     DOUBLE,
+        splitter_fv     DOUBLE,
+        command_pv      DOUBLE,
+        command_fv      DOUBLE,
+        eta             INTEGER,
+        risk            VARCHAR,
+        report          VARCHAR,
+        report_date     DATE,
+        PRIMARY KEY (fetched_at, player_id)
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS tjstats_scout_batters (
+        fetched_at      TIMESTAMP NOT NULL,
+        player_id       VARCHAR   NOT NULL,
+        player_name     VARCHAR,
+        rank_value      INTEGER,
+        fv              DOUBLE,
+        hit_pv          DOUBLE,
+        hit_fv          DOUBLE,
+        power_pv        DOUBLE,
+        power_fv        DOUBLE,
+        decisions_pv    DOUBLE,
+        decisions_fv    DOUBLE,
+        speed_pv        DOUBLE,
+        speed_fv        DOUBLE,
+        defense_pv      DOUBLE,
+        defense_fv      DOUBLE,
+        eta             INTEGER,
+        risk            VARCHAR,
+        report          VARCHAR,
+        report_date     DATE,
+        PRIMARY KEY (fetched_at, player_id)
+    )
     """,
 )
 

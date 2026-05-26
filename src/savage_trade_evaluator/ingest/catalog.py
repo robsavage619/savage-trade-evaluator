@@ -572,7 +572,7 @@ CATALOG: tuple[StatSource, ...] = (
         source="fangraphs",
         granularity="player-season",
         era_start=2017,
-        era_end=2024,
+        era_end=2026,
         fetcher="savage_trade_evaluator.ingest.prospects.ingest_range",
         primary_columns=("fv", "risk", "eta", "fangraphs_player_id"),
         target_table="prospect_rankings",
@@ -813,8 +813,8 @@ CATALOG: tuple[StatSource, ...] = (
         era_end=None,
         fetcher="tjstats.ca/wp-json/tjstats/v1/rankings",
         primary_columns=("player_id", "rank_value", "name", "fv", "report"),
-        target_table=None,
-        ingested=False,
+        target_table="tjstats_prospect_rankings",
+        ingested=True,
         notes=(
             "Live top-100 MLB prospect rankings with FV grades + free-text "
             "scouting reports. player_id is MLBAM (no bridging needed). "
@@ -837,8 +837,8 @@ CATALOG: tuple[StatSource, ...] = (
             "changeup_pv", "changeup_fv", "splitter_pv", "splitter_fv",
             "command_pv", "command_fv", "eta", "risk",
         ),
-        target_table=None,
-        ingested=False,
+        target_table="tjstats_scout_pitchers",
+        ingested=True,
         notes=(
             "Per-pitcher 20-80 grades on individual pitch types (present + future "
             "value). Richer than FanGraphs aggregate FV — gives the dev-fit feature "
@@ -857,8 +857,8 @@ CATALOG: tuple[StatSource, ...] = (
             "decisions_pv", "decisions_fv", "speed_pv", "speed_fv",
             "defense_pv", "defense_fv", "eta",
         ),
-        target_table=None,
-        ingested=False,
+        target_table="tjstats_scout_batters",
+        ingested=True,
         notes=(
             "Per-hitter 20-80 grades: hit / power / decisions / speed / defense, "
             "present + future. Current snapshot only."

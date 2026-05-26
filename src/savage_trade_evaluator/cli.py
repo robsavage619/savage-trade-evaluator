@@ -26,6 +26,7 @@ from savage_trade_evaluator.ingest import (
     retrosheet_gamelogs,
     retrosheet_transactions,
     spotrac,
+    tjstats,
     standings,
     statcast_extended,
     stats,
@@ -246,7 +247,7 @@ def ingest_front_office(
 def ingest_prospects(
     year: int | None = typer.Option(None, help="Single year to ingest."),
     start: int = typer.Option(2017, help="First year of FanGraphs The Board cache."),
-    end: int = typer.Option(2024, help="Last year."),
+    end: int = typer.Option(2026, help="Last year."),
 ) -> None:
     """Load FanGraphs The Board FV grades from data/prospect_fv_cache/ CSVs."""
     configure_logging()
@@ -256,6 +257,15 @@ def ingest_prospects(
     else:
         n = prospects.ingest_range(start, end)
         typer.echo(f"ingested {n} prospect FV rows across {end - start + 1} year(s)")
+
+
+@ingest_app.command("tjstats")
+def ingest_tjstats() -> None:
+    """Fetch TJStats rankings + scouting grades (live WP JSON API)."""
+    configure_logging()
+    totals = tjstats.ingest_all()
+    for endpoint, n in totals.items():
+        typer.echo(f"tjstats/{endpoint}: {n} rows ingested")
 
 
 @ingest_app.command("game-logs")
