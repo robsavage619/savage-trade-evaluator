@@ -18,7 +18,6 @@ import pandas as pd
 from savage_trade_evaluator.modeling.v2.outcomes import build_outcomes_windowed
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
-    _split_and_impute,
     assemble_v3_combined,
     backtest_outcome_v3,
 )
@@ -40,16 +39,10 @@ def _assemble_with_window(war_start: int, war_end: int) -> pd.DataFrame:
 
 def _run(label: str, combined: pd.DataFrame, outcome: str) -> dict:
     feature_cols = V3_OUTCOME_FEATURES[outcome]
-    train, test = _split_and_impute(
+    result = backtest_outcome_v3(
         outcome=outcome,
         feature_cols=feature_cols,
         combined=combined,
-    )
-    result = backtest_outcome_v3(
-        outcome=outcome,
-        train=train,
-        test=test,
-        feature_cols=feature_cols,
     )
     credible = int(result.credible_features["credible"].sum())
     return {
