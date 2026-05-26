@@ -625,7 +625,7 @@ export function IntelligenceReport({ report }: { report: AnalysisReport }) {
                 <XAxis dataKey="year" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} domain={[0, 100]} />
                 <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #1a2238', borderRadius: 6, fontSize: 10, fontFamily: 'JetBrains Mono' }} labelStyle={{ color: '#cdd5f0' }}
-                  formatter={(val: number, _n, item) => { const note = (item?.payload as { note?: string })?.note; return [`${val}${note ? ` — ${note}` : ''}`, 'competitiveness'] }} />
+                  formatter={(val, _n, item) => { const note = (item?.payload as { note?: string })?.note; return [`${val}${note ? ` — ${note}` : ''}`, 'competitiveness'] }} />
                 <Area type="monotone" dataKey="competitiveness" stroke="#ff6a13" strokeWidth={2} fill="url(#contGrad)" />
               </AreaChart>
             </ResponsiveContainer>

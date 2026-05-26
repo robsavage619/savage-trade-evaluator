@@ -9,6 +9,11 @@ export function fmtM(v: number, signed = false): string {
   return `${sign}$${m.toFixed(1)}M`
 }
 
+export function fmtWAR(v: number, signed = false): string {
+  const sign = signed && v >= 0 ? '+' : ''
+  return `${sign}${v.toFixed(2)}W`
+}
+
 /** Minimal Gaussian posterior: the V3 model is linear-Gaussian, so mean + sd
  *  reconstruct the predictive density exactly; p05/p95 give the 90% band. */
 export type CurvePosterior = {
@@ -26,11 +31,13 @@ export function PosteriorCurve({
   realized,
   width = 460,
   height = 150,
+  formatter = fmtM,
 }: {
   post: CurvePosterior
   realized: number | null
   width?: number
   height?: number
+  formatter?: (v: number, signed?: boolean) => string
 }) {
   const padX = 8
   const anchor = realized ?? post.mean
@@ -75,13 +82,13 @@ export function PosteriorCurve({
         <g>
           <line x1={x(realized)} x2={x(realized)} y1={8} y2={baseY} stroke="#3ddc97" strokeWidth={2} />
           <text x={x(realized)} y={6} fontSize={10} textAnchor="middle" fill="#3ddc97" fontFamily="JetBrains Mono">
-            realized {fmtM(realized)}
+            realized {formatter(realized)}
           </text>
         </g>
       ) : null}
       {[post.p05, post.mean, post.p95].map((v, i) => (
         <text key={i} x={x(v)} y={height - 8} fontSize={9} textAnchor="middle" fill="rgba(138,150,192,0.8)" fontFamily="JetBrains Mono">
-          {fmtM(v)}
+          {formatter(v)}
         </text>
       ))}
     </svg>

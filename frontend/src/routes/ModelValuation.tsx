@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { Target, CheckCircle2, AlertTriangle, Sigma, Coins, BarChart3, Eye } from 'lucide-react'
 import { Section, Stat } from '../components/Section'
 import { TeamLogo } from '../components/TeamLogo'
-import { PosteriorCurve, fmtM } from '../components/PosteriorCurve'
+import { PosteriorCurve, fmtM, fmtWAR } from '../components/PosteriorCurve'
 import { modelPosteriors, featureLabel, type ModelCard } from '../lib/modelPosteriors'
 
 /** Plain-English primer so the page reads without a stats background. */
@@ -11,7 +11,7 @@ function HowToRead() {
     {
       icon: Coins,
       title: 'What the model predicts',
-      body: 'Dollar surplus: the on-field value an acquiring club gets from a trade, converted to dollars, minus the salary it pays — over the 3 years after the deal. Positive = the club came out ahead.',
+      body: 'Surplus wins: how many wins the acquiring club gained above what it paid for — a $700K pre-arb player who earns 3 WAR is a much bigger bargain than a $20M veteran who earns the same 3 WAR. Dollar value is shown as a secondary anchor.',
     },
     {
       icon: BarChart3,
@@ -72,6 +72,8 @@ function ChartKey() {
 
 function ModelTradeCard({ card }: { card: ModelCard }) {
   const tail = card.role === 'tail_miss'
+  const wPost = card.wins_posterior
+  const inCi = wPost != null ? card.wins_realized_in_90ci : card.realized_in_90ci
   return (
     <div className={`card p-5 ${tail ? 'border-amber-500/40' : ''}`}>
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -89,7 +91,7 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
             </div>
           </div>
         </div>
-        {card.realized_in_90ci ? (
+        {inCi ? (
           <span className="chip" style={{ color: '#3ddc97', borderColor: 'rgba(61,220,151,0.4)' }}>
             <CheckCircle2 className="h-3 w-3" /> in 90% CI
           </span>
@@ -100,29 +102,61 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
         )}
       </div>
 
-      <PosteriorCurve post={card.posterior} realized={card.realized} />
-
-      <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-700 pt-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Model mean</div>
-          <div className="mono text-[15px] font-semibold tabular text-ink-100">{fmtM(card.posterior.mean, true)}</div>
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">90% interval</div>
-          <div className="mono text-[13px] tabular text-ink-300">
-            [{fmtM(card.posterior.p05)}, {fmtM(card.posterior.p95)}]
+      {/* Wins curve — headline */}
+      {wPost ? (
+        <>
+          <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-ink-400">Surplus wins (above cost basis)</div>
+          <PosteriorCurve post={wPost} realized={card.wins_realized ?? null} formatter={fmtWAR} />
+          <div className="mt-2 grid grid-cols-3 gap-3">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Mean</div>
+              <div className="mono text-[15px] font-semibold tabular text-ink-100">{fmtWAR(wPost.mean, true)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">90% interval</div>
+              <div className="mono text-[13px] tabular text-ink-300">
+                [{fmtWAR(wPost.p05)}, {fmtWAR(wPost.p95)}]
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Realized</div>
+              <div className="mono text-[15px] font-semibold tabular" style={{ color: '#3ddc97' }}>
+                {card.wins_realized != null ? fmtWAR(card.wins_realized) : '—'}
+              </div>
+            </div>
           </div>
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Realized</div>
-          <div className="mono text-[15px] font-semibold tabular" style={{ color: '#3ddc97' }}>{fmtM(card.realized)}</div>
-        </div>
-      </div>
+          {/* Dollar anchor — secondary */}
+          <div className="mt-3 border-t border-ink-800 pt-2.5 text-[11px] text-ink-500">
+            Dollar anchor: mean {fmtM(card.posterior.mean, true)} · realized {fmtM(card.realized)}
+          </div>
+        </>
+      ) : (
+        /* Fallback to dollar curve if wins not available */
+        <>
+          <PosteriorCurve post={card.posterior} realized={card.realized} />
+          <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-700 pt-3">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Model mean</div>
+              <div className="mono text-[15px] font-semibold tabular text-ink-100">{fmtM(card.posterior.mean, true)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">90% interval</div>
+              <div className="mono text-[13px] tabular text-ink-300">
+                [{fmtM(card.posterior.p05)}, {fmtM(card.posterior.p95)}]
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Realized</div>
+              <div className="mono text-[15px] font-semibold tabular" style={{ color: '#3ddc97' }}>{fmtM(card.realized)}</div>
+            </div>
+          </div>
+        </>
+      )}
 
       {tail ? (
         <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-[11px] leading-relaxed text-ink-300">
           <span className="font-semibold text-amber-300">Known limitation.</span> On rare, once-a-decade
-          blockbusters, the model pulls its estimate toward the typical trade — Soto's real $150M surplus sits well
+          blockbusters, the model pulls its estimate toward the typical trade — Soto's real surplus sits well
           above its predicted range. That's the model being cautious about extreme outliers by design, not a bug. We
           show it on purpose: it's accurate on ordinary trades and deliberately conservative on the giants.
         </div>
@@ -132,7 +166,7 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
 }
 
 export default function ModelValuation() {
-  const { scoreboard, comparison, credible_features, cards, train_window, test_window } = modelPosteriors
+  const { scoreboard, comparison, wins_comparison, credible_features, cards, train_window, test_window } = modelPosteriors
   const covered = cards.filter((c) => c.role === 'covered')
   const tail = cards.filter((c) => c.role === 'tail_miss')
 
@@ -146,9 +180,10 @@ export default function ModelValuation() {
           Real posterior valuations — trained {train_window[0]}–{train_window[1]}, scored {test_window[0]}–{test_window[1]}
         </h1>
         <p className="mt-2 max-w-[760px] text-[13px] leading-relaxed text-ink-400">
-          Every distribution below is genuine posterior-predictive output from the frozen V3 dollar-surplus
-          model — no illustrative numbers. The featured trades are <span className="text-ink-200">held out</span> of
-          training, so we can score the model's predicted distribution against what actually happened.
+          Every distribution below is genuine posterior-predictive output from the frozen V3 model — no illustrative
+          numbers. Headline metric is <span className="text-ink-200">surplus wins</span>: how many wins the acquiring
+          club gained above what it paid for at market rate. Dollar value is shown as a secondary anchor. The featured
+          trades are held out of training, so we can score against what actually happened.
         </p>
       </motion.div>
 
@@ -157,10 +192,13 @@ export default function ModelValuation() {
       {/* Scoreboard */}
       <Section eyebrow="Calibration scoreboard" title="How the model does across all held-out trades" hint="Across every trade it never trained on, how close did it get — and was it honest about its own uncertainty?">
         <div className="card flex flex-wrap items-end gap-10 p-5">
-          <Stat label="90% coverage" value={`${(scoreboard.coverage_90 * 100).toFixed(0)}%`} sub="of outcomes landed inside the predicted range — target is 90%, so it's honest about uncertainty" tone="pos" />
-          <Stat label="CRPS" value={fmtM(scoreboard.crps)} sub="typical prediction error, penalizing overconfidence — lower is better" />
-          <Stat label="MAE" value={fmtM(scoreboard.mae)} sub="average dollar miss of the center estimate" />
+          <Stat label="Wins 90% coverage" value={`${(scoreboard.wins_coverage_90 * 100).toFixed(0)}%`} sub="of actual surplus-wins outcomes landed inside the model's predicted range — target is 90%" tone="pos" />
+          <Stat label="Wins CRPS" value={`${scoreboard.wins_crps.toFixed(2)} W`} sub="typical prediction error in wins — lower is better; penalizes overconfidence" />
+          <Stat label="Wins MAE" value={`${scoreboard.wins_mae.toFixed(2)} W`} sub="average miss of the center estimate, in wins above cost basis" />
           <Stat label="Held-out trades" value={scoreboard.test_n.toLocaleString()} sub={`scored · ${scoreboard.train_n.toLocaleString()} used for training`} />
+        </div>
+        <div className="mt-2 rounded border border-ink-800 bg-ink-900/30 px-4 py-2.5 text-[11px] text-ink-500">
+          Dollar anchor — 90% coverage {(scoreboard.coverage_90 * 100).toFixed(0)}% · CRPS {fmtM(scoreboard.crps)} · MAE {fmtM(scoreboard.mae)}
         </div>
       </Section>
 
@@ -174,23 +212,23 @@ export default function ModelValuation() {
           <div className="card p-5">
             <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">vs. player-quality-only</div>
             <div className="mono mt-1 text-[30px] font-semibold leading-none text-positive-500">
-              +{(comparison.mean_skill_vs_quality_ex_break * 100).toFixed(0)}%
+              +{(wins_comparison.mean_skill_vs_quality_ex_break * 100).toFixed(0)}%
             </div>
             <div className="mt-1.5 text-[12px] leading-relaxed text-ink-400">
               The baseline that rates the player alone and ignores which team acquires him. Our model is{' '}
-              <span className="text-ink-200">~30% more accurate</span> — adding receiving-team context is what does it.
-              This is the thesis, validated.
+              <span className="text-ink-200">~30% more accurate on surplus wins</span> — adding receiving-team context
+              is what does it. This is the thesis, validated.
             </div>
           </div>
           <div className="card p-5">
             <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">vs. predict-the-mean</div>
             <div className="mono mt-1 text-[30px] font-semibold leading-none text-ink-100">
-              {comparison.mean_skill_vs_intercept_ex_break >= 0 ? '+' : ''}
-              {(comparison.mean_skill_vs_intercept_ex_break * 100).toFixed(1)}%
+              {wins_comparison.mean_skill_vs_intercept_ex_break >= 0 ? '+' : ''}
+              {(wins_comparison.mean_skill_vs_intercept_ex_break * 100).toFixed(1)}%
             </div>
             <div className="mt-1.5 text-[12px] leading-relaxed text-ink-400">
-              The floor that guesses the league-average surplus every time. We're about even here on raw dollars — a few
-              huge blockbusters swamp this metric for any model — so we don't oversell it.
+              The floor that guesses the league-average surplus wins every time. The model beats it meaningfully — the
+              Student-t likelihood lets context features dominate over blockbuster noise.
             </div>
           </div>
         </div>
@@ -205,7 +243,7 @@ export default function ModelValuation() {
               </tr>
             </thead>
             <tbody className="mono tabular">
-              {comparison.folds.map((f) => (
+              {wins_comparison.folds.map((f) => (
                 <tr key={f.label} className="border-b border-ink-800 last:border-0">
                   <td className="px-4 py-2 text-ink-200">
                     {f.label}

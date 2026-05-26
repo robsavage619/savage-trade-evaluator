@@ -77,6 +77,8 @@ export type BuyLowCandidate = {
   yearsControlled: number
   /** Year-1 dev-adjusted WAR projection (display). */
   adjWar: number
+  /** Surplus WAR ÷ year-1 cost (in market-WAR units). Higher = more production per dollar. */
+  valueScore: number
 }
 
 export function computeBuyLow(
@@ -129,15 +131,18 @@ export function computeBuyLow(
 
       const age = player.age ?? 27
       const yr1War = Math.max(0, war + agingDelta(age))
+      const yr1Cost = arb.projections[0]
+      const costInWar = yr1Cost / MARKET_RATE
       results.push({
         player,
         sourceTeam: team,
         sourcePosture: idx.windowPosture,
         holesFilled,
         surplusWar,
-        yr1Cost: arb.projections[0],
+        yr1Cost,
         yearsControlled: arb.yearsControlled,
         adjWar: devAdjust(yr1War, age, devMul),
+        valueScore: costInWar > 0 ? surplusWar / costInWar : surplusWar,
       })
     }
   }

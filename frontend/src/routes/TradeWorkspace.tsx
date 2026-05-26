@@ -9,7 +9,7 @@ import { ClaudeCodeDrawer } from '../components/ClaudeCodeDrawer'
 import type { TradeLeg } from '../types'
 import { PlayerCard } from '../components/PlayerCard'
 import { PersonnelTriangle } from '../components/PersonnelTriangle'
-import { PosteriorCurve, fmtM } from '../components/PosteriorCurve'
+import { PosteriorCurve, fmtM, fmtWAR } from '../components/PosteriorCurve'
 import { loadTradePosterior, type TradePosterior } from '../lib/modelPosteriors'
 import { ContextChips, CONTEXT_ICONS } from '../components/ContextChips'
 import { Section, Stat } from '../components/Section'
@@ -45,17 +45,21 @@ function pLoss(post: TradePosterior): number {
   return normalCdf((0 - post.mean) / post.sd)
 }
 
-/** Real team-side dollar-surplus posterior for one receiving team. Reads the V3
- *  model export; renders the actual posterior with the realized outcome marked. */
+/** Real team-side posterior for one receiving team. Leads with surplus wins when
+ *  available; falls back to dollar surplus for older in-sample entries. */
 function TeamSurplusCard({ team, post }: { team: string; post: TradePosterior }) {
   const held = post.split === 'held_out'
+  const hasWins = post.wins_mean != null && post.wins_sd != null && post.wins_p05 != null && post.wins_p95 != null
+  const wPost = hasWins ? { mean: post.wins_mean!, sd: post.wins_sd!, p05: post.wins_p05!, p95: post.wins_p95! } : null
   return (
     <div className="card p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <TeamLogo team={team} size={32} />
           <div>
-            <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Receiving team · dollar surplus</div>
+            <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">
+              {wPost ? 'Receiving team · surplus wins' : 'Receiving team · dollar surplus'}
+            </div>
             <div className="text-[14px] font-semibold tracking-tight text-ink-100">
               {post.acquired_players.slice(0, 3).join(', ')}
             </div>
@@ -68,21 +72,48 @@ function TeamSurplusCard({ team, post }: { team: string; post: TradePosterior })
           {held ? 'held out' : 'in-sample'}
         </span>
       </div>
-      <PosteriorCurve post={post} realized={post.realized} width={320} height={130} />
-      <div className="mt-3 grid grid-cols-3 gap-2 border-t border-ink-700 pt-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Model mean</div>
-          <div className="mono text-[14px] font-semibold tabular text-ink-100">{fmtM(post.mean, true)}</div>
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">90% interval</div>
-          <div className="mono text-[12px] tabular text-ink-300">[{fmtM(post.p05)}, {fmtM(post.p95)}]</div>
-        </div>
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Realized</div>
-          <div className="mono text-[14px] font-semibold tabular" style={{ color: '#3ddc97' }}>{fmtM(post.realized)}</div>
-        </div>
-      </div>
+      {wPost ? (
+        <>
+          <PosteriorCurve post={wPost} realized={post.wins_realized ?? null} width={320} height={130} formatter={fmtWAR} />
+          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-ink-700 pt-3">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Mean</div>
+              <div className="mono text-[14px] font-semibold tabular text-ink-100">{fmtWAR(wPost.mean, true)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">90% interval</div>
+              <div className="mono text-[12px] tabular text-ink-300">[{fmtWAR(wPost.p05)}, {fmtWAR(wPost.p95)}]</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Realized</div>
+              <div className="mono text-[14px] font-semibold tabular" style={{ color: '#3ddc97' }}>
+                {post.wins_realized != null ? fmtWAR(post.wins_realized) : '—'}
+              </div>
+            </div>
+          </div>
+          <div className="mt-2 text-[11px] text-ink-500">
+            Dollar anchor: mean {fmtM(post.mean, true)} · realized {fmtM(post.realized)}
+          </div>
+        </>
+      ) : (
+        <>
+          <PosteriorCurve post={post} realized={post.realized} width={320} height={130} />
+          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-ink-700 pt-3">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Model mean</div>
+              <div className="mono text-[14px] font-semibold tabular text-ink-100">{fmtM(post.mean, true)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">90% interval</div>
+              <div className="mono text-[12px] tabular text-ink-300">[{fmtM(post.p05)}, {fmtM(post.p95)}]</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Realized</div>
+              <div className="mono text-[14px] font-semibold tabular" style={{ color: '#3ddc97' }}>{fmtM(post.realized)}</div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -283,7 +314,7 @@ export default function TradeWorkspace() {
           <Section
             eyebrow="V3 Model · Context-aware valuation"
             title="What this trade is worth to each acquiring club"
-            hint="Real posterior over 3-year dollar surplus from the frozen V3 model. Orange = predicted distribution + 90% interval; green = realized outcome."
+            hint="Real V3 posterior — surplus wins above cost basis (primary), dollar surplus anchor below. Orange = predicted distribution + 90% interval; green = realized outcome."
           >
             {scoredTeams.length ? (
               <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -322,7 +353,7 @@ export default function TradeWorkspace() {
             />
           </Section>
 
-          <Section eyebrow="Risk" title="Loss tail" hint="P(this trade nets negative 3-yr dollar surplus for the primary acquirer).">
+          <Section eyebrow="Risk" title="Loss tail" hint="P(this trade nets negative surplus wins for the primary acquirer) — estimated from the dollar-surplus posterior.">
             <div className="card flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-ink-300" />
