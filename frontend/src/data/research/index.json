@@ -1,6 +1,15 @@
 {
   "articles": [
     {
+      "slug": "pitching-coach-mirage",
+      "title": "The Pitching Coach Mirage",
+      "subtitle": "A 3.7-run range across 33 pitching coaches looks like the most exploitable personnel signal in baseball. After a proper Bayesian shrinkage test, 32 of 33 effects collapse to noise.",
+      "published_at": "2026-05-28",
+      "tags": ["pitching", "coaching", "methodology", "bayesian"],
+      "summary": "Per-coach raw FIP delta on acquired pitchers spans Oscar Marin's −2.01 to Mel Stottlemyre Jr.'s +1.65 — a range that would be the most exploitable personnel signal in the trade market if it were real. Partial-pooling Bayesian shrinkage tests the claim honestly. One coach survives; thirty-two do not. The same model at the org level finds four credible signals — all in the direction of orgs that worsen acquired pitchers, none in the direction of orgs that fix them.",
+      "read_time_minutes": 10
+    },
+    {
       "slug": "gm-edge-decomposition",
       "title": "The Edge Isn't in the Farm",
       "subtitle": "Top GMs don't beat the market on prospect math — the decomposition isolates where the $5M gap actually comes from",

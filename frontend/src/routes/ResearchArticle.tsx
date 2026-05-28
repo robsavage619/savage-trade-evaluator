@@ -2,13 +2,14 @@ import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Clock, Tag } from 'lucide-react'
 import {
   ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, ZAxis,
-  Tooltip, ReferenceLine, CartesianGrid, Label, LabelList,
+  Tooltip, ReferenceLine, CartesianGrid, Label, LabelList, ErrorBar,
   BarChart, Bar, Cell, Legend,
 } from 'recharts'
 
 // ── article JSON loader ───────────────────────────────────────────────────────
 
 const ARTICLES: Record<string, () => Promise<{ default: Article }>> = {
+  'pitching-coach-mirage': () => import('../data/research/pitching-coach-mirage.json'),
   'gm-edge-decomposition': () => import('../data/research/gm-edge-decomposition.json'),
   'gm-trade-ranking': () => import('../data/research/gm-trade-ranking.json'),
   'international-pitcher-pipeline': () => import('../data/research/international-pitcher-pipeline.json'),
@@ -23,7 +24,7 @@ type StatRowSection = { type: 'stat_row'; stats: { label: string; value: string;
 type CalloutSection = { type: 'callout'; variant: 'finding' | 'methodology' | 'warning'; title: string; content: string }
 type ChartSection = {
   type: 'chart'
-  chart_type: 'scatter' | 'bar' | 'grouped_bar' | 'horizontal_bar'
+  chart_type: 'scatter' | 'bar' | 'grouped_bar' | 'horizontal_bar' | 'forest'
   title: string
   x_key: string
   y_key?: string
@@ -32,6 +33,8 @@ type ChartSection = {
   label_key?: string
   size_key?: string
   highlight_labels?: string[]
+  lo_key?: string
+  hi_key?: string
   x_label?: string
   y_label?: string
   caption: string
@@ -275,10 +278,51 @@ function GroupedBarPlot({ section }: { section: ChartSection }) {
   )
 }
 
+function ForestPlot({ section }: { section: ChartSection }) {
+  // x = effect; y = label (category)
+  const data = (section.data as Record<string, number | string>[]).map((d) => {
+    const mean = d[section.y_key!] as number
+    const lo = d[section.lo_key!] as number
+    const hi = d[section.hi_key!] as number
+    return { ...d, _err: [mean - lo, hi - mean] }
+  })
+  return (
+    <div className="rounded-lg border border-ink-700 bg-ink-900 p-5">
+      <div className="mb-1 text-[12px] font-semibold text-ink-100">{section.title}</div>
+      <ResponsiveContainer width="100%" height={Math.max(300, data.length * 22 + 80)}>
+        <ScatterChart layout="vertical" margin={{ top: 12, right: 30, bottom: 40, left: 160 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(138,150,192,0.07)" />
+          <XAxis type="number" dataKey={section.y_key!} stroke="#5a6896" tick={{ fontSize: 11 }}>
+            {section.x_label && <Label value={section.x_label} position="bottom" offset={24} fill="#8a96c0" fontSize={11} />}
+          </XAxis>
+          <YAxis type="category" dataKey={section.x_key} stroke="#8a96c0" tick={{ fontSize: 10 }} width={150} interval={0} />
+          <ReferenceLine x={0} stroke="rgba(138,150,192,0.45)" strokeDasharray="2 2" />
+          <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ payload }) => {
+            const p = payload?.[0]?.payload
+            if (!p) return null
+            return (
+              <div className="card px-3 py-2 text-[11px]">
+                <div className="font-semibold text-ink-100">{p[section.x_key]}</div>
+                <div className="mono mt-1 tabular text-ink-300">{(p[section.y_key!] as number).toFixed(3)} [{(p[section.lo_key!] as number).toFixed(2)}, {(p[section.hi_key!] as number).toFixed(2)}]</div>
+                {section.size_key && <div className="mono tabular text-ink-400">n = {p[section.size_key]}</div>}
+              </div>
+            )
+          }} />
+          <Scatter data={data} fill="rgba(255,138,61,0.9)" shape="circle">
+            <ErrorBar dataKey="_err" width={0} stroke="rgba(255,138,61,0.55)" strokeWidth={2} direction="x" />
+          </Scatter>
+        </ScatterChart>
+      </ResponsiveContainer>
+      <p className="mt-2 text-[11px] leading-relaxed text-ink-500">{section.caption}</p>
+    </div>
+  )
+}
+
 function ArticleChart({ section }: { section: ChartSection }) {
   if (section.chart_type === 'scatter') return <ScatterPlot section={section} />
   if (section.chart_type === 'grouped_bar') return <GroupedBarPlot section={section} />
   if (section.chart_type === 'horizontal_bar') return <HorizontalBarPlot section={section} />
+  if (section.chart_type === 'forest') return <ForestPlot section={section} />
   return <BarPlot section={section} />
 }
 

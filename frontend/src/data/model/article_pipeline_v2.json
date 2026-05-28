@@ -1,0 +1,173 @@
+{
+  "generated_at": "2026-05-28",
+  "sources_synthesized": ["original 4-agent sweep", "GM panel feedback (4 personas)", "panel-flagged category gaps"],
+  "filter_applied": "visual potential + actionable + at least one panel persona said it would change a decision",
+
+  "tier_1_flagship_candidates": [
+    {
+      "rank": 1,
+      "slug": "the-sell-window",
+      "headline": "The K% Sell Window",
+      "what_it_uncovers": "Companion to the published K-trajectory piece, inverted to the seller's POV. Identifies the exact pre-trade season profile that maximizes return on a pitcher sale — and the orgs that systematically miss it.",
+      "why_now": "Three of four GM personas demanded seller-side framing. The K-trajectory article was the highest-rated piece on the site (mean 8.0). Inverting it is the single highest-yield article on the pipeline.",
+      "evidence_status": "Already in the data — Q4 quartile means already computed. Need to add sell-side aggregates by seller-team identity to identify which orgs sell late.",
+      "visuals": [
+        "Quartile bar showing pre-trade K% trend × FV return per WAR shipped",
+        "Per-org scatter: how often each team's pitcher trades land in Q4 (the optimal sell window)",
+        "Calendar heatmap: which months produce the most Q4 sales"
+      ],
+      "actionability": "A rebuilder reads this and knows the optimal months and pitcher profiles to maximize FV haul. A contender reads this and knows what the seller knows about their target.",
+      "panel_demand": "explicit from rebuild + old-school + analytics-midmarket"
+    },
+    {
+      "rank": 2,
+      "slug": "the-pitching-coach-effect",
+      "headline": "The Pitching Coach Is the Edge",
+      "what_it_uncovers": "When you decompose the 'org dev fit' GM-edge signal further, how much of it is the pitching coach's identity vs the rest of the staff? Public coaches data exists in our DB; nobody has wired it to trade outcomes.",
+      "why_now": "Old-school veteran flagged this as the single biggest missing covariate ('drives more of the org dev fit effect than the GM does'). Mid-market wants it for similar reasons.",
+      "evidence_status": "Personnel agent in earlier sweep already pulled per-coach FIP deltas: range −2.01 (Marin) to +1.65 (Stottlemyre Jr.), but ANOVA p=0.74 across 33 coaches. The story is in the partial-pooling Bayesian model the agent flagged but didn't run.",
+      "visuals": [
+        "Horizontal bar of pitching coaches ranked by acquired-pitcher FIP delta (with credibility intervals from Bayesian partial pooling)",
+        "Coach × org dev fit heatmap — does the coach drive the dev fit feature or vice versa",
+        "Time series: when a coach changes teams, what happens to the new org's acquired-pitcher outcomes"
+      ],
+      "actionability": "Reframes 'we should trade for org X' to 'we should trade for coach Y at org X.' Could materially change which trade partners get prioritized.",
+      "panel_demand": "explicit from old-school, implicit from mid-market"
+    },
+    {
+      "rank": 3,
+      "slug": "where-prospects-appreciate",
+      "headline": "Where Your Prospects Go to Win",
+      "what_it_uncovers": "Mirror of the org-fit hitter laboratory but seller-side. When a rebuilder ships a 50 FV prospect, the destination org's dev infrastructure predicts how much value they're leaving on the table.",
+      "why_now": "Rebuild persona's top request. Inverts a finding (org dev fit predicts acquired-player improvement) into a seller's decision tool (which destinations will most appreciate my outgoing prospects).",
+      "evidence_status": "Need to: compute per-(destination_org, FV_grade) MLB WAR delta on shipped prospects. Org dev fit features already exist; this just reorients them.",
+      "visuals": [
+        "30-team matrix: rows = sending org, cols = receiving org, cells = mean WAR delta of shipped prospects",
+        "Scatter: destination org dev fit vs realized prospect MLB-WAR over 3 years",
+        "Per-FV-grade bar: how much surplus a 45 / 50 / 55 / 60 FV prospect typically captures by destination tier"
+      ],
+      "actionability": "Direct rebuilder use case — 'don't ship to org X if you can get the same package from org Y, because your prospect will appreciate 40% more at Y.'",
+      "panel_demand": "explicit from rebuild"
+    }
+  ],
+
+  "tier_2_strong_supporting_candidates": [
+    {
+      "rank": 4,
+      "slug": "the-august-trap",
+      "headline": "The August Trap",
+      "what_it_uncovers": "Post-deadline waiver-era pitching pickups produce FIP +0.55, xFIP +0.51, SIERA +0.57 — roughly 2× the deadline-window penalty and 3× offseason.",
+      "why_now": "One of the cleanest seasonal signals in the dataset. n=342. Adverse selection mechanism is the actionable framing.",
+      "evidence_status": "Fully evidenced from earlier timing agent sweep.",
+      "visuals": [
+        "Calendar phase × FIP/xFIP/SIERA grouped bar",
+        "Per-pitcher scatter: prior-season FIP vs post-acquisition FIP, color-coded by acquisition month",
+        "Adverse selection chart: # teams that passed on a pitcher before final acquirer"
+      ],
+      "actionability": "Discount any August pitcher acquisition by ~half a run of expected ERA. Mid-market and big-market both said yes.",
+      "panel_demand": "implicit (all personas like cleanest-signal findings)"
+    },
+    {
+      "rank": 5,
+      "slug": "the-young-hitter-laboratory",
+      "headline": "The 33-Point Swing: Where Young Hitters Become Players",
+      "what_it_uncovers": "Age-advantaged MiLB hitters acquired by top hitter-dev orgs gain +16 wRC+. Same archetype at low-dev orgs: −17 wRC+. 33-point swing on identical talent.",
+      "why_now": "Strongest interaction effect in the archetype agent's sweep. n=419. Replicates across two org-fit metrics independently.",
+      "evidence_status": "Fully evidenced.",
+      "visuals": [
+        "2×2 grid: hitter age advantage × org dev tier, with wRC+ delta in each cell",
+        "Org-level scatter: hitter dev fit vs realized wRC+ improvement on age-advantaged acquisitions",
+        "Per-org bar of 'hitter laboratory rating' — which orgs are the actual laboratories"
+      ],
+      "actionability": "Concrete trade-partner ranking for any rebuilder shipping young hitters and any contender buying them.",
+      "panel_demand": "implicit (mid-market would value, big-market neutral)"
+    },
+    {
+      "rank": 6,
+      "slug": "playoff-leverage-surplus",
+      "headline": "The Playoff Math Is Different — and Most Models Get It Wrong",
+      "what_it_uncovers": "Reruns the V3 model with playoff-probability-delta × playoff-revenue as the outcome variable, not regular-season dollar surplus. The leaderboard of who's actually winning trades shifts substantially when you change the objective.",
+      "why_now": "Big-market persona's #1 request. Receiver-side dollar surplus net-of-cost is structurally wrong for high-payroll teams. This article fixes the math and shows who actually wins under the right objective.",
+      "evidence_status": "Need to compute. Playoff probability data exists in team_season_stats; need a model layer on top.",
+      "visuals": [
+        "Side-by-side: GM leaderboard under dollar surplus vs leaderboard under playoff leverage",
+        "Per-trade scatter: dollar surplus vs playoff-leverage surplus — which trades flip sign",
+        "Top 10 'most playoff-leveraged trades of the last decade'"
+      ],
+      "actionability": "Big-market teams get a model that matches their objective function. Mid-market readers see whether their team's deadline buys are actually contributing to October.",
+      "panel_demand": "explicit from big-market"
+    }
+  ],
+
+  "tier_3_smaller_pieces": [
+    {
+      "rank": 7,
+      "slug": "career-stage-sweet-spot",
+      "headline": "The Career-Stage Sweet Spot",
+      "what_it_uncovers": "Age 28-30 acquisitions produce $8.4M dollar surplus per trade and 0.90 WAR — substantially more than 31+ ($4.1M, 0.30 WAR) and more than <25 (despite the youth premium). Market overprices 31+, underprices 28-30.",
+      "why_now": "Concrete, mass-appeal finding. Reader-friendly visual.",
+      "evidence_status": "Fully evidenced.",
+      "visuals": ["Age bucket bar chart (5 buckets × 3 outcomes)", "Per-player scatter colored by age band"],
+      "actionability": "Buy 28-30, avoid 34+.",
+      "panel_demand": "implicit"
+    },
+    {
+      "rank": 8,
+      "slug": "fv-coverage-corrigendum",
+      "headline": "What FanGraphs Knows — and What It Doesn't",
+      "what_it_uncovers": "Recomputes the GM Edge Decomposition restricted to the subset of trades that actually include a graded prospect, addressing the panel's universal complaint that max_fv=0 was hiding a coverage problem behind a 'prospects don't matter' headline.",
+      "why_now": "Both mid-market and big-market personas flagged the original article's max_fv=0 instrument failure. A direct response builds credibility.",
+      "evidence_status": "Need to filter to trades with non-zero max_fv (~25% of sample) and recompute.",
+      "visuals": [
+        "Side-by-side: original correlations vs prospect-included-only correlations",
+        "Per-FV-grade scatter: max FV vs realized prospect WAR delta"
+      ],
+      "actionability": "Honest test of whether 'prospects don't matter' survives the restriction. May reverse the headline.",
+      "panel_demand": "explicit from mid-market + big-market"
+    },
+    {
+      "rank": 9,
+      "slug": "dev-orgs-are-contact-factories",
+      "headline": "Dev Orgs Aren't What You Think They Are",
+      "what_it_uncovers": "High-track-record hitter-dev orgs improve slow bats by 9 xwOBA points. They erode high-barrel power hitters by 17 wRC+. The 'dev org' brand is a contact-and-discipline factory, not a power factory.",
+      "why_now": "Counter-intuitive reframing. Pairs naturally with #5 as a follow-up.",
+      "evidence_status": "Fully evidenced.",
+      "visuals": ["Archetype × org-tier 2×2 with wRC+ deltas", "Per-org 'identity' bar — contact lab vs power lab"],
+      "actionability": "Don't ship power hitters to contact-focused dev orgs. Don't pay dev-org premium for power acquisitions.",
+      "panel_demand": "implicit"
+    }
+  ],
+
+  "tier_4_infrastructure_not_articles": [
+    {
+      "title": "V3 model calibration page",
+      "what_it_is": "Standing diagnostics page (not an article) — coverage, CRPS, residuals by trade archetype, calibration plots. Updates with each model refresh.",
+      "why_now": "Top demand across personas. Mid-market said 'every downstream finding inherits this and I haven't seen it.' Build credibility for everything else.",
+      "deliverable": "New route /research/model — separate from articles index. Three or four diagnostic charts, methodology prose."
+    }
+  ],
+
+  "deliberately_excluded": [
+    {
+      "slug": "symmetric-trades-win",
+      "reason": "Replication failed when I re-derived the agent's quadrants. Receiver contention status is the real signal but it's weaker and less interesting."
+    },
+    {
+      "slug": "rookie-manager-advantage",
+      "reason": "Only one persona implicitly endorsed; effect size small, n moderate. Not worth a flagship visual treatment."
+    },
+    {
+      "slug": "milb-quality-beats-fv",
+      "reason": "Subsumed into the FV-coverage corrigendum (#8). Don't publish standalone."
+    }
+  ],
+
+  "recommended_publication_order": [
+    "the-pitching-coach-effect (Tier 1, addresses the loudest 'missing covariate' critique)",
+    "the-sell-window (Tier 1, addresses the biggest category gap — seller framing)",
+    "the-august-trap (Tier 2, easy win, clean signal, high reader appeal)",
+    "where-prospects-appreciate (Tier 1, rebuild persona's top ask)",
+    "playoff-leverage-surplus (Tier 2, addresses big-market gap — also expands site's TAM)",
+    "fv-coverage-corrigendum (Tier 3, builds credibility by directly responding to the published critique)"
+  ]
+}
