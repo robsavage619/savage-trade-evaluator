@@ -1,0 +1,75 @@
+{
+  "agent": "archetype",
+  "generated_at": "2026-05-27",
+  "method": "Stratified-mean interaction probes on a trade x archetype x org-fit matrix. Acquired-player archetype features (barrel rate, sprint speed, miLB age-advantage, k-trajectory, arsenal volatility) crossed against receiving-org dev-fit features (org_dev_fit_hitting, org_dev_fit_pitching, org_hitter_xwoba_jump_3yr, org_pitcher_k_jump_3yr). Outcomes: wrc_delta_mean, xwoba_delta_mean, kpct_delta_mean, fip_delta_mean, siera_delta_mean.",
+  "article_candidates": [
+    {
+      "headline": "The Young Hitter Laboratory: age-advantaged miLB acquisitions thrive at hitter-dev orgs and crater everywhere else.",
+      "hook": "Acquire a young, age-advantaged hitter and send him to a top hitter-development org and his wRC+ rises by 16 points the next year. Send the same archetype to a low-dev org and it drops 17. No other archetype x org pairing in the dataset moves the needle this far.",
+      "thesis": "Hitter dev-fit is not a universal multiplier - it is specifically a young-hitter multiplier. The interaction between miLB age-advantage (player was younger than league average at his highest level) and org_hitter_xwoba_jump_3yr produces a 33-point wRC+ swing. Older acquired hitters show no equivalent benefit. Hitter-dev orgs are machines for finishing the development of pre-arb hitters whose plate skill is already trending.",
+      "evidence": {
+        "feature": "milb_age_advantage x org_hitter_xwoba_jump_3yr",
+        "stat_summary": "Young + high-jump org: wrc_delta_mean = +16.3 (n=25). Young + low-jump: -17.2 (n=27). Older + high-jump: -9.5 (n=53). Older + low-jump: -7.9 (n=52). Replicates with org_dev_fit_hitting: young + high-dev = +10.2 wRC (n=70), young + low-dev = -6.9 (n=70). xwoba_delta confirms directionally.",
+        "n_observations": 419,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "Only chase young + age-advantaged miLB hitters if you are top-half on org_hitter_xwoba_jump_3yr. Prospect rankings that ignore receiving-org fit overstate trade value for the median acquirer by an enormous margin in this archetype.",
+      "reader_score": 9,
+      "win_score": 8
+    },
+    {
+      "headline": "Slow bats find their xwOBA at dev orgs - speed plays everywhere, contact needs a coach.",
+      "hook": "Below-median sprint-speed hitters acquired by below-median hitter-dev orgs lose 8 points of xwOBA the next year. The same slow archetype acquired by above-median hitter-dev orgs gains 9. Fast hitters are flat across both. Speed is portable. Contact is not.",
+      "thesis": "Sprint speed is a physical skill that travels with the player. Bat-first / slow-body hitters are highly sensitive to receiving-org hitting development. The 17-point xwOBA swing on slow hitters (and a parallel 7-point swing on wRC+) is consistent with contact and plate-discipline gains requiring active coaching infrastructure, while value from speed (BABIP, baserunning, infield hits) is self-executing.",
+      "evidence": {
+        "feature": "sprint_speed x org_dev_fit_hitting",
+        "stat_summary": "Slow + low-dev: xwoba_delta = -0.008 (n=67). Slow + high-dev: +0.009 (n=65). Fast + low-dev: -0.001 (n=64). Fast + high-dev: -0.007 (n=64). On wRC+: slow + low-dev = -10.7 (n=47), slow + high-dev = -3.6 (n=48), fast hitters cluster at -1 to -4 regardless.",
+        "n_observations": 260,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "Receiving GMs should bid harder on slow bat-first profiles when they have above-median hitter-dev infrastructure. Low-dev orgs should systematically avoid slow-bat acquisitions. A slow-bat player's expected wOBA in a target acquirer's system is a function of the acquirer's dev-fit, not the player's prior wOBA alone.",
+      "reader_score": 8,
+      "win_score": 8
+    },
+    {
+      "headline": "Reclamation works, ascendance regresses: pitchers with falling K-rate jump at K-dev orgs while rising arms collapse.",
+      "hook": "Pitchers whose strikeout rate was trending DOWN going into the trade gain 9 points of K% at high K-dev orgs the next year. Pitchers who were already trending UP lose 19 points at the same orgs. The trade market is paying for the wrong direction.",
+      "thesis": "K-dev orgs are specifically valuable as reclamation environments. The mechanism is regression-to-mean amplified by coaching: falling-trajectory pitchers are corrected back toward and beyond true talent. Rising-trajectory pitchers are at ceiling and the trade-year stress plus price-paid produces hard regression. The market overpays for short-K-trend pitchers and underpays for failed-prospect reclamations going to dev-orgs.",
+      "evidence": {
+        "feature": "pitcher_k_trajectory x org_pitcher_k_jump_3yr",
+        "stat_summary": "Falling + high K-dev: kpct_delta_mean = +9.0 (n=28). Falling + low K-dev: +3.6 (n=26). Rising + high K-dev: -19.2 (n=16). Rising + low K-dev: -9.9 (n=18). Sign is inverted across trajectory.",
+        "n_observations": 88,
+        "credibility": "medium"
+      },
+      "actionable_takeaway": "K-trajectory should flip the sign of how you value a target's prior K% gains. Falling K% + high-K-dev org = buy signal. Rising K% + same destination = sell signal because gains have priced in and the dev environment cannot extract more.",
+      "reader_score": 8,
+      "win_score": 6
+    },
+    {
+      "headline": "Power does not travel: high-barrel acquisitions lose 17 wRC+ at top hit-dev orgs.",
+      "hook": "Acquire an above-median barrel-rate hitter and send him to a top-track-record hitter-dev org and his wRC+ falls by 17 points. Send the same hitter to a low-track-record org and it falls by 11. Power archetypes are the one bat profile dev-orgs make WORSE.",
+      "thesis": "Dev-orgs may be optimizing acquired hitters toward contact and plate discipline at the cost of the swing decisions that generate barrels. For an already-elite barrel hitter the retooling is a downgrade. Counter-thesis to slow-bat rescue: dev-orgs are contact-and-discipline factories, not power factories. Power orgs are a different infrastructure (cage tech, swing-plane coaches) not proxied by org_hitter_xwoba_jump_3yr.",
+      "evidence": {
+        "feature": "barrel_rate x org_dev_fit_hitting",
+        "stat_summary": "Power + high-dev: wrc_delta = -17.9 (n=25). Power + low-dev: -4.3 (n=26). Non-power + high-dev: -9.3 (n=26). Non-power + low-dev: -11.0 (n=25). Replicates with org_hitter_xwoba_jump_3yr: power + high-jump = -17.4 (n=22), power + low-jump = -11.4 (n=25).",
+        "n_observations": 102,
+        "credibility": "medium"
+      },
+      "actionable_takeaway": "Do not trade for established power bats to a contact-focused dev-org. The right destination for an elite barrel-rate acquisition is a low-intervention org that lets the swing be. Pairs with the slow-bat rescue thesis: dev orgs help contact archetypes and hurt power archetypes.",
+      "reader_score": 8,
+      "win_score": 6
+    }
+  ],
+  "dead_ends_explored": [
+    "Velocity-gainer orgs: only 78 pitcher-trades with both pre- and post-trade fastball velocity readings after filtering sentinel fillers. Too thin for org breakdown.",
+    "Volatile-arsenal x pitch-dev orgs: real signal (siera_delta +0.09 vs +0.36 for volatile pitchers at high-dev vs low-dev, n=153) but modest magnitude and subsumed by the K-trajectory finding.",
+    "Pedigree x alumni network: decorated + high-alumni-network sees xERA -0.48 but n=10. Too thin.",
+    "Catcher pipeline: acquired-catcher trades too sparse for org-level breakdown without dropping below n=5 per cell.",
+    "Sinker vs four-seam mix shift: per-team-per-pitch-type cells are n=4-17. No clean stratified-mean finding; would need V3 backtest on usage-shift outcomes."
+  ],
+  "notes_for_followup": [
+    "All four candidates rest on interaction terms and would benefit from a V3 backtest with the interaction feature explicitly entered. Current V3 feature menu emphasizes main effects.",
+    "Hitter-dev appears to be a contact-and-discipline factory, not a power factory. If true, org_dev_fit_hitting is misnamed - it is a contact-dev index, and a separate power-dev index would resolve the apparent contradiction between the young-hitter and power-hitter findings.",
+    "The young-hitter finding is the largest archetype x org-fit effect in this dataset by both magnitude AND sample size. Strong candidate for productization in the V3 trade-acquirer-valuation surface."
+  ]
+}

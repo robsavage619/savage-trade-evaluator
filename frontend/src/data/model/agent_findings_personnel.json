@@ -1,0 +1,74 @@
+{
+  "agent": "personnel",
+  "generated_at": "2026-05-27",
+  "matrix": {
+    "n_trades": 5308,
+    "n_decision_makers_with_40plus_trades": 41,
+    "n_pitching_coaches_with_10plus_acquired_pitchers": 33,
+    "years": "2010-2024"
+  },
+  "article_candidates": [
+    {
+      "headline": "The $5M GM gap: a per-trade dollar-surplus chasm separates the top-quartile front offices from the bottom",
+      "hook": "Ten general managers — Mike Hill, A.J. Preller, John Mozeliak, Jeff Luhnow, Mike Rizzo, Billy Beane, Alex Anthopoulos, Brian Cashman, Erik Neander, Matt Silverman — generate $7.0M of dollar surplus per trade on average. Ten others — Coppolella, Minasian, Krall, Elias, Bridich, Cherington, Alderson, Williams, Zaidi, Daniels — generate $2.0M. Same trade machine, identical model features, $5M apart.",
+      "thesis": "GM identity is statistically credible at the per-trade level (ANOVA F=1.91, p=0.00052 across 41 GMs with ≥40 trades). Top-quartile decision makers outperform bottom-quartile by $5.0M dollar surplus per trade (95% bootstrap CI [$3.71M, $6.28M], t=7.74, p=1.5e-14) and 0.55 WAR per trade (t=5.90, p=4.5e-9). The mechanism is partially observable: top GMs acquire higher-quality players (-3.29 vs -7.24 on acquired-player-quality index, p=0.003), operate at higher payrolls (52.6% vs 48.4% of cap, p=0.0002), and lean modestly more on international talent and barrel-rate hitters. The persistence test is weaker — within-GM early-vs-late tenure dollar surplus correlates r=0.27 but the bootstrap CI crosses zero — suggesting GM 'skill' is real in aggregate but noisy at the individual-career level.",
+      "evidence": {
+        "feature": "decision_maker (regime_id)",
+        "stat_summary": "ANOVA F=1.91 p=0.00052; top quartile $7.03M/trade (n=1187) vs bottom $2.03M/trade (n=934); WAR delta 0.93 vs 0.38",
+        "n_observations": 5308,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "Treat the GM as a regime-level prior in trade evaluation: the same target acquired by Preller-era SD vs Coppolella-era ATL has materially different expected surplus before any player features are considered.",
+      "reader_score": 9,
+      "win_score": 8
+    },
+    {
+      "headline": "New managers extract more WAR from acquired players than veterans do",
+      "hook": "When a team adds a trade target during a manager's first year on the job, the acquired player produces 0.17 more WAR over the trade window than when the same kind of acquisition lands in a veteran skipper's lap. The fresh-eyes manager beats the entrenched one — across rookie, established, and veteran GM regimes alike.",
+      "thesis": "New managers (≤1 year tenure) generate 0.66 WAR per acquired player vs 0.49 WAR for veteran managers (≥5 years), a difference of 0.17 WAR/trade with 95% bootstrap CI [0.029, 0.313] — barely clears zero but with consistent direction (p=0.018 two-sided t-test). The signal is robust to GM-phase stratification: under rookie GMs new managers produce +0.60 vs +0.32 for veterans (p=0.07), under established GMs +0.70 vs +0.47 (p=0.11), under veteran GMs +0.75 vs +0.54 (p=0.09). Same direction, same magnitude, three independent slices. The plausible mechanism is integration — a new manager has not yet locked in lineups or bullpen roles, so an acquired player gets a real audition rather than being slotted behind incumbents.",
+      "evidence": {
+        "feature": "mgr_tenure (constructed: trade_season - manager_first_year_with_team)",
+        "stat_summary": "new (≤1y) mean WAR delta=0.663 (n=1653), veteran (≥5y) mean=0.490 (n=867), bootstrap diff CI=[0.029, 0.313]",
+        "n_observations": 2520,
+        "credibility": "medium"
+      },
+      "actionable_takeaway": "Selling clubs should target deadline buyers in their first manager-year — the acquired player is more likely to get the playing time the trade implicitly priced in.",
+      "reader_score": 8,
+      "win_score": 7
+    },
+    {
+      "headline": "Top GMs do not get rich on prospect math — they pay more, for better players, more often",
+      "hook": "The clichéd version of a smart GM is the one who finds hidden gems. The data says the opposite. The GMs who win the dollar-surplus contest by $5M per trade are not differentiating on prospect grades, minor-league quality, dev-cluster signals, or contention-window arbitrage. They differentiate on identifying which established big-leaguers are actually worth the ask — and they spend more cap to do it.",
+      "thesis": "Decomposing the top vs bottom GM gap by observable features: top GMs acquire materially higher-quality MLB players (-3.29 vs -7.24 on the player-quality index, p=0.003) and operate at noticeably higher payroll-as-pct-of-cap (52.6% vs 48.4%, p=0.0002). Prospect-side features — max FV, milb hit quality, milb pitch quality, dev-cluster score — show no significant separation between the groups (all p>0.32). International roster share (p=0.08) and barrel rate of acquired hitters (p=0.07) trend in the top GMs' favor but are noisier. This reframes the GM-skill thesis: the edge is in big-league acquisition selection at the budget margin, not in the farm-system reading rooms.",
+      "evidence": {
+        "feature": "receiver_acquired_player_quality + receiver_payroll_pct_of_cap, stratified by GM quartile",
+        "stat_summary": "top GMs: acquired_player_quality=-3.29 vs bottom=-7.24 (p=0.003); payroll_pct=0.526 vs 0.484 (p=0.0002); prospect FV/milb features all p>0.32",
+        "n_observations": 2121,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "If you are benchmarking GM skill, weight big-league acquisition quality and willingness-to-spend much higher than farm pipeline metrics — the latter does not separate the groups.",
+      "reader_score": 9,
+      "win_score": 9
+    },
+    {
+      "headline": "Pitching-coach FIP rankings vary by 3.7 runs per acquired pitcher — but the differences are not yet statistically distinguishable from noise",
+      "hook": "Oscar Marin's acquired pitchers improve their FIP by 2.0 runs. Mel Stottlemyre Jr.'s get 1.7 runs worse. Twenty-five pitching coaches sit in between. If this dispersion were signal it would be the most exploitable personnel finding in baseball — but the formal test says wait.",
+      "thesis": "Across 33 pitching coaches with at least 10 acquired pitchers, mean FIP delta on those acquisitions ranges from -2.01 (Oscar Marin, n=11) to +1.65 (Mel Stottlemyre Jr., n=31). The descriptive spread is striking and the directional list of 'fixers' (Marin, McDowell, Prior, Butcher, Derek Johnson) versus 'breakers' (Stottlemyre Jr., Hook, Curt Young, Hernández, Don Cooper) matches scout-room reputation reasonably well. But the one-way ANOVA returns p=0.74 — the within-coach variance dwarfs the between-coach variance at current sample sizes. This is either the most underrated personnel signal in the dataset or a noise pattern that will collapse with more data. Worth running a Bayesian partial-pooling model rather than discarding.",
+      "evidence": {
+        "feature": "pitching_coach (constructed from coaches table for receiver team-year)",
+        "stat_summary": "33 coaches with n≥10; FIP delta range [-2.01, +1.65]; ANOVA F=0.87 p=0.74; descriptive ranking reputationally plausible",
+        "n_observations": 845,
+        "credibility": "low"
+      },
+      "actionable_takeaway": "Build a Bayesian partial-pooling pitching-coach random-effects layer into V3 before treating these point estimates as actionable — current samples are too small for any one coach to be the bet.",
+      "reader_score": 8,
+      "win_score": 4
+    }
+  ],
+  "dead_ends_explored": [
+    "Regime change: whether the GM was fired within 1y or 2y of the trade has effectively zero relationship with any of the 9 outcomes (all p>0.46). 'Doomed-regime' trades do not look measurably different from stable-regime trades — at least when the regime change is in the future.",
+    "Scouting Director tenure: correlation with acquired prospect FV, milb hit quality, milb pitch quality all |r|<0.10. Either scout director effects flow through other features already in the model, or BR-scraped scouting director coverage is too coarse to detect them.",
+    "GM tenure (continuous): rookie GMs (≤1y) showed a tentative -0.25 FIP delta on acquired pitchers vs veteran GMs +0.27, but Mann-Whitney p=0.024 only on FIP; xFIP, SIERA, and K% deltas all p>0.4. Not robust enough to publish as standalone.",
+    "GM-skill persistence: within-GM early-tenure vs late-tenure dollar-surplus correlation is r=0.27 (Pearson) / 0.27 (Spearman), but bootstrap CI on the Pearson r is [-0.08, 0.59] — does not exclude zero. The aggregate top-vs-bottom signal is strong; the within-career signal is fragile."
+  ]
+}

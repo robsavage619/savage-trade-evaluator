@@ -1,0 +1,73 @@
+{
+  "agent": "prospects",
+  "generated_at": "2026-05-27",
+  "model_run": {
+    "model": "V3 Bayesian hierarchical (Student-t, signed-log for dollar_surplus)",
+    "train_window": "2010-2020",
+    "test_window": "2021-2024",
+    "outcomes_tested": ["war_delta", "dollar_surplus", "xwoba_delta", "wrc_delta", "xfip_delta"],
+    "credibility_threshold": "D-26 (mass >= 95% AND 90% CI excludes zero)"
+  },
+  "article_candidates": [
+    {
+      "headline": "Age-relative-to-level is a credible dollar-surplus signal — but it splits sign against wRC+",
+      "hook": "The hidden minor-league number that predicts trade earning power isn't a scouting grade. It's how old the player was for his level — and the market is pricing it backwards depending on what you measure.",
+      "thesis": "receiver_acquired_milb_age_advantage (expected level age minus actual age — positive = young-for-level) clears the V3 credibility threshold on dollar_surplus (beta=+0.041, mass=98.2%, 90% CI [0.008, 0.074]) but flips negative on wrc_delta (beta=-0.032, mass=90.4%) and xfip_delta (beta=-0.017, mass=72%, pitching positive=worse). Young-for-level prospects produce dollar surplus through arriving on cost-controlled contracts — but they regress on rate-stat production once acquired. This is a salary-market efficiency, not a production efficiency. Old-for-level acquisitions (age_adv <= -3) post mean WAR delta of -0.09 in raw splits while on-level acquisitions average +0.36 — confirming the asymmetry: young-for-level wins on cheap surplus, on-level wins on WAR.",
+      "evidence": {
+        "feature": "receiver_acquired_milb_age_advantage",
+        "stat_summary": "dollar_surplus: beta=+0.041, mass=98.2%, credible (V3, train_n=3578, test_n=1730). wrc_delta: beta=-0.032, mass=90.4% directional. Stratified: age_adv<=-3 (old-for-level) mean WAR delta y+1 = -0.09 (n=440); -3<age_adv<=-1 = +0.18 (n=314); on-level = +0.36 (n=314); old = +0.28 (n=132).",
+        "n_observations": 3578,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "When acquiring prospects, prioritize age-for-level over scouting grade depth: the dollar-surplus signal is the salary side, not the production side. Don't overpay for young-for-level rate-stat production — it regresses. Do bid hard on cost-controlled service-time delivery from the same cohort.",
+      "reader_score": 9,
+      "win_score": 9
+    },
+    {
+      "headline": "FanGraphs FV grades are noise in trade outcomes — MiLB hit quality is the real signal",
+      "hook": "Eight prospect-grade features were tested against five trade outcomes. The famous one — FanGraphs Future Value — never clears 70% directional mass. The unfamiliar one — a level-adjusted OPS proxy from MiLB box scores — clears 88% directional mass on four separate outcomes.",
+      "thesis": "Across V3 backtests on war_delta, dollar_surplus, xwoba_delta, wrc_delta, and xfip_delta, receiver_acquired_avg_fv and receiver_acquired_max_fv never exceed 84% directional mass and never have 90% CIs that exclude zero. receiver_acquired_milb_hit_quality (level-adjusted OPS times PA weight) posts directional mass >= 88% on all four hitting-relevant outcomes (war_delta 91.3%, xwoba_delta 89.8%, xfip_delta 88.5%, dollar_surplus 80.9%) with consistent positive sign. Stratified Q1 vs Q3 hit_quality buckets show +0.07 vs +0.44 WAR delta — a 6x difference. The trade-evaluator's FV grade is doing less predictive work than aggregated MiLB box-score performance, suggesting the market over-prices scouting consensus relative to underlying minor-league rate stats.",
+      "evidence": {
+        "feature": "receiver_acquired_milb_hit_quality vs receiver_acquired_avg_fv / max_fv",
+        "stat_summary": "hit_quality directional mass: war 91.3%, xwoba 89.8%, xfip 88.5%, wrc 78%. FV: max 60.8% (war), 66.3% (dollar), 54% (xwoba). Stratified hit_quality quartiles: Q1=+0.07, Q2=+0.29, Q3=+0.44, Q4=+0.31 mean WAR delta y+1. Note: avg_fv/max_fv sample is only n=22 trades with non-zero values — most acquired-player sets don't contain ranked prospects.",
+        "n_observations": 2685,
+        "credibility": "medium"
+      },
+      "actionable_takeaway": "Don't valuate a prospect deal on consensus FV grade alone. Pull the trailing-season MiLB slash line, weight by level, and look for the Q3 sweet spot — the players consistently above average without elite tags. Reserve top-FV chips for return on dollar value, not WAR.",
+      "reader_score": 8,
+      "win_score": 7
+    },
+    {
+      "headline": "The pitching prospect signal is non-monotonic — Q2 minor-league arms outperform Q4 elites in trade outcomes",
+      "hook": "Better minor-league ERA does not produce better post-trade WAR in a straight line. The second-best MiLB pitchers in trade returns generate twice the surplus of the very best.",
+      "thesis": "Splitting trades by receiver_acquired_milb_pitch_quality quartile reveals a non-monotonic pattern: Q1=+0.14, Q2=+0.42, Q3=+0.21, Q4=+0.21 mean WAR delta y+1. The Q2 mean is double Q4 with equal sample size (n=101 per bucket). In the V3 multivariate model, pitch_quality directional mass is weak across all outcomes (max 68% on dollar_surplus). This is a classic flag-tier rather than tape-tier finding — the elite-MiLB-arsenal prospects are priced like elite arms, the second-tier are priced like backend depth, and the realized outcomes invert that pricing. Suggests acquiring teams systematically overpay for top-quartile minor-league pitching performance and underpay for solid-but-unspectacular MiLB pitchers in deal packages.",
+      "evidence": {
+        "feature": "receiver_acquired_milb_pitch_quality",
+        "stat_summary": "Quartile means of WAR delta y+1 (n=101 per bucket): Q1=+0.14, Q2=+0.42, Q3=+0.21, Q4=+0.21. V3 multivariate directional mass: war 56.5%, dollar 68.3%, xwoba 61.4%, xfip 60.1%. Univariate effect doesn't survive multivariate controls cleanly.",
+        "n_observations": 404,
+        "credibility": "low"
+      },
+      "actionable_takeaway": "Don't lead deal packages with the top MiLB pitching prospects when targeting WAR. Demand the Q2 throw-ins; they post the highest mean realized WAR delta in this sample. Pricing inefficiency is testable: re-run with park-adjusted xERA in MiLB once available.",
+      "reader_score": 7,
+      "win_score": 5
+    }
+  ],
+  "dead_ends_explored": [
+    {
+      "angle": "FanGraphs The Board FV vs trade outcomes",
+      "reason": "Only 22 trades in the entire 2010-2024 backtester have any acquired player with a non-zero FV grade (most ranked prospects aren't traded). FV consensus / divergence features all sit at ~50% directional mass — pure noise. The Board ingest is well-formed (498 player-years) but the join with trade events is too sparse for credible inference."
+    },
+    {
+      "angle": "MiLB TJBat (TJStats batting metric) on trade outcomes",
+      "reason": "Only 5 rows in trade_acquired_milb_tjbat have non-null values. Coefficients are exactly symmetric around zero — the prior is just being recovered. Wait for TJStats backfill before re-running."
+    },
+    {
+      "angle": "Player-alumni effects (traded back to original org)",
+      "reason": "No player-level alumni network feature exists. alumni_network.py is hand-coded for front-office (Luhnow / Sig HOU pioneer window) and contains zero player records. Would require new feature engineering from trade_player_unified joined to draft_picks — not in current V3 feature set."
+    },
+    {
+      "angle": "Origin-org dev cluster as proxy for prospect inflation by org",
+      "reason": "receiver_acquired_from_dev_cluster_score has 56% directional mass on war_delta — null. The feature exists but cluster assignments don't differentiate post-trade outcomes credibly. Would need higher-resolution org features (per-position-group dev signature)."
+    }
+  ]
+}

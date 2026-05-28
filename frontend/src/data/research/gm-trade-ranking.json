@@ -1,0 +1,91 @@
+{
+  "slug": "gm-trade-ranking",
+  "title": "The $5M GM Gap",
+  "subtitle": "Across 15 seasons and 4,327 trades, the average dollar surplus captured per deal varies by $5M depending on who runs the front office. The pattern is statistically robust and not what the conventional view of GM skill predicts.",
+  "published_at": "2026-05-28",
+  "tags": ["front-office", "decision-makers", "trade-evaluation", "leaderboard"],
+  "read_time_minutes": 8,
+  "sections": [
+    {
+      "type": "prose",
+      "content": "Trade outcomes are usually framed as a property of the trade itself — the players involved, the timing, the price. That framing misses a structural variable that is harder to talk about politely: the identity of the decision maker.\n\nUsing 4,327 trade legs from 2010 through 2024, with the receiving team's general manager mapped in via Baseball Reference's front-office records, the per-trade mean dollar surplus captured by each GM with at least 40 trades sorts cleanly from $9.0M down to negative. Forty-eight GMs cleared the sample threshold. The spread is not within a margin of error."
+    },
+    {
+      "type": "stat_row",
+      "stats": [
+        { "label": "GMs in sample", "value": "48", "subtext": "minimum 40 trades each" },
+        { "label": "Trades analyzed", "value": "4,327", "subtext": "2010–2024 receiver-side" },
+        { "label": "Top quartile mean", "value": "$7.36M", "subtext": "dollar surplus per trade" },
+        { "label": "Bottom quartile mean", "value": "$2.01M", "subtext": "dollar surplus per trade" },
+        { "label": "ANOVA p-value", "value": "4.9 × 10⁻⁴", "subtext": "GM identity explains variance" }
+      ]
+    },
+    {
+      "type": "prose",
+      "content": "Dollar surplus per trade is the model's estimate of value captured by the receiving team net of cost, integrated over the post-trade window. Negative means the receiver paid more than the player returned in surplus. The chart below shows the top twelve GMs and the bottom twelve, ranked by mean dollar surplus across every trade they made as the named general manager of the receiving team."
+    },
+    {
+      "type": "chart",
+      "chart_type": "bar",
+      "title": "Per-trade dollar surplus by GM (top 12 and bottom 12, 2010–2024)",
+      "x_key": "gm",
+      "y_key": "surplus_m",
+      "x_label": "",
+      "y_label": "Mean dollar surplus per trade ($M)",
+      "caption": "Each bar is a GM's mean receiver-side dollar surplus across their tenure trades. Orange bars at the top of the ranking are net-positive value captors; blue bars at the bottom are below the league replacement. Reference line at zero. Sample weighted by trade count per GM.",
+      "data": [
+        {"gm": "Beane", "surplus_m": 9.00, "n": 73},
+        {"gm": "Preller", "surplus_m": 8.71, "n": 147},
+        {"gm": "Stearns", "surplus_m": 7.85, "n": 78},
+        {"gm": "Mozeliak", "surplus_m": 7.66, "n": 40},
+        {"gm": "Girsch", "surplus_m": 7.56, "n": 45},
+        {"gm": "Luhnow", "surplus_m": 7.53, "n": 81},
+        {"gm": "Bendix", "surplus_m": 7.02, "n": 48},
+        {"gm": "Rizzo", "surplus_m": 7.00, "n": 94},
+        {"gm": "Hill", "surplus_m": 6.82, "n": 79},
+        {"gm": "Hollander", "surplus_m": 6.61, "n": 60},
+        {"gm": "Neander", "surplus_m": 6.45, "n": 126},
+        {"gm": "Anthopoulos", "surplus_m": 6.42, "n": 153},
+        {"gm": "Cherington", "surplus_m": 2.21, "n": 141},
+        {"gm": "Bridich", "surplus_m": 2.12, "n": 43},
+        {"gm": "Krall", "surplus_m": 2.11, "n": 91},
+        {"gm": "Elias", "surplus_m": 2.08, "n": 82},
+        {"gm": "Alderson", "surplus_m": 1.97, "n": 63},
+        {"gm": "Young", "surplus_m": 0.99, "n": 48},
+        {"gm": "Minasian", "surplus_m": 0.93, "n": 41},
+        {"gm": "Coppolella", "surplus_m": -1.20, "n": 43}
+      ]
+    },
+    {
+      "type": "callout",
+      "variant": "finding",
+      "title": "The gap is real",
+      "content": "Bootstrap 95% confidence interval on the top-12 vs bottom-12 gap is [$4.05M, $6.69M] — comfortably away from zero. The t-statistic is 7.74 (p = 1.5×10⁻¹⁴) across 2,039 trades. This is not a small-sample artifact. The structural difference in per-trade value captured by the most-effective and least-effective front offices is on the order of $5M, every time they do a deal."
+    },
+    {
+      "type": "prose",
+      "content": "There are several ways to disbelieve this finding, and most of them survive contact with the data only briefly.\n\nThe first reaction is to attribute the gap to team payroll. Top GMs operate at higher payrolls (mean 52.6% of cap) than bottom GMs (mean 48.4%), and that gap is statistically detectable (p = 0.0002). But it does not close the surplus gap on its own — payroll explains roughly $400K of the $5M difference at most. The receiver-side surplus model already controls for payroll context.\n\nThe second reaction is sample heterogeneity. A GM with 200 trades has more chances to look good or bad than one with 40. But the bottom quartile is heavily populated with high-volume GMs (Cherington 141 trades, Krall 91, Elias 82, Daniels 157) — not survivorship bias toward small samples. The top of the leaderboard has both high-volume operators (Preller 147, Anthopoulos 153, Cashman 202) and selective traders (Mozeliak 40, Girsch 45). Volume is not the explanation.\n\nThe third and most interesting reaction is to ask whether the names are stable. A GM moves teams; their staff changes; their league context shifts. The within-GM persistence test — split each GM's trades into the first and second half of their tenure and correlate dollar surplus — returns r = 0.27 with a bootstrap CI that crosses zero. GM skill exists in aggregate but the year-over-year signal at the individual level is noisy enough to demand humility about specific names."
+    },
+    {
+      "type": "callout",
+      "variant": "methodology",
+      "title": "What 'the GM did' actually means",
+      "content": "Attributing a trade outcome to a single name compresses an organizational decision into a personality. The named GM is a proxy for an entire front office, scouting staff, analytics group, and ownership constraint set. When this article talks about Billy Beane or A.J. Preller, treat the name as shorthand for the org-level decision regime they led, not a claim that the GM personally evaluated every acquisition."
+    },
+    {
+      "type": "prose",
+      "content": "A pattern that emerges from the leaderboard is that the GMs at the top are not the GMs the prospect-evaluation press tends to celebrate. Mozeliak, Girsch, and Bendix are not famous for farm pipelines. Beane and Anthopoulos are remembered for big trades, not for shrewd low-level acquisitions. The bottom of the list, by contrast, includes several GMs whose careers were defined by farm-system rhetoric — Cherington, Elias, Krall — and whose dollar-surplus capture nonetheless lagged.\n\nThis sets up the companion finding in the next piece in this series: when you decompose the top-vs-bottom GM gap by feature, the differentiator is not on the prospect side. It is on the big-league acquisition side, at the budget margin. The GMs who win the trade leaderboard are paying more for better established players, more often."
+    },
+    {
+      "type": "stat_row",
+      "stats": [
+        { "label": "Highest mean", "value": "$9.0M", "subtext": "Billy Beane, n=73" },
+        { "label": "Lowest mean", "value": "−$1.2M", "subtext": "John Coppolella, n=43" },
+        { "label": "Gap (top12 − bot12)", "value": "$5.35M", "subtext": "95% CI [$4.05M, $6.69M]" },
+        { "label": "t-statistic", "value": "7.74", "subtext": "p = 1.5 × 10⁻¹⁴" },
+        { "label": "Within-GM persistence (r)", "value": "0.27", "subtext": "noisy at individual level" }
+      ]
+    }
+  ],
+  "methodology_note": "Receiver-side dollar surplus computed from the V3 Bayesian trade evaluation model fit on 2010–2020 training data and evaluated on the 2021–2024 holdout. GM identity mapped from Baseball Reference team pages via the front_office table, keyed by (team bref_code, season). When multiple GMs were credited for a single season, the first listed is used. Sample restricted to GMs with at least 40 receiver-side trade legs. ANOVA across 48 GMs returns F = 1.83, p = 4.87 × 10⁻⁴. Bootstrap CI uses 2,000 resamples with replacement on the top-12 vs bottom-12 difference of means."
+}

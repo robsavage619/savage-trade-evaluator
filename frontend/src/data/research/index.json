@@ -1,6 +1,15 @@
 {
   "articles": [
     {
+      "slug": "gm-trade-ranking",
+      "title": "The $5M GM Gap",
+      "subtitle": "Across 15 seasons and 4,327 trades, the average dollar surplus captured per deal varies by $5M depending on who runs the front office",
+      "published_at": "2026-05-28",
+      "tags": ["front-office", "decision-makers", "leaderboard"],
+      "summary": "Forty-eight GMs with 40+ trades since 2010 sort cleanly by per-trade dollar surplus, top to bottom. The top quartile captures $7.36M per deal; the bottom quartile captures $2.01M. The gap is statistically robust (ANOVA p=4.9×10⁻⁴, bootstrap CI on the gap [$4.05M, $6.69M]) and the names at the top of the leaderboard are not the names the prospect-evaluation press tends to celebrate.",
+      "read_time_minutes": 8
+    },
+    {
       "slug": "international-pitcher-pipeline",
       "title": "The International Pipeline Edge",
       "subtitle": "Why some organizations consistently extract better ERA outcomes from acquired pitchers — and what the roster data says about why",
@@ -20,11 +29,11 @@
     },
     {
       "slug": "k-trajectory-split",
-      "title": "The K% Mirage That Isn't",
-      "subtitle": "Pitchers on a strikeout spike regress on K% post-trade — but their ERA metrics hold. You're not buying a mirage.",
+      "title": "The Strikeout Spike Signal",
+      "subtitle": "When a pitcher's K% is rising into a trade, both the strikeout rate and the ERA metrics deteriorate post-trade. The selling team knows something.",
       "published_at": "2026-05-28",
-      "tags": ["pitching", "strikeouts", "regression", "sell-high"],
-      "summary": "The conventional wisdom is right that K% regresses after a spike — but wrong about what it means. The same pitchers post better FIP, xFIP, and SIERA outcomes. The strikeout rate was the ceiling; the pitch development was the floor.",
+      "tags": ["pitching", "strikeouts", "sell-high", "trade-evaluation"],
+      "summary": "Pitchers with rising K% trajectories regress on both K% and ERA after a trade — the sell signal is complete. Pitchers with declining K% trajectories show the opposite pattern. A clean, symmetric finding across 142 acquisitions.",
       "read_time_minutes": 7
     }
   ]

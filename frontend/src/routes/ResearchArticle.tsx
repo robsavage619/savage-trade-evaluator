@@ -9,6 +9,7 @@ import {
 // ── article JSON loader ───────────────────────────────────────────────────────
 
 const ARTICLES: Record<string, () => Promise<{ default: Article }>> = {
+  'gm-trade-ranking': () => import('../data/research/gm-trade-ranking.json'),
   'international-pitcher-pipeline': () => import('../data/research/international-pitcher-pipeline.json'),
   'award-breadth-vs-depth': () => import('../data/research/award-breadth-vs-depth.json'),
   'k-trajectory-split': () => import('../data/research/k-trajectory-split.json'),

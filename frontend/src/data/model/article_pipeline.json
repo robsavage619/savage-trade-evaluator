@@ -1,0 +1,164 @@
+{
+  "generated_at": "2026-05-28",
+  "source_agents": ["personnel", "timing", "archetype", "prospects"],
+  "n_candidates_considered": 14,
+  "existing_articles": [
+    "international-pitcher-pipeline",
+    "award-breadth-vs-depth",
+    "k-trajectory-split"
+  ],
+  "ranked_pipeline": [
+    {
+      "rank": 1,
+      "slug": "symmetric-trades-win",
+      "headline": "The Folk Wisdom of Trading Is Backwards",
+      "subhead": "When contenders buy from rebuilders — the trope every analyst assumes works — both sides underperform. Symmetric trades, where both teams sit on the same side of contention, generate twice the surplus.",
+      "source_agent": "timing",
+      "reader_score": 10,
+      "win_score": 9,
+      "credibility": "high",
+      "n": 2079,
+      "headline_stat": "Symmetric trades: $6.4M surplus per trade. Asymmetric contender-vs-rebuilder: $3.1M. Gap $3.34M, t=4.99, p<0.0001.",
+      "why_reader_clicks": "Defies the most common framing in MLB trade analysis. Big counter-intuitive bombshell.",
+      "win_value": "Front offices should re-examine their willingness to deal with peer contenders — the partner-contention-status filter is exactly backwards."
+    },
+    {
+      "rank": 2,
+      "slug": "gm-trade-ranking",
+      "headline": "The $5M GM Gap",
+      "subhead": "Across 41 GMs with 40+ trades, the top quartile generates $7.0M of surplus per deal. The bottom quartile: $2.0M. Bootstrap CI on the gap [$3.71M, $6.28M].",
+      "source_agent": "personnel",
+      "reader_score": 9,
+      "win_score": 8,
+      "credibility": "high",
+      "n": 41,
+      "headline_stat": "Top quartile (Hill, Preller, Mozeliak, Luhnow, Rizzo, Beane, Anthopoulos, Cashman, Neander, Silverman) vs bottom (Coppolella, Minasian, Krall, Elias, Bridich). +0.55 WAR/trade, p=4.5e-9.",
+      "why_reader_clicks": "Named winners and losers. FanGraphs readers will share this with their tribal allegiances.",
+      "win_value": "A reputational ranking grounded in 14 years of dollar surplus is itself a competitive intelligence asset."
+    },
+    {
+      "rank": 3,
+      "slug": "top-gms-pay-up-smart",
+      "headline": "The Edge Isn't in the Farm — It's at the Margin",
+      "subhead": "Decompose the top-vs-bottom GM gap and the result is uncomfortable: every prospect-side feature is noise. The differentiator is acquired-player quality at the budget margin — top GMs pay more, for better players, more often.",
+      "source_agent": "personnel",
+      "reader_score": 9,
+      "win_score": 9,
+      "credibility": "high",
+      "n": 41,
+      "headline_stat": "Acquired player quality: p=0.003 separates top vs bottom. Max FV / MiLB metrics / dev-cluster: all p>0.32.",
+      "why_reader_clicks": "Industry-shaking framing — the cliché 'win the trade by scouting' is wrong in aggregate. Pairs perfectly with the GM ranking piece as a two-part series.",
+      "win_value": "Direct implication for FO process: spend the marginal evaluation hour on big-league acquisition selection, not prospect grading. This is a procurement-strategy article disguised as analysis."
+    },
+    {
+      "rank": 4,
+      "slug": "age-for-level-paradox",
+      "headline": "The Prospect Stat That Pays in Dollars and Bleeds in Rate Stats",
+      "subhead": "Acquiring prospects who are young-for-their-level generates real dollar surplus — but the same players post worse wRC+ deltas than older peers. The market is pricing the wrong direction depending on the metric.",
+      "source_agent": "prospects",
+      "reader_score": 9,
+      "win_score": 9,
+      "credibility": "high",
+      "n": 3578,
+      "headline_stat": "β=+0.041 on dollar_surplus (98.2% mass), β=−0.032 on wrc_delta (90.4% mass). Old-for-level: −0.09 WAR. On-level: +0.36 WAR.",
+      "why_reader_clicks": "Sign-flip paradox is reliable nerd bait — same finding as t003 (player quality) but on the prospect side.",
+      "win_value": "Service-time arbitrage is real and underpriced; the trade-off is rate-stat regression that pencils out anyway."
+    },
+    {
+      "rank": 5,
+      "slug": "young-hitter-laboratory",
+      "headline": "The 33-Point Swing: Where Young Hitters Become Players",
+      "subhead": "Age-advantaged MiLB hitters gain +16 wRC+ when acquired by top-track-record hitter-development orgs. Same archetype at the lowest-track-record orgs: −17. A 33-point swing on identical talent.",
+      "source_agent": "archetype",
+      "reader_score": 9,
+      "win_score": 8,
+      "credibility": "high",
+      "n": 419,
+      "headline_stat": "+16.3 wRC+ at top-quartile hitter-dev orgs vs −17.2 at bottom. Replicates on `org_hitter_xwoba_jump_3yr` and `org_dev_fit_hitting`.",
+      "why_reader_clicks": "33 points is a huge effect — every reader can name an org that 'always develops hitters.' This is the data proof.",
+      "win_value": "Org-fit-aware trade valuation. The exact same prospect is worth materially more to org A than org B and the market doesn't price it."
+    },
+    {
+      "rank": 6,
+      "slug": "august-trap",
+      "headline": "The August Trap",
+      "subhead": "Pitchers acquired in August — the post-deadline waiver/PTBNL window — post the worst FIP, xFIP, and SIERA deltas in the calendar. Twice the deadline-window penalty, three times offseason.",
+      "source_agent": "timing",
+      "reader_score": 9,
+      "win_score": 8,
+      "credibility": "high",
+      "n": 342,
+      "headline_stat": "FIP +0.55, xFIP +0.51, SIERA +0.57. Cleanest seasonal pitching signal in the dataset.",
+      "why_reader_clicks": "August trades have always been the orphan window — readers will love finally seeing them quantified.",
+      "win_value": "Adverse selection — these are pitchers other teams already passed on. Discount any August pitcher acquisition by ~half a run of expected ERA."
+    },
+    {
+      "rank": 7,
+      "slug": "age-28-30-peak-surplus",
+      "headline": "The Career-Stage Sweet Spot",
+      "subhead": "Acquisitions aged 28-30 produce more WAR and more dollar surplus than any other career bucket — and the market doesn't price that.",
+      "source_agent": "timing",
+      "reader_score": 8,
+      "win_score": 8,
+      "credibility": "high",
+      "n": null,
+      "headline_stat": "Age 28-30: 0.90 WAR, $8.4M surplus. Age 31+: 0.59 WAR, $4.1M. Age 34+: 0.30 WAR, negative surplus wins. p<0.0001 on three outcomes.",
+      "why_reader_clicks": "Concrete buying advice. Readers compare this to their team's deadline acquisition list.",
+      "win_value": "Avoid 31+ acquisitions; the market consistently overpays."
+    },
+    {
+      "rank": 8,
+      "slug": "fv-grade-is-noise",
+      "headline": "FanGraphs Said What? Why FV Grades Are Noise in Trade Outcomes",
+      "subhead": "Across nine trade outcome metrics, FanGraphs FV grades on acquired prospects never clear 70% directional mass. Level-adjusted MiLB hitting performance clears 88% on four separate outcomes.",
+      "source_agent": "prospects",
+      "reader_score": 8,
+      "win_score": 7,
+      "credibility": "medium",
+      "n": 419,
+      "headline_stat": "MiLB hit quality: 91.3% mass on WAR Δ, 89.8% on xwOBA Δ, 88.5% on xFIP Δ. FV grade: never above 70% on any outcome.",
+      "why_reader_clicks": "Direct shot at FanGraphs on FanGraphs' home turf. Comments section gold.",
+      "win_value": "Re-weight prospect evaluation toward level-adjusted production over scout grades — at least for trade-outcome forecasting."
+    },
+    {
+      "rank": 9,
+      "slug": "dev-orgs-are-contact-factories",
+      "headline": "Dev Orgs Aren't What You Think They Are",
+      "subhead": "Top hitter-development orgs improve slow bats by 9 xwOBA points. They erode high-barrel power hitters by 17 wRC+. The 'dev org' brand is a contact-and-discipline factory, not a power factory.",
+      "source_agent": "archetype",
+      "reader_score": 8,
+      "win_score": 7,
+      "credibility": "medium",
+      "n": 362,
+      "headline_stat": "Slow bats: +9 xwOBA at high-dev, −8 at low-dev. Power hitters: −17 wRC+ at high-dev, −4 at low-dev.",
+      "why_reader_clicks": "Reframes a widely-used term. Reveals the trade-off baked into 'good dev org' branding.",
+      "win_value": "Don't send power hitters to contact-focused dev orgs. Don't pay a dev-org premium for power acquisitions."
+    },
+    {
+      "rank": 10,
+      "slug": "new-managers-extract-more",
+      "headline": "The Rookie Manager Advantage",
+      "subhead": "First-year managers extract 35% more WAR from acquired players than veterans with 5+ years of tenure.",
+      "source_agent": "personnel",
+      "reader_score": 8,
+      "win_score": 7,
+      "credibility": "medium",
+      "n": null,
+      "headline_stat": "Year-1 managers: 0.66 WAR/trade. Vet (5+y): 0.49. Bootstrap CI [0.029, 0.313]. Holds within every GM tenure phase.",
+      "why_reader_clicks": "Counter-intuitive — vets are supposedly better at managing personalities.",
+      "win_value": "Front offices considering a rookie skipper get a small but real integration premium."
+    }
+  ],
+  "investigate_further": [
+    {
+      "slug": "k-trajectory-reverses-at-dev-orgs",
+      "headline": "Reclamation works, ascendance regresses — at high K-development orgs",
+      "rationale": "Pairs directly with already-published k-trajectory-split.json. Could become a follow-up that adds the org-fit moderator. Medium credibility (n=88)."
+    },
+    {
+      "slug": "pitching-prospect-non-monotonicity",
+      "headline": "Q2 MiLB pitching prospects outperform Q4 elites",
+      "rationale": "Low credibility, doesn't survive multivariate controls. Needs park-adjusted MiLB metrics before publication."
+    }
+  ]
+}

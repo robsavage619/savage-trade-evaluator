@@ -1,0 +1,83 @@
+{
+  "agent": "timing",
+  "generated_at": "2026-05-27",
+  "n_observations_universe": 5308,
+  "n_with_phase_coverage": 3977,
+  "n_with_partner_winpct": 3863,
+  "article_candidates": [
+    {
+      "headline": "The August trap - post-deadline waiver-era pickups produce the worst pitching outcomes in the calendar.",
+      "hook": "Every other month of the year, acquired pitchers basically tread water on FIP/xFIP/SIERA. In August, all three metrics jump roughly half a run - the same player, traded a week later, gets meaningfully worse.",
+      "thesis": "August (post-July-31) trades are a structurally bad time to buy pitching. Across 342 trades in the post-deadline waiver window, mean FIP +0.55, xFIP +0.51, SIERA +0.57 (positive = worse). The deadline window itself (n=914) lands at +0.28 / +0.28 / +0.24 - already mediocre but materially better. Offseason and midseason trades are closer to flat. This is the cleanest seasonal pattern in the dataset and it points at the exact mechanism: pitchers who clear waivers in August are pitchers other teams already passed on, so adverse selection compounds with mid-season ramp disruption.",
+      "evidence": {
+        "feature": "trade_phase (calendar month + deadline proximity)",
+        "stat_summary": "aug_waiver phase: FIP delta +0.554, xFIP +0.508, SIERA +0.569, war_delta +0.280, dollar_surplus $2.5M, surplus_wins 0.24. Offseason: FIP +0.17, xFIP +0.20, war_delta +0.94, $8.5M, 1.20 surplus wins. dollar_surplus gap vs offseason ~$6M per trade.",
+        "n_observations": 342,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "Buying pitching after July 31 should require a discount large enough to absorb a half-run FIP penalty. Front offices should treat August arms as priced for the seller's option to keep, not the buyer's value capture.",
+      "reader_score": 9,
+      "win_score": 8
+    },
+    {
+      "headline": "Symmetric trades win - when both teams are in the same competitive lane, both teams gain. The asymmetric contender-buys-from-rebuilder trope underperforms.",
+      "hook": "The most-mythologized trade structure in baseball - contender raids a fire sale - produces less surplus than two contenders or two rebuilders trading with each other. By a lot.",
+      "thesis": "Splitting trades by whether both teams (>=.525 prior win-pct vs <.475) sit on the same side of contention reveals a clean structural pattern: symmetric trades (both contending OR both rebuilding) produce $6.4M mean dollar surplus and 0.79 surplus wins for the receiver. Asymmetric trades - exactly the contender-buys-from-firesale archetype - produce $3.1M and 0.39 surplus wins. The difference replicates inside every phase (deadline, midseason, offseason) and is statistically meaningful (p<0.001 across war_delta, surplus_wins, dollar_surplus). The mechanism is probably about information asymmetry and fit: when both teams have the same time horizon, prices settle near fair value. When horizons differ, the discount the seller is forced to take is more than offset by the value-capture mismatch on the buyer's side.",
+      "evidence": {
+        "feature": "partner_prior_winpct x receiver_prior_winpct (symmetric vs asymmetric)",
+        "stat_summary": "symm n=1530 mean war_delta=0.676 / $6.4M / 0.79 surplus wins. asymm n=549 mean war_delta=0.405 / $3.07M / 0.39 surplus wins. Diff $3.34M (t=4.99, p<0.0001). surplus_wins diff 0.40 (t=3.98, p=0.0001).",
+        "n_observations": 2079,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "Trade with teams in your competitive lane first. The folklore contender-vs-seller deadline trade is overrated; symmetrical-horizon trades are systematically better priced and yield more captured surplus.",
+      "reader_score": 10,
+      "win_score": 9
+    },
+    {
+      "headline": "Age 28-30 acquisitions are the peak-surplus career stage, not 31+ and not <25.",
+      "hook": "The Moneyball-era reflex says trade for young, controllable talent. The data says the most-captured surplus comes from trading for players right at career peak - and the value falls off a cliff after 30.",
+      "thesis": "Sorted by average age of acquired player at trade time, the 28-30 bucket leads on every dollar/WAR metric: war_delta 0.90, dollar_surplus $8.4M, surplus_wins 0.84 (n=950). The <25 bucket actually has HIGHER surplus_wins (0.97) because cheap young players accumulate value cheaply over a longer window, but their dollar-denominated surplus is lower ($4.3M) because the trade market has not yet priced them at star levels. The 31+ bucket falls off sharply: $4.1M dollar surplus, 0.17 surplus wins - basically break-even. The 28-30 vs 31+ difference is large (p<0.0001 across war_delta, dollar_surplus, surplus_wins). Reading this with sell-high logic: 28-30 is where the market consistently underprices, 31+ is where it consistently overpays.",
+      "evidence": {
+        "feature": "receiver_avg_age_at_trade (age buckets)",
+        "stat_summary": "<25: war_delta 0.55, $4.3M, surplus_wins 0.97. 25-27: 0.62, $6.2M, 0.84. 28-30: 0.90, $8.4M, 0.84. 31-33: 0.59, $5.7M, 0.40. 34+: 0.30, $1.8M, -0.16. Peak vs 31+ on dollar surplus: t=4.65 p<0.0001.",
+        "n_observations": 3951,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "Acquiring 28-30 players is the highest-surplus age bucket in the dataset. Avoid age 34+ acquisitions - mean surplus wins is negative.",
+      "reader_score": 8,
+      "win_score": 8
+    },
+    {
+      "headline": "Offseason is the highest-yield trade window - and it is not close.",
+      "hook": "Sportswriters treat the July 31 deadline as the season's main event. The data treats it as the second-best window - with offseason trades producing 60% more receiver surplus per deal.",
+      "thesis": "Receiver-side outcomes split sharply by trade phase. Offseason (Nov-Feb) trades, n=1341: mean war_delta 0.94, dollar_surplus $8.5M, surplus_wins 1.20. Deadline trades (Jul 25 - Aug 5), n=914: 0.75, $7.0M, 0.85. That is a $1.5M per-trade surplus advantage for offseason work (p=0.06 on dollars, p=0.04 on war_delta, p=0.005 on surplus_wins). Mechanism is plausibly that offseason trade structures are less rushed, less driven by single-season urgency, and more often involve full multi-piece swaps where both sides extract value. Deadline urgency forces buyers to overpay on the margin.",
+      "evidence": {
+        "feature": "trade_phase (offseason vs deadline)",
+        "stat_summary": "offseason n=1341 war_delta 0.94 / $8.49M / 1.20 surplus_wins. deadline n=914 war_delta 0.75 / $6.99M / 0.85. surplus_wins t=-2.78 p=0.0055.",
+        "n_observations": 2255,
+        "credibility": "high"
+      },
+      "actionable_takeaway": "Front offices oriented to extracting receiver surplus should prioritize offseason swing trades over deadline acquisitions when player availability allows.",
+      "reader_score": 7,
+      "win_score": 7
+    }
+  ],
+  "dead_ends_explored": [
+    {
+      "feature": "buy-from-firesale at deadline (partner_prior_winpct < .475 x phase=deadline)",
+      "result": "Surplus_wins higher for sellers (1.17 vs 0.73, p=0.06) but dollar_surplus and ERA metrics not significant. The story is real-ish but the cleaner story is the symmetric-vs-asymmetric framing, which subsumes this."
+    },
+    {
+      "feature": "deadline vs other phases on FIP/xFIP/SIERA",
+      "result": "FIP +0.28 at deadline vs +0.15 elsewhere, but not significant (p>0.2). Deadline pitching outcomes are mediocre, but August waiver pickups are the real outlier - that is where the seasonal ERA signal lives."
+    },
+    {
+      "feature": "partner_prior_winpct as continuous predictor on its own",
+      "result": "Mean outcomes by partner tercile (sellers vs contenders) differ by less than 0.07 on war_delta and less than $200K on dollar_surplus. Partner contention status alone has no signal; it only matters in combination with receiver's own status (the symmetric/asymmetric pattern)."
+    },
+    {
+      "feature": "September trades",
+      "result": "Tiny sample (n=117) with extreme negative wrc_delta (-47) and xfip_delta. Likely sample artifact from rosters expanding and minor adjustments coded as trades - not stable enough to write up."
+    }
+  ]
+}
