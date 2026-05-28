@@ -1,0 +1,70 @@
+{
+  "slug": "k-trajectory-split",
+  "title": "The Strikeout Spike Signal",
+  "subtitle": "When a pitcher's K% is rising into a trade, both the strikeout rate and ERA metrics deteriorate post-trade. The selling team knows something.",
+  "published_at": "2026-05-28",
+  "tags": ["pitching", "strikeouts", "sell-high", "trade-evaluation"],
+  "read_time_minutes": 7,
+  "sections": [
+    {
+      "type": "prose",
+      "content": "The research log on this site documented one of the strongest signals in the data: pitchers coming off a high K% season regress post-trade (Station 2, R-22, β=−10.8 K-percentile points, 100% directional mass). The conventional read of that finding is sell-high — the K% was a peak, the pitcher is not as good as he looks.\n\nWhat the single-outcome analysis missed is what happens to ERA alongside the K% regression. The answer is uncomfortable for the acquiring team."
+    },
+    {
+      "type": "callout",
+      "variant": "finding",
+      "title": "The complete picture",
+      "content": "Pitchers with a rising K% trajectory entering a trade see K% decline post-trade (β=−0.292, 100% mass) AND FIP, xFIP, and SIERA worsen (β=+0.041–0.050, 95–98% mass). Both outcomes deteriorate. The K% spike was not covering for stable underlying quality — it was the quality."
+    },
+    {
+      "type": "prose",
+      "content": "The chart below makes the case empirically. Pitcher acquisitions are split into quartiles by K% trajectory entering the trade — Q1 is pitchers whose K% was falling, Q4 is pitchers on a sharp rise. Both post-trade K% delta and FIP delta are tracked for each group."
+    },
+    {
+      "type": "chart",
+      "chart_type": "grouped_bar",
+      "title": "K% trajectory quartile vs post-trade K% delta and FIP delta",
+      "x_key": "traj_bin",
+      "y_keys": ["mean_kpct_delta", "mean_fip_delta"],
+      "y_labels": ["K% delta (pp)", "FIP delta"],
+      "x_label": "Pre-trade K% trajectory quartile",
+      "y_label": "Post-trade change",
+      "caption": "Q1 = pitchers with falling K% trend entering the trade. Q4 = pitchers with rising K% trend. For Q4 pitchers, K% declines post-trade (negative K% delta, green bars below zero) and FIP gets worse (positive FIP delta, orange bars above zero). For Q1 pitchers, the opposite: K% improves and FIP slightly improves.",
+      "data": [
+        {"traj_bin": "Q1 (falling)", "mean_kpct_delta": 9.878, "mean_fip_delta": -0.059, "n": 37},
+        {"traj_bin": "Q2", "mean_kpct_delta": 1.309, "mean_fip_delta": -0.138, "n": 34},
+        {"traj_bin": "Q3", "mean_kpct_delta": -10.429, "mean_fip_delta": 0.225, "n": 35},
+        {"traj_bin": "Q4 (rising)", "mean_kpct_delta": -8.806, "mean_fip_delta": 0.44, "n": 36}
+      ]
+    },
+    {
+      "type": "prose",
+      "content": "The symmetry is striking. Pitchers entering the trade on a K% slide tend to improve post-trade — as if the trade itself coincides with a correction upward. Pitchers entering on a spike decline on both dimensions. This is not random variation across 142 observations; the Bayesian model surfaces the K% trajectory coefficient as credible across four independent outcomes.\n\nThe most parsimonious explanation involves three mechanisms operating together."
+    },
+    {
+      "type": "prose",
+      "content": "First, mean reversion. K% is a volatile metric. A pitcher who strikes out 30% of batters one season will not sustain that rate. The spike is partly real signal, partly noise. When it normalizes, FIP normalizes with it, because FIP uses K rate as a component.\n\nSecond, selection bias in who gets traded. A pitcher on a K% spike is maximally valuable to the selling team — their trade asset is at peak asking price. If the selling team is sophisticated, they are moving this pitcher precisely because they believe the rate is unsustainable. The acquiring team is pricing the spike; the selling team is pricing the regression.\n\nThird, context transfer. The K% spike may be partially explained by a specific pitch mix, a specific catcher's framing, or a specific bullpen role that does not transfer to the new organization. The spike was context-dependent, and the context just changed."
+    },
+    {
+      "type": "callout",
+      "variant": "methodology",
+      "title": "A note on the station 2 finding",
+      "content": "The original Research Log finding (R-22) used K% percentile rank as the predictor — a single-season snapshot. The trajectory feature used here measures the multi-season trend direction, not the absolute level. These capture different things. A pitcher can be at a high absolute K% without having a rising trend, and vice versa. Both signals appear to be real, but they describe different risk profiles."
+    },
+    {
+      "type": "prose",
+      "content": "The practical implication is specific: when evaluating a trade for a pitcher with a rising K% trend in the prior two seasons, discount both the K rate and the ERA metrics. The spike is not revealing hidden quality — it is the quality, and it is temporary.\n\nThe corollary is less obvious but potentially more valuable: pitchers with a declining K% trend entering a trade may be systematically underpriced. The data says their K% recovers and FIP slightly improves. If the market is pricing the recent decline, the acquiring team may be getting more than the asking price suggests."
+    },
+    {
+      "type": "stat_row",
+      "stats": [
+        { "label": "K% decline (Q4 pitchers)", "value": "−8.8 pp", "subtext": "post-trade vs pre-trade" },
+        { "label": "FIP change (Q4 pitchers)", "value": "+0.44", "subtext": "FIP worsened post-trade" },
+        { "label": "K% gain (Q1 pitchers)", "value": "+9.9 pp", "subtext": "post-trade vs pre-trade" },
+        { "label": "FIP change (Q1 pitchers)", "value": "−0.06", "subtext": "FIP slightly improved" },
+        { "label": "Trajectory coefficient on kpct_delta", "value": "−0.292", "subtext": "100% directional mass" }
+      ]
+    }
+  ],
+  "methodology_note": "V3 Bayesian regression (Student-t likelihood, ν≈4) fit on 2010–2020 training data, evaluated on 2021–2024 holdout. Feature: receiver_acquired_pitcher_k_trajectory (linear trend in K% percentile rank over prior 2 seasons for acquired pitchers, averaged across pitchers in the trade leg). Outcomes: kpct_delta (post-trade minus pre-trade K% percentile rank), fip_delta, xfip_delta, siera_delta. Positive fip_delta = FIP got worse. Chart shows raw quartile means from 142 observations; regression controls for player quality and other contextual features."
+}

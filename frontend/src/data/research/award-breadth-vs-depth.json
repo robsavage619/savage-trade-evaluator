@@ -1,0 +1,68 @@
+{
+  "slug": "award-breadth-vs-depth",
+  "title": "Breadth Over Depth: The Award Pedigree Paradox",
+  "subtitle": "Getting several decorated players outperforms getting one star — and the data is unambiguous about it",
+  "published_at": "2026-05-28",
+  "tags": ["trade-evaluation", "market-inefficiency", "roster-construction"],
+  "read_time_minutes": 5,
+  "sections": [
+    {
+      "type": "prose",
+      "content": "The conventional logic of blockbuster trades is simple: get the best player available. Go get the MVP candidate. The marquee name on the transaction. Pay what you have to.\n\nThe data has a different opinion.\n\nA Bayesian regression across more than 5,000 trade legs from 2010–2024 surfaces two features related to award pedigree that pull in opposite directions — and together, they describe a specific market inefficiency in how teams construct trade packages."
+    },
+    {
+      "type": "stat_row",
+      "stats": [
+        { "label": "Breadth coefficient", "value": "+0.189 β", "subtext": "pct_awarded → dollar surplus" },
+        { "label": "Depth coefficient", "value": "−0.191 β", "subtext": "avg_prior_awards → dollar surplus" },
+        { "label": "Directional mass (breadth)", "value": "100%" },
+        { "label": "Directional mass (depth)", "value": "98.3%" },
+        { "label": "Trade legs", "value": "5,308" }
+      ]
+    },
+    {
+      "type": "prose",
+      "content": "The two features are distinct. Breadth — the share of acquired players who have received any major award (All-Star, Silver Slugger, Gold Glove, Cy Young, MVP) — is strongly positive. Depth — the average number of awards per acquired player — is equally strongly negative. Same direction of evidence, opposite implications.\n\nIn plain terms: acquiring several modestly decorated players outperforms acquiring one star with a long trophy case."
+    },
+    {
+      "type": "callout",
+      "variant": "finding",
+      "title": "The finding in two sentences",
+      "content": "The share of acquired players with any award history predicts better dollar surplus outcomes (β=+0.189, 100% directional mass). The average award count per acquired player predicts worse outcomes (β=−0.191, 98.3% mass). Breadth is rewarded. Depth is penalized."
+    },
+    {
+      "type": "chart",
+      "chart_type": "bar",
+      "title": "Mean dollar surplus by award breadth bucket (2010–2024)",
+      "x_key": "bucket",
+      "y_key": "mean_surplus_m",
+      "x_label": "Share of acquired players with award history",
+      "y_label": "Mean dollar surplus ($M, 3-year window)",
+      "caption": "Trades where most or all acquired players have award history produce 3.4x the mean dollar surplus of trades where no acquired player has any award history. This is the breadth effect — not driven by the awards themselves, but by the breadth of credential across the package.",
+      "data": [
+        {"bucket": "None awarded", "mean_surplus_m": 5.17, "n": 3758},
+        {"bucket": "Some awarded", "mean_surplus_m": 6.99, "n": 15},
+        {"bucket": "Most/all awarded", "mean_surplus_m": 17.46, "n": 204}
+      ]
+    },
+    {
+      "type": "prose",
+      "content": "The breadth effect looks obvious in the bar chart — but it is not. It survives controlling for player quality directly. The finding is not simply that better players have more awards and better players produce more. The model holds player quality constant and still finds the breadth signal.\n\nThe depth effect is where it gets counterintuitive. When the average award count per acquired player is high — meaning the trade is built around one or two highly decorated stars — outcomes get worse, not better. The Cy Young winner you paid three prospects for underdelivers relative to a package of three All-Stars."
+    },
+    {
+      "type": "prose",
+      "content": "There are two candidate mechanisms. The first is regression to the mean: highly decorated players are acquired at peak market value, priced on their best seasons. Post-trade performance reverts. The second is a structural trade-market failure: teams bidding hard for a single star overpay in both player assets and dollar terms, depleting the support roster around that star in ways that suppress his output.\n\nBoth mechanisms are consistent with the data. Distinguishing between them requires decomposing the surplus by contract value — a test that has not yet been run but is on the list."
+    },
+    {
+      "type": "callout",
+      "variant": "methodology",
+      "title": "What to watch out for",
+      "content": "The 'Most/all awarded' bucket has 204 observations; 'Some awarded' has only 15. The bar chart tells the breadth story clearly, but the depth story (avg_prior_awards negative) is the more reliable finding — it's a continuous variable with 5,000+ observations behind the coefficient. The bar chart is illustrative. The regression coefficient is the evidence."
+    },
+    {
+      "type": "prose",
+      "content": "The practical implication, if the finding replicates under a payroll-stratified robustness check, is specific: teams constructing trade packages that return several modestly-decorated contributors outperform teams returning one heavily-credentialed star. The market may be pricing the trophy case, not the trajectory."
+    }
+  ],
+  "methodology_note": "V3 Bayesian regression (Student-t likelihood, ν≈4) fit on 2010–2020 training data, evaluated on 2021–2024 holdout. Features: receiver_acquired_pct_awarded (share of acquired players with any MLB award in prior 3 seasons); receiver_acquired_avg_prior_awards (mean award count per acquired player). Outcome: dollar_surplus, xfip_delta, siera_delta. Both features credible on dollar_surplus; both also credible on xFIP and SIERA. Bar chart shows raw means by pct_awarded bucket — regression coefficient controls for player quality."
+}

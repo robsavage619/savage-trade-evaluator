@@ -4,6 +4,7 @@ import { Radar, Building2, Briefcase, FlaskConical, Hammer, Sigma } from 'lucide
 import PresslyCase from './routes/PresslyCase'
 import ModelValuation from './routes/ModelValuation'
 import Research from './routes/Research'
+import ResearchArticle from './routes/ResearchArticle'
 import TradeWorkspace from './routes/TradeWorkspace'
 import WarRoom from './routes/WarRoom'
 import OrgExplorer from './routes/OrgExplorer'
@@ -137,6 +138,7 @@ export default function App() {
         <Route path="/orgs" element={<OrgExplorer />} />
         <Route path="/orgs/:bref" element={<OrgScout />} />
         <Route path="/research" element={<Research />} />
+        <Route path="/research/:slug" element={<ResearchArticle />} />
         <Route path="/player/:id" element={<PlayerProfile />} />
         <Route path="*" element={<Navigate to="/warroom" replace />} />
       </Routes>

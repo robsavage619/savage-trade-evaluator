@@ -116,9 +116,9 @@
     },
     {
       "id": "t008",
-      "headline": "Rising K% trajectory predicts ERA metric gains and K% regression simultaneously — pitchers on a strikeout spike sustain quality without sustaining the strikeout rate.",
-      "mechanism": "Pitchers adding a new pitch or increasing usage of swing-and-miss stuff see K% spike into the trade window. The market prices that K% into the ask. Post-trade, opposing hitters adjust and K% normalizes — but the underlying ERA quality (FIP, xFIP, SIERA) holds because the new pitch is real. The strikeout peak was the ceiling; the pitch development was the floor.",
-      "analyst_note": "kpct_delta beta is −0.292, 100% mass — the K% regression is definitive. FIP/xFIP/SIERA betas are all positive (+0.041 to +0.050). That sign split is the finding. The sell-high story from the Research log (Station 2) describes the K% decline but does not account for ERA stability. The practical implication inverts the conventional read: you are not buying a mirage when you acquire a K% spike pitcher — you are buying a pitcher whose strikeout rate will normalize while his ERA holds.",
+      "headline": "A rising K% trajectory before a trade predicts both K% regression and FIP deterioration post-trade — the sell signal is complete.",
+      "mechanism": "Pitchers on a K% spike are posting ERA metrics propped up by unsustainable strikeout rates. When K% normalizes post-trade, FIP worsens in parallel — the two outcomes are coupled, not independent. The selling team is pricing on the peak; the buying team inherits the regression on both dimensions.",
+      "analyst_note": "Pitchers with rising K% trend (Q4): K% delta = −8.8pp, mean FIP delta = +0.44 (FIP got worse). Pitchers with falling K% trend (Q1): K% delta = +9.9pp, FIP delta = −0.06. The pattern is clean and symmetric. This corrects an earlier misread — the FIP betas are positive on a positive-means-worse scale, meaning rising K% trajectory predicts ERA deterioration alongside K% regression. The sell-high thesis is stronger than previously understood.",
       "evidence": {
         "feature": "receiver_acquired_pitcher_k_trajectory",
         "outcomes": ["kpct_delta", "fip_delta", "xfip_delta", "siera_delta"],

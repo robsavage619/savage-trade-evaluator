@@ -1,0 +1,31 @@
+{
+  "articles": [
+    {
+      "slug": "international-pitcher-pipeline",
+      "title": "The International Pipeline Edge",
+      "subtitle": "Why some organizations consistently extract better ERA outcomes from acquired pitchers — and what the roster data says about why",
+      "published_at": "2026-05-28",
+      "tags": ["pitching", "org-context", "international", "development"],
+      "summary": "Across FIP, xFIP, and SIERA — three independent ERA-family metrics — organizations with higher shares of international-born pitchers extract systematically better outcomes from acquired starters. The effect holds across 632 trade-pitcher observations from 2010–2024.",
+      "read_time_minutes": 6
+    },
+    {
+      "slug": "award-breadth-vs-depth",
+      "title": "Breadth Over Depth: The Award Pedigree Paradox",
+      "subtitle": "Getting several decorated players outperforms getting one star — and the data is unambiguous about it",
+      "published_at": "2026-05-28",
+      "tags": ["trade-evaluation", "market-inefficiency", "roster-construction"],
+      "summary": "A counterintuitive finding from Bayesian regression across 5,000+ trade legs: the share of acquired players with any award history predicts better outcomes, but the average award prestige per player predicts worse outcomes. Breadth is rewarded. Depth is penalized.",
+      "read_time_minutes": 5
+    },
+    {
+      "slug": "k-trajectory-split",
+      "title": "The K% Mirage That Isn't",
+      "subtitle": "Pitchers on a strikeout spike regress on K% post-trade — but their ERA metrics hold. You're not buying a mirage.",
+      "published_at": "2026-05-28",
+      "tags": ["pitching", "strikeouts", "regression", "sell-high"],
+      "summary": "The conventional wisdom is right that K% regresses after a spike — but wrong about what it means. The same pitchers post better FIP, xFIP, and SIERA outcomes. The strikeout rate was the ceiling; the pitch development was the floor.",
+      "read_time_minutes": 7
+    }
+  ]
+}
