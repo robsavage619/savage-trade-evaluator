@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-05-28",
+  "framing": "Serious multi-method search after the first low-powered sweep — 3 data-scientist agents on rich player-level pre/post window tables, each with skeptic discipline (rate-stat outcomes, controls for age/quality/form, permutation, 2010-2020 train / 2021-2024 holdout, multiplicity discount, org-level clustering), plus an independent confirmation pass.",
+  "power_reality_check": "The player-level window tables look large (18,914 rows) but usable pre/post pairs are small: xwOBA 720, xERA 740, velo/spin 610, whiff/chase/K% 290, pitch-movement 1040. Power floor ~r=0.10-0.17. The hoped-for 30x power gain did not materialize.",
+  "mechanical_baseline": "Rate stats are dominated by mean-reversion. xwOBA post~pre slope 0.43 (r(pre,delta)=-0.49); xERA post~pre slope 0.32 (R2=0.007, unfiltered). Any 'edge' must beat this.",
+
+  "results": [
+    {
+      "agent": "DS1 stuff-vs-results (buy the luck)",
+      "verdict": "Survivor under a clean filter, but largely-known + sample-sensitive",
+      "detail": "Pitchers: pre-trade xERA predicts post-trade ERA ~94/6 over actual ERA; unlucky (ERA>xERA) improve -0.57, lucky regress +0.58. Holdout +0.176 runs, permutation p=0.0002 — at n=223 with a >=200-BF filter. BUT: (a) it reduces to 'use xERA not ERA' = DIPS theory, known to sophisticated FOs; (b) the gap adds nothing beyond xERA (coef -0.014 p=0.90); (c) independent unfiltered pull (n=740) shows xERA persistence R2=0.007 — the result is sensitive to the BF filter. Batters: DEAD (artifact + holdout sign-flip; hitter wOBA is skill-stable).",
+      "fresh_wrinkle": "The hitter/pitcher ASYMMETRY is the non-obvious part: pitcher results are luck-laden and partly correctable; hitter results are skill-stable and are not. Pitcher result-persistence 0.32 vs hitter 0.43."
+    },
+    {
+      "agent": "DS2 pitch-design / approach change",
+      "verdict": "DEAD (clean null)",
+      "detail": "Receiving org explains ~zero variance in post-trade change to velocity/movement/usage once clustered at player level (F=0.68 p=0.89; cluster-permutation p=0.96). velo->whiff link is real but mechanical/contemporaneous and the velo change is unpredictable pre-trade. Also caught a data landmine: arsenal-window columns are percentile ranks with a survivorship artifact, not physical units."
+    },
+    {
+      "agent": "DS3 ML interaction / non-linear discovery",
+      "verdict": "DEAD (clean null)",
+      "detail": "Gradient-boosted trees with time-based holdout beat nothing a line misses. Only out-of-sample signal is linear mean-reversion on receiver_acquired_player_quality. Every surfaced interaction died under controls+holdout+multiplicity (best near-miss dev_fit_pitching x k_trajectory holdout p=0.07, fails 5-test discount). For k%-delta, a 1-variable line on pre-trade K% matched the full GBM (R2=0.219 both)."
+    }
+  ],
+
+  "convergent_structural_finding": "Across pitching coaches (the Mirage), receiving orgs (DS2), measured pitch design (DS2), and non-linear ML (DS3), 'the receiving environment transforms the player' is NOISE. Post-trade rate outcomes are essentially mean-reversion on pre-trade quality. This is the most-validated conclusion of the entire effort and it contradicts a dominant industry narrative ('our system/coach/park will unlock him'). It is a negative/structural insight, not a feature edge.",
+
+  "honest_bottom_line": "We did NOT find a new player-attribute edge that beats a sophisticated front office using observable data — confirmed across 3 methods + skeptics + holdout, not one weak sweep. The one robust survivor (pitcher luck-correction) is DIPS theory in trade clothing. The genuine, defensible insights are: (1) the pitcher-vs-hitter luck-harvestability asymmetry, and (2) the convergent structural truth that post-trade change is reversion, not transformation. The remaining frontier requires data the league does not share (medicals, biomechanics, bat tracking, MiLB pitch design) — which is exactly where real front offices invest. This is a diagnosis of the frontier, not defeatism."
+}
