@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-05-28",
+  "purpose": "Adversarial re-examination of the deep-dive 'hidden gems' against a strict insight bar. Triggered by the (correct) observation that statistical strength != insight.",
+  "insight_bar": [
+    "NON-OBVIOUS — would surprise a sharp GM; not 'good players are good' / 'old players decline'.",
+    "NOT ALREADY PRICED — beats what projection systems already do; ideally contradicts a stated belief.",
+    "ROBUST — survives controls for age + current form + quality; not a mechanical/cost-model artifact; survives permutation; not a multiple-comparisons fluke.",
+    "MOVES A RATE STAT — park/regression-adjusted quality outcome (xwoba/wrc/fip/xfip/siera), not just value/volume (dollar_surplus/war_delta/surplus_wins, which are cost-model-dependent and reward 'player is good')."
+  ],
+  "key_diagnostic": "Split outcomes into VALUE/VOLUME (mechanical, cost-dependent) vs QUALITY/RATE (skeptic-proof). A real performance edge must move a RATE stat. 'Player is productive and stays productive' moves only value/volume and is not an edge.",
+
+  "candidates_tested_and_killed": [
+    {"claim":"Buy the hot hand (origin_ytd_war predicts post-trade value)","verdict":"DEAD — obvious / already priced","evidence":"r=+0.25 on dollar_surplus & +0.22 on war_delta, but NULL on every rate stat (xwoba -0.02, wrc -0.02, fip +0.03, all ns). A hot player accumulates more value because he is productive, not because he improves. Projection systems already weight in-season WAR."},
+    {"claim":"Buy low beats buy high (recency overpricing / mean reversion edge)","verdict":"DEAD — no rebound","evidence":"form_gap = ytd_war residualized on quality. Buy-HIGH beat buy-low on value ($13.0M vs $6.8M). Buy-low showed NO rate-stat rebound — buy-low hitters' wRC+ got worse (-20.7 vs -4.0), buy-low pitchers' FIP barely differed (ns). The market prices form roughly correctly in both directions."},
+    {"claim":"Multi-season WAR trajectory predicts decline (anti-momentum)","verdict":"DEAD — confounded (hitters) / redundant (pitchers)","evidence":"Raw rate-stat correlations significant (wrc r=-0.094 p=0.006, permutation p=0.006) BUT hitter effect dies under age+form+quality controls (p=0.22). Only pitcher FIP survives controls (p=0.011) and that overlaps the already-published K%-trajectory sell-high finding (r=0.29). One marginal survivor among ~15 tests."},
+    {"claim":"Pitcher-heavy packages burn acquirers","verdict":"DEAD — sign reversed and fragile","evidence":"Effect is actually opposite (pitchers in mixed packages improve, siera coef -0.78 naive p=0.0004) but cluster-robust p=0.045, binary version null (p=0.09), rests on ~150 rows."},
+    {"claim":"Change of scenery / dev-fit improves acquired players' rate stats","verdict":"DEAD","evidence":"dev_fit_hitting on wrc/xwoba p>=0.27; dev_fit_pitching on fip/siera p>=0.12."},
+    {"claim":"Tech-adoption orgs improve acquired-hitter contact (xwoba/wrc)","verdict":"SUGGESTIVE, NOT ROBUST","evidence":"Survives naive controls (xwoba p_ctrl=0.006) but tech_adoption_lead_years is a team constant (within-team SD 0.12); true n~30 teams, cluster-robust p=0.030, and the MEASURED org-xwoba-jump proxy is null (p=0.49), contradicting the reputational variable. Does not clear a multiplicity discount."},
+    {"claim":"Walk-year / contract-year players outperform","verdict":"DEAD","evidence":"Null on all outcomes (all p>=0.08)."},
+    {"claim":"Platoon-vulnerable bats get exposed post-trade","verdict":"DEAD","evidence":"xwoba p=0.035 / wrc p=0.072 uncontrolled; does not clear multiplicity."},
+    {"claim":"Park-factor transition (origin->receiver) moves outcomes","verdict":"DEAD — mechanically impossible","evidence":"Null because the rate-stat outcomes are already park-adjusted; a park change cannot move a park-adjusted metric by construction."}
+  ],
+
+  "multiplicity_note": "~22 rate-stat tests across the adversarial pass. At alpha=0.05, ~1 false positive expected. The closest survivors (tech-adoption team-level p=0.013; pitcher-package reversal p=0.045) are exactly that order of magnitude; neither survives a Bonferroni/BH discount.",
+
+  "bottom_line": "NO genuine, non-obvious, robust, rate-confirmed, not-already-priced player-attribute insight was found. Independently confirmed by an adversarial skeptic-auditor agent. On this dataset, player-level alpha appears mostly priced by the market and by projection systems.",
+
+  "what_actually_survived_this_session": "The robust findings have been STRUCTURAL and NEGATIVE, not player-attribute edges: (1) GM/org-level surplus differences exist (the $5M gap) though with a within-GM persistence caveat; (2) the org-dev-fit signal is real but is NOT located in the pitching coach (the Pitching Coach Mirage — a negative finding); (3) FV grades are noise in trade outcomes. Negative/structural findings have outperformed every 'X predicts Y' player-attribute claim.",
+
+  "implication_for_future_work": "To find player-level needle-movers, the binding constraint is likely the DATA and the OUTCOME, not the search: (a) value outcomes are cost-model-dependent (the prospect-cost side is the weak link); (b) clean rate-stat outcomes have small n (~600-970). Genuine edges probably require inputs the market cannot already see (medicals, biomechanics/pitch-design changes, deception/movement features) — exactly the gaps the GM panel flagged. Absent those, the honest position is that the market is efficient on observable player attributes."
+}

@@ -96,8 +96,10 @@
   ],
 
   "recommended_articles_from_this_round": [
-    "The Hot Hand Is Real (gem #1) — flagship; the most underrated independent signal, with the contention-conditional refinement (gem #4) folded in.",
-    "The Whiff Rate (gem #2) — the risk/variance frame; directly answers the big-market panel's #1 gap; needs a new whiff-rate + P25-floor visual.",
-    "The Award Multiplier (gem #3) — converts the published award-breadth main effect into an actionable conditional rule."
+    "NONE — see skeptic_audit.json. These candidates were ranked by statistical strength, then re-examined against a strict insight bar (non-obvious + not-already-priced + robust-under-controls + moves-a-rate-stat). They did NOT survive:",
+    "'Buy the hot hand' (origin_ytd_war): DEAD — null on all rate stats; predicts only cost-model-dependent value; obvious / already priced.",
+    "'The Whiff Rate' (pitchers/age-30+ riskier): direction is folklore (TINSTAAPP) and the whiff metric is built on dollar_surplus (cost-model-dependent), so it does not clear the rate-stat bar. Defensible only as a descriptive risk piece, not a hidden gem.",
+    "'Award multiplier': not separately validated against the rate-stat bar; treat as untested, likely to face the same value-outcome issue.",
+    "Verdict: an independent adversarial auditor confirmed no non-obvious player-attribute edge survives. The session's robust findings are structural/negative (GM gap, pitching-coach mirage, FV-is-noise), not player-attribute edges."
   ]
 }
