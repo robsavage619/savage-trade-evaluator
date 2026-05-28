@@ -1,0 +1,13 @@
+{
+  "lens": "nonlinearity",
+  "findings": [
+    {"headline":"Trade-surplus by age is a bell curve peaking at 29, with a cliff after 30 — not the smooth decline the market prices.","feature":"receiver_avg_age_at_trade","outcome":"dollar_surplus","shape":"sweet_spot","breakpoint_or_peak":"peak $8.8M at age 29; quadratic vertex 27.98","stat_summary":"Rises $2.7M at age 21 -> peak $8.8M at 29 -> 27-30 window $7.45M vs >30 $4.36M (41% drop) -> $1.77M past 33. WAR mirrors (0.998 at 28 vs 0.298 at 35). Quadratic term p<0.001. Breakpoint gap grows monotonically from $0.46M at cut=28 to $4.5M at cut=33.5. n=3951.","credibility":"high","n":3951,"gm_action":"Target 27-30; the market's linear aging curve over-credits sub-24 upside and under-marks the post-31 cliff.","novelty":"A single linear aging slope averages the rise and the fall, hiding both the 29 peak and the post-30 cliff."},
+    {"headline":"Returns to player quality ACCELERATE at the top — the opposite of diminishing returns.","feature":"receiver_acquired_player_quality","outcome":"dollar_surplus","shape":"saturation_inverted","breakpoint_or_peak":"slope kink at quality=0","stat_summary":"Surplus slope $60K/unit below quality=0 but $247K/unit above it — 4.1x steeper. Top decile = $16.7M. Convex, quadratic p=0.005. n=2276.","credibility":"high","n":2276,"gm_action":"Pay up for elite; concentrate prospect capital on the best available rather than spreading across mid-tier targets.","novelty":"Markets assume diminishing returns at the top; reality accelerates — elite acquisitions are underpriced per marginal quality unit."},
+    {"headline":"Young-for-level is a threshold, not a slope: the surplus jump is a step at age-relative-to-level > 0.","feature":"receiver_acquired_milb_age_advantage","outcome":"surplus_wins","shape":"threshold","breakpoint_or_peak":"step at 0 (young-for-level)","stat_summary":"old-for-level=0.40 surplus-wins, at-level=0.71, young-for-level(>0)=1.64 (2.3x). p=0.001. n=2592.","credibility":"high","n":2592,"gm_action":"Use young-for-level as a binary screen on prospect returns, not a continuous adjustment.","novelty":"The value is a discontinuous step at being young for the level, not a smooth gradient."}
+  ],
+  "dead_ends": [
+    "FV grade non-linearity: only 0.5% nonzero coverage on acquiring side — 50-FV sweet-spot hypothesis untestable here.",
+    "payroll% -> WAR: significant but too jagged to characterize.",
+    "contention/pyth thresholds: flat, no switch-on point."
+  ]
+}

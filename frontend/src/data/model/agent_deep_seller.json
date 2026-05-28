@@ -1,0 +1,12 @@
+{
+  "lens": "seller_origin",
+  "findings": [
+    {"headline":"Buy the hot hand: a player's WAR for his current club this season is the single most underrated independent pre-trade signal.","feature_or_signal":"receiver_acquired_origin_ytd_war","stat_summary":"Raw r=+0.232 with dollar_surplus. In 2-feature OLS with player_quality (n=2276): coef = +$5.75M per WAR, t=10.6, p<0.001, essentially unchanged. Nearly orthogonal to player_quality (r=0.15). Joint horse-race (11 features): strongest positive predictor of war_delta (std-coef +0.44) and second-strongest of dollar_surplus (+$4.16M).","credibility":"high","n":3977,"gm_action":"Weight current-season production at the origin club heavily; it forecasts post-trade value independent of the model's quality index and the market underpays it.","novelty":"It is not redundant with 'player quality' — it adds orthogonal signal, and it is also the dominant variance driver, so it doubles as a floor-raiser."},
+    {"headline":"Seller skill is real: which TEAM you buy from predicts how much surplus you capture, by up to $10.8M per trade.","feature_or_signal":"seller_team_identity (origin bref, n>=30)","stat_summary":"Mean buyer dollar_surplus by seller team spans $1.14M (NYM, sells savvy) to $11.98M (STL, sells cheap). ANOVA F=2.69 p~0; 1000-shuffle permutation on max-min spread p=0.004. Worst-extracting sellers (best to buy from): STL, DET, SDP, OAK, MIA. Savviest sellers: NYM, PHI, LAD, SFG.","credibility":"high","n":3860,"gm_action":"Prioritize trade conversations with teams that historically sell cheap; treat savvy sellers' asking prices as a warning the player may underperform.","novelty":"Mirror of the receiver-side GM ranking, but seller-side — never published. Identifies which front offices systematically give away surplus."}
+  ],
+  "dead_ends": [
+    "Motivated-seller discount: origin_sunk_cost_pressure (n=1563) r=-0.003 with dollar_surplus, flat across quartiles ($4.7M-$7.1M), whiff 28-31% everywhere. Buying from a contract-dumping seller predicts nothing.",
+    "Seller contention timing: seller prior-year pyth pct (n=3860) r=-0.014, no monotonic pattern. The prior 'symmetric trades' framing did not replicate — correctly distrusted.",
+    "war_acceleration (momentum beyond level): flat (r~-0.03 on all outcomes)."
+  ]
+}

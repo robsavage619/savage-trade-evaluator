@@ -1,0 +1,103 @@
+{
+  "generated_at": "2026-05-28",
+  "method": "4 orthogonal method-lens deep-dive agents (interactions, risk/variance, seller/origin, non-linearity) + main-thread multivariate horse-race and park-transition probe",
+  "synthesis_note": "Ranked by (statistical strength × actionability × novelty). The strongest validation signal is CONVERGENCE — where independent lenses land on the same underlying variable.",
+
+  "tier_1_needle_movers": [
+    {
+      "rank": 1,
+      "gem": "Buy the hot hand — a player's current-season WAR for his ORIGIN club is the most underrated independent signal in the dataset.",
+      "feature": "receiver_acquired_origin_ytd_war",
+      "why_it_wins": "Converges across FOUR independent analyses: (1) survives a 2-feature control vs player_quality at +$5.75M/WAR, t=10.6, nearly orthogonal (r=0.15); (2) strongest positive predictor of war_delta and 2nd-strongest of dollar_surplus in an 11-feature joint horse-race; (3) the dominant variance driver (raises the floor, not just the mean); (4) the basis of the only risk-dominant archetype (origin WAR >= 2.5 -> 15% whiff, +$8.5M P25 floor).",
+      "gm_action": "Weight in-season production at the current club heavily and independently of your quality model. The market systematically underpays it.",
+      "credibility": "high",
+      "caveat": "Interacts with contention (see gem #4) — the carry-forward is stronger for rebuilding acquirers than contenders.",
+      "article_potential": "FLAGSHIP — 'The Hot Hand Is Real' with the horse-race chart + the variance-floor chart."
+    },
+    {
+      "rank": 2,
+      "gem": "The risk frame: pitchers and age-30+ acquisitions are WHIFF traps, not mean problems. GMs lose jobs on downside, and the downside is predictable.",
+      "feature": "receiver_pct_pitchers, receiver_avg_age_at_trade (variance, not mean)",
+      "why_it_wins": "Entirely novel lens — every prior analysis chased the mean. Pure pitchers whiff 38% vs 27% for hitters with a P25 floor 5x worse, yet means are within $1.3M (the gap is ALL variance). Age 30+ whiffs 42% with a -$2.80M P25 floor and no mean premium. Young (<24) is the best safe floor at scale (17.6% whiff).",
+      "gm_action": "At equal projected value, prefer the bat over the arm and the younger player — not for higher EV but for a dramatically better floor. Quantify your deadline 'whiff budget' explicitly.",
+      "credibility": "high",
+      "caveat": "Star tier (origin WAR>=2.5) is the only truly dominant bucket but n=52.",
+      "article_potential": "FLAGSHIP — 'The Whiff Rate' — directly answers the big-market GM panel demand for downside/risk framing. New chart type: whiff-rate + P25-floor by archetype."
+    }
+  ],
+
+  "tier_2_strong_conditional_edges": [
+    {
+      "rank": 3,
+      "gem": "Award pedigree is a quality MULTIPLIER, not a standalone signal — it only converts to value on already-good players.",
+      "feature": "pct_awarded × player_quality",
+      "stat": "Award-breadth slope on WAR: low-quality -0.43, high-quality +1.75. Interaction p=7.7e-8, n=2187. Replicates on $ and surplus_wins.",
+      "gm_action": "Never pay an award-name premium on a reclamation; the market prices the name up everywhere but value only materializes on quality targets.",
+      "credibility": "high",
+      "article_potential": "Strong follow-up to the published award-breadth article — converts a main effect into a conditional rule."
+    },
+    {
+      "rank": 4,
+      "gem": "Hot-WAR carries forward for rebuilders, decays for contenders — deadline folklore is backwards.",
+      "feature": "origin_ytd_war × contention_window",
+      "stat": "Slope on war_delta: rebuilders 0.91, contenders 0.42. Interaction p=2.2e-4, n=3846.",
+      "gm_action": "Contenders should discount mid-season WAR spikes on rentals; rebuilders' buy-low-on-a-hot-player lane is real and underused.",
+      "credibility": "high",
+      "article_potential": "Pairs with gem #1 as the conditional refinement."
+    },
+    {
+      "rank": 5,
+      "gem": "The age sweet spot is a bell peaking at 29 with a cliff after 30 — not a smooth decline.",
+      "feature": "avg_age_at_trade (non-linear)",
+      "stat": "Peak $8.8M at 29; 27-30 window $7.45M vs >30 $4.36M (41% drop). Quadratic vertex 27.98, p<0.001, n=3951. Corroborated independently by the risk lens (age 30+ = worst whiff trap).",
+      "gm_action": "Target 27-30; a linear aging curve over-credits sub-24 upside and under-marks the post-31 cliff.",
+      "credibility": "high",
+      "article_potential": "Strong standalone; doubly validated (non-linearity + risk lenses agree)."
+    }
+  ],
+
+  "tier_3_supporting": [
+    {
+      "rank": 6,
+      "gem": "Returns to player quality ACCELERATE at the top (anti-saturation).",
+      "feature": "player_quality (non-linear)",
+      "stat": "Slope $60K/unit below quality=0, $247K/unit above (4.1x). Convex p=0.005, n=2276. Top decile $16.7M.",
+      "gm_action": "Pay up for elite and concentrate prospect capital rather than spreading across mid-tier.",
+      "credibility": "high"
+    },
+    {
+      "rank": 7,
+      "gem": "Seller-skill spread — which TEAM you buy from predicts captured surplus by up to $10.8M.",
+      "feature": "seller_team_identity",
+      "stat": "Mean buyer surplus by seller spans $1.14M (NYM, savvy) to $11.98M (STL, sells cheap). Permutation p=0.004. Cheap sellers: STL, DET, SDP, OAK, MIA.",
+      "gm_action": "Prioritize conversations with teams that historically sell cheap; treat savvy sellers' asks as a warning.",
+      "credibility": "high",
+      "article_potential": "Seller-side mirror of the GM ranking — answers the rebuild panel's demand."
+    },
+    {
+      "rank": 8,
+      "gem": "Young-for-level is a threshold (step), not a slope.",
+      "feature": "milb_age_advantage (non-linear)",
+      "stat": "old-for-level 0.40 surplus-wins, at-level 0.71, young-for-level 1.64 (2.3x). p=0.001, n=2592.",
+      "gm_action": "Use young-for-level as a binary screen on prospect returns.",
+      "credibility": "high"
+    }
+  ],
+
+  "documented_dead_ends": [
+    "Park-factor transition (origin->receiver park delta): null on all outcomes — because the rate-stat outcomes (xwOBA, wRC+) are ALREADY park-adjusted, so a park change cannot move them by construction. Clean mechanistic dead end; do not re-chase.",
+    "Motivated-seller discount (origin_sunk_cost_pressure): flat, r=-0.003.",
+    "Seller contention timing / 'symmetric trades': did not replicate (consistent with the earlier failed replication).",
+    "WAR acceleration / momentum beyond level: flat.",
+    "Payroll % of cap: null in joint control AND null on variance (big spenders do not whiff less).",
+    "Contention window as a main effect: null on mean and on floor.",
+    "FV grade non-linearity: untestable — 0.5% nonzero coverage on acquiring side.",
+    "park × barrel, contention × age, payroll × quality, dev_fit × milb_age: interaction tests all null."
+  ],
+
+  "recommended_articles_from_this_round": [
+    "The Hot Hand Is Real (gem #1) — flagship; the most underrated independent signal, with the contention-conditional refinement (gem #4) folded in.",
+    "The Whiff Rate (gem #2) — the risk/variance frame; directly answers the big-market panel's #1 gap; needs a new whiff-rate + P25-floor visual.",
+    "The Award Multiplier (gem #3) — converts the published award-breadth main effect into an actionable conditional rule."
+  ]
+}

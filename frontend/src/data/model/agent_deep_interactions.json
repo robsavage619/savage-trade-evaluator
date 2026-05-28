@@ -1,0 +1,15 @@
+{
+  "lens": "interactions",
+  "findings": [
+    {"headline":"Award pedigree is a quality multiplier, not a standalone signal — it only pays off on already-good players.","interaction":"receiver_acquired_pct_awarded × receiver_acquired_player_quality on war_delta","effect":"Award breadth is inert on low-quality acquisitions and strongly positive on high-quality ones.","stat_summary":"Within-quality terciles, award-breadth slope on WAR: low-Q=-0.43, mid=+0.29, hi-Q=+1.75. 2x2 means: low-quality award breadth inert (0.58 vs 0.56 WAR); high-quality adds +0.60 WAR (0.91->1.51). Interaction p=7.7e-8, n=2187. Replicates on dollar_surplus (p=2.8e-6) and surplus_wins (p=3e-4).","credibility":"high","n":2187,"gm_action":"Never pay an award-name premium on a reclamation project; award pedigree only converts to value on already-quality targets. The market prices the name up everywhere.","novelty":"The published award-breadth article found a main effect; this shows the effect is conditional on quality — a multiplier structure the market ignores."},
+    {"headline":"A hot current-season WAR carries forward for rebuilders but decays for contenders — the deadline market assumes the opposite.","interaction":"receiver_acquired_origin_ytd_war × receiver_contention_window on war_delta","effect":"Hot-player WAR predicts post-trade WAR strongly for rebuilding acquirers, weakly for contending acquirers.","stat_summary":"Hot-YTD-WAR slope on war_delta: rebuilders 0.91, contenders 0.42. Interaction p=2.2e-4, n=3846.","credibility":"high","n":3846,"gm_action":"Contenders should discount mid-season WAR spikes on rentals; rebuilders' buy-low-on-a-hot-player lane is real and underused.","novelty":"Inverts deadline folklore — the team most likely to overpay for a hot rental (the contender) is the team that captures the least of that hot streak."},
+    {"headline":"The international-pipeline edge is age-gated — it only helps young acquired players.","interaction":"receiver_pct_international_born × receiver_avg_age_at_trade on war_delta","effect":"International roster share predicts acquired-player WAR gains for young players, near-zero for old.","stat_summary":"Intl-born% slope on war_delta: young 0.86, old 0.08. Interaction p=1.9e-5, n=3825.","credibility":"medium","n":3825,"gm_action":"Apply the international-pipeline premium only to younger acquisitions; it does not transfer to veteran pickups.","novelty":"Extends the published international-pipeline finding into conditional form."}
+  ],
+  "dead_ends": [
+    "park_factor × barrel rate underpowered (n=294, p=0.43).",
+    "contention × age flat (p=0.86).",
+    "payroll × quality additive, not multiplicative (p=0.40).",
+    "dev_fit_hitting × milb_age_advantage did not moderate (p=0.37).",
+    "alumni_network × reacquiring-own-alumni: too few reacquisitions for a clean test."
+  ]
+}
