@@ -1,6 +1,15 @@
 {
   "articles": [
     {
+      "slug": "gm-edge-decomposition",
+      "title": "The Edge Isn't in the Farm",
+      "subtitle": "Top GMs don't beat the market on prospect math — the decomposition isolates where the $5M gap actually comes from",
+      "published_at": "2026-05-28",
+      "tags": ["front-office", "decomposition", "market-inefficiency"],
+      "summary": "Companion piece to The $5M GM Gap. Pearson correlations across 48 GMs reveal that prospect-side features (FV, MiLB grades, dev cluster) are essentially uncorrelated with per-trade dollar surplus, while big-league acquired player quality and organizational infrastructure (alumni networks, dev fit) carry the signal. Payroll is slightly negative — money is not the gap.",
+      "read_time_minutes": 9
+    },
+    {
       "slug": "gm-trade-ranking",
       "title": "The $5M GM Gap",
       "subtitle": "Across 15 seasons and 4,327 trades, the average dollar surplus captured per deal varies by $5M depending on who runs the front office",

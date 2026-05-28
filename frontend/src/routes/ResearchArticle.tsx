@@ -2,13 +2,14 @@ import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, Clock, Tag } from 'lucide-react'
 import {
   ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, ZAxis,
-  Tooltip, ReferenceLine, CartesianGrid, Label,
+  Tooltip, ReferenceLine, CartesianGrid, Label, LabelList,
   BarChart, Bar, Cell, Legend,
 } from 'recharts'
 
 // ── article JSON loader ───────────────────────────────────────────────────────
 
 const ARTICLES: Record<string, () => Promise<{ default: Article }>> = {
+  'gm-edge-decomposition': () => import('../data/research/gm-edge-decomposition.json'),
   'gm-trade-ranking': () => import('../data/research/gm-trade-ranking.json'),
   'international-pitcher-pipeline': () => import('../data/research/international-pitcher-pipeline.json'),
   'award-breadth-vs-depth': () => import('../data/research/award-breadth-vs-depth.json'),
@@ -22,7 +23,7 @@ type StatRowSection = { type: 'stat_row'; stats: { label: string; value: string;
 type CalloutSection = { type: 'callout'; variant: 'finding' | 'methodology' | 'warning'; title: string; content: string }
 type ChartSection = {
   type: 'chart'
-  chart_type: 'scatter' | 'bar' | 'grouped_bar'
+  chart_type: 'scatter' | 'bar' | 'grouped_bar' | 'horizontal_bar'
   title: string
   x_key: string
   y_key?: string
@@ -30,6 +31,7 @@ type ChartSection = {
   y_labels?: string[]
   label_key?: string
   size_key?: string
+  highlight_labels?: string[]
   x_label?: string
   y_label?: string
   caption: string
@@ -96,11 +98,23 @@ function Callout({ variant, title, content }: CalloutSection) {
 }
 
 function ScatterPlot({ section }: { section: ChartSection }) {
+  const highlights = new Set(section.highlight_labels ?? [])
+  const labelKey = section.label_key
+  const renderLabel = labelKey && highlights.size > 0
+    ? (props: { x?: number; y?: number; value?: string | number }) => {
+        const { x, y, value } = props
+        if (typeof x !== 'number' || typeof y !== 'number') return <g />
+        if (!highlights.has(String(value))) return <g />
+        return (
+          <text x={x + 8} y={y + 3} fill="#dce3f5" fontSize={10} fontWeight={500}>{String(value)}</text>
+        )
+      }
+    : null
   return (
     <div className="rounded-lg border border-ink-700 bg-ink-900 p-5">
       <div className="mb-1 text-[12px] font-semibold text-ink-100">{section.title}</div>
       <ResponsiveContainer width="100%" height={380}>
-        <ScatterChart margin={{ top: 16, right: 24, bottom: 40, left: 40 }}>
+        <ScatterChart margin={{ top: 16, right: 60, bottom: 40, left: 40 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(138,150,192,0.07)" />
           <XAxis type="number" dataKey={section.x_key} stroke="#5a6896" tick={{ fontSize: 11 }}>
             {section.x_label && <Label value={section.x_label} position="bottom" offset={24} fill="#8a96c0" fontSize={11} />}
@@ -108,14 +122,15 @@ function ScatterPlot({ section }: { section: ChartSection }) {
           <YAxis type="number" dataKey={section.y_key!} stroke="#5a6896" tick={{ fontSize: 11 }}>
             {section.y_label && <Label value={section.y_label} angle={-90} position="left" offset={28} fill="#8a96c0" fontSize={11} />}
           </YAxis>
-          {section.size_key && <ZAxis range={[40, 300]} />}
+          {section.size_key && <ZAxis dataKey={section.size_key} range={[40, 300]} />}
           <ReferenceLine y={0} stroke="rgba(138,150,192,0.3)" />
+          <ReferenceLine x={0} stroke="rgba(138,150,192,0.15)" />
           <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ payload }) => {
             const p = payload?.[0]?.payload
             if (!p) return null
             return (
               <div className="card px-3 py-2 text-[11px]">
-                {section.label_key && <div className="font-semibold text-ink-100">{p[section.label_key]}</div>}
+                {labelKey && <div className="font-semibold text-ink-100">{p[labelKey]}</div>}
                 <div className="mono mt-1 tabular text-ink-300">
                   {section.x_label}: {(p[section.x_key] as number).toFixed(3)}
                 </div>
@@ -126,8 +141,58 @@ function ScatterPlot({ section }: { section: ChartSection }) {
               </div>
             )
           }} />
-          <Scatter data={section.data as Record<string, number>[]} fill="rgba(255,138,61,0.55)" />
+          <Scatter data={section.data as Record<string, number>[]} fill="rgba(255,138,61,0.55)">
+            {renderLabel && labelKey && <LabelList dataKey={labelKey} content={renderLabel as never} />}
+          </Scatter>
         </ScatterChart>
+      </ResponsiveContainer>
+      <p className="mt-2 text-[11px] leading-relaxed text-ink-500">{section.caption}</p>
+    </div>
+  )
+}
+
+function HorizontalBarPlot({ section }: { section: ChartSection }) {
+  return (
+    <div className="rounded-lg border border-ink-700 bg-ink-900 p-5">
+      <div className="mb-1 text-[12px] font-semibold text-ink-100">{section.title}</div>
+      <ResponsiveContainer width="100%" height={Math.max(280, section.data.length * 28 + 60)}>
+        <BarChart
+          data={section.data as Record<string, number | string>[]}
+          layout="vertical"
+          margin={{ top: 12, right: 60, bottom: 40, left: 180 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(138,150,192,0.07)" />
+          <XAxis type="number" stroke="#5a6896" tick={{ fontSize: 11 }}>
+            {section.x_label && <Label value={section.x_label} position="bottom" offset={24} fill="#8a96c0" fontSize={11} />}
+          </XAxis>
+          <YAxis type="category" dataKey={section.x_key} stroke="#8a96c0" tick={{ fontSize: 11 }} width={170} />
+          <ReferenceLine x={0} stroke="rgba(138,150,192,0.4)" />
+          <Tooltip content={({ payload }) => {
+            const p = payload?.[0]?.payload
+            if (!p) return null
+            return (
+              <div className="card px-3 py-2 text-[11px]">
+                <div className="font-semibold text-ink-100">{p[section.x_key]}</div>
+                <div className="mono mt-1 tabular text-ink-300">{(p[section.y_key!] as number).toFixed(3)}</div>
+              </div>
+            )
+          }} />
+          <Bar dataKey={section.y_key!} radius={[0, 3, 3, 0]}>
+            {(section.data as Record<string, number | string>[]).map((entry, i) => {
+              const v = entry[section.y_key!] as number
+              const fill = v >= 0.25 ? 'rgba(255,138,61,0.85)'
+                : v >= 0 ? 'rgba(255,138,61,0.45)'
+                : 'rgba(91,134,255,0.65)'
+              return <Cell key={i} fill={fill} />
+            })}
+            <LabelList
+              dataKey={section.y_key!}
+              position="right"
+              formatter={(v: number) => v.toFixed(2)}
+              style={{ fill: '#8a96c0', fontSize: 10 }}
+            />
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
       <p className="mt-2 text-[11px] leading-relaxed text-ink-500">{section.caption}</p>
     </div>
@@ -213,6 +278,7 @@ function GroupedBarPlot({ section }: { section: ChartSection }) {
 function ArticleChart({ section }: { section: ChartSection }) {
   if (section.chart_type === 'scatter') return <ScatterPlot section={section} />
   if (section.chart_type === 'grouped_bar') return <GroupedBarPlot section={section} />
+  if (section.chart_type === 'horizontal_bar') return <HorizontalBarPlot section={section} />
   return <BarPlot section={section} />
 }
 
