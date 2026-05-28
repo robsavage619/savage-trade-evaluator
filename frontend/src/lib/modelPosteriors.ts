@@ -99,6 +99,9 @@ export const FEATURE_LABELS: Record<string, string> = {
   receiver_org_pitcher_k_jump_3yr: "Receiving team pitcher strikeout gains (3yr)",
   receiver_acquired_avg_fv: "Acquired prospect avg FV grade (FanGraphs)",
   receiver_acquired_max_fv: "Top acquired prospect FV grade (FanGraphs)",
+  receiver_acquired_catcher_poptime: "Acquired catcher pop time (max effort)",
+  receiver_acquired_outfielder_oaa: "Acquired outfielder OAA (jump)",
+  receiver_acquired_milb_tjbat_plus: "Acquired hitter MiLB tjbat+",
 }
 
 export function featureLabel(feature: string): string {

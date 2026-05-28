@@ -57,7 +57,7 @@ OUT_DIR = Path(__file__).resolve().parent.parent / "frontend" / "src" / "data" /
 #                 deliberately so the demo is honest about where V3 fails.
 FEATURED: tuple[tuple[int, str, str], ...] = (
     (808316, "CHC", "covered"),  # Kyle Tucker → Cubs, 2024 (headline)
-    (768021, "SDP", "covered"),  # Luis Arraez → Padres, 2024
+    (768021, "SDP", "tail_miss"),  # Luis Arraez → Padres, 2024 (under-predicted: pred=-$0.3M, realized=$26.5M)
     (739097, "BAL", "covered"),  # Corbin Burnes → Orioles, 2024
     (642337, "SDP", "tail_miss"),  # Juan Soto + Josh Bell → Padres, 2022 (under-predicted)
 )
