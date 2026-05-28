@@ -1,0 +1,63 @@
+{
+  "persona": "analytics-first mid-market GM",
+  "tldr": "Two articles shift my model, two are half-finished, one is a leaderboard novelty.",
+  "subscription_decision": "trial",
+  "articles": [
+    {
+      "slug": "k-trajectory-split",
+      "usefulness_1_to_10": 8,
+      "would_change_my_decision": true,
+      "what_i_would_do_with_it": "Add pre-trade K% trajectory as a risk flag on our deadline pitcher board. Build a Q1-quartile (falling K%) buy list and have pro scouts validate stuff hasn't degraded.",
+      "what_is_missing": "Q1 buy list conditional on Stuff+ or arsenal-percentile stability — tells me whether the buy is real or a trap.",
+      "honest_critique": "The seller-knows-something mechanism is dominant and the article underweights it."
+    },
+    {
+      "slug": "gm-edge-decomposition",
+      "usefulness_1_to_10": 8,
+      "would_change_my_decision": true,
+      "what_i_would_do_with_it": "Reweight our trade-deck scoring to elevate org-fit features (alumni network, dev fit) over prospect FV.",
+      "what_is_missing": "Confront the max_fv=0 prevalence head-on — the 'prospect features don't matter' finding is partly 'we don't have prospect data for most trades.'",
+      "honest_critique": "The methodology callout half-admits the coverage problem and the headline ignores it."
+    },
+    {
+      "slug": "international-pitcher-pipeline",
+      "usefulness_1_to_10": 6,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Nothing yet. Wait for the payroll stratification check.",
+      "what_is_missing": "Run the payroll-stratified test that the article itself flags as unrun.",
+      "honest_critique": "Publishing a finding while flagging that the most-important confound is unchecked is a tell. Either run the check or don't publish."
+    },
+    {
+      "slug": "award-breadth-vs-depth",
+      "usefulness_1_to_10": 6,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Interesting input to portfolio construction but I'd want to see it controlled for total acquired-WAR before changing behavior.",
+      "what_is_missing": "Test whether the result survives controlling for total acquired-player quality — breadth might just be a proxy for getting more players.",
+      "honest_critique": "Two-coefficient framing is elegant but could be one mechanism dressed as two."
+    },
+    {
+      "slug": "gm-trade-ranking",
+      "usefulness_1_to_10": 4,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Nothing. I already know who Beane is.",
+      "what_is_missing": "Within-GM persistence is r=0.27 with a CI that crosses zero. Naming individual GMs at that signal-to-noise level is irresponsible.",
+      "honest_critique": "Leaderboard novelty. The decomposition piece is the actual story; this one is the clickbait shell."
+    }
+  ],
+  "cross_article_observations": [
+    "Every downstream finding inherits the V3 model's calibration. The site has not shown coverage / CRPS / residuals by trade archetype anywhere I can find — I can't validate the chain.",
+    "Receiver-side framing throughout. No seller-side counterpart on any finding.",
+    "Several articles flag known confounds as unrun and publish anyway."
+  ],
+  "what_i_actually_want_to_read_next": [
+    "Calibration audit of the V3 model itself — coverage, CRPS, residuals by trade archetype.",
+    "K% trajectory conditional on Stuff+ or arsenal-percentile stability — separates real Q1 buys from traps.",
+    "Pre-deadline buy-list quartile generation as a reproducible weekly artifact."
+  ],
+  "what_this_site_is_missing_entirely": [
+    "Model-calibration transparency",
+    "Seller-side framing",
+    "In-season updates as trade rumors break",
+    "Stuff+ or pitch-level features alongside K% trajectory"
+  ]
+}

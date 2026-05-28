@@ -1,0 +1,132 @@
+{
+  "generated_at": "2026-05-28",
+  "personas_consulted": 4,
+  "articles_reviewed": 5,
+  "headline_signal": "All four GMs voted trial. None subscribed. None passed. The site has methodological credibility but no persona felt the published work was actionable enough to commit budget.",
+
+  "article_scoreboard": [
+    { "slug": "k-trajectory-split", "mean_usefulness": 8.0, "ranks": [8,8,7,9], "verdict": "unanimous best — the only finding any persona said they'd hand to their analytics group on Monday" },
+    { "slug": "gm-edge-decomposition", "mean_usefulness": 7.0, "ranks": [8,7,6,7], "verdict": "solid methodology but every persona flagged the max_fv=0 instrument coverage problem as undermining the headline" },
+    { "slug": "award-breadth-vs-depth", "mean_usefulness": 5.5, "ranks": [6,5,5,6], "verdict": "interesting framing but no persona said it would change a trade decision" },
+    { "slug": "international-pitcher-pipeline", "mean_usefulness": 4.75, "ranks": [6,3,5,5], "verdict": "premature publication — every persona flagged the unrun payroll stratification check; big-market called it a market-size confound dressed up as a development finding" },
+    { "slug": "gm-trade-ranking", "mean_usefulness": 3.75, "ranks": [4,4,4,3], "verdict": "weakest piece by consensus — r=0.27 within-GM persistence with CI crossing zero, then names names anyway. Three of four personas called it irresponsible." }
+  ],
+
+  "universal_complaints": [
+    "GM ranking publishes named-and-shamed leaderboard while admitting the persistence statistic doesn't support individual attribution.",
+    "Multiple articles publish findings while explicitly flagging central confounds as unchecked (payroll stratification on International Pipeline, max_fv coverage on Edge Decomposition).",
+    "Every chart is receiver-side. No persona reads the site for buyer-only research; net-sellers and sellers in specific deals are reading inverted material.",
+    "V3 model calibration is invisible. Every downstream finding inherits it and no published piece audits it."
+  ],
+
+  "where_personas_agree": [
+    "K-trajectory is the strongest finding on the site.",
+    "GM ranking should not have named individual GMs at that signal-to-noise level.",
+    "Seller-side framing is a category gap, not an omission.",
+    "Coaching staff and dev-infrastructure people drive much of what's attributed to 'GM' and 'org'."
+  ],
+
+  "where_personas_disagree": [
+    {
+      "topic": "Is 'money isn't the gap' a real finding?",
+      "big_market_says": "No — outcome variable is net-of-cost, which mechanically penalizes high-payroll acquirers. The confound encodes the conclusion.",
+      "midmarket_and_oldschool_say": "Accept the finding directionally; the per-GM correlation of −0.09 looks robust.",
+      "resolution_needed": "Rerun with gross outcome (not net-of-cost) restricted to comparable trade archetypes."
+    },
+    {
+      "topic": "What's the most valuable next research direction?",
+      "midmarket_says": "Model calibration audit — every downstream finding inherits this.",
+      "bigmarket_says": "Playoff-leverage outcome variable — receiver-side dollar surplus is the wrong objective at $250M payroll.",
+      "rebuild_says": "Seller-side framing on every existing article.",
+      "oldschool_says": "Coaching/staff continuity as a covariate.",
+      "resolution_needed": "All four are valid. Prioritize by which expands the market the fastest."
+    }
+  ],
+
+  "consolidated_research_priorities": [
+    {
+      "rank": 1,
+      "title": "V3 model calibration transparency",
+      "demanded_by": ["analytics-midmarket", "rebuild (implicit)", "old-school (implicit)"],
+      "why": "Every downstream finding inherits the model's calibration. Without published CRPS, coverage, and residuals, sophisticated readers can't validate the chain.",
+      "deliverable": "A standing 'Model Diagnostics' page (not an article) updated each refresh"
+    },
+    {
+      "rank": 2,
+      "title": "Seller-side companion to every existing article",
+      "demanded_by": ["rebuild", "old-school", "big-market (implicit)"],
+      "why": "Every existing chart is receiver-POV. Sellers are inverting buyer research in their heads. The seller-side framing is often the more valuable side of the same data.",
+      "deliverable": "Series — 'The K-Trajectory Sell Window,' 'Where Your Prospects Appreciate,' 'The GM Seller-Side Leaderboard (FV per WAR shipped)'"
+    },
+    {
+      "rank": 3,
+      "title": "Coaching and dev-staff continuity layer",
+      "demanded_by": ["old-school", "mid-market (implicit via 'org-fit')"],
+      "why": "Pitching coach, hitting coordinator, and Latin American academy director identity likely drive much of what the GM-edge decomposition attributed to org dev fit. Public data exists; not used.",
+      "deliverable": "Article: 'The Pitching Coach Effect' using coaches table"
+    },
+    {
+      "rank": 4,
+      "title": "Playoff-leverage outcome variable",
+      "demanded_by": ["big-market"],
+      "why": "$250M payrolls don't optimize regular-season dollar surplus. They optimize playoff probability × playoff revenue. The current model framework doesn't see contender-acquirer trades correctly.",
+      "deliverable": "Article + alternative V3 outcome variable: playoff-prob delta × revenue weight"
+    },
+    {
+      "rank": 5,
+      "title": "Rental vs multi-year acquisition stratification",
+      "demanded_by": ["big-market"],
+      "why": "60% of contender trade volume is rentals (<1.5 yrs control). Treating them identically to multi-year vet acquisitions is statistical malpractice. Different decision problem, different math.",
+      "deliverable": "Rental-only sub-model and matched article"
+    },
+    {
+      "rank": 6,
+      "title": "K-trajectory follow-up — interactions and sell-side identity",
+      "demanded_by": ["analytics-midmarket", "old-school"],
+      "why": "The site's best finding has obvious follow-ups: Q1 buy-list conditional on Stuff+ / arsenal stability, and who is concentrating as the Q4 sell-side.",
+      "deliverable": "Article 2 in the K-trajectory series"
+    },
+    {
+      "rank": 7,
+      "title": "Per-destination prospect appreciation/depreciation curves",
+      "demanded_by": ["rebuild"],
+      "why": "When a rebuilder ships a 50 FV prospect, the destination org's dev fit determines how much surplus they're leaving on the table. The mirror of the org-fit hitter laboratory finding but seller-side.",
+      "deliverable": "Article: 'Where Your Prospects Go to Win' using org dev features per destination"
+    },
+    {
+      "rank": 8,
+      "title": "Recompute Edge Decomposition restricted to prospect-included trades",
+      "demanded_by": ["analytics-midmarket", "big-market"],
+      "why": "The 'prospects don't differentiate' finding is partly 'most trades have no FV-graded prospect.' Re-running on the subset of trades that DO include a graded prospect would honestly test the claim.",
+      "deliverable": "Update / corrigendum to gm-edge-decomposition, OR new piece"
+    }
+  ],
+
+  "category_gaps_called_out": [
+    "Postseason outcomes (literally absent across 5 articles)",
+    "Luxury tax / CBT constraints",
+    "Agent representation and extension probability",
+    "Medical / injury risk transfer in trades",
+    "No-trade clauses and player consent leverage",
+    "Coaching staff identity and continuity",
+    "Latin American academy infrastructure",
+    "Sell-side framing on every topic"
+  ],
+
+  "tone_and_credibility_signals": {
+    "what_built_credibility": [
+      "Holdout windows are clean (2010-2020 train, 2021-2024 test) and stated",
+      "D-26 threshold framing is unusual and rigorous",
+      "Bootstrap CIs are reported",
+      "Methodology callouts explicitly name confounds (this is good — but undermined when articles publish anyway)"
+    ],
+    "what_undermined_credibility": [
+      "Publishing findings with central confounds explicitly flagged as unchecked",
+      "Named-and-shamed individual GMs at r=0.27 persistence",
+      "Receiver-side framing presented as default without acknowledgment",
+      "No model calibration page anywhere on the site"
+    ]
+  },
+
+  "summary_for_editorial_board": "The site has a credibility-rich-actionability-poor problem. The methodology is better than FanGraphs or The Athletic on the same topics, but four different GM archetypes converged on the same complaints: rankings without persistence, findings without confound checks, and receiver-only framing. The fix is not more articles — it is targeted articles addressing the eight priorities above, plus a standing model-diagnostics page that lets sophisticated readers audit the chain instead of trusting it on faith."
+}

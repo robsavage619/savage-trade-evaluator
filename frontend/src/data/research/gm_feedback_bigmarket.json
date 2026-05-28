@@ -1,0 +1,64 @@
+{
+  "persona": "big-market win-now GM",
+  "tldr": "Two articles worth analytics-department time, three are mid-market romance.",
+  "subscription_decision": "trial",
+  "articles": [
+    {
+      "slug": "k-trajectory-split",
+      "usefulness_1_to_10": 8,
+      "would_change_my_decision": true,
+      "what_i_would_do_with_it": "Add 2-yr K% trajectory as an explicit flag on the pitcher board. Discount Q4-trajectory rentals, buy-low on Q1.",
+      "what_is_missing": "How does this interact with rental vs multi-year control? My pitcher acquisitions are 60% rentals — does the K% trajectory effect even apply over a half-season?",
+      "honest_critique": "The symmetry across quartiles is the cleanest finding in the five. No real critique on methodology."
+    },
+    {
+      "slug": "gm-edge-decomposition",
+      "usefulness_1_to_10": 7,
+      "would_change_my_decision": true,
+      "what_i_would_do_with_it": "Reweight our trade-deck construction toward receiver-side player-quality and org dev-fit, deprioritize leading with the FV ledger.",
+      "what_is_missing": "Their max_fv=0 for Cashman across 202 trades is an instrument coverage failure, not evidence prospects don't matter. Recompute restricted to trades that actually included a graded prospect.",
+      "honest_critique": "The 'payroll isn't the gap' conclusion is contaminated — see GM trade ranking critique."
+    },
+    {
+      "slug": "award-breadth-vs-depth",
+      "usefulness_1_to_10": 5,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Marginally informs portfolio thinking. Doesn't change a single trade evaluation.",
+      "what_is_missing": "Awards are heavily right-tail rentals (Verlander, Scherzer types) — does the depth-penalty hold for high-leverage October players who were acquired specifically for the stretch?",
+      "honest_critique": "Aggregate-level finding with no postseason cut. Useless for a contender's October roster."
+    },
+    {
+      "slug": "gm-trade-ranking",
+      "usefulness_1_to_10": 4,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Nothing.",
+      "what_is_missing": "Stratify by trade archetype — rentals, salary-dumps, prospect-for-vet, vet-for-vet. Aggregating these is meaningless.",
+      "honest_critique": "Outcome variable is net-of-cost, which mechanically penalizes high-payroll acquirers, then they interpret that penalty as 'money isn't the gap.' The confound encodes the conclusion."
+    },
+    {
+      "slug": "international-pitcher-pipeline",
+      "usefulness_1_to_10": 3,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Nothing.",
+      "what_is_missing": "Effect size is 0.03-0.07 SD. Payroll robustness check explicitly 'not yet run.' Scatter plot is a market-size confound — NYY, LAD, ATL, TOR cluster top-right.",
+      "honest_critique": "Don't publish before you stratify by payroll. Premature."
+    }
+  ],
+  "cross_article_observations": [
+    "Zero mention of postseason, luxury tax, agent/extension probability, or medicals anywhere in the five pieces. That's a tell about who the site is built for.",
+    "Receiver-side dollar surplus net of cost is the wrong objective for a $250M payroll. We optimize playoff probability × playoff revenue.",
+    "Rental vs multi-year acquisitions are treated identically. Different decisions, different math."
+  ],
+  "what_i_actually_want_to_read_next": [
+    "Playoff-leverage surplus model — rerun V3 with outcome = playoff-probability × playoff-revenue, not regular-season dollar surplus.",
+    "Deadline-rental sub-model restricted to <1.5 yrs control — that's 60% of my trade volume.",
+    "Post-acquisition extension probability — when does the rental convert?"
+  ],
+  "what_this_site_is_missing_entirely": [
+    "Postseason outcomes",
+    "Luxury tax constraints",
+    "Agent/extension probability modeling",
+    "Medical/injury risk transfer",
+    "Anything that treats high-payroll trades as a distinct decision problem"
+  ]
+}

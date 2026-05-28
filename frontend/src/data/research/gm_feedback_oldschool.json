@@ -1,0 +1,62 @@
+{
+  "persona": "veteran scout-first executive",
+  "tldr": "Two pieces earn scout-credibility. Three are softer than their headlines.",
+  "subscription_decision": "trial",
+  "articles": [
+    {
+      "slug": "k-trajectory-split",
+      "usefulness_1_to_10": 9,
+      "would_change_my_decision": true,
+      "what_i_would_do_with_it": "Hand it to my pitching analytics group Monday morning. The bidirectional asymmetry — Q1 recovers, Q4 craters on both K% and FIP — matches what every veteran pro scout has been saying about sell-high windows for thirty years. The 'selling team knows something' framing is the most actionable sentence on the whole site.",
+      "what_is_missing": "Who is on the selling side of the Q4 trades? If TBR/CLE/LAD are concentrated as sellers, that's a buy-list, not generic mean reversion.",
+      "honest_critique": "Solid finding. Light on the human story of who's on the other side of the desk."
+    },
+    {
+      "slug": "gm-edge-decomposition",
+      "usefulness_1_to_10": 7,
+      "would_change_my_decision": true,
+      "what_i_would_do_with_it": "Reframes how I'd talk about trade evaluation in our front office — less time on FV ledger, more time on big-league acquisition selection and org-dev infrastructure.",
+      "what_is_missing": "Coaching/staff continuity as a covariate. The pitching coach, hitting coordinator, and Latin American academy director drive more of the 'org dev fit' effect than the GM does. Public information, not used.",
+      "honest_critique": "Best methodology of the five. The 'r=0.45 across 48 GMs' is exactly the kind of effect size I trust."
+    },
+    {
+      "slug": "international-pitcher-pipeline",
+      "usefulness_1_to_10": 5,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Nothing. The mechanism story — bilingual coaching, biomechanics infrastructure — is right, but the chart is screaming 'market size confound.'",
+      "what_is_missing": "Latin American academy director tenure. Latin scouting infrastructure investment by org. The actual mechanisms.",
+      "honest_critique": "The methodology callout admits the central confound is unchecked. Either run the check or don't publish."
+    },
+    {
+      "slug": "award-breadth-vs-depth",
+      "usefulness_1_to_10": 6,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Mild adjustment to package construction thinking. Doesn't reach the level of changing a deal in front of me.",
+      "what_is_missing": "Test against total acquired-WAR — breadth might just be 'getting more players,' not a portfolio finding.",
+      "honest_critique": "Elegant framing. Could be one mechanism dressed as two."
+    },
+    {
+      "slug": "gm-trade-ranking",
+      "usefulness_1_to_10": 3,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Nothing.",
+      "what_is_missing": "Context. Beane at $9M/trade in Oakland and Cashman at $6.34M in New York aren't doing the same job; the leaderboard pretends they are.",
+      "honest_critique": "The article's own methodology callout admits the GM name is shorthand for an entire org. Within-GM persistence is r=0.27 with a CI crossing zero — that's the buried headline. Ranking Coppolella as worst when his tenure ended in a signing-scandal void is measuring punishment, not skill."
+    }
+  ],
+  "cross_article_observations": [
+    "Human variables entirely absent — no-trade clauses, agent leverage (Boras vs not), clubhouse/positional fit, makeup, family situation. Five articles, zero quotes from anyone who's been in a war room.",
+    "Coaching and staff continuity is a covariate that drives much of what gets attributed to GM and org.",
+    "Publishing findings while admitting central confounds are unrun is a pattern across multiple pieces."
+  ],
+  "what_i_actually_want_to_read_next": [
+    "Coaching/staff continuity as a covariate — pitching coach, hitting coordinator, Latin American academy director impact on acquired-player outcomes.",
+    "Sell-side identity in the K-trajectory finding — who is selling Q4 pitchers and is it a concentrated list of orgs?",
+    "Trade outcomes conditional on no-trade-clause invocation and agent representation."
+  ],
+  "things_a_scout_would_tell_the_authors_are_missing": [
+    "Coaching/staff continuity as a covariate",
+    "Sell-side identity on every finding",
+    "Human variables: NTCs, agents, clubhouse fit, makeup, family situation"
+  ]
+}

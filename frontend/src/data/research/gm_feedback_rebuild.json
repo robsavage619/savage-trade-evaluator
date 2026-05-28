@@ -1,0 +1,64 @@
+{
+  "persona": "rebuilding GM, farm-focused",
+  "tldr": "Methodological hygiene is real but every chart is the acquiring team's POV and I'm net-selling for two more years.",
+  "subscription_decision": "trial",
+  "reaction_to_being_named_in_ranking": "Doesn't change my view of my org. The objective function is receiver-side dollar surplus over a 3-year window. I'm in year 3 of a rebuild moving veterans for prospects — I'm optimizing FV-years-of-control captured per WAR-year shipped. Different game; the leaderboard can't see it. What stings is that they admit within-GM persistence is r=0.27 with a CI crossing zero, then name names anyway. That's the credibility tax I'd flag if I were editing the site.",
+  "articles": [
+    {
+      "slug": "k-trajectory-split",
+      "usefulness_1_to_10": 7,
+      "would_change_my_decision": true,
+      "what_i_would_do_with_it": "I'm a SELLER. If I have a pitcher with rising K% trajectory, the article tells me the market is going to overpay. The Q4 sell-window is the actionable insight from my side.",
+      "what_is_missing": "Seller-side framing. The article presents this entirely as a buyer's caveat — but the sell-side timing is the more valuable side of the trade for a rebuilder.",
+      "honest_critique": "Inverts cleanly to a sell-side article. They should write it."
+    },
+    {
+      "slug": "gm-edge-decomposition",
+      "usefulness_1_to_10": 6,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Informs which destination orgs amplify the prospects I send out — alumni network + dev fit are the destinations where my traded-away players will accumulate the most WAR. Inverts to a 'where will my prospects appreciate' map.",
+      "what_is_missing": "The same chart for the seller — when I send a prospect away, does the destination org's dev infrastructure predict how much value I'm leaving on the table?",
+      "honest_critique": "Receiver-side framing throughout. The seller-side counterpart is more useful to me than the published version."
+    },
+    {
+      "slug": "gm-trade-ranking",
+      "usefulness_1_to_10": 4,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Nothing — see the reaction note above.",
+      "what_is_missing": "Seller-side leaderboard using prospect FV captured per WAR shipped, not receiver-side dollar surplus.",
+      "honest_critique": "They published an irresponsible ranking by their own admission. Should be paired with a sell-side ranking using a different objective."
+    },
+    {
+      "slug": "international-pitcher-pipeline",
+      "usefulness_1_to_10": 5,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Nothing yet — payroll confound unresolved.",
+      "what_is_missing": "Payroll-stratified replication.",
+      "honest_critique": "Publishing while flagging the central robustness check as unrun is a tell."
+    },
+    {
+      "slug": "award-breadth-vs-depth",
+      "usefulness_1_to_10": 5,
+      "would_change_my_decision": false,
+      "what_i_would_do_with_it": "Mildly informs how I structure my outgoing packages — bias toward sending one decorated player with a few less-decorated, not just one star.",
+      "what_is_missing": "What does breadth vs depth look like on the seller side? Are sellers who break up depth getting better FV returns?",
+      "honest_critique": "Buy-side framing again. Could be a stronger article from the inverse perspective."
+    }
+  ],
+  "cross_article_observations": [
+    "Methodological hygiene (D-26 thresholds, bootstrap CIs, named confounds, holdout windows) is genuinely better than The Athletic or FanGraphs on the same topics.",
+    "Every chart on the site is the acquiring team's POV. As a net-seller I'm reading buyer's research and inverting it in my head.",
+    "Several articles admit known confounds and publish anyway — the GM ranking with r=0.27 persistence is the clearest example."
+  ],
+  "what_i_actually_want_to_read_next": [
+    "Seller-side surplus leaderboard — mirror the GM ranking using prospect FV captured per WAR shipped, controlling for years-of-control surrendered.",
+    "Prospect FV decay curves by destination org — what's the expected MLB-WAR delta when I ship a 50 FV pitcher to LAD vs MIA?",
+    "MiLB-to-MLB transition predictors at FV subcomponent level — published FV is an aggregate; hit/power/field/arm probably carry differential signal."
+  ],
+  "what_this_site_is_missing_entirely": [
+    "Seller-side framing on every article",
+    "Years-of-control captured as an outcome variable",
+    "Per-destination prospect-development decay/amplification curves",
+    "Sub-component FV grade signal analysis"
+  ]
+}
