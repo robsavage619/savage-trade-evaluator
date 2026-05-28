@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 29
+SCHEMA_VERSION = 31
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -1123,6 +1123,114 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_mlbpipe_mlbam
         ON mlb_pipeline_prospects(mlbam_id, fetched_at)
+    """,
+    # === TJStats tjbat+ (per-player, per-season, per-level hitting metric) ===
+    """
+    CREATE TABLE IF NOT EXISTS tjstats_tjbat (
+        fetched_at        TIMESTAMP NOT NULL,
+        player_id         VARCHAR   NOT NULL,
+        season            INTEGER   NOT NULL,
+        level             VARCHAR   NOT NULL,
+        pa                INTEGER,
+        woba_plus         DOUBLE,
+        tjbat_plus        DOUBLE,
+        tjbat_plus_pctile INTEGER,
+        woba_plus_pctile  INTEGER,
+        pool_size         INTEGER,
+        source            VARCHAR   NOT NULL DEFAULT 'tjstats',
+        ingested_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (fetched_at, player_id, season, level)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_tjbat_player
+        ON tjstats_tjbat(player_id, season, level)
+    """,
+    # === Statcast sprint speed + exit-velocity/barrels ===
+    """
+    CREATE TABLE IF NOT EXISTS statcast_sprint_speed (
+        player_id        INTEGER NOT NULL,
+        player_name      VARCHAR,
+        year             INTEGER NOT NULL,
+        sprint_speed     DOUBLE,
+        competitive_runs INTEGER,
+        source           VARCHAR NOT NULL DEFAULT 'baseball-savant',
+        ingested_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_sprint_speed_year
+        ON statcast_sprint_speed(year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS statcast_batter_exitvelo_barrels (
+        player_id    INTEGER NOT NULL,
+        player_name  VARCHAR,
+        year         INTEGER NOT NULL,
+        attempts     INTEGER,
+        avg_hit_speed DOUBLE,
+        max_hit_speed DOUBLE,
+        barrels      INTEGER,
+        brl_percent  DOUBLE,
+        source       VARCHAR NOT NULL DEFAULT 'baseball-savant',
+        ingested_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_exitvelo_year
+        ON statcast_batter_exitvelo_barrels(year)
+    """,
+    # === Statcast catcher pop-time + outfielder jump ===
+    """
+    CREATE TABLE IF NOT EXISTS statcast_catcher_poptime (
+        player_id            INTEGER NOT NULL,
+        player_name          VARCHAR,
+        year                 INTEGER NOT NULL,
+        team_id              INTEGER,
+        age                  INTEGER,
+        maxeff_arm_2b_3b_sba DOUBLE,
+        exchange_2b_3b_sba   DOUBLE,
+        pop_2b_sba_count     INTEGER,
+        pop_2b_sba           DOUBLE,
+        pop_2b_cs            DOUBLE,
+        pop_2b_sb            DOUBLE,
+        pop_3b_sba_count     INTEGER,
+        pop_3b_sba           DOUBLE,
+        pop_3b_cs            DOUBLE,
+        pop_3b_sb            DOUBLE,
+        source               VARCHAR NOT NULL DEFAULT 'baseball-savant',
+        ingested_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_poptime_year
+        ON statcast_catcher_poptime(year)
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS statcast_outfielder_jump (
+        player_id                    INTEGER NOT NULL,
+        player_name                  VARCHAR,
+        year                         INTEGER NOT NULL,
+        outs_above_average           INTEGER,
+        outs_per_play                DOUBLE,
+        rel_league_burst_distance    DOUBLE,
+        rel_league_reaction_distance DOUBLE,
+        rel_league_routing_distance  DOUBLE,
+        rel_league_bootup_distance   DOUBLE,
+        f_bootup_distance            DOUBLE,
+        n                            INTEGER,
+        n_outs                       INTEGER,
+        source                       VARCHAR NOT NULL DEFAULT 'baseball-savant',
+        ingested_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (player_id, year)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_ofjump_year
+        ON statcast_outfielder_jump(year)
     """,
 )
 

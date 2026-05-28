@@ -95,9 +95,7 @@ def fetch_scouting(client: httpx.Client, mlbam_id: int) -> dict[str, Any]:
 
     Returns an empty dict if the report is missing or unparseable.
     """
-    resp = client.get(
-        SCOUTING_URL, params={"playerId": mlbam_id}, headers=HEADERS, timeout=TIMEOUT
-    )
+    resp = client.get(SCOUTING_URL, params={"playerId": mlbam_id}, headers=HEADERS, timeout=TIMEOUT)
     resp.raise_for_status()
     try:
         payload = resp.json()
@@ -164,11 +162,20 @@ def ingest(fetched_at: datetime | None = None, with_grades: bool = True) -> int:
                 "age": float(rec["age"]) if rec.get("age") not in (None, "") else None,
                 "eta": None,
                 "overall_grade": None,
-                "hit": None, "power": None, "run": None, "arm": None, "field": None,
-                "fastball": None, "slider": None, "curveball": None,
-                "changeup": None, "control": None,
-                "bat_side": None, "throw_side": None,
-                "drafted": None, "signed": None,
+                "hit": None,
+                "power": None,
+                "run": None,
+                "arm": None,
+                "field": None,
+                "fastball": None,
+                "slider": None,
+                "curveball": None,
+                "changeup": None,
+                "control": None,
+                "bat_side": None,
+                "throw_side": None,
+                "drafted": None,
+                "signed": None,
             }
             if with_grades:
                 try:

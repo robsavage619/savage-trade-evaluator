@@ -14,6 +14,7 @@ import { computeVerdict, type Verdict } from '../lib/hypothetical'
 import { composeHypotheticalPrompt } from '../lib/composeHypothetical'
 import { fmtSigned, fmtMoney } from '../lib/format'
 import { forecastArb, isControlled } from '../lib/arbForecast'
+import { playerIndex } from '../lib/comps'
 import { useReasoningStore, parseReasoningResponse } from '../lib/reasoningStore'
 import { AnimatePresence } from 'framer-motion'
 import { X, Copy, ClipboardCheck, AlertCircle, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react'
@@ -29,6 +30,20 @@ const SIGNAL_CONFIG: Record<Verdict['recommendation'], SignalEntry> = {
   'neutral':     { label: 'HOLD — REQUEST COUNTER',  Icon: Minus,        color: 'text-ink-200',      bg: 'bg-ink-700/20',          border: 'border-ink-600/30',      glyph: '—' },
   'lean-pass':   { label: 'COUNTER OR WALK',         Icon: TrendingDown, color: 'text-accent-400',   bg: 'bg-accent-500/[0.06]',  border: 'border-accent-500/20',   glyph: '↓' },
   'strong-pass': { label: 'DO NOT ACCEPT',           Icon: XCircle,      color: 'text-negative-500', bg: 'bg-negative-500/10',    border: 'border-negative-500/30', glyph: '✗' },
+}
+
+function fpColor(pct: number): string {
+  if (pct >= 70) return 'text-positive-500 bg-positive-500/10 border-positive-500/20'
+  if (pct >= 40) return 'text-ink-300 bg-ink-700/50 border-ink-600/30'
+  return 'text-negative-400 bg-negative-500/10 border-negative-500/20'
+}
+
+function FpChip({ label, value }: { label: string; value: number }) {
+  return (
+    <span className={`rounded border px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wider mono ${fpColor(value)}`}>
+      {label} {Math.round(value)}
+    </span>
+  )
 }
 
 function TradeComparison({
@@ -65,6 +80,9 @@ function TradeComparison({
     const showRamp = isControlled(arb.currentClass)
     const rampColor = side === 'received' ? 'bg-positive-500' : 'bg-ink-400'
     const maxRamp = Math.max(...arb.projections, salary)
+    const isPitcher = player.position_code === '1'
+    const indexedPlayer = playerIndex.find((p) => p.id === player.mlb_player_id)
+    const fp = indexedPlayer?.fp ?? null
     return (
       <div className="rounded-md border border-ink-700 bg-ink-800/40 px-3 py-2.5">
         <div className="mb-1.5 flex items-center justify-between gap-2">
@@ -96,6 +114,24 @@ function TradeComparison({
           </div>
           <span className="mono shrink-0 text-[10px] text-ink-400">{fmtMoney(salary)}</span>
         </div>
+        {/* Statcast fingerprint chips */}
+        {fp && (
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {isPitcher ? (
+              <>
+                {fp.k_percent != null && <FpChip label="K%" value={fp.k_percent} />}
+                {fp.whiff_percent != null && <FpChip label="Whiff" value={fp.whiff_percent} />}
+                {fp.fb_velocity != null && <FpChip label="FB Velo" value={fp.fb_velocity} />}
+              </>
+            ) : (
+              <>
+                {fp.exit_velocity != null && <FpChip label="Exit Velo" value={fp.exit_velocity} />}
+                {fp.brl_percent != null && <FpChip label="Barrel%" value={fp.brl_percent} />}
+                {fp.sprint_speed != null && <FpChip label="Sprint" value={fp.sprint_speed} />}
+              </>
+            )}
+          </div>
+        )}
         {/* Arb salary ramp (only for cost-controlled players) */}
         {showRamp && (
           <div className="mt-2 border-t border-ink-700/50 pt-2">

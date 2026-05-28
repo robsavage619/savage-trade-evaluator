@@ -51,7 +51,8 @@ def compute_all() -> int:
         _plat_df = derive_team_season_platoon_features()
         logger.info(
             "loaded retrosheet features: %d leverage rows, %d platoon rows",
-            len(_lev_df), len(_plat_df),
+            len(_lev_df),
+            len(_plat_df),
         )
     except Exception as exc:
         logger.warning("retrosheet features unavailable (%s) — filling with NULL", exc)
@@ -149,12 +150,17 @@ def compute_all() -> int:
             fo_grouped = fo_df.groupby(["bref_code", "season"])
             alumni_records = []
             for (bref_code_key, season_key), group in fo_grouped:
-                rows_list = list(zip(group["person_name"], group["role"]))
+                rows_list = list(zip(group["person_name"], group["role"], strict=False))
                 score = team_alumni_score(str(bref_code_key), int(season_key), rows_list)
                 alumni_records.append(
-                    {"bref_code": bref_code_key, "season": season_key, "alumni_network_score": score}
+                    {
+                        "bref_code": bref_code_key,
+                        "season": season_key,
+                        "alumni_network_score": score,
+                    }
                 )
             import pandas as _pd
+
             alumni_df = _pd.DataFrame(alumni_records)
             team_season = team_season.merge(alumni_df, on=["bref_code", "season"], how="left")
         else:
@@ -179,30 +185,34 @@ def compute_all() -> int:
         ).df()
         if not dev_history.empty:
             import math as _math
+
             # R-49 found the flat 3yr signal decayed from r=-0.62 (2015-17) to
             # r=+0.05 (2022-24) as PITCHf/x dev-strategy edges were competed away
             # league-wide by ~2021. Exponential decay (half-life=2yr) weights recent
             # trades more heavily, so teams that recently started or stopped
             # developing pitchers well get credit/penalty faster than a flat mean.
-            _LAMBDA = _math.log(2) / 2  # half-life 2 years → λ ≈ 0.347
-            _WINDOW = 5  # 5-year lookback; older observations have negligible weight
+            ewma_lambda = _math.log(2) / 2  # half-life 2 years -> lambda ~0.347
+            ewma_window = 5  # 5-year lookback; older observations have negligible weight
 
-            def _ewma_k_jump(series: "pd.Series[float]") -> "pd.Series[float]":  # type: ignore[type-arg]
-                """Exponentially-weighted mean of trailing 5 seasons (most-recent = smallest lag)."""
+            def _ewma_k_jump(series):  # type: ignore[no-untyped-def]
+                """Exponentially-weighted mean of trailing 5 seasons."""
                 import numpy as _np
+
                 results = []
                 vals = series.to_numpy(dtype=float)
                 for i in range(len(vals)):
-                    start = max(0, i - _WINDOW + 1)
+                    start = max(0, i - ewma_window + 1)
                     segment = vals[start : i + 1]
                     # lag[0] = current season, lag[1] = 1 season ago, ... measured from end
                     lags = _np.arange(len(segment) - 1, -1, -1, dtype=float)
-                    weights = _np.exp(-_LAMBDA * lags)
+                    weights = _np.exp(-ewma_lambda * lags)
                     mask = ~_np.isnan(segment)
                     if mask.sum() == 0:
                         results.append(float("nan"))
                     else:
-                        results.append(float(_np.dot(weights[mask], segment[mask]) / weights[mask].sum()))
+                        results.append(
+                            float(_np.dot(weights[mask], segment[mask]) / weights[mask].sum())
+                        )
                 return series._constructor(results, index=series.index)
 
             dev_history = dev_history.sort_values(["bref_code", "trade_season"])
@@ -214,11 +224,10 @@ def compute_all() -> int:
                 .reset_index(level=0, drop=True)
             )
             # exponentially-weighted 5yr
-            dev_history["k_jump_3yr"] = (
-                dev_history.groupby("bref_code")["k_jump_avg"]
-                .transform(_ewma_k_jump)
+            dev_history["k_jump_3yr"] = dev_history.groupby("bref_code")["k_jump_avg"].transform(
+                _ewma_k_jump
             )
-            # recency bias = ewma − flat: positive → org improving recently (accelerating)
+            # recency bias = ewma - flat: positive -> org improving recently (accelerating)
             dev_history["k_jump_recency_bias"] = (
                 dev_history["k_jump_3yr"] - dev_history["k_jump_flat_3yr"]
             )
@@ -258,31 +267,34 @@ def compute_all() -> int:
         ).df()
         if not hit_history.empty:
             import math as _math
-            _LAMBDA_H = _math.log(2) / 2
-            _WINDOW_H = 5
 
-            def _ewma_xwoba_jump(series: "pd.Series[float]") -> "pd.Series[float]":  # type: ignore[type-arg]
+            ewma_lambda_h = _math.log(2) / 2
+            ewma_window_h = 5
+
+            def _ewma_xwoba_jump(series):  # type: ignore[no-untyped-def]
                 """Exponentially-weighted mean of trailing 5 seasons (same decay as pitcher)."""
                 import numpy as _np
+
                 results = []
                 vals = series.to_numpy(dtype=float)
                 for i in range(len(vals)):
-                    start = max(0, i - _WINDOW_H + 1)
+                    start = max(0, i - ewma_window_h + 1)
                     segment = vals[start : i + 1]
                     lags = _np.arange(len(segment) - 1, -1, -1, dtype=float)
-                    weights = _np.exp(-_LAMBDA_H * lags)
+                    weights = _np.exp(-ewma_lambda_h * lags)
                     mask = ~_np.isnan(segment)
                     if mask.sum() == 0:
                         results.append(float("nan"))
                     else:
-                        results.append(float(_np.dot(weights[mask], segment[mask]) / weights[mask].sum()))
+                        results.append(
+                            float(_np.dot(weights[mask], segment[mask]) / weights[mask].sum())
+                        )
                 return series._constructor(results, index=series.index)
 
             hit_history = hit_history.sort_values(["bref_code", "trade_season"])
-            hit_history["xwoba_jump_3yr"] = (
-                hit_history.groupby("bref_code")["xwoba_jump_avg"]
-                .transform(_ewma_xwoba_jump)
-            )
+            hit_history["xwoba_jump_3yr"] = hit_history.groupby("bref_code")[
+                "xwoba_jump_avg"
+            ].transform(_ewma_xwoba_jump)
             hit_history["season"] = hit_history["trade_season"] + 1
             hit_history = hit_history[["bref_code", "season", "xwoba_jump_3yr"]].rename(
                 columns={"xwoba_jump_3yr": "org_hitter_xwoba_jump_3yr"}
@@ -367,7 +379,7 @@ def compute_all() -> int:
 
         # === Law "Inside Game" thesis: sunk-cost trap payroll pressure (origin-side) ===
         # For each (team, season), count players on that team in season-1 with
-        # salary > $12M AND war < 0. Score = n_bad × mean(bad_salary) / 1e7.
+        # salary > $12M AND war < 0. Score = n_bad x mean(bad_salary) / 1e7.
         # Measures how much payroll deadweight the origin team is carrying —
         # teams with higher scores are systematically more eager to shed assets,
         # making them distorted counterparties regardless of the traded player's value.
@@ -415,8 +427,14 @@ def compute_all() -> int:
         # Join Retrosheet leverage + platoon features (2015-2024 coverage only).
         if _lev_df is not None and _plat_df is not None:
             team_season = team_season.merge(
-                _lev_df[["bref_code", "season", "reliever_leverage_ge_1_5_pct",
-                          "reliever_leverage_lt_0_7_pct"]],
+                _lev_df[
+                    [
+                        "bref_code",
+                        "season",
+                        "reliever_leverage_ge_1_5_pct",
+                        "reliever_leverage_lt_0_7_pct",
+                    ]
+                ],
                 on=["bref_code", "season"],
                 how="left",
             )

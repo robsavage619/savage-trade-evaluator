@@ -52,7 +52,7 @@ def _to_float(raw: Any) -> float | None:
     if isinstance(raw, int | float):
         return float(raw)
     s = str(raw).strip()
-    if not s or s.startswith(("-", ".-")) and not s.lstrip("-").replace(".", "").isdigit():
+    if not s or (s.startswith(("-", ".-")) and not s.lstrip("-").replace(".", "").isdigit()):
         return None
     try:
         return float(s)
@@ -208,7 +208,11 @@ def ingest_season(
                         break
                 logger.info(
                     "milb %s sport=%d season=%d: %d rows (total=%d)",
-                    group, sport_id, season, offset, total_remote or 0,
+                    group,
+                    sport_id,
+                    season,
+                    offset,
+                    total_remote or 0,
                 )
     return total_written
 

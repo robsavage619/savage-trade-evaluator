@@ -40,12 +40,32 @@ ACQUIRED_PLAYER_FEATURES: tuple[str, ...] = (
     # NULL when no listed prospect in the trade (pre-2017 or no board match).
     "receiver_acquired_avg_fv",
     "receiver_acquired_max_fv",
+    # 3-source FV consensus (TJStats + MLB Pipeline, MLBAM-keyed).
+    # Mostly NULL pre-2026; contributes to V3 forward-scoring mode.
+    "receiver_acquired_consensus_fv",
+    "receiver_acquired_fv_divergence",
+    # Statcast quality signals at T-1 (2015+).
+    # Exit velo / barrel rate: physics-grounded batter quality, more stable
+    # than wRC+ for small-sample acquired players. Sprint speed is stable
+    # year-to-year and captures value floor independent of hitting environment.
+    "receiver_acquired_avg_exit_speed",
+    "receiver_acquired_barrel_rate",
+    "receiver_acquired_sprint_speed",
     # receiver_acquired_origin_ytd_war: D-42 (R-61) — NULL (avg mass 72-75%); collinear
     # with acquired_player_quality; bWAR stint is annual, not date-stamped. Dropped.
     # receiver_acquired_war_acceleration: D-44 (R-63) — NULL (avg mass 53-57%); collinear
     # with avg_war_trajectory + only 30% non-null. Dropped.
     # receiver_acquired_contract_year_pct: D-36 (R-56) — null on all outcomes;
     # bWAR salary proxy too sparse without Cot's Contracts. Dropped from feature set.
+    # Catcher pop-time (Statcast 2015+). NULL when no catchers in the trade.
+    # Arm quality is sticky year-to-year; lower pop = better arm = higher dev ceiling.
+    "receiver_acquired_catcher_poptime",
+    # Outfielder OAA (Statcast 2016+). NULL when no OFs in the trade.
+    # Range/jump directly predicts defensive value contribution.
+    "receiver_acquired_outfielder_oaa",
+    # TJStats tjbat+ at T-1 (MiLB context). NULL for MLB-only or pre-TJStats players.
+    # Level-adjusted batting; higher = better MiLB hitting prospect.
+    "receiver_acquired_milb_tjbat_plus",
 )
 
 RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
@@ -65,7 +85,7 @@ RECEIVER_TEAM_FEATURES: tuple[str, ...] = (
     # receiver_org_pitcher_k_jump_recency_bias: D-34 (R-54) — null; market-efficiency
     # decay unrecoverable by EWMA. Column kept in DB; removed from feature sets.
     # Retrosheet platoon deployment (#7 — D-35/R-55: credible on xwoba_delta).
-    # platoon_woba_diff: opposite-hand wOBA − same-hand wOBA (positive = platoon skill).
+    # platoon_woba_diff: opposite-hand wOBA - same-hand wOBA (positive = platoon skill).
     "receiver_platoon_woba_diff",
     # receiver_reliever_leverage_ge_1_5_pct: D-35 (R-55) — null on all outcomes; dropped.
     # Column kept in team_season_features for exploratory use.
@@ -83,9 +103,7 @@ ORIGIN_FEATURES: tuple[str, ...] = (
 # Binary indicator for the Statcast/analytics era structural break (~2015).
 # The pre-2015 data has weaker dev-fit signal; including this lets the model
 # absorb the level-shift rather than attributing it to contextual features.
-ERA_FEATURES: tuple[str, ...] = (
-    "post_2015_era",
-)
+ERA_FEATURES: tuple[str, ...] = ("post_2015_era",)
 
 ALL_FEATURES: tuple[str, ...] = (
     ACQUIRED_PLAYER_FEATURES + RECEIVER_TEAM_FEATURES + ORIGIN_FEATURES + ERA_FEATURES
@@ -127,7 +145,7 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 -- Contention window features (thesis core)
                 tspc.payroll_pct_of_cap AS receiver_payroll_pct_of_cap,
                 tspc.payroll_trend_3yr  AS receiver_payroll_trend_3yr,
-                -- Composite: high pyth_pct × low payroll commitment = win-now capacity
+                -- Composite: high pyth_pct x low payroll commitment = win-now capacity
                 twc.receiver_prior_year_pyth_pct
                     * GREATEST(0.0, 1.0 - COALESCE(tspc.payroll_pct_of_cap, 0.5))
                     AS receiver_contention_window_score,
@@ -147,6 +165,19 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 -- FanGraphs The Board FV grades (2017-2024)
                 tapf.receiver_acquired_avg_fv,
                 tapf.receiver_acquired_max_fv,
+                -- FV consensus (TJStats + MLB Pipeline, MLBAM-keyed)
+                tfc.receiver_acquired_consensus_fv,
+                tfc.receiver_acquired_fv_divergence,
+                -- Statcast quality at T-1 (exit velo + sprint speed)
+                taev.receiver_acquired_avg_exit_speed,
+                taev.receiver_acquired_barrel_rate,
+                tasp.receiver_acquired_sprint_speed,
+                -- Catcher pop-time at T-1 (Statcast 2015+)
+                tacp.receiver_acquired_catcher_poptime,
+                -- Outfielder OAA at T-1 (Statcast 2016+)
+                taoj.receiver_acquired_outfielder_oaa,
+                -- TJStats tjbat+ at T-1 (MiLB context)
+                tatb.receiver_acquired_milb_tjbat_plus,
                 -- Statcast era structural break indicator
                 (twc.trade_season >= 2015)::INTEGER AS post_2015_era,
                 -- D-42 (R-61): origin-team year-to-date WAR at trade time
@@ -157,13 +188,13 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
                 twc.receiver_tech_adoption_lead_years,
                 -- Front-office alumni network (Reiter 2018: pioneer-org lineage)
                 twc.receiver_alumni_network_score,
-                -- R-54: recency-bias signal (ewma − flat-3yr) for org pitcher K-jump
+                -- R-54: recency-bias signal (ewma - flat-3yr) for org pitcher K-jump
                 twc.receiver_org_pitcher_k_jump_recency_bias,
                 -- Retrosheet platoon deployment (#7 — D-35/R-55: credible on xwoba_delta)
                 twc.receiver_platoon_woba_diff,
                 -- Contract-year selection bias (ATT correction proxy, #11)
                 cy.receiver_acquired_contract_year_pct,
-                -- D-43 (R-62): dev_fit_hitting × peak-age gate (max 0 for age 32+)
+                -- D-43 (R-62): dev_fit_hitting x peak-age gate (max 0 for age 32+)
                 twc.receiver_dev_fit_hitting
                     * GREATEST(0.0, 32.0 - COALESCE(trdm.avg_age_at_trade, 32.0))
                     AS receiver_devfit_x_peak_age,
@@ -188,6 +219,24 @@ def build_feature_matrix(start_season: int = 1990, end_season: int = 2024) -> pd
             LEFT JOIN trade_acquired_prospect_fv tapf
                 ON tapf.trade_event_id = twc.trade_event_id
                 AND tapf.receiver_bref  = twc.receiver_bref
+            LEFT JOIN trade_acquired_fv_consensus tfc
+                ON tfc.trade_event_id = twc.trade_event_id
+                AND tfc.receiver_bref  = twc.receiver_bref
+            LEFT JOIN trade_acquired_player_exitvelo taev
+                ON taev.trade_event_id = twc.trade_event_id
+                AND taev.receiver_bref = twc.receiver_bref
+            LEFT JOIN trade_acquired_player_sprint tasp
+                ON tasp.trade_event_id = twc.trade_event_id
+                AND tasp.receiver_bref = twc.receiver_bref
+            LEFT JOIN trade_acquired_catcher_poptime tacp
+                ON tacp.trade_event_id = twc.trade_event_id
+                AND tacp.receiver_bref = twc.receiver_bref
+            LEFT JOIN trade_acquired_outfielder_jump taoj
+                ON taoj.trade_event_id = twc.trade_event_id
+                AND taoj.receiver_bref = twc.receiver_bref
+            LEFT JOIN trade_acquired_milb_tjbat tatb
+                ON tatb.trade_event_id = twc.trade_event_id
+                AND tatb.receiver_bref = twc.receiver_bref
             LEFT JOIN (
                 -- Resolve origin team per (trade_event_id, receiver_bref): the
                 -- primary team giving players TO the receiver. In multi-team trades

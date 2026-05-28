@@ -6,7 +6,7 @@ Four outcome metrics per ``docs/V2_DESIGN.md`` — keyed on
 - ``xwoba_delta``: mean Δ xwOBA of acquired hitters with Statcast data
 - ``kpct_delta``:  mean Δ K-percentile-rank of acquired pitchers
 - ``war_delta``:   mean per-trade Δ WAR across acquired players (3yr cumul)
-- ``dollar_surplus``: rate-based WAR × $/WAR − cap-hit obligations
+- ``dollar_surplus``: rate-based WAR x $/WAR - cap-hit obligations
 
 Each is its own model fit per D-27 (feature importance is outcome-specific).
 """
@@ -57,7 +57,7 @@ def compute_empirical_dollar_per_war() -> dict[int, float]:
     Result is cached at module level; call ``reset_dollar_per_war_cache()``
     to force recompute (used by tests / ablations).
     """
-    global _DOLLAR_PER_WAR_CACHE  # noqa: PLW0603
+    global _DOLLAR_PER_WAR_CACHE
     if _DOLLAR_PER_WAR_CACHE is not None:
         return _DOLLAR_PER_WAR_CACHE
 
@@ -97,7 +97,7 @@ def compute_empirical_dollar_per_war() -> dict[int, float]:
 
 def reset_dollar_per_war_cache() -> None:
     """Clear the module-level cache (for tests / ablations)."""
-    global _DOLLAR_PER_WAR_CACHE  # noqa: PLW0603
+    global _DOLLAR_PER_WAR_CACHE
     _DOLLAR_PER_WAR_CACHE = None
 
 
@@ -115,6 +115,12 @@ def build_outcomes_windowed(
 
     Returns the same schema as ``build_outcomes`` but with ``war_delta`` computed
     from the requested window instead of the fixed T+1..T+3.
+
+    Args:
+        start_season: First trade season to include.
+        end_season: Last trade season to include.
+        war_window_start: First T+N year to include (1=default, 2=skip transition year).
+        war_window_end: Last T+N year to include (3=default, 5=longer window).
     """
     if war_window_end > 5:
         msg = "war_window_end > 5 not supported (view only has T+5)"
@@ -124,7 +130,6 @@ def build_outcomes_windowed(
     war_cols_recv = " + ".join(
         f"COALESCE(w.war_t_plus_{i}, 0)" for i in range(war_window_start, war_window_end + 1)
     )
-    n_years = war_window_end - war_window_start + 1
     with db.connect(read_only=True) as conn:
         df = conn.execute(
             f"""
@@ -229,7 +234,7 @@ def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataF
                    x.xwoba_delta,
                    k.kpct_delta,
                    b.war_surplus AS war_delta,
-                   -- Dollar surplus: receiver-side WAR × $/WAR − cap obligation
+                   -- Dollar surplus: receiver-side WAR x $/WAR - cap obligation
                    (b.war_received * COALESCE(r_recv.dollar_per_war, 8000000))
                        AS war_value_received_dollars,
                    (b.war_given_up * COALESCE(r_recv.dollar_per_war, 8000000))
@@ -283,5 +288,52 @@ def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataF
             "war_delta",
             "dollar_surplus",
             "surplus_wins",
+        ]
+    ]
+
+
+def build_outcomes_fg(start_season: int = 2010, end_season: int = 2024) -> pd.DataFrame:
+    """FanGraphs-based outcome metrics for the metric-agnostic validation.
+
+    Returns DataFrame keyed on (trade_event_id, receiver_bref) with:
+    wrc_delta, fip_delta, xfip_delta, siera_delta.
+    FG era: 2010+. NULL for pre-2010 trades or players without FG coverage.
+    """
+    with db.connect(read_only=True) as conn:
+        df = conn.execute(
+            f"""
+            SELECT
+                twc.trade_event_id,
+                twc.receiver_bref,
+                twc.trade_season,
+                wrc.wrc_delta_mean AS wrc_delta,
+                fip.fip_delta_mean AS fip_delta,
+                xfip.xfip_delta_mean AS xfip_delta,
+                siera.siera_delta_mean AS siera_delta
+            FROM trade_with_context twc
+            LEFT JOIN trade_fg_wrc_outcome wrc
+                ON wrc.trade_event_id = twc.trade_event_id
+                AND wrc.receiver_bref = twc.receiver_bref
+            LEFT JOIN trade_fg_fip_outcome fip
+                ON fip.trade_event_id = twc.trade_event_id
+                AND fip.receiver_bref = twc.receiver_bref
+            LEFT JOIN trade_fg_xfip_outcome xfip
+                ON xfip.trade_event_id = twc.trade_event_id
+                AND xfip.receiver_bref = twc.receiver_bref
+            LEFT JOIN trade_fg_siera_outcome siera
+                ON siera.trade_event_id = twc.trade_event_id
+                AND siera.receiver_bref = twc.receiver_bref
+            WHERE twc.trade_season BETWEEN {start_season} AND {end_season}
+            """
+        ).df()
+    return df[
+        [
+            "trade_event_id",
+            "receiver_bref",
+            "trade_season",
+            "wrc_delta",
+            "fip_delta",
+            "xfip_delta",
+            "siera_delta",
         ]
     ]

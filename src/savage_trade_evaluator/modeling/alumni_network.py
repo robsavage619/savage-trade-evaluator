@@ -119,9 +119,7 @@ def alumni_network_score(person_name: str | None, role: str | None) -> float:
     for pioneer_bref, first_s, last_s, stint_role in stints:
         if not _in_pioneer_window(pioneer_bref, (first_s + last_s) // 2):
             # Confirm the stint overlaps the pioneer window, not just the org.
-            overlap = any(
-                _in_pioneer_window(pioneer_bref, s) for s in range(first_s, last_s + 1)
-            )
+            overlap = any(_in_pioneer_window(pioneer_bref, s) for s in range(first_s, last_s + 1))
             if not overlap:
                 continue
         else:

@@ -1,11 +1,160 @@
 import { motion } from 'framer-motion'
-import { Target, CheckCircle2, AlertTriangle, Sigma, Coins, BarChart3, Eye } from 'lucide-react'
+import {
+  Target,
+  CheckCircle2,
+  AlertTriangle,
+  Sigma,
+  Coins,
+  BarChart3,
+  Eye,
+  TrendingDown,
+  Layers,
+  GitBranch,
+  Cpu,
+  FlaskConical,
+  ArrowRight,
+} from 'lucide-react'
 import { Section, Stat } from '../components/Section'
 import { TeamLogo } from '../components/TeamLogo'
 import { PosteriorCurve, fmtM, fmtWAR } from '../components/PosteriorCurve'
+import { DrawsHistogram } from '../components/DrawsHistogram'
+import { FoldCrpsChart } from '../components/FoldCrpsChart'
+import { FeatureBetaChart } from '../components/FeatureBetaChart'
 import { modelPosteriors, featureLabel, type ModelCard } from '../lib/modelPosteriors'
 
-/** Plain-English primer so the page reads without a stats background. */
+/* ─── Journey timeline ─────────────────────────────────────────────────────── */
+
+type JourneyStep = {
+  icon: typeof Sigma
+  label: string
+  crps: string | null
+  body: string
+  status: 'baseline' | 'tried' | 'current' | 'abandoned'
+}
+
+function ModelJourney({ winsComparison }: { winsComparison: typeof modelPosteriors.wins_comparison }) {
+  const stableFolds = winsComparison.folds.filter((f) => !f.structural_break)
+  const avg = (key: 'crps_context' | 'crps_quality' | 'crps_intercept') =>
+    stableFolds.reduce((s, f) => s + (f[key] as number), 0) / stableFolds.length
+
+  const interceptCrps = avg('crps_intercept').toFixed(1)
+  const qualityCrps = avg('crps_quality').toFixed(1)
+  const contextCrps = avg('crps_context').toFixed(1)
+  const latestCrps = winsComparison.folds[winsComparison.folds.length - 1].crps_context.toFixed(1)
+
+  const steps: JourneyStep[] = [
+    {
+      icon: Coins,
+      label: 'Naïve $/WAR baseline',
+      crps: `~${interceptCrps}W CRPS`,
+      status: 'baseline',
+      body:
+        "The industry standard: multiply a player's WAR by the going rate per win (~$8-9M). Every team pays the same price for the same WAR. No context, no development system, no payroll situation. This is what we're trying to beat.",
+    },
+    {
+      icon: TrendingDown,
+      label: '+ Player quality features',
+      crps: `~${qualityCrps}W CRPS`,
+      status: 'tried',
+      body:
+        "Added WAR trajectory, K-percentile trend, minor-league quality, age-at-trade. Intuition: a rising player is worth more than a flat one. Result: sometimes better than the mean baseline, but noisy — the player alone doesn't explain enough variance. Something else drives where surplus actually lands.",
+    },
+    {
+      icon: Layers,
+      label: '+ Receiving-team context',
+      crps: `~${contextCrps}W CRPS`,
+      status: 'current',
+      body:
+        'The thesis: added dev-system fit (K% and xwOBA jump 3yr), payroll slack, contention window, alumni network, tech adoption. Same player, different team = different surplus. CRPS dropped from ~' +
+        qualityCrps +
+        'W to ~' +
+        contextCrps +
+        'W on stable folds — a meaningful gap that validates the core hypothesis.',
+    },
+    {
+      icon: GitBranch,
+      label: 'V2 multilevel (tried, abandoned)',
+      crps: null,
+      status: 'abandoned',
+      body:
+        'Hypothesis: teams have persistent trade-behavior clusters worth shrinking toward — hierarchical pooling by team/era/position. Research run R-35 falsified it. Team and regime nesting added zero signal over the single-level model. Dropped. Occam wins.',
+    },
+    {
+      icon: Cpu,
+      label: 'V3: per-outcome feature selection',
+      crps: `${latestCrps}W CRPS (2023–24 fold)`,
+      status: 'current',
+      body:
+        'Small-n outcomes (xwOBA delta, K% delta) overfit on team aggregates. V3 uses empirically-validated feature subsets per outcome (R-57 walk-forward). The model is getting better as the training window grows: CRPS went from 2.1W in 2015–16 to ' +
+        latestCrps +
+        'W in 2023–24 — the most recent trades are the best-predicted.',
+    },
+  ]
+
+  const statusStyles: Record<JourneyStep['status'], { border: string; iconBg: string; iconColor: string; badge?: string }> = {
+    baseline: { border: 'border-ink-700', iconBg: 'bg-ink-700/60', iconColor: 'text-ink-300', badge: 'baseline' },
+    tried: { border: 'border-ink-700', iconBg: 'bg-ink-700/60', iconColor: 'text-ink-300' },
+    current: { border: 'border-accent-500/40', iconBg: 'bg-accent-500/15', iconColor: 'text-accent-400' },
+    abandoned: { border: 'border-amber-500/30', iconBg: 'bg-amber-500/10', iconColor: 'text-amber-400' },
+  }
+
+  return (
+    <div className="mb-6">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">
+        How we got here
+      </div>
+      <h2 className="mb-1 text-[15px] font-semibold tracking-tight text-ink-100">
+        Five iterations from a back-of-envelope formula to a calibrated Bayesian model
+      </h2>
+      <p className="mb-4 text-[12px] text-ink-400">
+        Each step is a research decision — what was tried, what was learned, what stayed.
+        The CRPS numbers are averages across stable walk-forward folds (structural break excluded).
+      </p>
+
+      <div className="relative">
+        {/* Connector line */}
+        <div className="absolute left-[17px] top-[34px] bottom-[34px] w-px bg-ink-700 sm:left-[50%] sm:-translate-x-px sm:top-[17px] sm:bottom-auto sm:left-auto sm:right-auto sm:w-0 hidden sm:block" />
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-0">
+          {steps.map((step, i) => {
+            const s = statusStyles[step.status]
+            const Icon = step.icon
+            return (
+              <div key={i} className="relative flex gap-3 sm:w-1/5 sm:flex-col sm:items-center sm:gap-2 sm:px-2">
+                {/* Connector dot */}
+                <div
+                  className={`relative z-10 mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full border ${s.border} ${s.iconBg} sm:mt-0`}
+                >
+                  <Icon className={`h-3.5 w-3.5 ${s.iconColor}`} />
+                </div>
+                <div className={`rounded-lg border p-3 ${s.border} bg-ink-900/50 sm:w-full`}>
+                  <div className="mb-0.5 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-ink-100">{step.label}</span>
+                    {step.status === 'abandoned' && (
+                      <span className="rounded bg-amber-500/15 px-1.5 py-px text-[9px] font-semibold text-amber-300">
+                        abandoned
+                      </span>
+                    )}
+                  </div>
+                  {step.crps && (
+                    <div className="mono mb-1.5 text-[10px] tabular text-accent-400">{step.crps}</div>
+                  )}
+                  <div className="text-[11px] leading-relaxed text-ink-400">{step.body}</div>
+                </div>
+                {i < steps.length - 1 && (
+                  <ArrowRight className="hidden h-3 w-3 text-ink-600 sm:block sm:absolute sm:right-[-6px] sm:top-[10px] sm:z-20" />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── How to read ──────────────────────────────────────────────────────────── */
+
 function HowToRead() {
   const items = [
     {
@@ -46,7 +195,8 @@ function HowToRead() {
   )
 }
 
-/** Compact key for the posterior charts. */
+/* ─── Chart key ────────────────────────────────────────────────────────────── */
+
 function ChartKey() {
   return (
     <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-ink-400">
@@ -70,10 +220,34 @@ function ChartKey() {
   )
 }
 
+/* ─── Histogram key ────────────────────────────────────────────────────────── */
+
+function HistogramKey() {
+  return (
+    <div className="mb-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[10px] text-ink-500">
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-2.5 w-3 rounded-sm" style={{ background: 'rgba(255,138,61,0.6)', border: '1px solid rgba(255,138,61,0.55)' }} />
+        draws inside 90% CI
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-2.5 w-3 rounded-sm" style={{ background: 'rgba(255,138,61,0.22)', border: '1px solid rgba(255,138,61,0.55)' }} />
+        draws outside CI
+      </span>
+      <span className="flex items-center gap-1.5">
+        <span className="inline-block h-3 w-0.5" style={{ background: '#3ddc97' }} />
+        realized outcome
+      </span>
+    </div>
+  )
+}
+
+/* ─── Trade card ───────────────────────────────────────────────────────────── */
+
 function ModelTradeCard({ card }: { card: ModelCard }) {
   const tail = card.role === 'tail_miss'
   const wPost = card.wins_posterior
   const inCi = wPost != null ? card.wins_realized_in_90ci : card.realized_in_90ci
+
   return (
     <div className={`card p-5 ${tail ? 'border-amber-500/40' : ''}`}>
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -102,12 +276,37 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
         )}
       </div>
 
-      {/* Wins curve — headline */}
       {wPost ? (
         <>
-          <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-ink-400">Surplus wins (above cost basis)</div>
+          {/* Gaussian curve — the clean view */}
+          <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+            Surplus wins — Gaussian posterior (mean + sd)
+          </div>
           <PosteriorCurve post={wPost} realized={card.wins_realized ?? null} formatter={fmtWAR} />
-          <div className="mt-2 grid grid-cols-3 gap-3">
+
+          {/* Empirical histogram — raw draws */}
+          {wPost.draws.length > 0 && (
+            <div className="mt-4 border-t border-ink-800 pt-3">
+              <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+                Empirical posterior — {wPost.draws.length} raw MCMC draws
+              </div>
+              <HistogramKey />
+              <DrawsHistogram
+                draws={wPost.draws}
+                realized={card.wins_realized ?? null}
+                p05={wPost.p05}
+                p95={wPost.p95}
+                mean={wPost.mean}
+                formatter={fmtWAR}
+              />
+              <div className="mt-1 text-[10px] text-ink-600">
+                Bars are binned MCMC samples. The Gaussian curve above approximates this shape — here you see the actual distribution.
+              </div>
+            </div>
+          )}
+
+          {/* Stats row */}
+          <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-800 pt-3">
             <div>
               <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Mean</div>
               <div className="mono text-[15px] font-semibold tabular text-ink-100">{fmtWAR(wPost.mean, true)}</div>
@@ -125,13 +324,12 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
               </div>
             </div>
           </div>
-          {/* Dollar anchor — secondary */}
+          {/* Dollar anchor */}
           <div className="mt-3 border-t border-ink-800 pt-2.5 text-[11px] text-ink-500">
             Dollar anchor: mean {fmtM(card.posterior.mean, true)} · realized {fmtM(card.realized)}
           </div>
         </>
       ) : (
-        /* Fallback to dollar curve if wins not available */
         <>
           <PosteriorCurve post={card.posterior} realized={card.realized} />
           <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-700 pt-3">
@@ -165,8 +363,59 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
   )
 }
 
+/* ─── Coverage gauge ───────────────────────────────────────────────────────── */
+
+function CoverageGauge({ coverage, target = 0.9, label }: { coverage: number; target?: number; label: string }) {
+  const W = 120, H = 64
+  const r = 44
+  const cx = W / 2, cy = H - 4
+  const arc = (pct: number) => {
+    const angle = Math.PI * pct
+    const x = cx + r * Math.cos(Math.PI - angle)
+    const y = cy - r * Math.sin(Math.PI - angle)
+    return { x, y }
+  }
+  const { x: cx2, y: cy2 } = arc(coverage)
+  const { x: tx, y: ty } = arc(target)
+  const color = Math.abs(coverage - target) < 0.05 ? '#3ddc97' : coverage < target - 0.05 ? '#ff5d73' : '#ff8a3d'
+  return (
+    <div className="flex flex-col items-center">
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+        {/* Background arc */}
+        <path
+          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+          fill="none"
+          stroke="rgba(138,150,192,0.15)"
+          strokeWidth={10}
+          strokeLinecap="round"
+        />
+        {/* Coverage arc */}
+        <path
+          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx2} ${cy2}`}
+          fill="none"
+          stroke={color}
+          strokeWidth={10}
+          strokeLinecap="round"
+          opacity={0.85}
+        />
+        {/* Target tick */}
+        <circle cx={tx} cy={ty} r={3.5} fill="rgba(138,150,192,0.6)" />
+        {/* Value */}
+        <text x={cx} y={cy - 10} textAnchor="middle" fontSize={16} fontWeight="600" fill={color} fontFamily="JetBrains Mono, monospace">
+          {(coverage * 100).toFixed(0)}%
+        </text>
+      </svg>
+      <div className="text-[10px] text-ink-400">{label}</div>
+      <div className="text-[9px] text-ink-600">target {(target * 100).toFixed(0)}%</div>
+    </div>
+  )
+}
+
+/* ─── Main page ────────────────────────────────────────────────────────────── */
+
 export default function ModelValuation() {
-  const { scoreboard, comparison, wins_comparison, credible_features, cards, train_window, test_window } = modelPosteriors
+  const { scoreboard, comparison, wins_comparison, credible_features, cards, train_window, test_window } =
+    modelPosteriors
   const covered = cards.filter((c) => c.role === 'covered')
   const tail = cards.filter((c) => c.role === 'tail_miss')
 
@@ -187,26 +436,62 @@ export default function ModelValuation() {
         </p>
       </motion.div>
 
+      {/* ── Journey ── */}
+      <div className="mt-8">
+        <ModelJourney winsComparison={wins_comparison} />
+      </div>
+
       <HowToRead />
 
-      {/* Scoreboard */}
-      <Section eyebrow="Calibration scoreboard" title="How the model does across all held-out trades" hint="Across every trade it never trained on, how close did it get — and was it honest about its own uncertainty?">
-        <div className="card flex flex-wrap items-end gap-10 p-5">
-          <Stat label="Wins 90% coverage" value={`${(scoreboard.wins_coverage_90 * 100).toFixed(0)}%`} sub="of actual surplus-wins outcomes landed inside the model's predicted range — target is 90%" tone="pos" />
-          <Stat label="Wins CRPS" value={`${scoreboard.wins_crps.toFixed(2)} W`} sub="typical prediction error in wins — lower is better; penalizes overconfidence" />
-          <Stat label="Wins MAE" value={`${scoreboard.wins_mae.toFixed(2)} W`} sub="average miss of the center estimate, in wins above cost basis" />
-          <Stat label="Held-out trades" value={scoreboard.test_n.toLocaleString()} sub={`scored · ${scoreboard.train_n.toLocaleString()} used for training`} />
+      {/* ── Scoreboard ── */}
+      <Section
+        eyebrow="Calibration scoreboard"
+        title="How the model does across all held-out trades"
+        hint="Across every trade it never trained on, how close did it get — and was it honest about its own uncertainty?"
+      >
+        <div className="card p-5">
+          <div className="flex flex-wrap items-start gap-8">
+            <div className="flex flex-wrap items-end gap-10">
+              <Stat
+                label="Wins 90% coverage"
+                value={`${(scoreboard.wins_coverage_90 * 100).toFixed(0)}%`}
+                sub="of actual surplus-wins outcomes landed inside the model's predicted range — target is 90%"
+                tone="pos"
+              />
+              <Stat
+                label="Wins CRPS"
+                value={`${scoreboard.wins_crps.toFixed(2)} W`}
+                sub="typical prediction error in wins — lower is better; penalizes overconfidence"
+              />
+              <Stat
+                label="Wins MAE"
+                value={`${scoreboard.wins_mae.toFixed(2)} W`}
+                sub="average miss of the center estimate, in wins above cost basis"
+              />
+              <Stat
+                label="Held-out trades"
+                value={scoreboard.test_n.toLocaleString()}
+                sub={`scored · ${scoreboard.train_n.toLocaleString()} used for training`}
+              />
+            </div>
+            {/* Coverage gauges */}
+            <div className="flex gap-4">
+              <CoverageGauge coverage={scoreboard.wins_coverage_90} label="Wins coverage" />
+              <CoverageGauge coverage={scoreboard.coverage_90} label="Dollar coverage" />
+            </div>
+          </div>
         </div>
         <div className="mt-2 rounded border border-ink-800 bg-ink-900/30 px-4 py-2.5 text-[11px] text-ink-500">
-          Dollar anchor — 90% coverage {(scoreboard.coverage_90 * 100).toFixed(0)}% · CRPS {fmtM(scoreboard.crps)} · MAE {fmtM(scoreboard.mae)}
+          Dollar anchor — 90% coverage {(scoreboard.coverage_90 * 100).toFixed(0)}% · CRPS{' '}
+          {fmtM(scoreboard.crps)} · MAE {fmtM(scoreboard.mae)}
         </div>
       </Section>
 
-      {/* Does context beat the naive models? */}
+      {/* ── Does context help? ── */}
       <Section
         eyebrow="Does context actually help?"
         title="Context-aware vs. the baselines it has to beat"
-        hint="The whole thesis is that the same player is worth different amounts to different teams. To prove it earns its keep, the model is raced against two simpler ones on trades none of them trained on. Higher % = bigger edge."
+        hint="The whole thesis is that the same player is worth different amounts to different teams. To prove it earns its keep, the model is raced against two simpler ones on trades none of them trained on. Lower CRPS = better."
       >
         <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="card p-5">
@@ -216,8 +501,8 @@ export default function ModelValuation() {
             </div>
             <div className="mt-1.5 text-[12px] leading-relaxed text-ink-400">
               The baseline that rates the player alone and ignores which team acquires him. Our model is{' '}
-              <span className="text-ink-200">~30% more accurate on surplus wins</span> — adding receiving-team context
-              is what does it. This is the thesis, validated.
+              <span className="text-ink-200">~{(wins_comparison.mean_skill_vs_quality_ex_break * 100).toFixed(0)}% more accurate on surplus wins</span>{' '}
+              — adding receiving-team context is what does it. This is the thesis, validated.
             </div>
           </div>
           <div className="card p-5">
@@ -232,7 +517,26 @@ export default function ModelValuation() {
             </div>
           </div>
         </div>
-        <div className="card overflow-hidden p-0">
+
+        {/* Walk-forward CRPS chart */}
+        <div className="card p-5">
+          <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+            Walk-forward CRPS by fold — wins scale (lower is better)
+          </div>
+          <FoldCrpsChart folds={wins_comparison.folds} />
+          <div className="mt-3 text-[11px] leading-relaxed text-ink-500">
+            Each fold trains on all data up to the fold start and tests on the following 2 seasons — no data leakage.
+            The context-aware bar is shortest (best) in every stable fold. The 2017–18 structural break is the documented
+            CBA/market-volatility era where all models underperform; we flag it rather than hide it. Note the rightward
+            trend: more training data = better CRPS — the model keeps improving.
+          </div>
+        </div>
+
+        {/* Fold table — detail view */}
+        <div className="mt-2 card overflow-hidden p-0">
+          <div className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500 border-b border-ink-800">
+            Fold detail — wins CRPS
+          </div>
           <table className="w-full text-[12px]">
             <thead>
               <tr className="border-b border-ink-700 text-[10px] uppercase tracking-[0.1em] text-ink-400">
@@ -248,14 +552,20 @@ export default function ModelValuation() {
                   <td className="px-4 py-2 text-ink-200">
                     {f.label}
                     {f.structural_break ? (
-                      <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] text-amber-300">structural break</span>
+                      <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] text-amber-300">
+                        structural break
+                      </span>
                     ) : null}
                   </td>
                   <td className="px-4 py-2 text-right text-ink-400">{f.n_test}</td>
-                  <td className={`px-4 py-2 text-right ${f.skill_vs_quality >= 0 ? 'text-positive-500' : 'text-negative-500'}`}>
+                  <td
+                    className={`px-4 py-2 text-right ${f.skill_vs_quality >= 0 ? 'text-positive-500' : 'text-negative-500'}`}
+                  >
                     {f.skill_vs_quality >= 0 ? '+' : ''}{(f.skill_vs_quality * 100).toFixed(1)}%
                   </td>
-                  <td className={`px-4 py-2 text-right ${f.skill_vs_intercept >= 0 ? 'text-positive-500' : 'text-negative-500'}`}>
+                  <td
+                    className={`px-4 py-2 text-right ${f.skill_vs_intercept >= 0 ? 'text-positive-500' : 'text-negative-500'}`}
+                  >
                     {f.skill_vs_intercept >= 0 ? '+' : ''}{(f.skill_vs_intercept * 100).toFixed(1)}%
                   </td>
                 </tr>
@@ -265,30 +575,32 @@ export default function ModelValuation() {
         </div>
       </Section>
 
-      {/* Covered cards */}
-      <Section eyebrow="Held-out predictions" title="Predicted distribution vs. what happened" hint="Each trade was kept out of training. Did reality (green) land inside the model's predicted range (orange)?">
-        <ChartKey />
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {covered.map((c) => (
-            <ModelTradeCard key={`${c.trade_event_id}-${c.receiver_bref}`} card={c} />
-          ))}
-        </div>
-      </Section>
-
-      {/* Tail miss */}
-      {tail.length ? (
-        <Section eyebrow="Where it fails" title="The tail the model shrinks — shown on purpose" hint="A front office should see the failure mode, not just the wins.">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            {tail.map((c) => (
-              <ModelTradeCard key={`${c.trade_event_id}-${c.receiver_bref}`} card={c} />
-            ))}
+      {/* ── Feature anatomy ── */}
+      <Section
+        eyebrow="Model anatomy"
+        title="What actually moves the valuation"
+        hint="The 8 features where the model is 96%+ confident of direction — meaning it's not just noise. Grouped by whether they describe the acquired player or the receiving team. Note: more features describe the receiving team than the player alone."
+      >
+        <div className="card p-5">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="text-[11px] text-ink-400">
+              Bar width = coefficient magnitude · color = direction · percentage = directional confidence (P(β &gt; 0) or P(β &lt; 0))
+            </div>
+            <div className="flex items-center gap-2 text-[10px] text-ink-500">
+              <FlaskConical className="h-3 w-3" />
+              R-57 walk-forward validated
+            </div>
           </div>
-        </Section>
-      ) : null}
-
-      {/* Credible features */}
-      <Section eyebrow="Why" title="What moves the valuation" hint="The inputs the model leans on most — the ones it's confident actually matter. Note how many describe the receiving team, not just the player.">
-        <div className="card divide-y divide-ink-800 p-0">
+          <FeatureBetaChart features={credible_features} />
+          <div className="mt-4 rounded border border-ink-800 bg-ink-900/30 px-4 py-3 text-[11px] leading-relaxed text-ink-500">
+            <span className="text-ink-300">Why these features?</span> Each went through R-57 walk-forward ablation — a feature
+            stays if removing it consistently worsens held-out CRPS. Beta coefficients are from the standardized V3 model, so
+            bar widths are directly comparable across features. Only 8 of 23 candidate features pass the directional-mass
+            threshold (≥96% confident) — Bayesian regularization is doing its job.
+          </div>
+        </div>
+        {/* Legacy list — secondary detail */}
+        <div className="mt-2 card divide-y divide-ink-800 p-0">
           {credible_features.map((f) => (
             <div key={f.feature} className="flex items-center justify-between gap-4 px-5 py-2.5">
               <div className="flex items-center gap-2.5">
@@ -305,6 +617,35 @@ export default function ModelValuation() {
           ))}
         </div>
       </Section>
+
+      {/* ── Posterior gallery ── */}
+      <Section
+        eyebrow="Held-out predictions"
+        title="Predicted distribution vs. what happened"
+        hint="Each trade was kept out of training. Did reality (green) land inside the model's predicted range (orange)? Each card shows both the Gaussian approximation and the raw empirical histogram of MCMC draws."
+      >
+        <ChartKey />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {covered.map((c) => (
+            <ModelTradeCard key={`${c.trade_event_id}-${c.receiver_bref}`} card={c} />
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Tail miss ── */}
+      {tail.length ? (
+        <Section
+          eyebrow="Where it fails"
+          title="The tail the model shrinks — shown on purpose"
+          hint="A front office should see the failure mode, not just the wins."
+        >
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {tail.map((c) => (
+              <ModelTradeCard key={`${c.trade_event_id}-${c.receiver_bref}`} card={c} />
+            ))}
+          </div>
+        </Section>
+      ) : null}
     </main>
   )
 }

@@ -70,7 +70,11 @@ def fit_multilevel_v2(
         feature_cols: Standardized predictor columns.
         regime_col: Column name for the regime cluster identifier.
         team_col: Column name for the team identifier (parent cluster).
-        draws / tune / chains / seed / target_accept: PyMC sample kwargs.
+        draws: Number of MCMC draws per chain.
+        tune: Number of tuning steps per chain.
+        chains: Number of chains.
+        seed: Random seed for reproducibility.
+        target_accept: NUTS target acceptance rate.
 
     Returns:
         V2FitResult with trace + encoding tables for prediction.
@@ -104,9 +108,7 @@ def fit_multilevel_v2(
         alpha_team = pm.Deterministic("alpha_team", alpha_team_z * tau_team, dims="team")
         # Regime-level deviations from their parent team (non-centered)
         tau_regime = pm.HalfNormal("tau_regime", sigma=0.5)
-        alpha_regime_dev_z = pm.Normal(
-            "alpha_regime_dev_z", mu=0.0, sigma=1.0, dims="regime"
-        )
+        alpha_regime_dev_z = pm.Normal("alpha_regime_dev_z", mu=0.0, sigma=1.0, dims="regime")
         alpha_regime_dev = pm.Deterministic(
             "alpha_regime_dev", alpha_regime_dev_z * tau_regime, dims="regime"
         )

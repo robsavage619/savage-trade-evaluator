@@ -30,7 +30,7 @@ Minimum sample sizes:
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -52,14 +52,25 @@ MIN_TEST_N: dict[str, int] = {
     "kpct_delta": 30,
     "xwoba_delta": 50,
     "dollar_surplus": 100,
+    "surplus_wins": 100,
+    # FG alternate outcomes: 2010+ era, similar n to xwoba/kpct
+    "wrc_delta": 50,
+    "fip_delta": 50,
+    "xfip_delta": 50,
+    "siera_delta": 50,
 }
 
 # Minimum fraction of folds a feature must be credible in to be CONFIRMED.
 MIN_FOLD_FRACTION: dict[str, float] = {
-    "war_delta": 0.75,    # ≥ 3/4
-    "kpct_delta": 0.67,   # ≥ 2/3
+    "war_delta": 0.75,  # ≥ 3/4
+    "kpct_delta": 0.67,  # ≥ 2/3
     "xwoba_delta": 0.67,  # ≥ 2/3
     "dollar_surplus": 0.75,
+    "surplus_wins": 0.75,
+    "wrc_delta": 0.67,
+    "fip_delta": 0.67,
+    "xfip_delta": 0.67,
+    "siera_delta": 0.67,
 }
 
 # Directional mass threshold for single-fold credibility (stricter than ablation 95%).
@@ -73,19 +84,24 @@ DEFAULT_TEST_WINDOW: int = 2
 # Split definition
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class CVSplit:
     """One walk-forward fold."""
 
     fold_idx: int
     train_start: int
-    train_end: int    # inclusive
+    train_end: int  # inclusive
     test_start: int
-    test_end: int     # inclusive
+    test_end: int  # inclusive
 
     @property
     def label(self) -> str:
-        return f"fold{self.fold_idx}: train {self.train_start}–{self.train_end} → test {self.test_start}–{self.test_end}"
+        """Human-readable fold description."""
+        return (
+            f"fold{self.fold_idx}: train {self.train_start}-{self.train_end}"
+            f" -> test {self.test_start}-{self.test_end}"
+        )
 
 
 @dataclass
@@ -97,7 +113,7 @@ class CVFoldResult:
     n_test: int
     crps: float
     coverage_90: float
-    sufficient: bool           # n_test ≥ MIN_TEST_N
+    sufficient: bool  # n_test ≥ MIN_TEST_N
     feature_rows: pd.DataFrame  # from coefficient_summary
 
 
@@ -109,11 +125,11 @@ class V3CVResult:
     feature_cols: tuple[str, ...]
     splits: list[CVSplit]
     fold_results: list[CVFoldResult]
-    feature_stability: pd.DataFrame   # per-feature cross-fold summary
+    feature_stability: pd.DataFrame  # per-feature cross-fold summary
     confirmed_features: pd.DataFrame  # features that clear the confirmation bar
     mean_crps: float
     std_crps: float
-    exploratory_flag: bool             # True if any sufficient fold has n_test < 50
+    exploratory_flag: bool  # True if any sufficient fold has n_test < 50
 
 
 def walk_forward_splits(
@@ -135,30 +151,31 @@ def walk_forward_splits(
     Returns:
         List of CVSplit objects in chronological order.
     """
-    seasons = sorted(
-        combined.loc[combined[outcome].notna(), "trade_season"].unique()
-    )
+    seasons = sorted(combined.loc[combined[outcome].notna(), "trade_season"].unique())
     if len(seasons) < 7:
         logger.warning(
             "outcome %s has only %d seasons — walk-forward CV may be unreliable",
-            outcome, len(seasons),
+            outcome,
+            len(seasons),
         )
 
     splits: list[CVSplit] = []
-    min_train = 5   # minimum seasons in training set
+    min_train = 5  # minimum seasons in training set
     fold_idx = 1
 
     for test_start_idx in range(min_train, len(seasons) - test_window + 1, test_window):
         test_seasons = seasons[test_start_idx : test_start_idx + test_window]
         train_seasons = seasons[:test_start_idx]
 
-        splits.append(CVSplit(
-            fold_idx=fold_idx,
-            train_start=int(train_seasons[0]),
-            train_end=int(train_seasons[-1]),
-            test_start=int(test_seasons[0]),
-            test_end=int(test_seasons[-1]),
-        ))
+        splits.append(
+            CVSplit(
+                fold_idx=fold_idx,
+                train_start=int(train_seasons[0]),
+                train_end=int(train_seasons[-1]),
+                test_start=int(test_seasons[0]),
+                test_end=int(test_seasons[-1]),
+            )
+        )
         fold_idx += 1
 
     return splits
@@ -193,7 +210,7 @@ def _build_feature_stability(
     """Build per-feature stability table and confirmed-features subset.
 
     A feature is CONFIRMED if:
-      1. Credible in ≥ ceil(min_fold_fraction × n_sufficient_folds) sufficient folds.
+      1. Credible in >= ceil(min_fold_fraction x n_sufficient_folds) sufficient folds.
       2. Sign is consistent (all credible folds have the same beta sign).
 
     Returns:
@@ -220,30 +237,27 @@ def _build_feature_stability(
                 credible_count += 1
 
         n_credible_needed = max(1, int(np.ceil(min_fold_fraction * n_sufficient)))
-        consistent_sign = (
-            len(betas) > 0
-            and (all(b > 0 for b in betas if not np.isnan(b))
-                 or all(b < 0 for b in betas if not np.isnan(b)))
+        consistent_sign = len(betas) > 0 and (
+            all(b > 0 for b in betas if not np.isnan(b))
+            or all(b < 0 for b in betas if not np.isnan(b))
         )
-        confirmed = (
-            n_sufficient > 0
-            and credible_count >= n_credible_needed
-            and consistent_sign
-        )
+        confirmed = n_sufficient > 0 and credible_count >= n_credible_needed and consistent_sign
 
-        rows.append({
-            "feature": feat,
-            "n_sufficient_folds": n_sufficient,
-            "n_credible_folds": credible_count,
-            "n_needed": n_credible_needed,
-            "median_beta": float(np.nanmedian(betas)) if betas else float("nan"),
-            "beta_min": float(np.nanmin(betas)) if betas else float("nan"),
-            "beta_max": float(np.nanmax(betas)) if betas else float("nan"),
-            "median_mass": float(np.nanmedian(masses)) if masses else float("nan"),
-            "consistent_sign": consistent_sign,
-            "confirmed": confirmed,
-            "n_insufficient_folds": insufficient_count,
-        })
+        rows.append(
+            {
+                "feature": feat,
+                "n_sufficient_folds": n_sufficient,
+                "n_credible_folds": credible_count,
+                "n_needed": n_credible_needed,
+                "median_beta": float(np.nanmedian(betas)) if betas else float("nan"),
+                "beta_min": float(np.nanmin(betas)) if betas else float("nan"),
+                "beta_max": float(np.nanmax(betas)) if betas else float("nan"),
+                "median_mass": float(np.nanmedian(masses)) if masses else float("nan"),
+                "consistent_sign": consistent_sign,
+                "confirmed": confirmed,
+                "n_insufficient_folds": insufficient_count,
+            }
+        )
 
     stability = pd.DataFrame(rows)
     confirmed = stability[stability["confirmed"]].reset_index(drop=True)
@@ -308,31 +322,34 @@ def backtest_outcome_v3_cv(
         )
         coef_df = coefficient_summary(result.fit)
         sufficient = result.test_n >= min_n
-        fold_results.append(CVFoldResult(
-            split=split,
-            n_train=result.train_n,
-            n_test=result.test_n,
-            crps=result.test_crps,
-            coverage_90=result.coverage_90,
-            sufficient=sufficient,
-            feature_rows=coef_df,
-        ))
+        fold_results.append(
+            CVFoldResult(
+                split=split,
+                n_train=result.train_n,
+                n_test=result.test_n,
+                crps=result.test_crps,
+                coverage_90=result.coverage_90,
+                sufficient=sufficient,
+                feature_rows=coef_df,
+            )
+        )
         crps_values.append(result.test_crps)
 
         status = "OK" if sufficient else f"INSUFFICIENT (n_test={result.test_n} < {min_n})"
         logger.info(
             "    CRPS=%.4f  coverage=%.1f%%  n_train=%d  n_test=%d  %s",
-            result.test_crps, result.coverage_90 * 100,
-            result.train_n, result.test_n, status,
+            result.test_crps,
+            result.coverage_90 * 100,
+            result.train_n,
+            result.test_n,
+            status,
         )
 
     stability, confirmed = _build_feature_stability(
         outcome, feature_cols, fold_results, min_frac, mass_threshold
     )
 
-    exploratory = any(
-        fr.n_test < 50 for fr in fold_results if fr.sufficient
-    )
+    exploratory = any(fr.n_test < 50 for fr in fold_results if fr.sufficient)
 
     return V3CVResult(
         outcome=outcome,
@@ -355,7 +372,10 @@ def print_cv_report(result: V3CVResult) -> None:
     if result.exploratory_flag:
         print("  *** EXPLORATORY — one or more folds has n_test < 50 ***")
     print(sep)
-    print(f"  CRPS: {result.mean_crps:.4f} ± {result.std_crps:.4f}  across {len(result.fold_results)} folds")
+    print(
+        f"  CRPS: {result.mean_crps:.4f} +/- {result.std_crps:.4f}"
+        f"  across {len(result.fold_results)} folds"
+    )
     print()
 
     print(f"  {'Fold':<50} {'n_train':>7} {'n_test':>7} {'CRPS':>8} {'cov_90':>7}  status")
@@ -368,16 +388,25 @@ def print_cv_report(result: V3CVResult) -> None:
         )
 
     print()
-    print(f"  Feature stability  (mass threshold={CV_MASS_THRESHOLD:.1%}, min fraction={MIN_FOLD_FRACTION.get(result.outcome, 0.75):.0%})")
-    print(f"  {'feature':<48} {'credible':>8} {'needed':>7} {'median_β':>9} {'range':>18}  {'sign':>5}  confirmed")
+    print(
+        f"  Feature stability  (mass threshold={CV_MASS_THRESHOLD:.1%},"
+        f" min fraction={MIN_FOLD_FRACTION.get(result.outcome, 0.75):.0%})"
+    )
+    print(
+        f"  {'feature':<48} {'credible':>8} {'needed':>7}"
+        f" {'median_b':>9} {'range':>18}  {'sign':>5}  confirmed"
+    )
     print("  " + "-" * 110)
 
-    for _, row in result.feature_stability.sort_values("n_credible_folds", ascending=False).iterrows():
+    for _, row in result.feature_stability.sort_values(
+        "n_credible_folds", ascending=False
+    ).iterrows():
         flag = "*** YES" if row["confirmed"] else "no"
         beta = f"{row['median_beta']:+.4f}" if not np.isnan(row["median_beta"]) else "   n/a"
         rng = (
             f"[{row['beta_min']:+.3f}, {row['beta_max']:+.3f}]"
-            if not np.isnan(row["beta_min"]) else "     n/a     "
+            if not np.isnan(row["beta_min"])
+            else "     n/a     "
         )
         sign_ok = "✓" if row["consistent_sign"] else "✗"
         print(

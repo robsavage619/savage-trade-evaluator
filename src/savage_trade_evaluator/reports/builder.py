@@ -97,7 +97,9 @@ def build_backtest_report(
         logger.info("fitting V3 for %s…", outcome)
         try:
             results[outcome] = v3_module.backtest_outcome_v3(
-                outcome=outcome, train_end_season=train_end, test_end_season=test_end,
+                outcome=outcome,
+                train_end_season=train_end,
+                test_end_season=test_end,
             )
         except ValueError as exc:
             logger.warning("skipped %s: %s", outcome, exc)
@@ -115,20 +117,22 @@ def build_backtest_report(
         cal_chart = _fig_div(charts.calibration_scatter(result.test_predictions, outcome))
         coef_chart = _fig_div(charts.coefficient_forest(result.credible_features, outcome))
         credible_dfs[outcome] = result.credible_features
-        outcome_sections.append({
-            "outcome": outcome,
-            "train_n": result.train_n,
-            "test_n": result.test_n,
-            "mae": result.test_mae,
-            "crps": result.test_crps,
-            "coverage_90": result.coverage_90,
-            "n_credible": int(result.credible_features["credible"].sum()),
-            "cal_chart": cal_chart,
-            "coef_chart": coef_chart,
-            "credible_rows": result.credible_features[result.credible_features["credible"]].to_dict(
-                orient="records"
-            ),
-        })
+        outcome_sections.append(
+            {
+                "outcome": outcome,
+                "train_n": result.train_n,
+                "test_n": result.test_n,
+                "mae": result.test_mae,
+                "crps": result.test_crps,
+                "coverage_90": result.coverage_90,
+                "n_credible": int(result.credible_features["credible"].sum()),
+                "cal_chart": cal_chart,
+                "coef_chart": coef_chart,
+                "credible_rows": result.credible_features[
+                    result.credible_features["credible"]
+                ].to_dict(orient="records"),
+            }
+        )
 
     heatmap_chart = _fig_div(charts.feature_credibility_heatmap(credible_dfs))  # type: ignore[arg-type]
 

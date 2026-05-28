@@ -476,6 +476,42 @@ def ingest_statcast_extended(
         typer.echo(f"  {k}: {v} rows")
 
 
+@ingest_app.command("statcast-sprint-speed")
+def ingest_statcast_sprint_speed(
+    year: int | None = typer.Option(None, help="Single year to ingest."),
+    start: int = typer.Option(2015, help="First year (Statcast era begins)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+) -> None:
+    """Ingest Statcast sprint-speed leaderboard (Baseball Savant) for 2015-present."""
+    configure_logging()
+    if year is not None:
+        n = statcast_extended.ingest_sprint_speed_year(year)
+        typer.echo(f"sprint_speed: {n} rows for {year}")
+    else:
+        total = 0
+        for y in range(start, end + 1):
+            total += statcast_extended.ingest_sprint_speed_year(y)
+        typer.echo(f"sprint_speed: {total} rows across {end - start + 1} year(s)")
+
+
+@ingest_app.command("statcast-exit-velo")
+def ingest_statcast_exit_velo(
+    year: int | None = typer.Option(None, help="Single year to ingest."),
+    start: int = typer.Option(2015, help="First year (Statcast era begins)."),
+    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+) -> None:
+    """Ingest Statcast batter exit-velocity + barrels leaderboard (Baseball Savant)."""
+    configure_logging()
+    if year is not None:
+        n = statcast_extended.ingest_batter_exitvelo_year(year)
+        typer.echo(f"batter_exitvelo: {n} rows for {year}")
+    else:
+        total = 0
+        for y in range(start, end + 1):
+            total += statcast_extended.ingest_batter_exitvelo_year(y)
+        typer.echo(f"batter_exitvelo: {total} rows across {end - start + 1} year(s)")
+
+
 @ingest_app.command("draft")
 def ingest_draft(
     year: int | None = typer.Option(None, help="Single draft year to ingest."),

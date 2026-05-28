@@ -60,8 +60,14 @@ def org_quality_scatter(df: pd.DataFrame) -> go.Figure:
     ]
     for (x0, x1), (y0, y1), color in _quadrant_shading:
         fig.add_shape(
-            type="rect", x0=x0, x1=x1, y0=y0, y1=y1,
-            fillcolor=color, line_width=0, layer="below",
+            type="rect",
+            x0=x0,
+            x1=x1,
+            y0=y0,
+            y1=y1,
+            fillcolor=color,
+            line_width=0,
+            layer="below",
         )
 
     # Median lines
@@ -70,28 +76,30 @@ def org_quality_scatter(df: pd.DataFrame) -> go.Figure:
 
     # Data points
     for quadrant, group in df.groupby("quadrant"):
-        fig.add_trace(go.Scatter(
-            x=group["total_dev_war"],
-            y=group["trade_delta"],
-            mode="markers+text",
-            name=quadrant,
-            text=group["franchise"],
-            textposition="top center",
-            textfont=dict(size=10, color=color_map.get(str(quadrant), _GRAY)),
-            marker=dict(
-                size=11,
-                color=color_map.get(str(quadrant), _GRAY),
-                line=dict(width=1, color="rgba(255,255,255,0.3)"),
-            ),
-            customdata=group[["full_name", "n_trades", "n_mlb_debutees"]].values,
-            hovertemplate=(
-                "<b>%{customdata[0]}</b><br>"
-                "Dev WAR: %{x:.0f}<br>"
-                "Trade Δ: %{y:+.3f} WAR/trade<br>"
-                "Trades analyzed: %{customdata[1]}<br>"
-                "MLB debutees: %{customdata[2]}<extra></extra>"
-            ),
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=group["total_dev_war"],
+                y=group["trade_delta"],
+                mode="markers+text",
+                name=quadrant,
+                text=group["franchise"],
+                textposition="top center",
+                textfont=dict(size=10, color=color_map.get(str(quadrant), _GRAY)),
+                marker=dict(
+                    size=11,
+                    color=color_map.get(str(quadrant), _GRAY),
+                    line=dict(width=1, color="rgba(255,255,255,0.3)"),
+                ),
+                customdata=group[["full_name", "n_trades", "n_mlb_debutees"]].values,
+                hovertemplate=(
+                    "<b>%{customdata[0]}</b><br>"
+                    "Dev WAR: %{x:.0f}<br>"
+                    "Trade Δ: %{y:+.3f} WAR/trade<br>"
+                    "Trades analyzed: %{customdata[1]}<br>"
+                    "MLB debutees: %{customdata[2]}<extra></extra>"
+                ),
+            )
+        )
 
     fig.update_layout(
         **_BASE_LAYOUT,
@@ -137,7 +145,8 @@ def org_quality_scatter(df: pd.DataFrame) -> go.Figure:
             arrowhead=2,
             arrowsize=0.8,
             arrowcolor="rgba(255,255,255,0.4)",
-            ax=40, ay=-30,
+            ax=40,
+            ay=-30,
             font=dict(size=10, color=_TEXT),
             bgcolor="rgba(0,0,0,0.5)",
             bordercolor="rgba(255,255,255,0.2)",
@@ -167,45 +176,53 @@ def coefficient_forest(credible_features: pd.DataFrame, outcome: str = "") -> go
     # Zero reference
     fig.add_vline(x=0, line_color="rgba(255,255,255,0.3)", line_width=1)
 
-    fig.add_trace(go.Scatter(
-        x=df["mean_beta"],
-        y=df["feature"],
-        mode="markers",
-        marker=dict(
-            color=colors,
-            size=10,
-            symbol="circle",
-            line=dict(width=1, color="rgba(255,255,255,0.2)"),
-        ),
-        error_x=dict(
-            type="data",
-            symmetric=False,
-            array=(df["p95"] - df["mean_beta"]).tolist(),
-            arrayminus=(df["mean_beta"] - df["p05"]).tolist(),
-            color="rgba(255,255,255,0.35)",
-            thickness=1.5,
-            width=4,
-        ),
-        customdata=df[["directional_mass", "p05", "p95", "credible"]].values,
-        hovertemplate=(
-            "<b>%{y}</b><br>"
-            "β = %{x:.3f}<br>"
-            "90% CI: [%{customdata[1]:.3f}, %{customdata[2]:.3f}]<br>"
-            "Directional mass: %{customdata[0]:.0%}<br>"
-            "Credible: %{customdata[3]}<extra></extra>"
-        ),
-        showlegend=False,
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=df["mean_beta"],
+            y=df["feature"],
+            mode="markers",
+            marker=dict(
+                color=colors,
+                size=10,
+                symbol="circle",
+                line=dict(width=1, color="rgba(255,255,255,0.2)"),
+            ),
+            error_x=dict(
+                type="data",
+                symmetric=False,
+                array=(df["p95"] - df["mean_beta"]).tolist(),
+                arrayminus=(df["mean_beta"] - df["p05"]).tolist(),
+                color="rgba(255,255,255,0.35)",
+                thickness=1.5,
+                width=4,
+            ),
+            customdata=df[["directional_mass", "p05", "p95", "credible"]].values,
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "β = %{x:.3f}<br>"
+                "90% CI: [%{customdata[1]:.3f}, %{customdata[2]:.3f}]<br>"
+                "Directional mass: %{customdata[0]:.0%}<br>"
+                "Credible: %{customdata[3]}<extra></extra>"
+            ),
+            showlegend=False,
+        )
+    )
 
     # Legend annotation
-    for color, label in [(_GREEN, "Credible (CI ∉ 0, mass ≥ 95%)"),
-                          (_YELLOW, "Directional (mass ≥ 85%)"),
-                          (_GRAY, "Null")]:
-        fig.add_trace(go.Scatter(
-            x=[None], y=[None], mode="markers",
-            marker=dict(color=color, size=10),
-            name=label,
-        ))
+    for color, label in [
+        (_GREEN, "Credible (CI ∉ 0, mass ≥ 95%)"),
+        (_YELLOW, "Directional (mass ≥ 85%)"),
+        (_GRAY, "Null"),
+    ]:
+        fig.add_trace(
+            go.Scatter(
+                x=[None],
+                y=[None],
+                mode="markers",
+                marker=dict(color=color, size=10),
+                name=label,
+            )
+        )
 
     title = f"Posterior β Estimates — {outcome}" if outcome else "Posterior β Estimates"
     fig.update_layout(
@@ -233,7 +250,7 @@ def calibration_scatter(test_predictions: pd.DataFrame, outcome: str = "") -> go
     """Predicted vs actual scatter with 90% PI bands."""
     df = test_predictions.dropna(subset=["y_true", "y_pred_mean"]).copy()
 
-    in_band = ((df["y_true"] >= df["y_pred_p05"]) & (df["y_true"] <= df["y_pred_p95"]))
+    in_band = (df["y_true"] >= df["y_pred_p05"]) & (df["y_true"] <= df["y_pred_p95"])
     coverage = float(in_band.mean())
 
     ref_min = min(float(df["y_true"].min()), float(df["y_pred_mean"].min()))
@@ -243,44 +260,48 @@ def calibration_scatter(test_predictions: pd.DataFrame, outcome: str = "") -> go
     fig = go.Figure()
 
     # 90% PI as error bars
-    fig.add_trace(go.Scatter(
-        x=df["y_pred_mean"],
-        y=df["y_true"],
-        mode="markers",
-        marker=dict(
-            color=df["y_true"].apply(lambda v: _GREEN if v >= 0 else _RED),
-            size=6,
-            opacity=0.6,
-            line=dict(width=0),
-        ),
-        error_x=dict(
-            type="data",
-            symmetric=False,
-            array=(df["y_pred_p95"] - df["y_pred_mean"]).tolist(),
-            arrayminus=(df["y_pred_mean"] - df["y_pred_p05"]).tolist(),
-            color="rgba(255,255,255,0.15)",
-            thickness=1,
-            width=0,
-        ),
-        customdata=df[["trade_season", "receiver_bref"]].values,
-        hovertemplate=(
-            "Season: %{customdata[0]}<br>"
-            "Team: %{customdata[1]}<br>"
-            "Predicted: %{x:.3f}<br>"
-            "Actual: %{y:.3f}<extra></extra>"
-        ),
-        name="Trade outcome",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=df["y_pred_mean"],
+            y=df["y_true"],
+            mode="markers",
+            marker=dict(
+                color=df["y_true"].apply(lambda v: _GREEN if v >= 0 else _RED),
+                size=6,
+                opacity=0.6,
+                line=dict(width=0),
+            ),
+            error_x=dict(
+                type="data",
+                symmetric=False,
+                array=(df["y_pred_p95"] - df["y_pred_mean"]).tolist(),
+                arrayminus=(df["y_pred_mean"] - df["y_pred_p05"]).tolist(),
+                color="rgba(255,255,255,0.15)",
+                thickness=1,
+                width=0,
+            ),
+            customdata=df[["trade_season", "receiver_bref"]].values,
+            hovertemplate=(
+                "Season: %{customdata[0]}<br>"
+                "Team: %{customdata[1]}<br>"
+                "Predicted: %{x:.3f}<br>"
+                "Actual: %{y:.3f}<extra></extra>"
+            ),
+            name="Trade outcome",
+        )
+    )
 
     # Perfect-calibration line
-    fig.add_trace(go.Scatter(
-        x=[ref_min - pad, ref_max + pad],
-        y=[ref_min - pad, ref_max + pad],
-        mode="lines",
-        line=dict(color="rgba(255,255,255,0.35)", dash="dot", width=1.5),
-        name="Perfect calibration",
-        hoverinfo="skip",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=[ref_min - pad, ref_max + pad],
+            y=[ref_min - pad, ref_max + pad],
+            mode="lines",
+            line=dict(color="rgba(255,255,255,0.35)", dash="dot", width=1.5),
+            name="Perfect calibration",
+            hoverinfo="skip",
+        )
+    )
 
     title = f"Calibration — {outcome}" if outcome else "Calibration"
     fig.update_layout(
@@ -321,25 +342,31 @@ def sell_high_bars(summary: pd.DataFrame) -> go.Figure:
         ("young_mean", _GREEN, "Young prospect (pre ≤1 WAR, ≤4 yr exp)"),
         ("middle_mean", _GRAY, "Middle (everything else)"),
     ]:
-        fig.add_trace(go.Bar(
-            name=label,
-            x=short_regime.tolist(),
-            y=df[col].tolist(),
-            marker_color=color,
-            opacity=0.85,
-            customdata=df[["regime", col]].values,
-            hovertemplate="<b>%{customdata[0]}</b><br>Mean Δ WAR: %{y:+.3f}<extra></extra>",
-        ))
+        fig.add_trace(
+            go.Bar(
+                name=label,
+                x=short_regime.tolist(),
+                y=df[col].tolist(),
+                marker_color=color,
+                opacity=0.85,
+                customdata=df[["regime", col]].values,
+                hovertemplate="<b>%{customdata[0]}</b><br>Mean Δ WAR: %{y:+.3f}<extra></extra>",
+            )
+        )
 
     # Overall line
-    fig.add_trace(go.Scatter(
-        x=short_regime.tolist(),
-        y=df["mean_delta_all"].tolist(),
-        mode="markers",
-        marker=dict(symbol="line-ew", size=14, color="white", line=dict(width=2, color="white")),
-        name="Overall mean Δ",
-        hovertemplate="Overall: %{y:+.3f}<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=short_regime.tolist(),
+            y=df["mean_delta_all"].tolist(),
+            mode="markers",
+            marker=dict(
+                symbol="line-ew", size=14, color="white", line=dict(width=2, color="white")
+            ),
+            name="Overall mean Δ",
+            hovertemplate="Overall: %{y:+.3f}<extra></extra>",
+        )
+    )
 
     fig.add_hline(y=0, line_color="rgba(255,255,255,0.3)", line_width=1)
 
@@ -391,34 +418,40 @@ def feature_credibility_heatmap(results_by_outcome: dict[str, pd.DataFrame]) -> 
                 row.append(mass)
                 # Annotate credible cells
                 if bool(match["credible"].iloc[0]):
-                    annotations.append(dict(
-                        x=oi, y=all_features.index(feat),
-                        text="★", showarrow=False,
-                        font=dict(size=11, color="white"),
-                    ))
+                    annotations.append(
+                        dict(
+                            x=oi,
+                            y=all_features.index(feat),
+                            text="★",
+                            showarrow=False,
+                            font=dict(size=11, color="white"),
+                        )
+                    )
         z.append(row)
 
-    fig = go.Figure(go.Heatmap(
-        z=z,
-        x=outcomes,
-        y=all_features,
-        colorscale=[
-            [0.0, "rgba(231,76,60,0.8)"],
-            [0.5, "rgba(44,62,80,0.6)"],
-            [1.0, "rgba(46,204,113,0.9)"],
-        ],
-        zmid=0.85,
-        zmin=0.5,
-        zmax=1.0,
-        colorbar=dict(
-            title="Directional mass",
-            tickformat=".0%",
-            bgcolor="rgba(0,0,0,0)",
-            bordercolor="rgba(255,255,255,0.2)",
-            tickfont=dict(color=_TEXT),
-        ),
-        hovertemplate="Feature: %{y}<br>Outcome: %{x}<br>Mass: %{z:.0%}<extra></extra>",
-    ))
+    fig = go.Figure(
+        go.Heatmap(
+            z=z,
+            x=outcomes,
+            y=all_features,
+            colorscale=[
+                [0.0, "rgba(231,76,60,0.8)"],
+                [0.5, "rgba(44,62,80,0.6)"],
+                [1.0, "rgba(46,204,113,0.9)"],
+            ],
+            zmid=0.85,
+            zmin=0.5,
+            zmax=1.0,
+            colorbar=dict(
+                title="Directional mass",
+                tickformat=".0%",
+                bgcolor="rgba(0,0,0,0)",
+                bordercolor="rgba(255,255,255,0.2)",
+                tickfont=dict(color=_TEXT),
+            ),
+            hovertemplate="Feature: %{y}<br>Outcome: %{x}<br>Mass: %{z:.0%}<extra></extra>",
+        )
+    )
 
     for ann in annotations:
         fig.add_annotation(**ann)
@@ -442,34 +475,40 @@ def backtest_metrics_table(results: dict[str, object]) -> go.Figure:
     rows = []
     for outcome, r in results.items():
         ncred = int(r.credible_features["credible"].sum())  # type: ignore[union-attr]
-        rows.append({
-            "Outcome": outcome,
-            "Train n": r.train_n,  # type: ignore[union-attr]
-            "Test n": r.test_n,  # type: ignore[union-attr]
-            "MAE": f"{r.test_mae:.4f}",  # type: ignore[union-attr]
-            "CRPS": f"{r.test_crps:.4f}",  # type: ignore[union-attr]
-            "90% Coverage": f"{r.coverage_90:.1%}",  # type: ignore[union-attr]
-            "Credible Features": ncred,
-        })
+        rows.append(
+            {
+                "Outcome": outcome,
+                "Train n": r.train_n,  # type: ignore[union-attr]
+                "Test n": r.test_n,  # type: ignore[union-attr]
+                "MAE": f"{r.test_mae:.4f}",  # type: ignore[union-attr]
+                "CRPS": f"{r.test_crps:.4f}",  # type: ignore[union-attr]
+                "90% Coverage": f"{r.coverage_90:.1%}",  # type: ignore[union-attr]
+                "Credible Features": ncred,
+            }
+        )
     df = pd.DataFrame(rows)
 
-    fig = go.Figure(go.Table(
-        header=dict(
-            values=list(df.columns),
-            fill_color=_DARK,
-            font=dict(color=_TEXT, size=12, family="Inter, monospace"),
-            align="left",
-            line_color="rgba(255,255,255,0.1)",
-        ),
-        cells=dict(
-            values=[df[c].tolist() for c in df.columns],
-            fill_color=[[_PANEL if i % 2 == 0 else "rgba(30,35,50,1)" for i in range(len(df))]
-                        for _ in df.columns],
-            font=dict(color=_TEXT, size=11, family="Inter, monospace"),
-            align="left",
-            line_color="rgba(255,255,255,0.05)",
-        ),
-    ))
+    fig = go.Figure(
+        go.Table(
+            header=dict(
+                values=list(df.columns),
+                fill_color=_DARK,
+                font=dict(color=_TEXT, size=12, family="Inter, monospace"),
+                align="left",
+                line_color="rgba(255,255,255,0.1)",
+            ),
+            cells=dict(
+                values=[df[c].tolist() for c in df.columns],
+                fill_color=[
+                    [_PANEL if i % 2 == 0 else "rgba(30,35,50,1)" for i in range(len(df))]
+                    for _ in df.columns
+                ],
+                font=dict(color=_TEXT, size=11, family="Inter, monospace"),
+                align="left",
+                line_color="rgba(255,255,255,0.05)",
+            ),
+        )
+    )
     fig.update_layout(
         **_BASE_LAYOUT,
         title=dict(text="V3 Backtest Summary — All Outcomes", font=dict(size=15)),

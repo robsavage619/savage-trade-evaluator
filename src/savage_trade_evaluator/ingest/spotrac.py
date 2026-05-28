@@ -100,6 +100,7 @@ def _current_mlb_season() -> int:
     """
     return datetime.now(UTC).year
 
+
 # Spotrac money string patterns
 MONEY_RE = re.compile(r"\$?([\d,]+(?:\.\d+)?)")
 # Player link inside a table cell

@@ -58,7 +58,7 @@ class V2BacktestResult:
 def _crps_empirical(y: np.ndarray, samples: np.ndarray) -> float:
     """Empirical CRPS via samples-vs-truth. y shape (n,), samples shape (n, m)."""
     # CRPS = E|X - y| - 0.5 E|X - X'|, approximated via samples.
-    n, m = samples.shape
+    _, m = samples.shape
     term1 = np.mean(np.abs(samples - y[:, None]))
     sorted_samples = np.sort(samples, axis=1)
     # E|X - X'| ≈ 2/(m(m-1)) * sum over sorted differences

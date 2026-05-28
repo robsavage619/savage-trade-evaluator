@@ -29,9 +29,9 @@ import pymc as pm
 
 from savage_trade_evaluator.modeling.v2.backtest import _crps_empirical
 from savage_trade_evaluator.modeling.v3 import (
+    V3_OUTCOME_FEATURES,
     V3BacktestResult,
     V3FitResult,
-    V3_OUTCOME_FEATURES,
     _split_and_impute,
     assemble_v3_combined,
     coefficient_summary,
@@ -58,7 +58,11 @@ def fit_v3_multilevel(
         train: Training rows with outcome and feature columns present.
         outcome: Target column name.
         feature_cols: Predictor columns (already imputed by caller).
-        draws / tune / chains / seed / target_accept: PyMC sample kwargs.
+        draws: Number of MCMC draws per chain.
+        tune: Number of tuning steps per chain.
+        chains: Number of chains.
+        seed: Random seed for reproducibility.
+        target_accept: NUTS target acceptance rate.
 
     Returns:
         V3FitResult with trace. alpha_team samples are accessible in
@@ -84,7 +88,7 @@ def fit_v3_multilevel(
         # meaningful team variation if it exists.
         sigma_team = pm.HalfNormal("sigma_team", sigma=0.5)
         alpha_team_z = pm.Normal("alpha_team_z", mu=0.0, sigma=1.0, dims="team")
-        alpha_team = pm.Deterministic(  # noqa: F841
+        alpha_team = pm.Deterministic(
             "alpha_team", alpha_team_z * sigma_team, dims="team"
         )
         beta = pm.Normal("beta", mu=0.0, sigma=0.3, dims="feature")
@@ -132,7 +136,7 @@ def predict_multilevel(fit: V3FitResult, df: pd.DataFrame) -> np.ndarray:
     out = np.zeros((n_test, n_samples))
     for i in range(n_test):
         t = df["receiver_bref"].iloc[i]
-        tidx = team_to_idx.get(t, None)
+        tidx = team_to_idx.get(t)
         team_effect = alpha_team_s[:, tidx] if tidx is not None else 0.0
         mu = alpha0_s + team_effect + beta_s @ x_test[i]
         rng = np.random.default_rng(seed=137 + i)

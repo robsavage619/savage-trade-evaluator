@@ -959,9 +959,9 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     GROUP BY trade_event_id, receiver_bref
     """,
     # D-44: WAR trajectory acceleration — second derivative of WAR curve (R-63).
-    # acceleration = [W(T-1) − W(T-2)] − [W(T-2) − W(T-3)] = W(T-1) − 2·W(T-2) + W(T-3).
+    # acceleration = [W(T-1) - W(T-2)] - [W(T-2) - W(T-3)] = W(T-1) - 2*W(T-2) + W(T-3).
     # Negative = declining faster each year (accelerating collapse).
-    # Catches Semien: trajectory −3.2 (1st deriv), acceleration adding further signal.
+    # Catches Semien: trajectory -3.2 (1st deriv), acceleration adding further signal.
     """
     CREATE OR REPLACE VIEW trade_acquired_war_acceleration AS
     WITH season_war AS (
@@ -991,6 +991,196 @@ VIEW_STATEMENTS: tuple[str, ...] = (
     FROM per_player
     WHERE war_acceleration IS NOT NULL
     GROUP BY trade_event_id, receiver_bref
+    """,
+    # FG alternate outcome views — metric-agnostic claim (wRC+, FIP, xFIP, SIERA).
+    # FG batting leaders keyed on mlbam_id (100% populated after last ingest, 2010-2024).
+    """
+    CREATE OR REPLACE VIEW trade_fg_wrc_outcome AS
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(post.wrc_plus - prior.wrc_plus) AS wrc_delta_mean,
+        COUNT(*) AS n_batters_with_signal
+    FROM trade_player_unified t
+    JOIN fangraphs_batting_leaders prior
+        ON prior.mlbam_id = t.mlb_player_id AND prior.season = t.trade_season - 1
+    JOIN fangraphs_batting_leaders post
+        ON post.mlbam_id  = t.mlb_player_id AND post.season  = t.trade_season + 1
+    WHERE t.to_team_bref IS NOT NULL
+      AND prior.wrc_plus IS NOT NULL AND post.wrc_plus IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_fg_fip_outcome AS
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(post.fip - prior.fip) AS fip_delta_mean,
+        COUNT(*) AS n_pitchers_with_signal
+    FROM trade_player_unified t
+    JOIN fangraphs_pitching_leaders prior
+        ON prior.mlbam_id = t.mlb_player_id AND prior.season = t.trade_season - 1
+    JOIN fangraphs_pitching_leaders post
+        ON post.mlbam_id  = t.mlb_player_id AND post.season  = t.trade_season + 1
+    WHERE t.to_team_bref IS NOT NULL
+      AND prior.fip IS NOT NULL AND post.fip IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_fg_xfip_outcome AS
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(post.xfip - prior.xfip) AS xfip_delta_mean,
+        COUNT(*) AS n_pitchers_with_signal
+    FROM trade_player_unified t
+    JOIN fangraphs_pitching_leaders prior
+        ON prior.mlbam_id = t.mlb_player_id AND prior.season = t.trade_season - 1
+    JOIN fangraphs_pitching_leaders post
+        ON post.mlbam_id  = t.mlb_player_id AND post.season  = t.trade_season + 1
+    WHERE t.to_team_bref IS NOT NULL
+      AND prior.xfip IS NOT NULL AND post.xfip IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_fg_siera_outcome AS
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(post.siera - prior.siera) AS siera_delta_mean,
+        COUNT(*) AS n_pitchers_with_signal
+    FROM trade_player_unified t
+    JOIN fangraphs_pitching_leaders prior
+        ON prior.mlbam_id = t.mlb_player_id AND prior.season = t.trade_season - 1
+    JOIN fangraphs_pitching_leaders post
+        ON post.mlbam_id  = t.mlb_player_id AND post.season  = t.trade_season + 1
+    WHERE t.to_team_bref IS NOT NULL
+      AND prior.siera IS NOT NULL AND post.siera IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    # FV consensus view: TJStats + MLB Pipeline (MLBAM-keyed sources only).
+    # FG Board excluded — name-matched, not MLBAM-keyed.
+    # Mostly NULL for pre-2026 trades; contributes to V3 forward-scoring mode.
+    # NULL imputed with training-mean fill in _split_and_impute.
+    """
+    CREATE OR REPLACE VIEW trade_acquired_fv_consensus AS
+    WITH player_fv AS (
+        SELECT player_id::INTEGER AS mlbam_id, AVG(fv) AS fv_tjstats
+        FROM tjstats_prospect_rankings
+        WHERE fetched_at = (SELECT MAX(fetched_at) FROM tjstats_prospect_rankings)
+        GROUP BY player_id
+    ),
+    pipeline_fv AS (
+        SELECT mlbam_id, overall_grade AS fv_pipeline
+        FROM mlb_pipeline_prospects
+        WHERE fetched_at = (SELECT MAX(fetched_at) FROM mlb_pipeline_prospects)
+          AND overall_grade IS NOT NULL
+    ),
+    per_acquired AS (
+        SELECT
+            tpu.trade_event_id,
+            tpu.to_team_bref AS receiver_bref,
+            (COALESCE(pf.fv_tjstats, 0.0) + COALESCE(pp.fv_pipeline, 0.0))
+                / NULLIF((CASE WHEN pf.fv_tjstats IS NOT NULL THEN 1 ELSE 0 END
+                         + CASE WHEN pp.fv_pipeline IS NOT NULL THEN 1 ELSE 0 END), 0)
+                AS consensus_fv,
+            ABS(COALESCE(pf.fv_tjstats, 0.0) - COALESCE(pp.fv_pipeline, 0.0))
+                AS fv_divergence
+        FROM trade_player_unified tpu
+        LEFT JOIN player_fv pf ON pf.mlbam_id = tpu.mlb_player_id
+        LEFT JOIN pipeline_fv pp ON pp.mlbam_id = tpu.mlb_player_id
+        WHERE tpu.to_team_bref IS NOT NULL
+    )
+    SELECT
+        trade_event_id,
+        receiver_bref,
+        AVG(consensus_fv) AS receiver_acquired_consensus_fv,
+        MAX(consensus_fv) AS receiver_acquired_max_consensus_fv,
+        AVG(fv_divergence) AS receiver_acquired_fv_divergence
+    FROM per_acquired
+    GROUP BY trade_event_id, receiver_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_player_exitvelo AS
+    -- Statcast-era only (2015+). Per-trade, per-receiver aggregate of acquired
+    -- hitters' exit-velocity profile at T-1. NULLs for pitcher-only trades or
+    -- pre-2015 events.
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(ev.avg_hit_speed) AS receiver_acquired_avg_exit_speed,
+        AVG(ev.brl_percent)   AS receiver_acquired_barrel_rate
+    FROM trade_player_unified t
+    LEFT JOIN statcast_batter_exitvelo_barrels ev
+        ON ev.player_id = t.mlb_player_id
+        AND ev.year = t.trade_season - 1
+    WHERE t.to_team_bref IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_player_sprint AS
+    -- Statcast-era only (2015+). Per-trade, per-receiver aggregate of acquired
+    -- players' sprint speed at T-1. Applies to all positions (sprint_speed
+    -- covers pitchers too); NULLs where Statcast has no coverage.
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(ss.sprint_speed) AS receiver_acquired_sprint_speed
+    FROM trade_player_unified t
+    LEFT JOIN statcast_sprint_speed ss
+        ON ss.player_id = t.mlb_player_id
+        AND ss.year = t.trade_season - 1
+    WHERE t.to_team_bref IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_catcher_poptime AS
+    -- Statcast catcher pop-time at T-1. maxeff_arm_2b_3b_sba is the combined
+    -- 2b/3b attempt-weighted effective arm — the standard "pop time" metric.
+    -- NULL for trades with no catchers or pre-2015 events.
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(cp.maxeff_arm_2b_3b_sba) AS receiver_acquired_catcher_poptime
+    FROM trade_player_unified t
+    LEFT JOIN statcast_catcher_poptime cp
+        ON cp.player_id = t.mlb_player_id
+        AND cp.year = t.trade_season - 1
+    WHERE t.to_team_bref IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_outfielder_jump AS
+    -- Statcast outfielder OAA at T-1. outs_above_average aggregates burst,
+    -- reaction, routing, and bootup — the catch-probability fielding metric.
+    -- NULL for trades with no outfielders or pre-2016 events.
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(oj.outs_above_average) AS receiver_acquired_outfielder_oaa
+    FROM trade_player_unified t
+    LEFT JOIN statcast_outfielder_jump oj
+        ON oj.player_id = t.mlb_player_id
+        AND oj.year = t.trade_season - 1
+    WHERE t.to_team_bref IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
+    """,
+    """
+    CREATE OR REPLACE VIEW trade_acquired_milb_tjbat AS
+    -- TJStats tjbat+ for acquired players at T-1 (MiLB context).
+    -- tjbat+ > 100 = above-average hitter relative to level peers.
+    -- player_id in tjstats_tjbat is VARCHAR (MLBAM); cast for join.
+    -- Multiple levels per player-season are averaged.
+    SELECT
+        t.trade_event_id,
+        t.to_team_bref AS receiver_bref,
+        AVG(tb.tjbat_plus) AS receiver_acquired_milb_tjbat_plus
+    FROM trade_player_unified t
+    LEFT JOIN tjstats_tjbat tb
+        ON tb.player_id = t.mlb_player_id::VARCHAR
+        AND tb.season = t.trade_season - 1
+    WHERE t.to_team_bref IS NOT NULL
+    GROUP BY t.trade_event_id, t.to_team_bref
     """,
     # D-45: Receiving team 3-year rolling park factor (R-64).
     # Aggregates multi-park seasons by home_games weight; 3-year rolling average

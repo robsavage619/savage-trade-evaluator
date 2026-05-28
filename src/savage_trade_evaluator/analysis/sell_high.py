@@ -91,9 +91,7 @@ def sell_high_decomposition(df: pd.DataFrame | None = None) -> pd.DataFrame:
     if df is None:
         df = load_all_trades()
     out = df.copy()
-    out["bucket"] = out.apply(
-        lambda r: classify_player(r["pre"], r.get("experience")), axis=1
-    )
+    out["bucket"] = out.apply(lambda r: classify_player(r["pre"], r.get("experience")), axis=1)
     return out
 
 
@@ -162,16 +160,18 @@ def all_regime_summary() -> pd.DataFrame:
         vet = d.get("VET-AT-PEAK", {})
         young = d.get("YOUNG-PROSPECT", {})
         mid = d.get("MIDDLE", {})
-        rows.append({
-            "regime": regime,
-            "n_all": all_["n"],
-            "mean_delta_all": all_["mean_delta"],
-            "vet_n": vet.get("n", 0),
-            "vet_mean": vet.get("mean_delta", float("nan")),
-            "young_n": young.get("n", 0),
-            "young_mean": young.get("mean_delta", float("nan")),
-            "middle_n": mid.get("n", 0),
-            "middle_mean": mid.get("mean_delta", float("nan")),
-            "mechanism": classify_mechanism(d),
-        })
+        rows.append(
+            {
+                "regime": regime,
+                "n_all": all_["n"],
+                "mean_delta_all": all_["mean_delta"],
+                "vet_n": vet.get("n", 0),
+                "vet_mean": vet.get("mean_delta", float("nan")),
+                "young_n": young.get("n", 0),
+                "young_mean": young.get("mean_delta", float("nan")),
+                "middle_n": mid.get("n", 0),
+                "middle_mean": mid.get("mean_delta", float("nan")),
+                "mechanism": classify_mechanism(d),
+            }
+        )
     return pd.DataFrame(rows).sort_values("mean_delta_all")

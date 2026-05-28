@@ -26,8 +26,8 @@ from __future__ import annotations
 import logging
 import zipfile
 from collections import defaultdict
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 import pandas as pd
 
@@ -40,27 +40,40 @@ SOURCE = "retrosheet"
 # ---------------------------------------------------------------------------
 # Events that constitute a completed plate appearance (not just baserunning).
 # ---------------------------------------------------------------------------
-PA_EVENT_CODES = frozenset({
-    2,   # Generic out
-    3,   # Strikeout
-    14,  # Walk
-    15,  # Intentional walk
-    16,  # Hit by pitch
-    20,  # Single
-    21,  # Double
-    22,  # Triple
-    23,  # Home run
-})
+PA_EVENT_CODES = frozenset(
+    {
+        2,  # Generic out
+        3,  # Strikeout
+        14,  # Walk
+        15,  # Intentional walk
+        16,  # Hit by pitch
+        20,  # Single
+        21,  # Double
+        22,  # Triple
+        23,  # Home run
+    }
+)
 
 # Standalone record types that are NOT plate appearances (baserunning only).
-_NON_PA_PREFIXES = frozenset({
-    "BK", "CS", "DI", "OA", "PB", "PO", "POCS", "SB", "WP", "NP",
-})
+_NON_PA_PREFIXES = frozenset(
+    {
+        "BK",
+        "CS",
+        "DI",
+        "OA",
+        "PB",
+        "PO",
+        "POCS",
+        "SB",
+        "WP",
+        "NP",
+    }
+)
 
 # ---------------------------------------------------------------------------
 # Simplified Leverage Index lookup table.
-# Full Tango table has 288 entries (24 base states × 3 outs × 9 half-innings ×
-# 2 halves × run differentials). This is a 10-entry sample for early innings
+# Full Tango table has 288 entries (24 base states x 3 outs x 9 half-innings x
+# 2 halves x run differentials). This is a 10-entry sample for early innings
 # that captures the ordering. The full version should be loaded from a CSV;
 # this approximation is sufficient for the feature-signal we need (hi/lo LI
 # classification), not for exact win-probability models.
@@ -74,11 +87,11 @@ _NON_PA_PREFIXES = frozenset({
 # ---------------------------------------------------------------------------
 _LI_SAMPLE: dict[tuple[int, int, int, int], float] = {
     # Late innings, high leverage
-    (9, 1, 0, 0): 2.00,   # Bot 9, 0 out, bases empty
-    (9, 1, 0, 3): 3.50,   # Bot 9, 0 out, 1B+2B
-    (9, 1, 1, 1): 2.50,   # Bot 9, 1 out, runner on 1B
-    (9, 1, 2, 3): 3.80,   # Bot 9, 2 out, 1B+2B
-    (8, 1, 2, 1): 2.10,   # Bot 8, 2 out, runner on 1B
+    (9, 1, 0, 0): 2.00,  # Bot 9, 0 out, bases empty
+    (9, 1, 0, 3): 3.50,  # Bot 9, 0 out, 1B+2B
+    (9, 1, 1, 1): 2.50,  # Bot 9, 1 out, runner on 1B
+    (9, 1, 2, 3): 3.80,  # Bot 9, 2 out, 1B+2B
+    (8, 1, 2, 1): 2.10,  # Bot 8, 2 out, runner on 1B
     # Mid-innings, moderate leverage
     (7, 1, 0, 0): 1.20,
     (7, 1, 1, 3): 1.80,
@@ -349,11 +362,7 @@ def parse_event_file(
             pit_hand = pit_info.get("pit_hand", "")
             bat_hand = bat_info.get("bat_hand", "")
 
-            base_state = (
-                (1 if base1 else 0)
-                | (2 if base2 else 0)
-                | (4 if base3 else 0)
-            )
+            base_state = (1 if base1 else 0) | (2 if base2 else 0) | (4 if base3 else 0)
             home_team = game_id[:3] if len(game_id) >= 3 else ""
 
             yield {
@@ -419,6 +428,7 @@ def _extract_event_files(zip_path: Path) -> list[Path]:
 # Per-game state tracker used while building appearance aggregates.
 # ---------------------------------------------------------------------------
 
+
 class _GameState:
     """Accumulates per-pitcher, per-game stats across event rows."""
 
@@ -465,17 +475,19 @@ class _GameState:
             avg_li = sum(lis) / len(lis) if lis else 0.0
             pct_ge_1_5 = sum(1 for v in lis if v >= 1.5) / len(lis) if lis else 0.0
             pct_lt_0_7 = sum(1 for v in lis if v < 0.7) / len(lis) if lis else 0.0
-            rows.append({
-                "team": home_team,
-                "season": season,
-                "game_id": game_id,
-                "pitcher_id": pit_id,
-                "is_reliever": is_reliever,
-                "n_batters_faced": n_pa,
-                "avg_li": round(avg_li, 4),
-                "leverage_ge_1_5_pct": round(pct_ge_1_5, 4),
-                "leverage_lt_0_7_pct": round(pct_lt_0_7, 4),
-            })
+            rows.append(
+                {
+                    "team": home_team,
+                    "season": season,
+                    "game_id": game_id,
+                    "pitcher_id": pit_id,
+                    "is_reliever": is_reliever,
+                    "n_batters_faced": n_pa,
+                    "avg_li": round(avg_li, 4),
+                    "leverage_ge_1_5_pct": round(pct_ge_1_5, 4),
+                    "leverage_lt_0_7_pct": round(pct_lt_0_7, 4),
+                }
+            )
         return rows
 
 
@@ -522,15 +534,17 @@ def _process_event_file(
             bat_hand = row["bat_hand"]
             pit_hand = row["resp_pit_hand"]
             if bat_hand in ("L", "R") and pit_hand in ("L", "R"):
-                pa_rows.append({
-                    "team": fielding_team,
-                    "season": season,
-                    "game_id": game_id,
-                    "bat_hand": bat_hand,
-                    "pit_hand": pit_hand,
-                    "event_cd": row["event_cd"],
-                    "runs_scored": row["event_runs_ct"],
-                })
+                pa_rows.append(
+                    {
+                        "team": fielding_team,
+                        "season": season,
+                        "game_id": game_id,
+                        "bat_hand": bat_hand,
+                        "pit_hand": pit_hand,
+                        "event_cd": row["event_cd"],
+                        "runs_scored": row["event_runs_ct"],
+                    }
+                )
 
 
 def ingest(event_dir: Path, seasons: list[int] | None = None) -> int:
@@ -591,7 +605,7 @@ def ingest(event_dir: Path, seasons: list[int] | None = None) -> int:
 
             # Upsert appearance rows.
             if appearance_rows:
-                app_df = pd.DataFrame(appearance_rows)
+                app_df = pd.DataFrame(appearance_rows)  # noqa: F841
                 conn.execute("""
                     INSERT OR REPLACE INTO retrosheet_game_appearances
                         (team, season, game_id, pitcher_id, is_reliever,
@@ -608,7 +622,7 @@ def ingest(event_dir: Path, seasons: list[int] | None = None) -> int:
 
             # Upsert PA matchup rows.
             if pa_rows:
-                pa_df = pd.DataFrame(pa_rows)
+                pa_df = pd.DataFrame(pa_rows)  # noqa: F841
                 conn.execute("""
                     INSERT INTO retrosheet_pa_matchups
                         (team, season, game_id, bat_hand, pit_hand,
@@ -634,18 +648,18 @@ def ingest(event_dir: Path, seasons: list[int] | None = None) -> int:
 # Retrosheet uses legacy team codes for franchises that moved or have historical
 # abbreviations. Map to Baseball Reference codes for the join in team_season_features.
 _RETRO_TO_BREF: dict[str, str] = {
-    "ANA": "LAA",   # Angels
-    "CHA": "CHW",   # White Sox
-    "CHN": "CHC",   # Cubs
-    "KCA": "KCR",   # Royals
-    "LAN": "LAD",   # Dodgers
-    "NYA": "NYY",   # Yankees
-    "NYN": "NYM",   # Mets
-    "SDN": "SDP",   # Padres
-    "SFN": "SFG",   # Giants
-    "SLN": "STL",   # Cardinals
-    "TBA": "TBR",   # Rays
-    "WAS": "WSN",   # Nationals
+    "ANA": "LAA",  # Angels
+    "CHA": "CHW",  # White Sox
+    "CHN": "CHC",  # Cubs
+    "KCA": "KCR",  # Royals
+    "LAN": "LAD",  # Dodgers
+    "NYA": "NYY",  # Yankees
+    "NYN": "NYM",  # Mets
+    "SDN": "SDP",  # Padres
+    "SFN": "SFG",  # Giants
+    "SLN": "STL",  # Cardinals
+    "TBA": "TBR",  # Rays
+    "WAS": "WSN",  # Nationals
 }
 
 
@@ -684,7 +698,7 @@ def derive_team_season_platoon_features() -> pd.DataFrame:
 
     wOBA approximation uses linear weights on event codes (out=0, walk=0.69,
     HBP=0.72, single=0.89, double=1.27, triple=1.62, HR=2.10).
-    The platoon differential is (opposite-hand wOBA) − (same-hand wOBA).
+    The platoon differential is (opposite-hand wOBA) - (same-hand wOBA).
     A positive differential means the team exploits platoon advantages well.
 
     Returns:

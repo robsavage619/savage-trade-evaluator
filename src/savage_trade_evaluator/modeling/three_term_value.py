@@ -1,9 +1,11 @@
 """Three-term trade value formula (D-09 refinement).
 
 Three valuations per player at any decision point:
-  1. Cost-controlled surplus: WAR delivered × $/WAR − actual salary (pre-arb/arb underpay)
-  2. Post-FA surplus: projected WAR × market $/WAR − projected FA salary (stub: requires FA projection model)
-  3. Δ playoff-prob × revenue: playoff probability delta × marginal playoff revenue (stub: requires playoff model)
+  1. Cost-controlled surplus: WAR delivered x $/WAR - actual salary (pre-arb/arb underpay)
+  2. Post-FA surplus: projected WAR x market $/WAR - projected FA salary
+     (stub: requires FA projection model)
+  3. Delta playoff-prob x revenue: playoff probability delta x marginal playoff revenue
+     (stub: requires playoff model)
 
 Term 1 is live. Terms 2 and 3 are stubs returning 0.0 pending the FA projection
 and playoff-revenue models planned for Phase 3.
@@ -29,11 +31,11 @@ class ThreeTermValue:
     Attributes:
         trade_event_id: The transaction_id shared across legs of one trade.
         receiver_bref: Baseball Reference team code for the receiving team.
-        cost_controlled_surplus: Term 1 — WAR surplus during cost-control years
-            in dollars (realized WAR × $/WAR − actual salary paid).
+        cost_controlled_surplus: Term 1 - WAR surplus during cost-control years
+            in dollars (realized WAR x $/WAR - actual salary paid).
         post_fa_surplus: Term 2 — projected surplus post-FA in dollars.
             Stub: 0.0 until the FA projection model exists.
-        playoff_revenue_delta: Term 3 — Δ playoff-probability × marginal playoff
+        playoff_revenue_delta: Term 3 - delta playoff-probability x marginal playoff
             revenue in dollars. Stub: 0.0 until the playoff model exists.
         total: Sum of all three terms.
         notes: Human-readable explanation of any stubbed or missing terms.
@@ -56,7 +58,7 @@ def compute_cost_controlled_surplus(
     *,
     conn: duckdb.DuckDBPyConnection | None = None,
 ) -> tuple[float, str]:
-    """Compute term 1: realized WAR × $/WAR − actual salary during cost-control period.
+    """Compute term 1: realized WAR x $/WAR - actual salary during cost-control period.
 
     Queries ``trade_player_war_window`` for realized WAR and joins to
     ``bwar_batting`` / ``bwar_pitching`` for salary data. If salary is missing
@@ -136,7 +138,10 @@ def compute_cost_controlled_surplus(
     ).fetchone()
 
     if rows is None or rows[0] is None:
-        return 0.0, f"no players found for trade_event_id={trade_event_id}, receiver={receiver_bref}"
+        return (
+            0.0,
+            f"no players found for trade_event_id={trade_event_id}, receiver={receiver_bref}",
+        )
 
     total_war: float = float(rows[0]) if rows[0] is not None else 0.0
     total_salary: float = float(rows[1]) if rows[1] is not None else 0.0

@@ -278,18 +278,259 @@ def _upsert_oaa(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> 
         conn.unregister("_staging_oaa")
 
 
+def ingest_sprint_speed_year(year: int) -> int:
+    """Pull Statcast sprint speed leaderboard for one year and upsert."""
+    from pybaseball import statcast_sprint_speed
+
+    df = statcast_sprint_speed(year)
+    if df.empty:
+        logger.warning("sprint speed empty for %d", year)
+        return 0
+
+    rows: list[dict[str, Any]] = []
+    for r in df.itertuples(index=False):
+        rows.append(
+            {
+                "player_id": int(r.player_id),
+                "player_name": getattr(r, "_0", None),
+                "year": year,
+                "sprint_speed": _safe_float(getattr(r, "sprint_speed", None)),
+                "competitive_runs": int(r.competitive_runs) if r.competitive_runs else None,
+                "source": SOURCE,
+            }
+        )
+
+    with db.connect() as conn:
+        schemas.initialize(conn)
+        _upsert_sprint_speed(conn, rows)
+    logger.info("ingested %d sprint-speed rows for %d", len(rows), year)
+    return len(rows)
+
+
+def _upsert_sprint_speed(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
+    if not rows:
+        return
+    import pandas as pd
+
+    df = pd.DataFrame(rows)
+    conn.register("_staging_ss", df)
+    try:
+        conn.execute(
+            "INSERT INTO statcast_sprint_speed "
+            "(player_id, player_name, year, sprint_speed, competitive_runs, source) "
+            "SELECT player_id, player_name, year, sprint_speed, competitive_runs, source "
+            "FROM _staging_ss "
+            "ON CONFLICT (player_id, year) DO NOTHING"
+        )
+    finally:
+        conn.unregister("_staging_ss")
+
+
+def ingest_batter_exitvelo_year(year: int) -> int:
+    """Pull Statcast batter exit-velocity + barrels leaderboard for one year and upsert."""
+    from pybaseball import statcast_batter_exitvelo_barrels
+
+    df = statcast_batter_exitvelo_barrels(year)
+    if df.empty:
+        logger.warning("batter exit-velo empty for %d", year)
+        return 0
+
+    rows: list[dict[str, Any]] = []
+    for r in df.itertuples(index=False):
+        rows.append(
+            {
+                "player_id": int(r.player_id),
+                "player_name": getattr(r, "_0", None),
+                "year": year,
+                "attempts": int(r.attempts) if r.attempts else None,
+                "avg_hit_speed": _safe_float(getattr(r, "avg_hit_speed", None)),
+                "max_hit_speed": _safe_float(getattr(r, "max_hit_speed", None)),
+                "barrels": int(r.barrels) if r.barrels else None,
+                "brl_percent": _safe_float(getattr(r, "brl_percent", None)),
+                "source": SOURCE,
+            }
+        )
+
+    with db.connect() as conn:
+        schemas.initialize(conn)
+        _upsert_batter_exitvelo(conn, rows)
+    logger.info("ingested %d batter exit-velo rows for %d", len(rows), year)
+    return len(rows)
+
+
+def _upsert_batter_exitvelo(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
+    if not rows:
+        return
+    import pandas as pd
+
+    df = pd.DataFrame(rows)
+    conn.register("_staging_ev", df)
+    try:
+        conn.execute(
+            "INSERT INTO statcast_batter_exitvelo_barrels "
+            "(player_id, player_name, year, attempts, avg_hit_speed, max_hit_speed, "
+            "barrels, brl_percent, source) "
+            "SELECT player_id, player_name, year, attempts, avg_hit_speed, max_hit_speed, "
+            "barrels, brl_percent, source "
+            "FROM _staging_ev "
+            "ON CONFLICT (player_id, year) DO NOTHING"
+        )
+    finally:
+        conn.unregister("_staging_ev")
+
+
+def _safe_int(v: Any) -> int | None:
+    """Coerce Savant string-or-NaN to int."""
+    f = _safe_float(v)
+    return int(f) if f is not None else None
+
+
+def ingest_catcher_poptime_year(year: int) -> int:
+    """Pull Statcast catcher pop-time leaderboard for one year and upsert."""
+    from pybaseball import statcast_catcher_poptime
+
+    df = statcast_catcher_poptime(year)
+    if df.empty:
+        logger.warning("catcher poptime empty for %d", year)
+        return 0
+
+    rows: list[dict[str, Any]] = []
+    for rec in df.to_dict("records"):
+        rows.append(
+            {
+                "player_id": _safe_int(rec.get("entity_id")),
+                "player_name": rec.get("entity_name"),
+                "year": year,
+                "team_id": _safe_int(rec.get("team_id")),
+                "age": _safe_int(rec.get("age")),
+                "maxeff_arm_2b_3b_sba": _safe_float(rec.get("maxeff_arm_2b_3b_sba")),
+                "exchange_2b_3b_sba": _safe_float(rec.get("exchange_2b_3b_sba")),
+                "pop_2b_sba_count": _safe_int(rec.get("pop_2b_sba_count")),
+                "pop_2b_sba": _safe_float(rec.get("pop_2b_sba")),
+                "pop_2b_cs": _safe_float(rec.get("pop_2b_cs")),
+                "pop_2b_sb": _safe_float(rec.get("pop_2b_sb")),
+                "pop_3b_sba_count": _safe_int(rec.get("pop_3b_sba_count")),
+                "pop_3b_sba": _safe_float(rec.get("pop_3b_sba")),
+                "pop_3b_cs": _safe_float(rec.get("pop_3b_cs")),
+                "pop_3b_sb": _safe_float(rec.get("pop_3b_sb")),
+                "source": SOURCE,
+            }
+        )
+
+    rows = [r for r in rows if r["player_id"] is not None]
+    with db.connect() as conn:
+        schemas.initialize(conn)
+        _upsert_catcher_poptime(conn, rows)
+    logger.info("ingested %d catcher-poptime rows for %d", len(rows), year)
+    return len(rows)
+
+
+def _upsert_catcher_poptime(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
+    if not rows:
+        return
+    import pandas as pd
+
+    cols = (
+        "player_id, player_name, year, team_id, age, maxeff_arm_2b_3b_sba, "
+        "exchange_2b_3b_sba, pop_2b_sba_count, pop_2b_sba, pop_2b_cs, pop_2b_sb, "
+        "pop_3b_sba_count, pop_3b_sba, pop_3b_cs, pop_3b_sb, source"
+    )
+    df = pd.DataFrame(rows)
+    conn.register("_staging_pt", df)
+    try:
+        conn.execute(
+            f"INSERT INTO statcast_catcher_poptime ({cols}) SELECT {cols} "
+            f"FROM _staging_pt ON CONFLICT (player_id, year) DO NOTHING"
+        )
+    finally:
+        conn.unregister("_staging_pt")
+
+
+def ingest_outfielder_jump_year(year: int) -> int:
+    """Pull Statcast outfielder jump leaderboard for one year and upsert."""
+    from pybaseball import statcast_outfielder_jump
+
+    df = statcast_outfielder_jump(year)
+    if df.empty:
+        logger.warning("outfielder jump empty for %d", year)
+        return 0
+
+    _rel_cols = (
+        "rel_league_burst_distance",
+        "rel_league_reaction_distance",
+        "rel_league_routing_distance",
+        "rel_league_bootup_distance",
+    )
+    rows: list[dict[str, Any]] = []
+    for rec in df.to_dict("records"):
+        row = {
+            "player_id": _safe_int(rec.get("resp_fielder_id")),
+            "player_name": rec.get("last_name, first_name"),
+            "year": _safe_int(rec.get("year")) or year,
+            "outs_above_average": _safe_int(rec.get("outs_above_average")),
+            "outs_per_play": _safe_float(rec.get("outs_per_play")),
+            "f_bootup_distance": _safe_float(rec.get("f_bootup_distance")),
+            "n": _safe_int(rec.get("n")),
+            "n_outs": _safe_int(rec.get("n_outs")),
+            "source": SOURCE,
+        }
+        row.update({c: _safe_float(rec.get(c)) for c in _rel_cols})
+        rows.append(row)
+
+    rows = [r for r in rows if r["player_id"] is not None]
+    with db.connect() as conn:
+        schemas.initialize(conn)
+        _upsert_outfielder_jump(conn, rows)
+    logger.info("ingested %d outfielder-jump rows for %d", len(rows), year)
+    return len(rows)
+
+
+def _upsert_outfielder_jump(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
+    if not rows:
+        return
+    import pandas as pd
+
+    cols = (
+        "player_id, player_name, year, outs_above_average, outs_per_play, "
+        "rel_league_burst_distance, rel_league_reaction_distance, "
+        "rel_league_routing_distance, rel_league_bootup_distance, "
+        "f_bootup_distance, n, n_outs, source"
+    )
+    df = pd.DataFrame(rows)
+    conn.register("_staging_ofj", df)
+    try:
+        conn.execute(
+            f"INSERT INTO statcast_outfielder_jump ({cols}) SELECT {cols} "
+            f"FROM _staging_ofj ON CONFLICT (player_id, year) DO NOTHING"
+        )
+    finally:
+        conn.unregister("_staging_ofj")
+
+
 def ingest_all_for_year(year: int) -> dict[str, int]:
-    """Ingest all three Statcast-extended sources for one year."""
+    """Ingest all Statcast-extended sources for one year."""
     return {
         "batter_percentile": ingest_batter_percentile_ranks_year(year),
         "pitcher_arsenal": ingest_pitcher_arsenal_year(year),
         "oaa": ingest_oaa_year(year),
+        "sprint_speed": ingest_sprint_speed_year(year),
+        "batter_exitvelo": ingest_batter_exitvelo_year(year),
+        "catcher_poptime": ingest_catcher_poptime_year(year),
+        "outfielder_jump": ingest_outfielder_jump_year(year),
     }
 
 
 def ingest_range(start: int, end: int) -> dict[str, int]:
-    """Ingest all three Statcast-extended sources across a year range."""
-    totals = {"batter_percentile": 0, "pitcher_arsenal": 0, "oaa": 0}
+    """Ingest all Statcast-extended sources across a year range."""
+    totals = {
+        "batter_percentile": 0,
+        "pitcher_arsenal": 0,
+        "oaa": 0,
+        "sprint_speed": 0,
+        "batter_exitvelo": 0,
+        "catcher_poptime": 0,
+        "outfielder_jump": 0,
+    }
     for year in range(start, end + 1):
         result = ingest_all_for_year(year)
         for k, v in result.items():

@@ -19,7 +19,7 @@ from __future__ import annotations
 import logging
 import re
 import unicodedata
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -38,6 +38,13 @@ def _get(path: str) -> list[dict[str, Any]]:
     resp = httpx.get(url, timeout=TIMEOUT, follow_redirects=True)
     resp.raise_for_status()
     return resp.json()
+
+
+def _get_dict(path: str) -> dict[str, Any]:
+    url = f"{BASE_URL}/{path}"
+    resp = httpx.get(url, timeout=TIMEOUT, follow_redirects=True)
+    resp.raise_for_status()
+    return resp.json()  # type: ignore[return-value]
 
 
 def _normalize(name: str) -> str:
@@ -74,28 +81,30 @@ def ingest_rankings(fetched_at: datetime | None = None) -> int:
         Number of rows inserted.
     """
     if fetched_at is None:
-        fetched_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        fetched_at = datetime.now(UTC).replace(tzinfo=None)
 
     raw = _get("rankings")
     rows = []
     for r in raw:
-        rows.append({
-            "fetched_at": fetched_at,
-            "player_id": str(r["player_id"]),
-            "rank_value": _coerce_int(r.get("rank_value")),
-            "prev_rank": _coerce_int(r.get("prev_rank")),
-            "player_name": r.get("name", "").strip(),
-            "player_name_norm": _normalize(r.get("name", "")),
-            "position": r.get("position", "").strip() or None,
-            "parent_org_id": str(r["parent_org_id"]) if r.get("parent_org_id") else None,
-            "fv": _coerce_float(r.get("fv")),
-            "age": _coerce_float(r.get("age")),
-            "height": r.get("height", "").strip() or None,
-            "weight": _coerce_float(r.get("weight")),
-            "bat_side": r.get("bat_side", "").strip() or None,
-            "throw_side": r.get("throw_side", "").strip() or None,
-            "report": (r.get("report") or "").strip() or None,
-        })
+        rows.append(
+            {
+                "fetched_at": fetched_at,
+                "player_id": str(r["player_id"]),
+                "rank_value": _coerce_int(r.get("rank_value")),
+                "prev_rank": _coerce_int(r.get("prev_rank")),
+                "player_name": r.get("name", "").strip(),
+                "player_name_norm": _normalize(r.get("name", "")),
+                "position": r.get("position", "").strip() or None,
+                "parent_org_id": str(r["parent_org_id"]) if r.get("parent_org_id") else None,
+                "fv": _coerce_float(r.get("fv")),
+                "age": _coerce_float(r.get("age")),
+                "height": r.get("height", "").strip() or None,
+                "weight": _coerce_float(r.get("weight")),
+                "bat_side": r.get("bat_side", "").strip() or None,
+                "throw_side": r.get("throw_side", "").strip() or None,
+                "report": (r.get("report") or "").strip() or None,
+            }
+        )
 
     if not rows:
         logger.warning("rankings endpoint returned 0 rows")
@@ -128,36 +137,38 @@ def ingest_rankings(fetched_at: datetime | None = None) -> int:
 def ingest_scout_pitchers(fetched_at: datetime | None = None) -> int:
     """Fetch /scout-pitchers and insert into tjstats_scout_pitchers."""
     if fetched_at is None:
-        fetched_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        fetched_at = datetime.now(UTC).replace(tzinfo=None)
 
     raw = _get("scout-pitchers")
     rows = []
     for r in raw:
-        rows.append({
-            "fetched_at": fetched_at,
-            "player_id": str(r["player_id"]),
-            "player_name": (r.get("fullName") or r.get("player", "")).strip() or None,
-            "rank_value": _coerce_int(r.get("rank_value")),
-            "fv": _coerce_float(r.get("fv")),
-            "fastball_pv": _coerce_float(r.get("fastball_pv")),
-            "fastball_fv": _coerce_float(r.get("fastball_fv")),
-            "cutter_pv": _coerce_float(r.get("cutter_pv")),
-            "cutter_fv": _coerce_float(r.get("cutter_fv")),
-            "slider_pv": _coerce_float(r.get("slider_pv")),
-            "slider_fv": _coerce_float(r.get("slider_fv")),
-            "curveball_pv": _coerce_float(r.get("curveball_pv")),
-            "curveball_fv": _coerce_float(r.get("curveball_fv")),
-            "changeup_pv": _coerce_float(r.get("changeup_pv")),
-            "changeup_fv": _coerce_float(r.get("changeup_fv")),
-            "splitter_pv": _coerce_float(r.get("splitter_pv")),
-            "splitter_fv": _coerce_float(r.get("splitter_fv")),
-            "command_pv": _coerce_float(r.get("command_pv")),
-            "command_fv": _coerce_float(r.get("command_fv")),
-            "eta": _coerce_int(r.get("eta")),
-            "risk": (r.get("risk") or "").strip() or None,
-            "report": (r.get("report") or "").strip() or None,
-            "report_date": r.get("report_date") or None,
-        })
+        rows.append(
+            {
+                "fetched_at": fetched_at,
+                "player_id": str(r["player_id"]),
+                "player_name": (r.get("fullName") or r.get("player", "")).strip() or None,
+                "rank_value": _coerce_int(r.get("rank_value")),
+                "fv": _coerce_float(r.get("fv")),
+                "fastball_pv": _coerce_float(r.get("fastball_pv")),
+                "fastball_fv": _coerce_float(r.get("fastball_fv")),
+                "cutter_pv": _coerce_float(r.get("cutter_pv")),
+                "cutter_fv": _coerce_float(r.get("cutter_fv")),
+                "slider_pv": _coerce_float(r.get("slider_pv")),
+                "slider_fv": _coerce_float(r.get("slider_fv")),
+                "curveball_pv": _coerce_float(r.get("curveball_pv")),
+                "curveball_fv": _coerce_float(r.get("curveball_fv")),
+                "changeup_pv": _coerce_float(r.get("changeup_pv")),
+                "changeup_fv": _coerce_float(r.get("changeup_fv")),
+                "splitter_pv": _coerce_float(r.get("splitter_pv")),
+                "splitter_fv": _coerce_float(r.get("splitter_fv")),
+                "command_pv": _coerce_float(r.get("command_pv")),
+                "command_fv": _coerce_float(r.get("command_fv")),
+                "eta": _coerce_int(r.get("eta")),
+                "risk": (r.get("risk") or "").strip() or None,
+                "report": (r.get("report") or "").strip() or None,
+                "report_date": r.get("report_date") or None,
+            }
+        )
 
     if not rows:
         logger.warning("scout-pitchers endpoint returned 0 rows")
@@ -194,32 +205,34 @@ def ingest_scout_pitchers(fetched_at: datetime | None = None) -> int:
 def ingest_scout_batters(fetched_at: datetime | None = None) -> int:
     """Fetch /scout-batters and insert into tjstats_scout_batters."""
     if fetched_at is None:
-        fetched_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        fetched_at = datetime.now(UTC).replace(tzinfo=None)
 
     raw = _get("scout-batters")
     rows = []
     for r in raw:
-        rows.append({
-            "fetched_at": fetched_at,
-            "player_id": str(r["player_id"]),
-            "player_name": (r.get("fullName") or r.get("player", "")).strip() or None,
-            "rank_value": _coerce_int(r.get("rank_value")),
-            "fv": _coerce_float(r.get("fv")),
-            "hit_pv": _coerce_float(r.get("hit_pv")),
-            "hit_fv": _coerce_float(r.get("hit_fv")),
-            "power_pv": _coerce_float(r.get("power_pv")),
-            "power_fv": _coerce_float(r.get("power_fv")),
-            "decisions_pv": _coerce_float(r.get("decisions_pv")),
-            "decisions_fv": _coerce_float(r.get("decisions_fv")),
-            "speed_pv": _coerce_float(r.get("speed_pv")),
-            "speed_fv": _coerce_float(r.get("speed_fv")),
-            "defense_pv": _coerce_float(r.get("defense_pv")),
-            "defense_fv": _coerce_float(r.get("defense_fv")),
-            "eta": _coerce_int(r.get("eta")),
-            "risk": (r.get("risk") or "").strip() or None,
-            "report": (r.get("report") or "").strip() or None,
-            "report_date": r.get("report_date") or None,
-        })
+        rows.append(
+            {
+                "fetched_at": fetched_at,
+                "player_id": str(r["player_id"]),
+                "player_name": (r.get("fullName") or r.get("player", "")).strip() or None,
+                "rank_value": _coerce_int(r.get("rank_value")),
+                "fv": _coerce_float(r.get("fv")),
+                "hit_pv": _coerce_float(r.get("hit_pv")),
+                "hit_fv": _coerce_float(r.get("hit_fv")),
+                "power_pv": _coerce_float(r.get("power_pv")),
+                "power_fv": _coerce_float(r.get("power_fv")),
+                "decisions_pv": _coerce_float(r.get("decisions_pv")),
+                "decisions_fv": _coerce_float(r.get("decisions_fv")),
+                "speed_pv": _coerce_float(r.get("speed_pv")),
+                "speed_fv": _coerce_float(r.get("speed_fv")),
+                "defense_pv": _coerce_float(r.get("defense_pv")),
+                "defense_fv": _coerce_float(r.get("defense_fv")),
+                "eta": _coerce_int(r.get("eta")),
+                "risk": (r.get("risk") or "").strip() or None,
+                "report": (r.get("report") or "").strip() or None,
+                "report_date": r.get("report_date") or None,
+            }
+        )
 
     if not rows:
         logger.warning("scout-batters endpoint returned 0 rows")
@@ -251,8 +264,104 @@ def ingest_scout_batters(fetched_at: datetime | None = None) -> int:
     return n
 
 
+def ingest_tjbat(fetched_at: datetime | None = None) -> int:
+    """Fetch /tjbat for every prospect in tjstats_prospect_rankings and insert.
+
+    Iterates over all distinct player_ids from the most-recent rankings snapshot,
+    calls the per-player endpoint, and upserts each (player, season, level) row
+    into tjstats_tjbat. Players with empty rows are silently skipped.
+
+    Args:
+        fetched_at: Snapshot timestamp. Defaults to now (UTC).
+
+    Returns:
+        Total number of rows inserted across all players.
+    """
+    import time
+
+    if fetched_at is None:
+        fetched_at = datetime.now(UTC).replace(tzinfo=None)
+
+    with db.connect(read_only=True) as conn:
+        player_ids: list[str] = [
+            r[0]
+            for r in conn.execute("""
+                SELECT DISTINCT player_id
+                FROM tjstats_prospect_rankings
+                WHERE fetched_at = (SELECT MAX(fetched_at) FROM tjstats_prospect_rankings)
+            """).fetchall()
+        ]
+
+    if not player_ids:
+        logger.warning("tjstats_prospect_rankings is empty — run ingest_rankings first")
+        return 0
+
+    logger.info("fetching tjbat+ for %d prospects", len(player_ids))
+    all_rows: list[dict[str, Any]] = []
+    for pid in player_ids:
+        url = f"tjbat?player_id={pid}"
+        try:
+            data = _get_dict(url)
+        except httpx.HTTPError as exc:
+            logger.warning("tjbat fetch failed for player_id=%s: %s", pid, exc)
+            continue
+        for r in data.get("rows", []):
+            season = _coerce_int(r.get("season"))
+            level = (r.get("level") or "").strip() or None
+            if season is None or level is None:
+                continue
+            all_rows.append(
+                {
+                    "fetched_at": fetched_at,
+                    "player_id": str(pid),
+                    "season": season,
+                    "level": level,
+                    "pa": _coerce_int(r.get("pa")),
+                    "woba_plus": _coerce_float(r.get("woba_plus")),
+                    "tjbat_plus": _coerce_float(r.get("tjbat_plus")),
+                    "tjbat_plus_pctile": _coerce_int(r.get("tjbat_plus_pctile")),
+                    "woba_plus_pctile": _coerce_int(r.get("woba_plus_pctile")),
+                    "pool_size": _coerce_int(r.get("pool_size")),
+                    "source": "tjstats",
+                }
+            )
+        time.sleep(0.15)
+
+    if not all_rows:
+        logger.warning("tjbat returned 0 data rows across all prospects")
+        return 0
+
+    df = pd.DataFrame(all_rows)
+    with db.connect() as conn:
+        conn.register("_staging_tjbat", df)
+        try:
+            conn.execute("""
+                INSERT INTO tjstats_tjbat
+                    (fetched_at, player_id, season, level, pa,
+                     woba_plus, tjbat_plus, tjbat_plus_pctile, woba_plus_pctile,
+                     pool_size, source)
+                SELECT
+                    fetched_at, player_id, season, level, pa,
+                    woba_plus, tjbat_plus, tjbat_plus_pctile, woba_plus_pctile,
+                    pool_size, source
+                FROM _staging_tjbat
+                ON CONFLICT (fetched_at, player_id, season, level) DO NOTHING
+            """)
+        finally:
+            conn.unregister("_staging_tjbat")
+        n = len(all_rows)
+
+    logger.info(
+        "ingested %d tjbat+ rows for %d prospects (snapshot %s)",
+        n,
+        len(player_ids),
+        fetched_at.date(),
+    )
+    return n
+
+
 def ingest_all(fetched_at: datetime | None = None) -> dict[str, int]:
-    """Fetch and ingest all three TJStats endpoints in a single snapshot.
+    """Fetch and ingest all TJStats endpoints in a single snapshot.
 
     Args:
         fetched_at: Shared snapshot timestamp. Defaults to now (UTC).
@@ -261,9 +370,10 @@ def ingest_all(fetched_at: datetime | None = None) -> dict[str, int]:
         Dict of {endpoint_name: rows_inserted}.
     """
     if fetched_at is None:
-        fetched_at = datetime.now(timezone.utc).replace(tzinfo=None)
+        fetched_at = datetime.now(UTC).replace(tzinfo=None)
     return {
         "rankings": ingest_rankings(fetched_at),
         "scout_pitchers": ingest_scout_pitchers(fetched_at),
         "scout_batters": ingest_scout_batters(fetched_at),
+        "tjbat": ingest_tjbat(fetched_at),
     }

@@ -27,7 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-import pandas as pd  # noqa: E402
+import pandas as pd
 import pymc as pm
 
 from savage_trade_evaluator.modeling.v2.backtest import (
@@ -38,7 +38,11 @@ from savage_trade_evaluator.modeling.v2.features import (
     ACQUIRED_PLAYER_FEATURES,
     ALL_FEATURES,
 )
-from savage_trade_evaluator.modeling.v2.outcomes import build_outcomes, build_outcomes_windowed
+from savage_trade_evaluator.modeling.v2.outcomes import (
+    build_outcomes,
+    build_outcomes_fg,
+    build_outcomes_windowed,
+)
 
 # Q-07: war_delta skips the transition year (T+1) — 30% MAE improvement.
 # Q-02: extending to T+5 adds further credible features (11 vs 6 at T+1..T+3).
@@ -55,8 +59,6 @@ def _build_v3_outcomes() -> pd.DataFrame:
     dollar_surplus → T+1..T+3 (standard; shifting hurts it per Q-07)
     xwoba_delta, kpct_delta → from standard build_outcomes()
     """
-    import pandas as pd
-
     # Standard outcomes for xwoba_delta + kpct_delta + dollar_surplus + surplus_wins(T+1..T+3)
     std = build_outcomes()
     # war_delta + surplus_wins from T+2..T+5 — surplus_wins uses same window so pre-arb
@@ -68,7 +70,10 @@ def _build_v3_outcomes() -> pd.DataFrame:
     merged = std.drop(columns=["war_delta", "surplus_wins"]).merge(
         windowed, on=["trade_event_id", "receiver_bref", "trade_season"], how="left"
     )
-    return merged
+    fg = build_outcomes_fg()[
+        ["trade_event_id", "receiver_bref", "wrc_delta", "fip_delta", "xfip_delta", "siera_delta"]
+    ]
+    return merged.merge(fg, on=["trade_event_id", "receiver_bref"], how="left")
 
 
 def assemble_v3_combined() -> pd.DataFrame:
@@ -99,14 +104,35 @@ V3_OUTCOME_FEATURES: dict[str, tuple[str, ...]] = {
     # Uses ALL_FEATURES; same contextual signal as dollar_surplus but wins-denominated.
     "surplus_wins": ALL_FEATURES,
     # xwoba_delta EXPLORATORY-1FOLD: pitcher deployment + tech context (R-53/R-55/R-57)
-    "xwoba_delta": ACQUIRED_PLAYER_FEATURES
-    + (
+    "xwoba_delta": (
+        *ACQUIRED_PLAYER_FEATURES,
         "receiver_tech_adoption_lead_years",
         "receiver_platoon_woba_diff",
     ),
     # kpct_delta EXPLORATORY-1FOLD: pitcher-specific features only (R-57)
-    "kpct_delta": ACQUIRED_PLAYER_FEATURES
-    + (
+    "kpct_delta": (
+        *ACQUIRED_PLAYER_FEATURES,
+        "receiver_alumni_network_score",
+        "receiver_tech_adoption_lead_years",
+    ),
+    # FG alternate outcomes — exploratory, wire for metric-agnostic claim
+    "wrc_delta": (
+        *ACQUIRED_PLAYER_FEATURES,
+        "receiver_tech_adoption_lead_years",
+        "receiver_platoon_woba_diff",
+    ),
+    "fip_delta": (
+        *ACQUIRED_PLAYER_FEATURES,
+        "receiver_alumni_network_score",
+        "receiver_tech_adoption_lead_years",
+    ),
+    "xfip_delta": (
+        *ACQUIRED_PLAYER_FEATURES,
+        "receiver_alumni_network_score",
+        "receiver_tech_adoption_lead_years",
+    ),
+    "siera_delta": (
+        *ACQUIRED_PLAYER_FEATURES,
         "receiver_alumni_network_score",
         "receiver_tech_adoption_lead_years",
     ),
@@ -391,10 +417,7 @@ def backtest_outcome_v3(
     test_pred_t = predict(fit, test)
 
     # Inverse-transform predictions back to original units if needed.
-    if use_transform:
-        test_pred = _inv_signed_log(test_pred_t)
-    else:
-        test_pred = test_pred_t
+    test_pred = _inv_signed_log(test_pred_t) if use_transform else test_pred_t
     y_test = y_test_orig
 
     if use_transform:
