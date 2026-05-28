@@ -1,0 +1,472 @@
+{
+  "generated_at": "2026-05-28T04:34:25.844658+00:00",
+  "outcomes_swept": [
+    "war_delta",
+    "dollar_surplus",
+    "surplus_wins",
+    "xwoba_delta",
+    "kpct_delta",
+    "wrc_delta",
+    "fip_delta",
+    "xfip_delta",
+    "siera_delta"
+  ],
+  "n_outcomes": 9,
+  "train_window": [
+    2010,
+    2020
+  ],
+  "test_window": [
+    2021,
+    2024
+  ],
+  "findings": [
+    {
+      "feature": "receiver_pct_international_born",
+      "is_org_feature": true,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "fip_delta",
+        "xfip_delta",
+        "siera_delta"
+      ],
+      "n_credible_outcomes": 3,
+      "mean_beta": 0.0549,
+      "mean_mass": 0.9806,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.6418,
+      "per_outcome": [
+        {
+          "outcome": "fip_delta",
+          "beta": 0.0336,
+          "mass": 0.9537
+        },
+        {
+          "outcome": "xfip_delta",
+          "beta": 0.0577,
+          "mass": 0.9903
+        },
+        {
+          "outcome": "siera_delta",
+          "beta": 0.0734,
+          "mass": 0.9978
+        }
+      ]
+    },
+    {
+      "feature": "receiver_avg_age_at_trade",
+      "is_org_feature": true,
+      "is_obvious": true,
+      "credible_outcomes": [
+        "surplus_wins",
+        "wrc_delta",
+        "siera_delta"
+      ],
+      "n_credible_outcomes": 3,
+      "mean_beta": -0.0096,
+      "mean_mass": 0.9849,
+      "direction": "negative",
+      "consistent_sign": false,
+      "interestingness_score": 0.5547,
+      "per_outcome": [
+        {
+          "outcome": "surplus_wins",
+          "beta": -0.0236,
+          "mass": 1.0
+        },
+        {
+          "outcome": "wrc_delta",
+          "beta": -0.0699,
+          "mass": 0.9983
+        },
+        {
+          "outcome": "siera_delta",
+          "beta": 0.0648,
+          "mass": 0.9563
+        }
+      ]
+    },
+    {
+      "feature": "receiver_pct_pitchers",
+      "is_org_feature": true,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus",
+        "xfip_delta",
+        "siera_delta"
+      ],
+      "n_credible_outcomes": 3,
+      "mean_beta": -0.0232,
+      "mean_mass": 0.984,
+      "direction": "negative",
+      "consistent_sign": false,
+      "interestingness_score": 0.552,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.0539,
+          "mass": 0.9982
+        },
+        {
+          "outcome": "xfip_delta",
+          "beta": -0.0511,
+          "mass": 0.9647
+        },
+        {
+          "outcome": "siera_delta",
+          "beta": -0.0724,
+          "mass": 0.9892
+        }
+      ]
+    },
+    {
+      "feature": "receiver_dev_fit_hitting",
+      "is_org_feature": true,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus"
+      ],
+      "n_credible_outcomes": 1,
+      "mean_beta": 0.0278,
+      "mean_mass": 0.9797,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.539,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.0278,
+          "mass": 0.9797
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_player_quality",
+      "is_org_feature": false,
+      "is_obvious": true,
+      "credible_outcomes": [
+        "war_delta",
+        "dollar_surplus",
+        "xwoba_delta",
+        "wrc_delta",
+        "fip_delta",
+        "xfip_delta",
+        "siera_delta"
+      ],
+      "n_credible_outcomes": 7,
+      "mean_beta": 0.0054,
+      "mean_mass": 0.9934,
+      "direction": "positive",
+      "consistent_sign": false,
+      "interestingness_score": 0.4801,
+      "per_outcome": [
+        {
+          "outcome": "war_delta",
+          "beta": 0.0114,
+          "mass": 0.9943
+        },
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.101,
+          "mass": 1.0
+        },
+        {
+          "outcome": "xwoba_delta",
+          "beta": -0.0916,
+          "mass": 0.998
+        },
+        {
+          "outcome": "wrc_delta",
+          "beta": -0.1849,
+          "mass": 1.0
+        },
+        {
+          "outcome": "fip_delta",
+          "beta": 0.0399,
+          "mass": 0.9662
+        },
+        {
+          "outcome": "xfip_delta",
+          "beta": 0.0775,
+          "mass": 0.9977
+        },
+        {
+          "outcome": "siera_delta",
+          "beta": 0.0843,
+          "mass": 0.9973
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_pct_awarded",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus",
+        "xfip_delta",
+        "siera_delta"
+      ],
+      "n_credible_outcomes": 3,
+      "mean_beta": 0.1894,
+      "mean_mass": 0.9949,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.3848,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.2954,
+          "mass": 1.0
+        },
+        {
+          "outcome": "xfip_delta",
+          "beta": 0.1361,
+          "mass": 0.9945
+        },
+        {
+          "outcome": "siera_delta",
+          "beta": 0.1367,
+          "mass": 0.9903
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_avg_prior_awards",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus",
+        "xfip_delta",
+        "siera_delta"
+      ],
+      "n_credible_outcomes": 3,
+      "mean_beta": -0.1909,
+      "mean_mass": 0.9874,
+      "direction": "negative",
+      "consistent_sign": true,
+      "interestingness_score": 0.3622,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": -0.2009,
+          "mass": 0.9827
+        },
+        {
+          "outcome": "xfip_delta",
+          "beta": -0.187,
+          "mass": 0.9938
+        },
+        {
+          "outcome": "siera_delta",
+          "beta": -0.1846,
+          "mass": 0.9857
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_outfielder_oaa",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "war_delta",
+        "dollar_surplus"
+      ],
+      "n_credible_outcomes": 2,
+      "mean_beta": 0.0948,
+      "mean_mass": 0.9916,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.3247,
+      "per_outcome": [
+        {
+          "outcome": "war_delta",
+          "beta": 0.0212,
+          "mass": 0.9832
+        },
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.1685,
+          "mass": 1.0
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_barrel_rate",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus"
+      ],
+      "n_credible_outcomes": 1,
+      "mean_beta": 0.2549,
+      "mean_mass": 1.0,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.3,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.2549,
+          "mass": 1.0
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_sprint_speed",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus",
+        "surplus_wins"
+      ],
+      "n_credible_outcomes": 2,
+      "mean_beta": 0.0377,
+      "mean_mass": 0.9815,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.2945,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.0666,
+          "mass": 0.9997
+        },
+        {
+          "outcome": "surplus_wins",
+          "beta": 0.0087,
+          "mass": 0.9633
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_pitcher_k_trajectory",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "kpct_delta",
+        "fip_delta",
+        "xfip_delta",
+        "siera_delta"
+      ],
+      "n_credible_outcomes": 4,
+      "mean_beta": -0.0392,
+      "mean_mass": 0.9767,
+      "direction": "negative",
+      "consistent_sign": false,
+      "interestingness_score": 0.28,
+      "per_outcome": [
+        {
+          "outcome": "kpct_delta",
+          "beta": -0.2922,
+          "mass": 1.0
+        },
+        {
+          "outcome": "fip_delta",
+          "beta": 0.0412,
+          "mass": 0.9732
+        },
+        {
+          "outcome": "xfip_delta",
+          "beta": 0.0496,
+          "mass": 0.981
+        },
+        {
+          "outcome": "siera_delta",
+          "beta": 0.0447,
+          "mass": 0.9525
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_from_dev_cluster_score",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus"
+      ],
+      "n_credible_outcomes": 1,
+      "mean_beta": 0.0301,
+      "mean_mass": 0.9882,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.2645,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.0301,
+          "mass": 0.9882
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_milb_age_advantage",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus"
+      ],
+      "n_credible_outcomes": 1,
+      "mean_beta": 0.0409,
+      "mean_mass": 0.9837,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.251,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.0409,
+          "mass": 0.9837
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_catcher_poptime",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus"
+      ],
+      "n_credible_outcomes": 1,
+      "mean_beta": 0.0615,
+      "mean_mass": 0.9743,
+      "direction": "positive",
+      "consistent_sign": true,
+      "interestingness_score": 0.223,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": 0.0615,
+          "mass": 0.9743
+        }
+      ]
+    },
+    {
+      "feature": "receiver_acquired_pitcher_arsenal_volatility",
+      "is_org_feature": false,
+      "is_obvious": false,
+      "credible_outcomes": [
+        "dollar_surplus",
+        "wrc_delta"
+      ],
+      "n_credible_outcomes": 2,
+      "mean_beta": -0.0094,
+      "mean_mass": 0.9749,
+      "direction": "negative",
+      "consistent_sign": false,
+      "interestingness_score": 0.1748,
+      "per_outcome": [
+        {
+          "outcome": "dollar_surplus",
+          "beta": -0.1215,
+          "mass": 0.9515
+        },
+        {
+          "outcome": "wrc_delta",
+          "beta": 0.1028,
+          "mass": 0.9983
+        }
+      ]
+    }
+  ]
+}

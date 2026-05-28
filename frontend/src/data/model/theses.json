@@ -1,0 +1,134 @@
+{
+  "generated_at": "2026-05-28T04:45:00+00:00",
+  "n_findings_considered": 15,
+  "theses": [
+    {
+      "id": "t001",
+      "headline": "International roster share predicts acquired pitcher ERA gains across three independent metrics.",
+      "mechanism": "Organizations that develop and retain international pitchers likely have infrastructure advantages — bilingual coaching, specialized biomechanics staff, willingness to work with unconventional deliveries — that transfer directly to acquired pitchers. The signal clears FIP, xFIP, and SIERA independently, so this is not a park effect or sample artifact.",
+      "analyst_note": "Three ERA-family metrics, consistent positive sign, directional mass between 95% and 99.8%. That is about as clean as this dataset produces. The obvious confound is market size: large-market teams both sign international talent and have richer support infrastructure. Stratify by payroll quintile before acting on this. If the effect survives that partition, it is exploitable.",
+      "evidence": {
+        "feature": "receiver_pct_international_born",
+        "outcomes": ["fip_delta", "xfip_delta", "siera_delta"],
+        "direction": "positive",
+        "mean_beta": 0.0549,
+        "mean_mass": 0.9806,
+        "n_credible_outcomes": 3
+      },
+      "interestingness_score": 0.6418,
+      "priority": "investigate"
+    },
+    {
+      "id": "t002",
+      "headline": "Pitcher-heavy rosters extract more dollar value from trades but worse ERA outcomes — the same acquisitions produce opposite results depending on what you measure.",
+      "mechanism": "Pitcher-heavy acquiring teams are likely getting position players to fill roster gaps, not additional starters. Dollar surplus from those position players accrues even as team ERA does not improve. Alternatively, acquired pitchers landing in rotation-deep organizations absorb into relief roles where ERA metrics deteriorate relative to their pre-trade baseline.",
+      "analyst_note": "Dollar surplus positive (+0.054, 99.8% mass), xFIP negative (−0.051, 96.5% mass), SIERA negative (−0.072, 98.9% mass). That sign split across outcomes is not sampling noise — it is a structural pattern. The working hypothesis is that this feature proxies for roster need, not pitcher quality. Decompose by position type of the acquired player and the signal should sharpen considerably.",
+      "evidence": {
+        "feature": "receiver_pct_pitchers",
+        "outcomes": ["dollar_surplus", "xfip_delta", "siera_delta"],
+        "direction": "negative",
+        "mean_beta": -0.0232,
+        "mean_mass": 0.984,
+        "n_credible_outcomes": 3
+      },
+      "interestingness_score": 0.552,
+      "priority": "monitor"
+    },
+    {
+      "id": "t003",
+      "headline": "Acquired player quality predicts WAR and dollar gains but wRC+ decline — the same players improve on counting stats while regressing on rate stats.",
+      "mechanism": "High-quality hitters are acquired at or near their wRC+ peak. Post-trade regression to league average is mechanical for rate metrics. WAR aggregates defense and baserunning where peak regression is less severe, so the same player generates WAR surplus while posting a negative wRC+ delta. The model is finding that wRC+ and WAR capture different performance dimensions post-trade.",
+      "analyst_note": "The wrc_delta coefficient is −0.185 with 100% directional mass. That is the largest hitter regression signal in this dataset. It does not appear in WAR delta, which implies defense and baserunning are compensating, or that WAR is picking up something wRC+ misses in the transition year. The sell-high implication is specific: trading peak wRC+ hitters is rational even when their total WAR holds.",
+      "evidence": {
+        "feature": "receiver_acquired_player_quality",
+        "outcomes": ["war_delta", "dollar_surplus", "xwoba_delta", "wrc_delta", "fip_delta", "xfip_delta", "siera_delta"],
+        "direction": "positive",
+        "mean_beta": 0.0054,
+        "mean_mass": 0.9934,
+        "n_credible_outcomes": 7
+      },
+      "interestingness_score": 0.4801,
+      "priority": "investigate"
+    },
+    {
+      "id": "t004",
+      "headline": "Breadth of award history across acquired players predicts better ERA and dollar surplus — acquiring several decorated contributors outperforms acquiring one star.",
+      "mechanism": "Players with any award history in aggregate signal that a trade is acquiring genuine production rather than a star with a suppressed supporting cast. Multiple award-tier acquisitions may also indicate a team is getting fundamentally sound contributors rather than one peak-value name whose credentials are priced into the ask.",
+      "analyst_note": "Consistent positive sign across dollar surplus, xFIP, and SIERA. The finding only becomes interpretable when read alongside avg_prior_awards (below), which is negative. Breadth is rewarded; depth is penalized. If that holds up, it describes a specific market inefficiency: teams overpay for award pedigree depth and underpay for breadth.",
+      "evidence": {
+        "feature": "receiver_acquired_pct_awarded",
+        "outcomes": ["dollar_surplus", "xfip_delta", "siera_delta"],
+        "direction": "positive",
+        "mean_beta": 0.1894,
+        "mean_mass": 0.9949,
+        "n_credible_outcomes": 3
+      },
+      "interestingness_score": 0.3848,
+      "priority": "investigate"
+    },
+    {
+      "id": "t005",
+      "headline": "Higher average award prestige among acquired players predicts worse ERA and dollar outcomes — teams paying for star pedigree depth underperform.",
+      "mechanism": "Players with elite award histories are acquired at or near peak market value and subsequently regress. The award credential is a trailing indicator that inflates trade cost relative to forward performance. This is distinct from having many award-tier players — average prestige depth is the liability, not award history itself.",
+      "analyst_note": "Consistent negative sign on all three outcomes, 98-99% directional mass, betas tightly clustered around −0.185 to −0.201. Paired with pct_awarded this is a coherent finding: the market prices award quality wrong in a specific direction — it discounts breadth and overweights a single decorated acquisition. That is a testable procurement hypothesis. Worth running against salary data to see if the overpay is visible in dollar terms.",
+      "evidence": {
+        "feature": "receiver_acquired_avg_prior_awards",
+        "outcomes": ["dollar_surplus", "xfip_delta", "siera_delta"],
+        "direction": "negative",
+        "mean_beta": -0.1909,
+        "mean_mass": 0.9874,
+        "n_credible_outcomes": 3
+      },
+      "interestingness_score": 0.3622,
+      "priority": "investigate"
+    },
+    {
+      "id": "t006",
+      "headline": "Acquired outfielder jump OAA reads through to WAR and dollar surplus — defensive value does not discount on change of scenery.",
+      "mechanism": "Jump and route efficiency (OAA) is a physical skill that travels with the player independently of park or system context. Outfielders with elite jump scores generate WAR through defense in any environment, and the trade market appears not to fully price that into the ask.",
+      "analyst_note": "Two outcomes, consistent positive sign, both above 98% mass. Dollar surplus beta (0.169) is substantially larger than WAR beta (0.021), which suggests defensive value is either being capitalized at above-market rates in salary negotiations, or that outfield defense is picking up value not reflected in WAR. The interesting follow-up: does the effect hold controlling for park transition from pitcher-friendly to hitter-friendly parks?",
+      "evidence": {
+        "feature": "receiver_acquired_outfielder_oaa",
+        "outcomes": ["war_delta", "dollar_surplus"],
+        "direction": "positive",
+        "mean_beta": 0.0948,
+        "mean_mass": 0.9916,
+        "n_credible_outcomes": 2
+      },
+      "interestingness_score": 0.3247,
+      "priority": "monitor"
+    },
+    {
+      "id": "t007",
+      "headline": "Pre-trade barrel rate is the strongest single coefficient in the dollar surplus model — hard contact quality predicts earnings, not just production.",
+      "mechanism": "Barrel rate captures contact quality on optimal launch angles in a way that is park-neutral and resilient to defensive alignment. It may be a leading indicator of sustained hitting contribution that trade evaluators discount relative to counting stats at the time of acquisition, creating a systematic surplus opportunity for teams that price it correctly.",
+      "analyst_note": "Beta of 0.255 with 100% directional mass on dollar surplus. Only one outcome, which is the reason this is monitor-tier rather than investigate. The specificity is informative though — barrel rate predicts earning power without predicting WAR, which suggests a salary-market inefficiency rather than a performance inefficiency. Worth testing directly against contract values to see if the dollar surplus is being captured through favorable salary terms.",
+      "evidence": {
+        "feature": "receiver_acquired_barrel_rate",
+        "outcomes": ["dollar_surplus"],
+        "direction": "positive",
+        "mean_beta": 0.2549,
+        "mean_mass": 1.0,
+        "n_credible_outcomes": 1
+      },
+      "interestingness_score": 0.3,
+      "priority": "monitor"
+    },
+    {
+      "id": "t008",
+      "headline": "Rising K% trajectory predicts ERA metric gains and K% regression simultaneously — pitchers on a strikeout spike sustain quality without sustaining the strikeout rate.",
+      "mechanism": "Pitchers adding a new pitch or increasing usage of swing-and-miss stuff see K% spike into the trade window. The market prices that K% into the ask. Post-trade, opposing hitters adjust and K% normalizes — but the underlying ERA quality (FIP, xFIP, SIERA) holds because the new pitch is real. The strikeout peak was the ceiling; the pitch development was the floor.",
+      "analyst_note": "kpct_delta beta is −0.292, 100% mass — the K% regression is definitive. FIP/xFIP/SIERA betas are all positive (+0.041 to +0.050). That sign split is the finding. The sell-high story from the Research log (Station 2) describes the K% decline but does not account for ERA stability. The practical implication inverts the conventional read: you are not buying a mirage when you acquire a K% spike pitcher — you are buying a pitcher whose strikeout rate will normalize while his ERA holds.",
+      "evidence": {
+        "feature": "receiver_acquired_pitcher_k_trajectory",
+        "outcomes": ["kpct_delta", "fip_delta", "xfip_delta", "siera_delta"],
+        "direction": "negative",
+        "mean_beta": -0.0392,
+        "mean_mass": 0.9767,
+        "n_credible_outcomes": 4
+      },
+      "interestingness_score": 0.28,
+      "priority": "investigate"
+    }
+  ]
+}
