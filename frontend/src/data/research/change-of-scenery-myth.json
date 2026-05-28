@@ -1,0 +1,102 @@
+{
+  "slug": "change-of-scenery-myth",
+  "title": "Change of Scenery Is a Myth",
+  "subtitle": "When a player is traded, his rate stats revert toward the mean — and which team acquires him explains essentially none of it. Four independent ways of looking for a destination effect all come up empty. The new org doesn't transform the player. Regression does.",
+  "published_at": "2026-05-28",
+  "tags": ["trade-evaluation", "regression-to-mean", "player-development", "methodology", "myth-busting"],
+  "read_time_minutes": 9,
+  "sections": [
+    {
+      "type": "prose",
+      "content": "Every deadline, the same sentence gets written about the team that just acquired a struggling player: \"a change of scenery could be exactly what he needs.\" The idea is intuitive and nearly universal — a new pitching coach, a new park, a new clubhouse, a new development system will unlock something the old team couldn't. Front offices invoke it to justify buying low. Broadcasters invoke it to explain a hot streak. It is one of the most durable beliefs in the sport.\n\nIt does not survive contact with the data. Post-trade performance is overwhelmingly explained by one boring thing — regression toward the player's own established level — and almost nothing is explained by where he landed."
+    },
+    {
+      "type": "stat_row",
+      "stats": [
+        { "label": "Hitter xwOBA persistence", "value": "0.43", "subtext": "slope post-vs-pre (1.0 = no reversion)" },
+        { "label": "Pitcher xERA persistence", "value": "0.32", "subtext": "the rest is reversion / noise" },
+        { "label": "Variance added by destination", "value": "≈ 0%", "subtext": "29 receiving-org dummies, F-tests ns" },
+        { "label": "Independent tests, same answer", "value": "4", "subtext": "coach, org, pitch-design, ML" }
+      ]
+    },
+    {
+      "type": "prose",
+      "content": "Start with the reversion itself. Take every traded player with a measured rate stat in the season before and the season after the deal, sort them into quintiles by their pre-trade xwOBA, and plot what each group did afterward. If performance were sticky, the bars would match. They don't — they collapse toward the middle. The worst pre-trade group climbs; the best pre-trade group falls. The full pre-trade spread of .162 to .367 compresses to .227 to .318 the very next season."
+    },
+    {
+      "type": "chart",
+      "chart_type": "grouped_bar",
+      "title": "Hitter xwOBA: pre-trade quintile vs the season after the trade",
+      "x_key": "quintile",
+      "y_keys": ["pre", "post"],
+      "y_labels": ["Pre-trade xwOBA", "Post-trade xwOBA"],
+      "x_label": "Pre-trade xwOBA quintile",
+      "y_label": "xwOBA",
+      "caption": "Each pair is a quintile of traded hitters (n=720). The pre-trade bars span a wide range; the post-trade bars converge hard toward the league mean (~.290). The bottom quintile rises, the top quintile falls. This is textbook regression to the mean — and it happens regardless of which team did the acquiring.",
+      "data": [
+        {"quintile": "Q1 (worst)", "pre": 0.162, "post": 0.227},
+        {"quintile": "Q2", "pre": 0.274, "post": 0.282},
+        {"quintile": "Q3", "pre": 0.300, "post": 0.290},
+        {"quintile": "Q4", "pre": 0.325, "post": 0.306},
+        {"quintile": "Q5 (best)", "pre": 0.367, "post": 0.318}
+      ]
+    },
+    {
+      "type": "prose",
+      "content": "Reversion alone isn't surprising. The real question is whether the destination changes it — whether some organizations bend the reversion curve in their favor, taking a struggling acquisition and making him better than his baseline predicts. That is the change-of-scenery claim, stated precisely. It is testable: start with the player's own pre-trade level, then ask whether knowing the receiving team adds any predictive power on top.\n\nIt doesn't. Adding a dummy variable for each of 29 receiving organizations to a model that already knows the player's pre-trade rate produces no statistically detectable improvement on any outcome — and on two of four, the adjusted R-squared actually goes down, the signature of pure overfitting."
+    },
+    {
+      "type": "chart",
+      "chart_type": "horizontal_bar",
+      "title": "Extra variance explained by the receiving organization (after the player's own pre-trade level)",
+      "x_key": "stat",
+      "y_key": "incremental_r2",
+      "x_label": "",
+      "y_label": "Incremental adjusted R² from 29 org dummies",
+      "caption": "For each rate stat, a model with the player's pre-trade level is compared to the same model plus a dummy for every receiving team. The incremental adjusted R² is essentially zero — negative for hitter xwOBA and pitcher K%. Block F-tests for the org dummies: xwOBA p=0.59, xERA p=0.11, K% p=0.65, whiff% p=0.30 — none significant. The destination adds nothing.",
+      "data": [
+        {"stat": "Pitcher whiff%", "incremental_r2": 0.007},
+        {"stat": "Pitcher xERA", "incremental_r2": 0.013},
+        {"stat": "Hitter xwOBA", "incremental_r2": -0.003},
+        {"stat": "Pitcher K%", "incremental_r2": -0.009}
+      ]
+    },
+    {
+      "type": "callout",
+      "variant": "finding",
+      "title": "Four searches, one answer",
+      "content": "This isn't one test that happened to come up empty. The destination effect was hunted four independent ways and every one failed: (1) pitching-coach identity — 32 of 33 coaches' effects on acquired-pitcher FIP collapse to noise under partial pooling (see 'The Pitching Coach Mirage'); (2) receiving-org pitch design — orgs explain ~zero variance in post-trade velocity, movement, or pitch usage (F=0.68, p=0.89); (3) receiving-org rate outcomes — the org dummies above add nothing; (4) non-linear machine learning — a gradient-boosted model with proper out-of-sample validation beats nothing a straight line on pre-trade quality already captures. The change-of-scenery effect is not hiding in an interaction or a non-linearity. It is simply not there at a detectable scale."
+    },
+    {
+      "type": "prose",
+      "content": "There is one real nuance, and it sharpens the lesson rather than softening it. Not all rate stats revert equally. Underlying-skill markers — strikeout rate, swinging-strike (whiff) rate — carry across a trade far better than result markers like xERA and xwOBA. A pitcher's whiff rate retains about 39% of its pre-trade variance; his xERA retains barely 1%.\n\nThe implication is precise: skill travels, results regress, and the new team improves neither. If you are buying low, buy a player whose underlying skill markers held up while his results soured — those skills will follow him. Do not buy a player on the theory that your organization will add something. The data says you won't."
+    },
+    {
+      "type": "chart",
+      "chart_type": "horizontal_bar",
+      "title": "How much of a pre-trade rate stat survives the trade (variance retained)",
+      "x_key": "stat",
+      "y_key": "persistence_r2",
+      "x_label": "",
+      "y_label": "R² of post-trade on pre-trade level",
+      "caption": "Skill markers (whiff%, K%) persist across a trade far more than result markers (xERA, xwOBA). All revert substantially — none has a slope near 1.0 — but the underlying skill is what carries. Buy the skill that held up, not the result you hope your org can fix.",
+      "data": [
+        {"stat": "Pitcher whiff%", "persistence_r2": 0.392},
+        {"stat": "Pitcher K%", "persistence_r2": 0.257},
+        {"stat": "Hitter xwOBA", "persistence_r2": 0.147},
+        {"stat": "Pitcher xERA", "persistence_r2": 0.007}
+      ]
+    },
+    {
+      "type": "callout",
+      "variant": "methodology",
+      "title": "What this does and doesn't claim",
+      "content": "It does NOT claim player development is worthless — orgs clearly develop their own players over years. It claims that the marginal, post-trade 'change of scenery' bump, measured across the whole league on the season-over-season timescale a trade operates on, is not detectable. Caveats worth stating: usable pre/post samples are modest (xwOBA n=720, xERA n=740, whiff/K% n=290), so a small true effect (under ~3-4% of variance) could hide below the noise floor; and a genuine destination effect that takes multiple seasons to materialize would be missed by a one-year-after window. The honest claim is bounded: at the scale a trade decision actually operates on, the destination is not a detectable input."
+    },
+    {
+      "type": "prose",
+      "content": "The practical takeaway for a front office is deflationary in the most useful way. When you evaluate a struggling player as a buy-low target, the correct prior is his own established level regressed toward the mean — not his established level plus a transformation premium for your coaching staff, your park, or your culture. Those premiums are stories the data cannot find. The teams that win these trades are not the ones with the best change-of-scenery magic. They are the ones who refuse to pay for it."
+    }
+  ],
+  "methodology_note": "Player-level pre/post analysis from the trade window tables (2010-2024). Persistence = OLS slope and R² of the post-trade season rate (t+1) on the pre-trade season rate (t-1), per player-trade: hitter xwOBA n=720 (slope 0.427, R² 0.147), pitcher xERA n=740 (slope 0.322, R² 0.007), pitcher K% percentile n=290 (R² 0.257), pitcher whiff% percentile n=290 (R² 0.392). Destination test: for each stat, a baseline OLS on pre-trade level is compared to the same model plus one dummy per receiving org with >=8 acquisitions (21-29 orgs); reported incremental adjusted R² and the block F-test p-value (xwOBA F=0.92 p=0.59; xERA F=1.34 p=0.11; K% F=0.85 p=0.65; whiff% F=1.15 p=0.30 — none significant). The four-way convergence cites the published 'Pitching Coach Mirage' (partial-pooling, 1/33 coaches credible), an org pitch-design analysis (player-clustered org F=0.68, p=0.89; cluster-permutation p=0.96), and a gradient-boosted model with a 2010-2020 train / 2021-2024 holdout split that did not beat a linear pre-trade-quality baseline out of sample on any rate outcome. Arsenal-window stats are Statcast percentile ranks. Samples are modest; effects below ~3-4% of variance are below the detection floor."
+}

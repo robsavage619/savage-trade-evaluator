@@ -1,6 +1,15 @@
 {
   "articles": [
     {
+      "slug": "change-of-scenery-myth",
+      "title": "Change of Scenery Is a Myth",
+      "subtitle": "Post-trade performance is regression to the mean — and which team acquires a player explains essentially none of it",
+      "published_at": "2026-05-28",
+      "tags": ["trade-evaluation", "regression-to-mean", "myth-busting"],
+      "summary": "The most durable belief at the deadline — that a new org will unlock a struggling player — is not detectable in the data. Rate stats revert toward the player's own level (persistence slopes 0.32-0.66), and adding 29 receiving-org dummies on top of pre-trade level explains zero additional variance (F-tests all ns). Four independent searches — pitching coach, org pitch-design, org rate outcomes, and non-linear ML — all come up empty. The one real nuance: skill markers (whiff%, K%) travel; result markers (xERA, xwOBA) regress; the new team improves neither.",
+      "read_time_minutes": 9
+    },
+    {
       "slug": "pitching-coach-mirage",
       "title": "The Pitching Coach Mirage",
       "subtitle": "A 3.7-run range across 33 pitching coaches looks like the most exploitable personnel signal in baseball. After a proper Bayesian shrinkage test, 32 of 33 effects collapse to noise.",
