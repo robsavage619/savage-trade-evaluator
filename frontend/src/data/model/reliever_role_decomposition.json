@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-05-28",
+  "title": "The Reliever WAR Illusion — role inflation vs acquired skill",
+  "built_from": "Player-level deployment feature: retrosheet_game_appearances (now 2010-2024) bridged to MLBAM via chadwick_register (100% match), joined to trade_player_war_window + trade_player_xera_window. Pre = season t-1 with origin team, post = season t+1 with receiver.",
+  "question": "When a team acquires a reliever and 'gets X WAR' from him, is that skill he brought, or the role (innings + leverage) the new team handed him?",
+
+  "headline_decomposition_relievers": {
+    "n": 452,
+    "r2_role_only_bf_and_leverage": 0.185,
+    "r2_skill_only_xera": 0.008,
+    "r2_both": 0.186,
+    "interpretation": "Post-trade reliever WAR change is ~23x more explained by role/volume change than by actual rate-stat (xERA) change. Adding skill on top of role adds essentially nothing (0.001)."
+  },
+
+  "confound_magnitudes": {
+    "r_bf_delta_war_delta_all_pitchers": 0.435,
+    "r_bf_delta_war_delta_relievers": 0.351,
+    "role_r2_permutation_p": "<0.0005",
+    "note": "Innings-volume change is the dominant driver of WAR change."
+  },
+
+  "skill_does_not_move_or_transfer": {
+    "r_lev_delta_xera_delta": -0.024,
+    "p": 0.618,
+    "r_bf_delta_xera_delta": -0.138,
+    "bf_xera_p": 0.003,
+    "interpretation": "Deployment change does NOT predict rate-stat (skill) change. The small bf<->xera link is reverse causation (teams give more innings to pitchers already throwing well), not the team improving anyone."
+  },
+
+  "killer_illustration": {
+    "among_relievers_whose_xera_got_worse": {
+      "got_more_innings": {"n": 101, "mean_war_delta": -0.064, "share_positive_war": 0.37},
+      "got_fewer_innings": {"n": 144, "mean_war_delta": -0.729},
+      "swing_from_role_alone": 0.67,
+      "interpretation": "Holding skill DIRECTION constant (xERA worsened), relievers who got MORE innings held WAR near flat; those who got FEWER cratered. A 0.67-WAR swing driven purely by the role the team assigned."
+    }
+  },
+
+  "verdict": "ROBUST and ACTIONABLE, but partially-known (like the xERA/DIPS finding). A post-trade reliever WAR bump is mostly ROLE ACCOUNTING — the innings and leverage the new team chooses to give him — not skill it acquired or unlocked. Don't pay a premium for a reliever's projected post-trade WAR; the high-leverage innings that generate it are a role you control and could assign to anyone, while the underlying skill (xERA) you're actually buying barely moves.",
+
+  "honest_caveats": [
+    "Mechanically, WAR rewards role (innings count; reliever WAR is leverage-weighted via gmLI), so 'role explains WAR' is partly tautological. That mechanical-ness IS the lesson: the WAR number should not be read as transferable skill.",
+    "Reliever xERA is a noisy skill proxy in the small post-trade samples (delta sd ~10), so 'skill explains <1%' partly reflects noisy skill measurement, not proven zero skill effect. The clean, robust claim is that ROLE DOMINATES.",
+    "Relievers specifically (reliever_frac_pre>0.5, n=452). Starters' WAR is also volume-driven but less leverage-sensitive.",
+    "Direction (reliever WAR is role/leverage dependent) is known to sabermetricians; the fresh contribution is the trade-context magnitude (18% role vs <1% skill) and the hold-skill-constant 0.67-WAR role swing."
+  ],
+
+  "pairs_with": "change-of-scenery-myth — both are 'what looks like value/improvement is actually X' debunks. This one: post-trade reliever value is the role you assign, not skill you acquired.",
+  "potential_article": "The Reliever WAR Illusion — candidate companion piece; honest framing required (robust + actionable, direction partially known)."
+}
