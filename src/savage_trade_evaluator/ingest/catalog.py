@@ -785,13 +785,17 @@ CATALOG: tuple[StatSource, ...] = (
             "event_cd",
         ),
         target_table="retrosheet_game_appearances",
-        ingested=False,
+        ingested=True,
         notes=(
-            "Play-by-play event logs (.EVA / .EVN). Adapter scaffolded; "
-            "data download pending (retrosheet.org/game.htm). Unlocks "
-            "reliever leverage-deployment rate (#6) and platoon-deployment "
-            "skill (#7) features. Download season ZIPs manually and pass "
-            "the directory to ingest.retrosheet_events.ingest()."
+            "Play-by-play event logs (.EVA / .EVN). INGESTED 2010-2024 "
+            "(full trade era; 2015-2024 loaded earlier, 2010-2014 backfilled "
+            "2026-05-28 from retrosheet.org/events/{year}eve.zip). Produces "
+            "retrosheet_game_appearances + retrosheet_pa_matchups. Feeds "
+            "team-season features: reliever leverage-deployment (#6, NULL per "
+            "D-35/R-55) and platoon-deployment skill (#7, credible on "
+            "xwoba_delta per D-35). Re-ingest: download season ZIPs as "
+            "{YEAR}EVE.zip (uppercase — the glob is case-sensitive) and pass "
+            "the directory to ingest.retrosheet_events.ingest(seasons=[...])."
         ),
     ),
     StatSource(
