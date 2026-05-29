@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-05-28",
+  "title": "Role-adjusted GM pitcher-acquisition ranking (Option B confound control)",
+  "method": "modeling/role_adjustment.py — partial deployment change (bf_delta innings + lev_delta leverage) out of player-level pitcher war_delta via OLS residual, then aggregate raw vs role-adjusted by receiver GM.",
+  "scope_and_caveats": [
+    "PITCHER acquisitions only (player-level war_delta with pre/post deployment), n=910-933 legs — NOT the full dollar-surplus GM ranking.",
+    "Explanatory/post-hoc only: deployment deltas use the post-trade season (t+1), so this is attribution, not prediction (would be leakage as a forecasting feature).",
+    "Per-GM n is small (15-32 pitcher acquisitions). Individual GM moves are DIRECTIONAL, not definitive — same small-sample caveat as the original GM ranking's r=0.27 within-GM persistence.",
+    "WAR mechanically rewards leverage (gmLI), so partialling out lev_delta removes that mechanical credit by design — which is the point."
+  ],
+  "deployment_explains": {"role_model_r2_on_pitcher_war_delta": 0.217, "n": 933},
+  "ranking_movement": {
+    "gms_with_15plus_pitcher_acquisitions": 24,
+    "spearman_raw_vs_role_adjusted": 0.826,
+    "interpretation": "Ranking is mostly stable but meaningfully reordered — ~32% of rank variance reshuffles once role inflation is removed."
+  },
+  "credit_losers_rode_role_inflation": [
+    {"gm": "David Forst", "n": 28, "raw_mean_war": 0.099, "adj_mean_war": -0.025, "rank_move": -10},
+    {"gm": "A.J. Preller", "n": 31, "raw_mean_war": -0.142, "adj_mean_war": -0.303, "rank_move": -6},
+    {"gm": "Ross Atkins", "n": 30, "raw_mean_war": -0.120, "adj_mean_war": -0.182, "rank_move": -4},
+    {"gm": "Ben Cherington", "n": 25, "raw_mean_war": -0.184, "adj_mean_war": -0.297, "rank_move": -3}
+  ],
+  "credit_gainers_real_skill_acquirers": [
+    {"gm": "Thad Levine", "n": 15, "raw_mean_war": -0.108, "adj_mean_war": 0.151, "rank_move": 8},
+    {"gm": "Matt Klentak", "n": 17, "raw_mean_war": -0.234, "adj_mean_war": 0.050, "rank_move": 7},
+    {"gm": "David Stearns", "n": 15, "raw_mean_war": -0.063, "adj_mean_war": 0.129, "rank_move": 6},
+    {"gm": "Nick Krall", "n": 18, "raw_mean_war": 0.055, "adj_mean_war": 0.282, "rank_move": 6}
+  ],
+  "takeaway": "When you stop crediting GMs for the role they assign (innings + leverage) and score only the skill-attributable residual of acquired-pitcher WAR, the pitcher-acquisition leaderboard reshuffles meaningfully. GMs whose acquired pitchers' raw WAR was propped up by heavy usage drop; GMs who held performance on lighter usage rise. Directional at the individual level (small n); the robust result is that ~22% of pitcher WAR change is role, and removing it moves the credit."
+}
