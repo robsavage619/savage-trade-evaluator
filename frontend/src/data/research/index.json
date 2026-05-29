@@ -1,6 +1,15 @@
 {
   "articles": [
     {
+      "slug": "reliever-war-illusion",
+      "title": "The Reliever WAR Illusion",
+      "subtitle": "A traded reliever's WAR is mostly the role the new team hands him — innings and leverage — not skill they acquired",
+      "published_at": "2026-05-28",
+      "tags": ["relievers", "WAR", "deployment", "myth-busting"],
+      "summary": "Decompose post-trade WAR change for 452 traded relievers and role (innings + leverage) explains 18.5% of it while underlying skill (xERA) explains 0.8% — a 23× gap. Relievers whose skill declined held WAR flat if given more innings (−0.06) and cratered if given fewer (−0.73): a 0.67-WAR swing from the role decision alone. Deployment change is uncorrelated with skill change. You're buying the inning, not the arm — so price the xERA you can keep, not the WAR projection that's really your own bullpen usage.",
+      "read_time_minutes": 8
+    },
+    {
       "slug": "change-of-scenery-myth",
       "title": "Change of Scenery Is a Myth",
       "subtitle": "Post-trade performance is regression to the mean — and which team acquires a player explains essentially none of it",

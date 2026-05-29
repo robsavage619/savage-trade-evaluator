@@ -9,6 +9,7 @@ import {
 // ── article JSON loader ───────────────────────────────────────────────────────
 
 const ARTICLES: Record<string, () => Promise<{ default: Article }>> = {
+  'reliever-war-illusion': () => import('../data/research/reliever-war-illusion.json'),
   'change-of-scenery-myth': () => import('../data/research/change-of-scenery-myth.json'),
   'pitching-coach-mirage': () => import('../data/research/pitching-coach-mirage.json'),
   'gm-edge-decomposition': () => import('../data/research/gm-edge-decomposition.json'),

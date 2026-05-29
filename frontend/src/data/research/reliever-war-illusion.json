@@ -1,0 +1,82 @@
+{
+  "slug": "reliever-war-illusion",
+  "title": "The Reliever WAR Illusion",
+  "subtitle": "When a team acquires a reliever and 'gets a win and a half' out of him, that number is mostly the role they handed him — innings and leverage — not skill they acquired. His underlying rate barely moves. You're buying the inning, not the arm.",
+  "published_at": "2026-05-28",
+  "tags": ["relievers", "WAR", "trade-evaluation", "deployment", "myth-busting"],
+  "read_time_minutes": 8,
+  "sections": [
+    {
+      "type": "prose",
+      "content": "Relievers are the deadline's favorite currency. A contender adds a setup man, he posts a strong half-season in the eighth inning, and the trade gets graded a win because 'he was worth 1.5 WAR down the stretch.' The reasoning feels airtight: WAR is the catch-all value stat, and the WAR showed up after the trade, so the team must have acquired value.\n\nThe problem is that a reliever's WAR is largely a function of how he's used — how many innings, and in what leverage — and those are decisions the acquiring team makes, not skills the pitcher brings. Decompose the post-trade WAR change for traded relievers and almost none of it traces to the pitcher actually getting better."
+    },
+    {
+      "type": "stat_row",
+      "stats": [
+        { "label": "Relievers analyzed", "value": "452", "subtext": "traded, with pre/post deployment + xERA" },
+        { "label": "WAR change explained by role", "value": "18.5%", "subtext": "innings volume + leverage" },
+        { "label": "WAR change explained by skill", "value": "0.8%", "subtext": "underlying xERA change" },
+        { "label": "Role-vs-skill ratio", "value": "≈ 23×", "subtext": "role dominates" }
+      ]
+    },
+    {
+      "type": "prose",
+      "content": "The setup: for every traded reliever, take his deployment the season before the trade (innings faced, average leverage) and the season after, from Retrosheet play-by-play. Take his actual pitching skill over the same windows (xERA, the regression-stable ERA estimator). Then ask which one — the role change or the skill change — explains his change in WAR. It is not close."
+    },
+    {
+      "type": "chart",
+      "chart_type": "bar",
+      "title": "What explains a traded reliever's change in WAR?",
+      "x_key": "source",
+      "y_key": "variance_explained",
+      "x_label": "",
+      "y_label": "Share of WAR-change variance explained (R²)",
+      "caption": "Two models of post-trade reliever WAR change (n=452). Role — innings volume + average leverage — explains 18.5% of the variance. Underlying skill — xERA change — explains 0.8%. Adding skill on top of role lifts R² from 0.185 to just 0.186. The WAR a team books from an acquired reliever is overwhelmingly about the role it assigns him.",
+      "data": [
+        {"source": "Role (innings + leverage)", "variance_explained": 0.185},
+        {"source": "Skill (xERA change)", "variance_explained": 0.008}
+      ]
+    },
+    {
+      "type": "prose",
+      "content": "Innings volume is the engine. Sort traded relievers by how much their workload changed and the WAR change moves in lockstep: the quartile whose innings were cut most lost about half a win; the quartile handed the most additional work gained half a win. The pitcher didn't change between those groups — the role did."
+    },
+    {
+      "type": "chart",
+      "chart_type": "bar",
+      "title": "Post-trade WAR change by change in workload (traded relievers)",
+      "x_key": "quartile",
+      "y_key": "war_delta",
+      "x_label": "Change in batters faced, pre→post trade (quartile)",
+      "y_label": "Mean WAR change",
+      "caption": "Relievers sorted into quartiles by workload change. WAR change tracks workload almost perfectly — from −0.49 for the biggest innings cut to +0.52 for the biggest innings add. WAR is a counting stat; for relievers it is also leverage-weighted. More innings in higher-leverage spots mechanically produces more WAR, regardless of whether the pitcher is any better.",
+      "data": [
+        {"quartile": "Biggest innings cut", "war_delta": -0.485},
+        {"quartile": "Q2", "war_delta": -0.235},
+        {"quartile": "Q3", "war_delta": 0.175},
+        {"quartile": "Biggest innings add", "war_delta": 0.519}
+      ]
+    },
+    {
+      "type": "callout",
+      "variant": "finding",
+      "title": "Same declining skill, opposite WAR — decided entirely by role",
+      "content": "Take only the relievers whose xERA actually got WORSE after the trade — pitchers who, by the skill measure, declined. The ones their new team gave MORE innings held their WAR essentially flat (−0.06, n=101). The ones given FEWER innings cratered (−0.73, n=144). Identical skill direction, a 0.67-WAR swing — produced entirely by the role decision. The WAR didn't measure whether the pitcher was good. It measured whether the manager trusted him."
+    },
+    {
+      "type": "prose",
+      "content": "There is a deeper confirmation in what does NOT move. A reliever's change in deployment has no relationship to his change in underlying skill — the correlation between leverage change and xERA change is −0.02 (p=0.62). Teams are not acquiring relievers and making them better; they are acquiring relievers and giving them innings. The small link between more innings and slightly better xERA runs the other way: managers hand high-leverage work to pitchers who are already throwing well. The role follows the skill; the skill does not follow the role."
+    },
+    {
+      "type": "callout",
+      "variant": "methodology",
+      "title": "What this does and doesn't claim",
+      "content": "It does NOT claim reliever WAR is wrong or that high-leverage innings have no value — a win in the eighth inning of a pennant race is real. The claim is about ATTRIBUTION: a post-trade reliever WAR bump is mostly the role the acquiring team assigned, not transferable skill it bought or unlocked. Honest caveats: WAR mechanically rewards innings and (for relievers) leverage, so 'role explains WAR' is partly built into the stat — that mechanical-ness is exactly why a WAR bump shouldn't be read as skill. And post-trade reliever xERA is a noisy skill proxy in half-season samples, so 'skill explains under 1%' partly reflects measurement noise; the robust, repeatable result is that role dominates. Relievers specifically, n=452, 2010–2024."
+    },
+    {
+      "type": "prose",
+      "content": "The practical move is to price the arm, not the role. When you evaluate a reliever target, the high-leverage innings that would generate his post-trade WAR are innings you control — you can hand them to him, to an internal arm, or to a cheaper acquisition. What you are actually buying is the underlying skill, and the data says that skill walks in roughly where it walked out. Pay for the xERA you can keep. Do not pay a premium for a WAR projection that is really a description of your own bullpen usage."
+    }
+  ],
+  "methodology_note": "Player-level analysis, 2010–2024. Deployment from Retrosheet play-by-play (retrosheet_game_appearances): per-pitcher-season batters faced and batters-faced-weighted average leverage index, pre = season t−1 (origin team), post = season t+1 (receiver). Retrosheet pitcher IDs bridged to MLBAM via chadwick_register (100% match). WAR from trade_player_war_window (war_t±1), skill from trade_player_xera_window (xera_t±1). Sample: relievers (reliever fraction > 0.5 pre-trade) with complete pre/post deployment, WAR, and xERA (n=452). Variance decomposition: OLS of war_delta on [bf_delta, lev_delta] gives R²=0.185 (permutation p<0.0005); on [xera_delta] gives R²=0.008; combined R²=0.186. Deployment–skill independence: r(lev_delta, xera_delta) = −0.024 (p=0.62). Caveats: WAR is mechanically volume- and leverage-weighted; reliever xERA is noisy at half-season samples."
+}
