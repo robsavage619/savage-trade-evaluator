@@ -303,7 +303,9 @@ def build_counterfactual_residuals(
         # Fetch position groups per player-season in bulk.
         pit_rows = conn.execute(
             "SELECT mlb_id, year_id, SUM(gs) AS total_gs"
-            " FROM bwar_pitching GROUP BY mlb_id, year_id"
+            " FROM bwar_pitching"
+            " WHERE mlb_id IS NOT NULL AND year_id IS NOT NULL"
+            " GROUP BY mlb_id, year_id"
         ).df()
 
     logger.info("build_counterfactual_residuals: %d player-trade rows loaded", len(df))
@@ -311,6 +313,8 @@ def build_counterfactual_residuals(
     # Build position-group lookup: (mlb_id, year) → pos_group
     pit_lookup: dict[tuple[int, int], str] = {}
     for row in pit_rows.itertuples(index=False):
+        if pd.isna(row.mlb_id) or pd.isna(row.year_id):
+            continue
         pg = POS_SP if (row.total_gs or 0) > 0 else POS_RP
         pit_lookup[(int(row.mlb_id), int(row.year_id))] = pg
 
