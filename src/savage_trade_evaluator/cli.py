@@ -802,6 +802,21 @@ def status() -> None:
         typer.echo(f"  {s}: {n}")
 
 
+@app.command()
+def check(
+    seed: bool = typer.Option(
+        False,
+        "--seed",
+        help="Write current DB actuals as the baseline (run once after a major ingest).",
+    ),
+) -> None:
+    """Validate data quality against a seeded baseline; exit non-zero on failure."""
+    configure_logging()
+    from savage_trade_evaluator.checks import check_and_report
+
+    raise typer.Exit(check_and_report(seed=seed))
+
+
 def _v2_validate_outcome(outcome: str) -> None:
     if outcome not in V2_OUTCOMES:
         msg = f"unknown outcome '{outcome}'; choose from {', '.join(V2_OUTCOMES)}"
