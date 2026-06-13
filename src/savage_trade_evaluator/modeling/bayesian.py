@@ -50,6 +50,7 @@ import pandas as pd
 import pymc as pm
 
 from savage_trade_evaluator.modeling.context_aware import FEATURE_COLUMNS
+from savage_trade_evaluator.modeling.metrics import crps_empirical as _crps_empirical
 from savage_trade_evaluator.storage import db
 
 logger = logging.getLogger(__name__)
@@ -83,28 +84,6 @@ def _load_dataset() -> pd.DataFrame:
             """
         ).df()
     return df
-
-
-def _crps_empirical(observed: np.ndarray, samples: np.ndarray) -> float:
-    """Empirical CRPS averaged over observations.
-
-    Args:
-        observed: 1D array of realized values, shape (n,).
-        samples: 2D array of posterior predictive samples, shape (n_obs, n_samples).
-
-    Returns:
-        Mean CRPS across the n observations.
-    """
-    n_obs, _ = samples.shape
-    out = np.empty(n_obs)
-    for i in range(n_obs):
-        s = samples[i]
-        term1 = float(np.mean(np.abs(s - observed[i])))
-        # the pairwise term — exploit symmetry; mean over all pairs (i,j)
-        diffs = np.abs(s[:, None] - s[None, :])
-        term2 = 0.5 * float(diffs.mean())
-        out[i] = term1 - term2
-    return float(out.mean())
 
 
 def fit_multilevel(

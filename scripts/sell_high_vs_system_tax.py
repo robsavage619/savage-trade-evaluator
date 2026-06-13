@@ -53,12 +53,25 @@ REGIMES_TO_CHECK = (
 
 
 def load() -> pd.DataFrame:
-    """Load all 2010+ trade legs joined to regime + experience proxy."""
+    """Load all 2010+ trade legs joined to regime + experience proxy.
+
+    Survivorship-bias fix (A3): washouts (war_t_plus_1 IS NULL but within bWAR
+    coverage) are coded as 0 WAR rather than dropped.  Right-censored trades
+    (post-trade season beyond the last bWAR season) are dropped — those are
+    missing data, not bad outcomes.  A boolean ``washout`` column is included so
+    downstream analysis can report rates per bucket.
+    """
     with db.connect(read_only=True) as conn:
         df = conn.execute(
             """
             WITH first_season AS (
                 SELECT mlb_id, MIN(year_id) AS first_mlb_year
+                FROM bwar_player_seasons
+                WHERE mlb_id IS NOT NULL
+                GROUP BY mlb_id
+            ),
+            bwar_coverage AS (
+                SELECT mlb_id, MAX(year_id) AS max_bwar_year
                 FROM bwar_player_seasons
                 WHERE mlb_id IS NOT NULL
                 GROUP BY mlb_id
@@ -68,9 +81,10 @@ def load() -> pd.DataFrame:
                    tpu.trade_season,
                    tpu.to_team_bref AS to_team,
                    w.war_t_minus_1 AS pre,
-                   w.war_t_plus_1 AS post,
-                   (w.war_t_plus_1 - w.war_t_minus_1) AS delta,
-                   (tpu.trade_season - fs.first_mlb_year) AS experience
+                   COALESCE(w.war_t_plus_1, 0.0) AS post,
+                   (COALESCE(w.war_t_plus_1, 0.0) - w.war_t_minus_1) AS delta,
+                   (tpu.trade_season - fs.first_mlb_year) AS experience,
+                   (w.war_t_plus_1 IS NULL) AS washout
             FROM trade_player_war_window w
             JOIN trade_player_unified tpu
                 ON tpu.trade_event_id = w.trade_event_id
@@ -79,9 +93,10 @@ def load() -> pd.DataFrame:
                 ON tra.bref_code = tpu.from_team_bref
                 AND tra.season = tpu.trade_season
             LEFT JOIN first_season fs ON fs.mlb_id = tpu.mlb_player_id
+            LEFT JOIN bwar_coverage bc ON bc.mlb_id = w.mlb_player_id
             WHERE w.war_t_minus_1 IS NOT NULL
-              AND w.war_t_plus_1 IS NOT NULL
               AND tra.regime_id IS NOT NULL
+              AND bc.max_bwar_year >= w.trade_season + 1
             """
         ).df()
     return df
@@ -110,17 +125,24 @@ def regime_decomposition(df: pd.DataFrame, regime_id: str) -> dict[str, dict[str
     for b in ("VET-AT-PEAK", "YOUNG-PROSPECT", "MIDDLE"):
         rows = sub[sub["bucket"] == b]
         if rows.empty:
-            out[b] = {"n": 0, "mean_delta": float("nan"), "mean_pre": float("nan")}
+            out[b] = {
+                "n": 0,
+                "mean_delta": float("nan"),
+                "mean_pre": float("nan"),
+                "washout_rate": float("nan"),
+            }
         else:
             out[b] = {
                 "n": len(rows),
                 "mean_delta": float(rows["delta"].mean()),
                 "mean_pre": float(rows["pre"].mean()),
+                "washout_rate": float(rows["washout"].mean()),
             }
     out["ALL"] = {
         "n": len(sub),
         "mean_delta": float(sub["delta"].mean()),
         "mean_pre": float(sub["pre"].mean()),
+        "washout_rate": float(sub["washout"].mean()),
     }
     return out
 
@@ -165,14 +187,18 @@ def main() -> None:
             print(f"\n{regime}: NOT FOUND")
             continue
         all_ = d["ALL"]
-        print(f"\n{regime}  (n={all_['n']}, overall Δ={all_['mean_delta']:+.3f})")
+        print(
+            f"\n{regime}  (n={all_['n']}, overall Δ={all_['mean_delta']:+.3f},"
+            f" washout={all_['washout_rate']:.1%})"
+        )
         for b in ("VET-AT-PEAK", "YOUNG-PROSPECT", "MIDDLE"):
             row = d[b]
             if row["n"] > 0:
                 print(
                     f"  {b:<16}  n={row['n']:>3}  "
                     f"mean Δ WAR={row['mean_delta']:>+6.3f}  "
-                    f"(pre-WAR avg {row['mean_pre']:>+4.2f})"
+                    f"(pre-WAR avg {row['mean_pre']:>+4.2f})  "
+                    f"washout={row['washout_rate']:.1%}"
                 )
             else:
                 print(f"  {b:<16}  n=  0  --")

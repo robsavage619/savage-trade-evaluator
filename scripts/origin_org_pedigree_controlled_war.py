@@ -40,20 +40,32 @@ MIN_SEASON = 1990
 
 
 def load_data() -> pd.DataFrame:
-    """Load (Δwar, pre_war, season, origin_org) per trade leg with bWAR coverage."""
+    """Load (delta_war, pre_war, season, origin_org) per trade leg with bWAR coverage.
+
+    Survivorship-bias fix (A3): washouts coded as 0 WAR rather than dropped.
+    Right-censored trades (post-trade season beyond last bWAR year) are excluded.
+    """
     with db.connect(read_only=True) as conn:
         df = conn.execute(
             f"""
+            WITH bwar_coverage AS (
+                SELECT mlb_id, MAX(year_id) AS max_bwar_year
+                FROM bwar_player_seasons
+                WHERE mlb_id IS NOT NULL
+                GROUP BY mlb_id
+            )
             SELECT w.from_team_bref AS origin,
                    w.to_team_bref AS receiver,
                    w.trade_season,
                    w.war_t_minus_1 AS pre_war,
-                   w.war_t_plus_1 - w.war_t_minus_1 AS delta_war
+                   (COALESCE(w.war_t_plus_1, 0.0) - w.war_t_minus_1) AS delta_war,
+                   (w.war_t_plus_1 IS NULL) AS washout
             FROM trade_player_war_window w
+            LEFT JOIN bwar_coverage bc ON bc.mlb_id = w.mlb_player_id
             WHERE w.war_t_minus_1 IS NOT NULL
-              AND w.war_t_plus_1 IS NOT NULL
               AND w.from_team_bref IS NOT NULL
               AND w.trade_season >= {MIN_SEASON}
+              AND bc.max_bwar_year >= w.trade_season + 1
             """
         ).df()
     counts = df.groupby("origin").size()
@@ -130,6 +142,7 @@ def main() -> None:
     print(f"Loaded {len(df)} trade legs across {df['origin'].nunique()} origin orgs")
     print(f"Trade-season range: {df['trade_season'].min()}-{df['trade_season'].max()}")
     print(f"Min legs per origin to include: {MIN_N}")
+    print(f"Overall washout rate (war_t+1=0 within bWAR coverage): {df['washout'].mean():.1%}")
     print()
 
     summary = fit_multilevel(df)

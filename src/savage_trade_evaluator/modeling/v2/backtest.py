@@ -18,6 +18,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+from savage_trade_evaluator.modeling.metrics import crps_empirical as _crps_empirical
 from savage_trade_evaluator.modeling.v2.features import (
     ALL_FEATURES,
     build_feature_matrix,
@@ -53,18 +54,6 @@ class V2BacktestResult:
     coverage_90: float  # fraction of test points within the 90% predicted CI
     credible_features: pd.DataFrame
     test_predictions: pd.DataFrame
-
-
-def _crps_empirical(y: np.ndarray, samples: np.ndarray) -> float:
-    """Empirical CRPS via samples-vs-truth. y shape (n,), samples shape (n, m)."""
-    # CRPS = E|X - y| - 0.5 E|X - X'|, approximated via samples.
-    _, m = samples.shape
-    term1 = np.mean(np.abs(samples - y[:, None]))
-    sorted_samples = np.sort(samples, axis=1)
-    # E|X - X'| ≈ 2/(m(m-1)) * sum over sorted differences
-    diffs = np.diff(sorted_samples, axis=1).sum(axis=1)
-    term2 = 0.5 * np.mean(2.0 * diffs / m)
-    return float(term1 - term2)
 
 
 def assemble_combined(outcomes_df: pd.DataFrame | None = None) -> pd.DataFrame:
