@@ -1096,3 +1096,278 @@ def research_ask(
         typer.echo("\nsources:")
         for i, h in enumerate(hits, start=1):
             typer.echo(f"  [{i}] {h.source} > {h.heading}  ({h.score:.3f})")
+
+
+# ── Phase 4: product surface ──────────────────────────────────────────────────
+
+
+@app.command(name="score-trade")
+def score_trade(
+    receiver: str = typer.Option(..., "--receiver", "-r", help="Acquiring team bref code."),
+    sender: str = typer.Option(..., "--sender", "-s", help="Sending team bref code."),
+    players: str = typer.Option(..., "--players", "-p", help="Comma-separated MLBAM player IDs."),
+    season: int = typer.Option(2025, "--season", help="Trade season."),
+) -> None:
+    """Score a hypothetical trade with the V3 context-aware model.
+
+    Example:
+        ste score-trade --receiver HOU --sender NYY --players 592450 --season 2025
+    """
+    configure_logging()
+    import math
+
+    try:
+        player_ids = [int(x.strip()) for x in players.split(",") if x.strip()]
+    except ValueError:
+        typer.echo("--players must be comma-separated integers", err=True)
+        raise typer.Exit(code=1) from None
+
+    if not player_ids:
+        typer.echo("--players must not be empty", err=True)
+        raise typer.Exit(code=1)
+
+    from savage_trade_evaluator.modeling.feature_assembler import assemble_hypothetical
+    from savage_trade_evaluator.modeling.scenario_engine import score_hypothetical
+
+    with db.connect(read_only=True) as conn:
+        name_map: dict[int, str] = dict(
+            conn.execute(
+                "SELECT mlb_player_id, full_name FROM mlb_people WHERE mlb_player_id IN ("
+                + ",".join(["?"] * len(player_ids))
+                + ")",
+                player_ids,
+            ).fetchall()
+        )
+        gm_rcv = conn.execute(
+            """
+            SELECT gbp.decision_maker, ga.archetype, gbp.war_buyer_bias,
+                   gbp.avg_age_received, gbp.deadline_pct, gbp.trades_per_season
+            FROM gm_behavioral_profiles gbp
+            LEFT JOIN gm_archetypes ga USING (regime_id)
+            WHERE gbp.bref_code = ? AND gbp.regime_end >= 2022
+            ORDER BY gbp.regime_end DESC LIMIT 1
+            """,
+            [receiver],
+        ).fetchone()
+        gm_snd = conn.execute(
+            """
+            SELECT gbp.decision_maker, ga.archetype
+            FROM gm_behavioral_profiles gbp
+            LEFT JOIN gm_archetypes ga USING (regime_id)
+            WHERE gbp.bref_code = ? AND gbp.regime_end >= 2022
+            ORDER BY gbp.regime_end DESC LIMIT 1
+            """,
+            [sender],
+        ).fetchone()
+
+    typer.echo(f"assembling features for {receiver} ← {sender}…")
+    features = assemble_hypothetical(receiver, sender, player_ids, season)
+
+    typer.echo("scoring with V3.2…")
+    result = score_hypothetical(
+        features, receiver_bref=receiver, sender_bref=sender, trade_season=season
+    )
+
+    player_strs = [f"{name_map.get(pid, f'#{pid}')} ({pid})" for pid in player_ids]
+
+    sep = "━" * 72
+    typer.echo("")
+    typer.echo(sep)
+    typer.echo(f"  {receiver} ← {sender}  |  {season}")
+    typer.echo(f"  Players: {', '.join(player_strs)}")
+    if gm_rcv:
+        typer.echo(f"  Receiver GM: {gm_rcv[0]} — {gm_rcv[1] or 'Unknown'}")
+    if gm_snd:
+        typer.echo(f"  Sender GM:   {gm_snd[0]} — {gm_snd[1] or 'Unknown'}")
+    typer.echo(sep)
+    typer.echo("")
+
+    header = f"  {'Outcome':<17}  {'Mean':>8}  {'P5':>9}  {'P95':>9}  {'P(+)':>6}"
+    typer.echo(header)
+    typer.echo("  " + "─" * 58)
+
+    for key, label in [
+        ("war_delta", "WAR Delta"),
+        ("dollar_surplus", "Dollar Surplus"),
+        ("surplus_wins", "Surplus Wins"),
+    ]:
+        o = result.get(key)
+        if o is None:
+            continue
+        mean_v, p5_v, p95_v = o["mean"], o["p5"], o["p95"]
+        p_pos = o["p_positive"]
+
+        if key == "dollar_surplus":
+
+            def _fmt_d(v: float) -> str:
+                return f"${v / 1e6:+.1f}M"
+
+            mean_s, p5_s, p95_s = _fmt_d(mean_v), _fmt_d(p5_v), _fmt_d(p95_v)
+        else:
+            mean_s = f"{mean_v:+.2f}"
+            p5_s = f"{p5_v:+.2f}"
+            p95_s = f"{p95_v:+.2f}"
+
+        typer.echo(
+            f"  {label:<17}  {mean_s:>8}  {p5_s:>9}  {p95_s:>9}  {p_pos:>5.0%}"
+        )
+
+    typer.echo("")
+
+    if gm_rcv:
+        typer.echo(f"  Receiver GM context ({receiver}):")
+        typer.echo(f"    Archetype:          {gm_rcv[1] or 'Unknown'}")
+        typer.echo(f"    War-buyer bias:     {gm_rcv[2]:+.2f}")
+        typer.echo(f"    Avg age acquired:   {gm_rcv[3]:.1f}")
+        typer.echo(f"    Deadline pct:       {gm_rcv[4]:.0%}")
+        typer.echo(f"    Trades/season:      {gm_rcv[5]:.1f}")
+        typer.echo("")
+
+    feat_display = [
+        ("player_war_t_minus_1", "WAR prior year"),
+        ("player_avg_age", "Avg player age"),
+        ("receiver_contention_window", "Contention window"),
+        ("receiver_dev_fit_pitching", "Dev-fit pitching"),
+        ("receiver_dev_fit_hitting", "Dev-fit hitting"),
+        ("player_prospect_fv_avg", "Prospect FV avg"),
+    ]
+    key_feats = [
+        (label, float(features[col].iloc[0]))
+        for col, label in feat_display
+        if col in features.columns and not math.isnan(float(features[col].iloc[0]))
+    ]
+    if key_feats:
+        typer.echo("  Key features:")
+        for label, val in key_feats:
+            typer.echo(f"    {label:<26}  {val:.2f}")
+        typer.echo("")
+
+    typer.echo(f"  Model: V3.2  |  Trained through {result['train_end_season']}")
+    typer.echo("")
+
+
+@app.command(name="suggest-trades")
+def suggest_trades(
+    receiver: str = typer.Option(..., "--receiver", "-r", help="Target acquiring team bref code."),
+    season: int = typer.Option(2025, "--season", help="Trade season."),
+    min_war: float = typer.Option(1.0, "--min-war", help="Min prior-season bWAR to consider."),
+    pool_size: int = typer.Option(50, "--pool-size", help="Max candidates to evaluate."),
+    top_n: int = typer.Option(10, "--top-n", help="Number of recommendations to display."),
+) -> None:
+    """Rank trade acquisition candidates for a target team.
+
+    Scans players on other teams above the WAR threshold, scores each
+    hypothetical trade under the V3 model, and ranks by expected WAR delta.
+
+    Example:
+        ste suggest-trades --receiver HOU --season 2025 --top-n 10
+    """
+    configure_logging()
+    import pandas as pd
+
+    from savage_trade_evaluator.modeling.feature_assembler import assemble_hypothetical
+    from savage_trade_evaluator.modeling.scenario_engine import score_hypothetical
+
+    lookup_season = season - 1
+
+    with db.connect(read_only=True) as conn:
+        candidates = conn.execute(
+            """
+            SELECT
+                COALESCE(b.mlb_id, p.mlb_id)                    AS mlb_id,
+                COALESCE(mp.full_name, b.name_common, p.name_common) AS full_name,
+                COALESCE(b.team_id, p.team_id)                   AS team_id,
+                COALESCE(b.war, 0.0) + COALESCE(p.war, 0.0)     AS total_war
+            FROM (
+                SELECT mlb_id, name_common, team_id, SUM(war) AS war
+                FROM bwar_batting
+                WHERE year_id = ? AND mlb_id IS NOT NULL
+                GROUP BY mlb_id, name_common, team_id
+            ) b
+            FULL OUTER JOIN (
+                SELECT mlb_id, name_common, team_id, SUM(war) AS war
+                FROM bwar_pitching
+                WHERE year_id = ? AND mlb_id IS NOT NULL
+                GROUP BY mlb_id, name_common, team_id
+            ) p ON p.mlb_id = b.mlb_id
+            LEFT JOIN mlb_people mp ON mp.mlb_player_id = COALESCE(b.mlb_id, p.mlb_id)
+            WHERE COALESCE(b.war, 0.0) + COALESCE(p.war, 0.0) >= ?
+              AND COALESCE(b.team_id, p.team_id) != ?
+            ORDER BY total_war DESC
+            LIMIT ?
+            """,
+            [lookup_season, lookup_season, min_war, receiver, pool_size],
+        ).fetchdf()
+
+    if candidates.empty:
+        typer.echo(
+            f"no candidates found for {receiver} (season={lookup_season}, min_war={min_war})"
+        )
+        raise typer.Exit(code=1)
+
+    typer.echo(
+        f"scoring {len(candidates)} candidates for {receiver} ← * (season={season})…"
+    )
+
+    rows: list[dict] = []
+    for _, cand in candidates.iterrows():
+        pid = int(cand["mlb_id"])
+        sender_team = str(cand["team_id"])
+        name = str(cand["full_name"] or f"#{pid}")
+        prior_war = float(cand["total_war"])
+        try:
+            feats = assemble_hypothetical(receiver, sender_team, [pid], season)
+            scored = score_hypothetical(
+                feats, receiver_bref=receiver, sender_bref=sender_team, trade_season=season
+            )
+            wd = scored.get("war_delta", {})
+            rows.append(
+                {
+                    "player_id": pid,
+                    "player_name": name,
+                    "sender": sender_team,
+                    "prior_war": prior_war,
+                    "war_delta_mean": wd.get("mean", float("nan")),
+                    "war_delta_p5": wd.get("p5", float("nan")),
+                    "war_delta_p95": wd.get("p95", float("nan")),
+                    "p_positive": wd.get("p_positive", float("nan")),
+                }
+            )
+        except Exception as exc:
+            logger.debug("skipped player %s: %s", pid, exc)
+
+    if not rows:
+        typer.echo("no results — all candidates failed to score")
+        raise typer.Exit(code=1)
+
+    scored_df = pd.DataFrame(rows).sort_values("war_delta_mean", ascending=False)
+
+    sep = "━" * 80
+    typer.echo("")
+    typer.echo(sep)
+    typer.echo(f"  TOP TRADE TARGETS FOR {receiver}  |  season {season}  (V3.2)")
+    typer.echo(sep)
+    typer.echo(
+        f"  {'#':<3}  {'Player':<24}  {'From':>4}  {'WAR(pr)':>7}  "
+        f"{'E[ΔW]':>7}  {'P5':>6}  {'P95':>6}  {'P(+)':>5}"
+    )
+    typer.echo("  " + "─" * 74)
+
+    for rank, (_, r) in enumerate(scored_df.head(top_n).iterrows(), start=1):
+        name_trunc = str(r["player_name"])[:23]
+        typer.echo(
+            f"  {rank:<3}  {name_trunc:<24}  {r['sender']:>4}  "
+            f"{r['prior_war']:>7.1f}  "
+            f"{r['war_delta_mean']:>+7.2f}  "
+            f"{r['war_delta_p5']:>+6.2f}  "
+            f"{r['war_delta_p95']:>+6.2f}  "
+            f"{r['p_positive']:>4.0%}"
+        )
+
+    typer.echo("")
+    typer.echo(
+        f"  Evaluated {len(rows)}/{len(candidates)} candidates  |  "
+        f"min_war={min_war}  |  Model: V3.2"
+    )
+    typer.echo(sep)
+    typer.echo("")
