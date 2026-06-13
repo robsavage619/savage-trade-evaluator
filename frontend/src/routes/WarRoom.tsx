@@ -143,6 +143,24 @@ function AnimatedNumber({
   )
 }
 
+// ── snapshot age utilities ────────────────────────────────────────────────────
+
+function snapshotAgeDays(iso: string): number {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000)
+}
+
+type FreshnessTier = 'live' | 'stale' | 'old'
+function freshnessTier(ageDays: number): FreshnessTier {
+  if (ageDays < 3) return 'live'
+  if (ageDays < 14) return 'stale'
+  return 'old'
+}
+const FRESHNESS_COLORS: Record<FreshnessTier, { dot: string; text: string; border: string }> = {
+  live:  { dot: 'bg-positive-500', text: 'text-positive-400', border: 'border-ink-700' },
+  stale: { dot: 'bg-amber-500',    text: 'text-amber-400',    border: 'border-amber-700' },
+  old:   { dot: 'bg-red-500',      text: 'text-red-400',      border: 'border-red-700' },
+}
+
 // ── pulsing status dot ───────────────────────────────────────────────────────
 
 function PulseDot({ color }: { color: string }) {
@@ -1624,6 +1642,18 @@ function AiBrief({ promptInput }: { promptInput: PromptInput }) {
         </div>
       )}
 
+      {/* Staleness banner: brief predates the current war-room snapshot */}
+      {report?.generatedAt && new Date(report.generatedAt) < new Date(warRoomIndex.generatedAt) && (
+        <div className="flex items-center gap-2 rounded-md border border-amber-700/50 bg-amber-500/5 px-3 py-1.5 font-mono text-[9px] text-amber-400">
+          <span>⚠</span>
+          <span>
+            Brief generated {new Date(report.generatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} —
+            against an older snapshot than the current war room ({new Date(warRoomIndex.generatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}).
+            Regenerate for fresh context.
+          </span>
+        </div>
+      )}
+
       {/* Rendered brief (inline) */}
       {report && !fullscreen && <IntelligenceReport report={report} />}
 
@@ -1732,10 +1762,22 @@ export default function WarRoom() {
             <div>{warRoomIndex.season} SEASON · {warRoomIndex.asOfGames} GP</div>
             <div className="text-ink-500">blend w₂₀₂₆={warRoomIndex.blendWeight.toFixed(2)}</div>
           </div>
-          <div className="flex items-center gap-1.5 rounded-md border border-ink-700 bg-ink-900 px-2.5 py-1.5">
-            <PulseDot color="bg-positive-500" />
-            <span className="font-mono text-[9px] font-semibold text-positive-400">LIVE</span>
-          </div>
+          {(() => {
+            const ageDays = snapshotAgeDays(warRoomIndex.generatedAt)
+            const tier = freshnessTier(ageDays)
+            const fc = FRESHNESS_COLORS[tier]
+            const label = tier === 'live' ? 'LIVE' : `${ageDays}d old`
+            const dateLabel = new Date(warRoomIndex.generatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+            return (
+              <div className="text-right">
+                <div className={`flex items-center gap-1.5 rounded-md border ${fc.border} bg-ink-900 px-2.5 py-1.5`}>
+                  <PulseDot color={fc.dot} />
+                  <span className={`font-mono text-[9px] font-semibold ${fc.text}`}>{label}</span>
+                </div>
+                <div className="mt-0.5 font-mono text-[8px] text-ink-600">snapshot {dateLabel}</div>
+              </div>
+            )
+          })()}
         </div>
       </div>
 

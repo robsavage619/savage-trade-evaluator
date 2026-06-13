@@ -585,7 +585,7 @@ export default function TradeBuilder() {
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-[11px] text-ink-400">
         <span className="mono">
-          Live data · 40-man rosters · {roster.player_count} active players · last sync {new Date(roster.refreshed_at).toLocaleString()} · refresh in header
+          Rosters: {roster.player_count} active players · last sync {new Date(roster.refreshed_at).toLocaleString()} (live) · WAR/salary from build-time seed (not live) · refresh in header
         </span>
         <span className="mono">
           Synthetic posterior · v1 dev-signature multipliers · context features pre-V2 model
