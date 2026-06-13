@@ -71,9 +71,19 @@ def _build_v3_outcomes() -> pd.DataFrame:
         windowed, on=["trade_event_id", "receiver_bref", "trade_season"], how="left"
     )
     fg = build_outcomes_fg()[
-        ["trade_event_id", "receiver_bref", "wrc_delta", "fip_delta", "xfip_delta", "siera_delta"]
+        [
+            "trade_event_id",
+            "receiver_bref",
+            "trade_season",
+            "wrc_delta",
+            "fip_delta",
+            "xfip_delta",
+            "siera_delta",
+        ]
     ]
-    return merged.merge(fg, on=["trade_event_id", "receiver_bref"], how="left")
+    return merged.merge(
+        fg, on=["trade_event_id", "receiver_bref", "trade_season"], how="left"
+    )
 
 
 def assemble_v3_combined() -> pd.DataFrame:
