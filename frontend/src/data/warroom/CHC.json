@@ -63,11 +63,11 @@
   "holes": [
     {
       "position": "SP",
-      "rosteredWar": 6.1,
+      "rosteredWar": 5.16,
       "farmWar": 0.64,
       "replacementBaseline": 12.0,
-      "holeScore": 5.26,
-      "severity": "warning",
+      "holeScore": 6.2,
+      "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
         "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
@@ -75,10 +75,10 @@
     },
     {
       "position": "RP",
-      "rosteredWar": 2.6,
+      "rosteredWar": 2.52,
       "farmWar": 0.59,
       "replacementBaseline": 4.0,
-      "holeScore": 0.81,
+      "holeScore": 0.89,
       "severity": "ok",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -114,29 +114,29 @@
     },
     {
       "position": "2B",
-      "rosteredWar": 6.03,
+      "rosteredWar": 6.19,
       "farmWar": 0.0,
       "replacementBaseline": 2.0,
-      "holeScore": -4.03,
+      "holeScore": -4.19,
       "severity": "ok",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
         "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
       },
-      "surplus": 4.03
+      "surplus": 4.19
     },
     {
       "position": "RF",
-      "rosteredWar": 5.6,
+      "rosteredWar": 5.55,
       "farmWar": 0.0,
       "replacementBaseline": 2.0,
-      "holeScore": -3.6,
+      "holeScore": -3.55,
       "severity": "ok",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
         "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
       },
-      "surplus": 3.6
+      "surplus": 3.55
     },
     {
       "position": "C",
@@ -205,6 +205,731 @@
     }
   ],
   "buyLow": [],
-  "scenarios": [],
-  "lenses": []
+  "scenarios": [
+    {
+      "trade_event_id": 790245,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.06376730252032607,
+        "median": 0.06507158676591995,
+        "sd": 1.0840461619015493,
+        "p5": -0.9884205179581442,
+        "p95": 1.1432699185766284,
+        "p_positive": 0.5566666666666666,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 367923.8446500106,
+        "median": 367317.3533310364,
+        "sd": 6573644.193238032,
+        "p5": -6132948.658201154,
+        "p95": 7015837.875442211,
+        "p_positive": 0.5585,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.05397546516148786,
+        "median": 0.060165324741534076,
+        "sd": 1.5475387214226033,
+        "p5": -1.441776499558806,
+        "p95": 1.600096770071091,
+        "p_positive": 0.5348333333333334,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 752233,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.05926282522422872,
+        "median": 0.055953766028233265,
+        "sd": 1.244447456830586,
+        "p5": -0.9946105947248058,
+        "p95": 1.094208095043177,
+        "p_positive": 0.5565,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 63882.34697946307,
+        "median": 46049.83760578185,
+        "sd": 7618448.883190301,
+        "p5": -6354387.261610886,
+        "p95": 6335083.607109738,
+        "p_positive": 0.5076666666666667,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.06796322212571793,
+        "median": 0.06735702335027077,
+        "sd": 1.7563233473214197,
+        "p5": -1.4219338135691353,
+        "p95": 1.5230172633265764,
+        "p_positive": 0.5465,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 790595,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": -0.0005914716846072252,
+        "median": -0.01657427975339365,
+        "sd": 0.9976471540633459,
+        "p5": -1.0831538538454466,
+        "p95": 1.0168518142519276,
+        "p_positive": 0.48183333333333334,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -5555.338609747949,
+        "median": -90984.53004693147,
+        "sd": 6116113.018066203,
+        "p5": -6524068.151033474,
+        "p95": 6230370.540352973,
+        "p_positive": 0.48783333333333334,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.13501818963695386,
+        "median": -0.15829277068561098,
+        "sd": 1.4208692159123515,
+        "p5": -1.6235782045357487,
+        "p95": 1.3025413369152676,
+        "p_positive": 0.39416666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 808316,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.06945119786228979,
+        "median": 0.05931892920963977,
+        "sd": 1.2311315413738928,
+        "p5": -0.9934104348373551,
+        "p95": 1.1695573062392957,
+        "p_positive": 0.5561666666666667,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 349289.90452619165,
+        "median": 275443.7747166138,
+        "sd": 7725319.71269149,
+        "p5": -6358798.448486034,
+        "p95": 7068738.428477116,
+        "p_positive": 0.5406666666666666,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.07388929979578425,
+        "median": -0.07960245187326714,
+        "sd": 1.7738775687611053,
+        "p5": -1.6189238057196451,
+        "p95": 1.4650062997306357,
+        "p_positive": 0.44616666666666666,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 808646,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.06023422287922418,
+        "median": 0.0550886736248683,
+        "sd": 0.9671080455318715,
+        "p5": -0.9721813002266155,
+        "p95": 1.145438558949641,
+        "p_positive": 0.5565,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 81057.5220383054,
+        "median": 43988.909697455354,
+        "sd": 5865160.054835468,
+        "p5": -6126536.217562184,
+        "p95": 6751273.641330653,
+        "p_positive": 0.505,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.0140343095065473,
+        "median": 0.008293634473284406,
+        "sd": 1.3687649492156604,
+        "p5": -1.4488381832731523,
+        "p95": 1.5726713433344583,
+        "p_positive": 0.5056666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 791039,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.06366957795033543,
+        "median": 0.07262699531975714,
+        "sd": 0.9653162027527965,
+        "p5": -0.9758261039438015,
+        "p95": 1.0774695916698647,
+        "p_positive": 0.5711666666666667,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 201247.13705862244,
+        "median": 275495.1875242735,
+        "sd": 5907374.699581418,
+        "p5": -6075824.748560958,
+        "p95": 6408256.850338577,
+        "p_positive": 0.5426666666666666,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.07952159876181766,
+        "median": 0.09188182580946014,
+        "sd": 1.3723626481935627,
+        "p5": -1.374816668260607,
+        "p95": 1.5116384479105895,
+        "p_positive": 0.5653333333333334,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 772498,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.05373583008874391,
+        "median": 0.03946151436205597,
+        "sd": 1.031603863910285,
+        "p5": -0.9618474223580626,
+        "p95": 1.1278904056314636,
+        "p_positive": 0.5386666666666666,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -195647.99522478675,
+        "median": -276917.8754185727,
+        "sd": 6270465.042568084,
+        "p5": -6429661.283054746,
+        "p95": 6312882.363390183,
+        "p_positive": 0.4515,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.02978916231278993,
+        "median": 0.008189899130514156,
+        "sd": 1.4409970622803367,
+        "p5": -1.4265657799488751,
+        "p95": 1.553461718129746,
+        "p_positive": 0.5053333333333333,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 806688,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": -0.0611613115932509,
+        "median": -0.03545063652987224,
+        "sd": 1.1480792289760142,
+        "p5": -1.1233810610311679,
+        "p95": 0.9987271175042872,
+        "p_positive": 0.467,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 197439.4338291381,
+        "median": 328571.2147829975,
+        "sd": 6960900.924638942,
+        "p5": -6316197.375752849,
+        "p95": 6711743.965782375,
+        "p_positive": 0.5495,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.1224036370714561,
+        "median": -0.09270761244438191,
+        "sd": 1.6083855865483794,
+        "p5": -1.6329780788385715,
+        "p95": 1.4174848165773315,
+        "p_positive": 0.43916666666666665,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 736617,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.11102456332449882,
+        "median": 0.07317588669703745,
+        "sd": 4.1189889739289836,
+        "p5": -0.9748544211132891,
+        "p95": 1.1308127838471,
+        "p_positive": 0.571,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -79353.78809363469,
+        "median": -296456.31829160824,
+        "sd": 23756636.301417083,
+        "p5": -6725470.777223316,
+        "p95": 6026477.910957444,
+        "p_positive": 0.44966666666666666,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.09472695985088338,
+        "median": 0.05437679568721765,
+        "sd": 5.04063154889024,
+        "p5": -1.4428652070574972,
+        "p95": 1.5673492159536804,
+        "p_positive": 0.5365,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 781346,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.06036089624029153,
+        "median": 0.03092476205802458,
+        "sd": 2.6306712331151645,
+        "p5": -1.0552055273828718,
+        "p95": 1.1684229052902775,
+        "p_positive": 0.5313333333333333,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -13102.120127961834,
+        "median": -210258.01575150806,
+        "sd": 16145424.274548708,
+        "p5": -6856927.4672818575,
+        "p95": 6789472.6544068605,
+        "p_positive": 0.467,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.03710633286644662,
+        "median": -0.0050438029105553395,
+        "sd": 3.7968663779985894,
+        "p5": -1.5751471867626852,
+        "p95": 1.6104651540996722,
+        "p_positive": 0.497,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 809266,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.020942504364668258,
+        "median": 0.016598741359655944,
+        "sd": 1.066902152336425,
+        "p5": -1.0523002681988443,
+        "p95": 1.0746889556021342,
+        "p_positive": 0.5156666666666667,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -570248.8273885886,
+        "median": -612644.136655781,
+        "sd": 6522953.829473183,
+        "p5": -7036023.099658314,
+        "p95": 5805739.1839420805,
+        "p_positive": 0.403,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.05629983567705697,
+        "median": 0.04682753924686173,
+        "sd": 1.5253350264642345,
+        "p5": -1.4705878288232714,
+        "p95": 1.5757925944747924,
+        "p_positive": 0.5311666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 806683,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.0005756457334294597,
+        "median": 0.013486263502657081,
+        "sd": 1.2189957938878597,
+        "p5": -1.0494825526475737,
+        "p95": 1.0928689483817535,
+        "p_positive": 0.5126666666666667,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -878463.636849966,
+        "median": -792295.2348496704,
+        "sd": 7435786.222449855,
+        "p5": -7297297.658780739,
+        "p95": 5784856.258909565,
+        "p_positive": 0.37916666666666665,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.08541622472406721,
+        "median": -0.0627833199900879,
+        "sd": 1.7319431824511857,
+        "p5": -1.576419274841072,
+        "p95": 1.4547484661848382,
+        "p_positive": 0.45566666666666666,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 770991,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.046732626454319776,
+        "median": 0.05451184184334146,
+        "sd": 1.0410491952132022,
+        "p5": -1.0014741477837794,
+        "p95": 1.08676099046873,
+        "p_positive": 0.5511666666666667,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 101497.18644187089,
+        "median": 155878.15004090965,
+        "sd": 6312195.807586847,
+        "p5": -6286120.760189289,
+        "p95": 6418827.784653098,
+        "p_positive": 0.5228333333333334,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.018385946347335643,
+        "median": 0.030286335904665562,
+        "sd": 1.4694387125614659,
+        "p5": -1.4705381035695477,
+        "p95": 1.4862223027177528,
+        "p_positive": 0.5188333333333334,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 789735,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.05761364859465854,
+        "median": 0.06972405454185443,
+        "sd": 1.2175703875860904,
+        "p5": -1.0037023608126223,
+        "p95": 1.1087311017896109,
+        "p_positive": 0.5653333333333334,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -111673.39984059078,
+        "median": -47666.157658763696,
+        "sd": 7338480.533135806,
+        "p5": -6567654.842591519,
+        "p95": 6329392.716437218,
+        "p_positive": 0.4925,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.07287127720328332,
+        "median": 0.07874836406531066,
+        "sd": 1.6882075250155197,
+        "p5": -1.415411333183414,
+        "p95": 1.5686638151632453,
+        "p_positive": 0.5541666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 792419,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.06246332582312116,
+        "median": 0.04869998907620193,
+        "sd": 0.9553572869191708,
+        "p5": -0.9623729369013198,
+        "p95": 1.087028612287058,
+        "p_positive": 0.5443333333333333,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 71757.7285164045,
+        "median": -28687.417827093508,
+        "sd": 5975695.3079867475,
+        "p5": -6298366.020588265,
+        "p95": 6337073.778558122,
+        "p_positive": 0.49583333333333335,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.048709000641972616,
+        "median": 0.027983914810541966,
+        "sd": 1.351014643732547,
+        "p5": -1.429477846414415,
+        "p95": 1.492042814202611,
+        "p_positive": 0.5206666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 787822,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.0935117775610387,
+        "median": 0.09306974431917076,
+        "sd": 1.0278707894609707,
+        "p5": -0.9909879858523042,
+        "p95": 1.1571990570499138,
+        "p_positive": 0.5915,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 247496.1558602345,
+        "median": 235046.2479207255,
+        "sd": 6236197.77595297,
+        "p5": -6383734.590759023,
+        "p95": 6657201.610819795,
+        "p_positive": 0.5383333333333333,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.048764822835909515,
+        "median": 0.045291057971300674,
+        "sd": 1.4626173285287065,
+        "p5": -1.5055241706082019,
+        "p95": 1.56766554801864,
+        "p_positive": 0.5311666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 762937,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.08010444750978601,
+        "median": 0.05994155659589878,
+        "sd": 1.015581672144872,
+        "p5": -0.9997885872432869,
+        "p95": 1.1896891843047543,
+        "p_positive": 0.5585,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 123515.3590795839,
+        "median": 4934.858151523862,
+        "sd": 6189369.401867205,
+        "p5": -6425939.022652089,
+        "p95": 6926592.219418747,
+        "p_positive": 0.5011666666666666,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.0577159446757807,
+        "median": 0.029462849765352406,
+        "sd": 1.4545101622644274,
+        "p5": -1.4754442358174096,
+        "p95": 1.659201831946336,
+        "p_positive": 0.5215,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 781633,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.0557084501434194,
+        "median": 0.05549500801909296,
+        "sd": 1.083787908802551,
+        "p5": -1.0025231487151864,
+        "p95": 1.0351348336255206,
+        "p_positive": 0.5536666666666666,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -28528.339088815144,
+        "median": -29748.94344756566,
+        "sd": 6500330.000823081,
+        "p5": -6399176.491104957,
+        "p95": 6023248.810504093,
+        "p_positive": 0.49466666666666664,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.020666701379244475,
+        "median": 0.019678532272975058,
+        "sd": 1.5171183351624182,
+        "p5": -1.487818956620761,
+        "p95": 1.4222263016203718,
+        "p_positive": 0.5143333333333333,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 739428,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.07194921569833483,
+        "median": 0.07534849562921664,
+        "sd": 1.0082044777562125,
+        "p5": -0.9999783906571036,
+        "p95": 1.121008182679865,
+        "p_positive": 0.572,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 78512.54465923419,
+        "median": 85315.95527778892,
+        "sd": 6164899.255020626,
+        "p5": -6411326.48619509,
+        "p95": 6465840.715785319,
+        "p_positive": 0.5141666666666667,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.04625785998022562,
+        "median": 0.05255289375395056,
+        "sd": 1.4304099056060195,
+        "p5": -1.4534065131999359,
+        "p95": 1.5398193418839894,
+        "p_positive": 0.5328333333333334,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 765861,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.04537155427823601,
+        "median": 0.06596365998584036,
+        "sd": 1.0067383484780739,
+        "p5": -0.9838861704278862,
+        "p95": 1.073831389232371,
+        "p_positive": 0.5648333333333333,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -82654.29779221777,
+        "median": 51958.41814048262,
+        "sd": 6192301.462427706,
+        "p5": -6363996.824798109,
+        "p95": 6160635.576181943,
+        "p_positive": 0.5105,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.01023149050169418,
+        "median": 0.03828641049269127,
+        "sd": 1.4287351942508923,
+        "p5": -1.4505981033187323,
+        "p95": 1.4648240243473962,
+        "p_positive": 0.525,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 808653,
+      "trade_season": 2024,
+      "receiver_bref": "CHC",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.054583589770283464,
+        "median": 0.05979515114514061,
+        "sd": 1.1430411363282846,
+        "p5": -1.0245390747769496,
+        "p95": 1.1684861794745094,
+        "p_positive": 0.5621666666666667,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -42136.076234274384,
+        "median": 7845.103354085702,
+        "sd": 6614258.828185331,
+        "p5": -6640340.349444165,
+        "p95": 6810495.282517027,
+        "p_positive": 0.502,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.018830895444186938,
+        "median": 0.027967957226206652,
+        "sd": 1.5586444164088757,
+        "p5": -1.511971571971589,
+        "p95": 1.6230387972714575,
+        "p_positive": 0.522,
+        "n_samples": 6000
+      }
+    }
+  ],
+  "lenses": [],
+  "gmContext": {
+    "name": "Jed Hoyer",
+    "archetype": "Deadline Dealer",
+    "archetypeDescription": "Concentrates activity at the trade deadline; buyer or seller.",
+    "warBuyerBias": -0.1,
+    "avgAgeReceived": 26.0,
+    "deadlinePct": 59.6,
+    "nTrades": 41,
+    "tradesPerSeason": 10.2
+  }
 }

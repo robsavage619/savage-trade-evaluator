@@ -125,6 +125,19 @@
       "surplus": 3.68
     },
     {
+      "position": "RP",
+      "rosteredWar": 5.43,
+      "farmWar": 0.72,
+      "replacementBaseline": 4.0,
+      "holeScore": -2.15,
+      "severity": "ok",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      },
+      "surplus": 2.15
+    },
+    {
       "position": "SP",
       "rosteredWar": 13.17,
       "farmWar": 0.79,
@@ -136,19 +149,6 @@
         "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
       },
       "surplus": 1.96
-    },
-    {
-      "position": "RP",
-      "rosteredWar": 5.08,
-      "farmWar": 0.72,
-      "replacementBaseline": 4.0,
-      "holeScore": -1.8,
-      "severity": "ok",
-      "citation": {
-        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
-        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
-      },
-      "surplus": 1.8
     },
     {
       "position": "LF",
@@ -165,6 +165,425 @@
     }
   ],
   "buyLow": [],
-  "scenarios": [],
-  "lenses": []
+  "scenarios": [
+    {
+      "trade_event_id": 756253,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.006905881463456365,
+        "median": 0.007614812179554786,
+        "sd": 1.084558331285507,
+        "p5": -1.053535037674711,
+        "p95": 1.101312539646739,
+        "p_positive": 0.508,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -811356.088520246,
+        "median": -834436.2272023642,
+        "sd": 6566230.324372018,
+        "p5": -7297669.517227646,
+        "p95": 5795569.217428929,
+        "p_positive": 0.38233333333333336,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.08971881255326379,
+        "median": -0.08397088505174777,
+        "sd": 1.5472729746933884,
+        "p5": -1.6061075598797392,
+        "p95": 1.452840175848164,
+        "p_positive": 0.44333333333333336,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 785757,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.030302649287865444,
+        "median": 0.027630944221552822,
+        "sd": 1.2447559252011138,
+        "p5": -1.0401801671736444,
+        "p95": 1.0764755159814292,
+        "p_positive": 0.529,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -220853.6158041101,
+        "median": -219320.1383090522,
+        "sd": 7623898.767345149,
+        "p5": -6766818.18316273,
+        "p95": 6052278.884881306,
+        "p_positive": 0.46316666666666667,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.07277523818635998,
+        "median": -0.07294207828010318,
+        "sd": 1.7562247342874633,
+        "p5": -1.5875974378772035,
+        "p95": 1.3787474197869918,
+        "p_positive": 0.44766666666666666,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 790728,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": -0.05934895620901482,
+        "median": -0.07250306967902531,
+        "sd": 0.9954629161280582,
+        "p5": -1.1366752755675102,
+        "p95": 0.959952832890136,
+        "p_positive": 0.42733333333333334,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -689183.297121905,
+        "median": -778854.7886976413,
+        "sd": 6089268.907050594,
+        "p5": -7134257.8391179815,
+        "p95": 5600937.684073026,
+        "p_positive": 0.38716666666666666,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.22684532500108792,
+        "median": -0.24596132611355426,
+        "sd": 1.4195085745353182,
+        "p5": -1.7275417146820697,
+        "p95": 1.2292005500186853,
+        "p_positive": 0.3405,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 806845,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": -0.004175484354011531,
+        "median": -0.011480787650835822,
+        "sd": 1.2297592314363643,
+        "p5": -1.0526260350382317,
+        "p95": 1.0766329147649076,
+        "p_positive": 0.48883333333333334,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -1057840.0023716015,
+        "median": -1141479.9343129033,
+        "sd": 7710646.004748247,
+        "p5": -7596559.152209396,
+        "p95": 5502248.100720898,
+        "p_positive": 0.3401666666666667,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.14849048185552977,
+        "median": -0.156328882644024,
+        "sd": 1.7693285432496466,
+        "p5": -1.6837666408470986,
+        "p95": 1.348163353410969,
+        "p_positive": 0.394,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 808917,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.015621148351834499,
+        "median": 0.009205426258478921,
+        "sd": 0.9729917759000519,
+        "p5": -1.0259676422086113,
+        "p95": 1.1257111162633002,
+        "p_positive": 0.5098333333333334,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -1019702.6316023312,
+        "median": -1039977.5142765031,
+        "sd": 5941060.157804831,
+        "p5": -7501661.631725279,
+        "p95": 5857909.5749862315,
+        "p_positive": 0.358,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.2752961770597911,
+        "median": -0.2855691454217092,
+        "sd": 1.3748969595217089,
+        "p5": -1.7436430714338411,
+        "p95": 1.2641457901833228,
+        "p_positive": 0.3283333333333333,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 791024,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.021434287649216476,
+        "median": 0.030420169837420463,
+        "sd": 0.9658420823774655,
+        "p5": -1.006110018552969,
+        "p95": 1.0316181954570633,
+        "p_positive": 0.5276666666666666,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -227403.12684115084,
+        "median": -146680.24397172919,
+        "sd": 5904548.00016096,
+        "p5": -6521465.03455164,
+        "p95": 5965785.10687636,
+        "p_positive": 0.4736666666666667,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.0483902562699192,
+        "median": 0.06732939953224881,
+        "sd": 1.372456687148495,
+        "p5": -1.4226284486614607,
+        "p95": 1.4884986760697707,
+        "p_positive": 0.5436666666666666,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 796575,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.023477141872577885,
+        "median": 0.006869424765196308,
+        "sd": 1.0320489966076047,
+        "p5": -0.9876469195064421,
+        "p95": 1.0952617592447953,
+        "p_positive": 0.507,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -161462.20786087375,
+        "median": -237732.34179930482,
+        "sd": 6271999.423350037,
+        "p5": -6288243.028446412,
+        "p95": 6336400.803706049,
+        "p_positive": 0.45866666666666667,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.0908463612361576,
+        "median": -0.11188916108318259,
+        "sd": 1.4420830056169904,
+        "p5": -1.5271844190441874,
+        "p95": 1.4205801017065458,
+        "p_positive": 0.4191666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 791294,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.006061902495819609,
+        "median": 0.029657276814358924,
+        "sd": 1.1466035727691037,
+        "p5": -1.0664431781614625,
+        "p95": 1.09032509992483,
+        "p_positive": 0.5308333333333334,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -273610.93458120036,
+        "median": -135224.6798268631,
+        "sd": 6935881.109240901,
+        "p5": -6743094.457316965,
+        "p95": 6270488.002344246,
+        "p_positive": 0.479,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.032015101833187315,
+        "median": 0.002496791874689097,
+        "sd": 1.6050151884360426,
+        "p5": -1.535944097158472,
+        "p95": 1.4893042755549553,
+        "p_positive": 0.502,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 790901,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.4150858819236893,
+        "median": 0.37216199519536497,
+        "sd": 4.123042341619223,
+        "p5": -0.6928967602697839,
+        "p95": 1.4369224893487542,
+        "p_positive": 0.7836666666666666,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 4762322.670751244,
+        "median": 4494020.105919733,
+        "sd": 23802707.149728622,
+        "p5": -2332099.531214393,
+        "p95": 11305724.806107081,
+        "p_positive": 0.8966666666666666,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.583217643879868,
+        "median": 0.5351310652876751,
+        "sd": 5.042053354414477,
+        "p5": -0.998991219334305,
+        "p95": 2.0506959851293973,
+        "p_positive": 0.7911666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 737004,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.06285925069034073,
+        "median": 0.036046589693176034,
+        "sd": 2.630477969620969,
+        "p5": -1.0785467245614202,
+        "p95": 1.1627976731968643,
+        "p_positive": 0.535,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": 66776.744183768,
+        "median": -123100.96229703724,
+        "sd": 16147889.841881694,
+        "p5": -6828671.988734459,
+        "p95": 6881794.808928036,
+        "p_positive": 0.4795,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": 0.03015795732459937,
+        "median": -0.015575505912376275,
+        "sd": 3.7961685067871076,
+        "p5": -1.5779742738657359,
+        "p95": 1.6232453069422386,
+        "p_positive": 0.4886666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 791243,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.030036915355688393,
+        "median": 0.026544838131138337,
+        "sd": 1.066079298489561,
+        "p5": -1.02782837747958,
+        "p95": 1.0859671577729415,
+        "p_positive": 0.5226666666666666,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -135265.9410547925,
+        "median": -163187.26082197204,
+        "sd": 6516394.378501122,
+        "p5": -6588301.9621655755,
+        "p95": 6278068.414884009,
+        "p_positive": 0.4755,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.019486164288461068,
+        "median": -0.022254726295400762,
+        "sd": 1.5240052362854317,
+        "p5": -1.5373181675132253,
+        "p95": 1.485372844236944,
+        "p_positive": 0.4826666666666667,
+        "n_samples": 6000
+      }
+    },
+    {
+      "trade_event_id": 768836,
+      "trade_season": 2024,
+      "receiver_bref": "CIN",
+      "model_version": "v3.2",
+      "train_end_season": 2022,
+      "war_delta": {
+        "mean": 0.014140933230890754,
+        "median": 0.027260297785975274,
+        "sd": 1.2173608311407014,
+        "p5": -1.0228537615994002,
+        "p95": 1.1047758416490547,
+        "p_positive": 0.5261666666666667,
+        "n_samples": 6000
+      },
+      "dollar_surplus": {
+        "mean": -228925.03624327676,
+        "median": -147056.2938557258,
+        "sd": 7408411.68924994,
+        "p5": -6580754.380324459,
+        "p95": 6350416.494308961,
+        "p_positive": 0.475,
+        "n_samples": 6000
+      },
+      "surplus_wins": {
+        "mean": -0.040236650035672034,
+        "median": -0.023841403409802397,
+        "sd": 1.7321179023619866,
+        "p5": -1.5219861150406497,
+        "p95": 1.4972769795213878,
+        "p_positive": 0.4845,
+        "n_samples": 6000
+      }
+    }
+  ],
+  "lenses": [],
+  "gmContext": {
+    "name": "Nick Krall",
+    "archetype": "Pitching Factory",
+    "archetypeDescription": "Disproportionately acquires pitching; arm-acquisition focus.",
+    "warBuyerBias": -0.2,
+    "avgAgeReceived": 26.3,
+    "deadlinePct": 51.1,
+    "nTrades": 35,
+    "tradesPerSeason": 8.8
+  }
 }
