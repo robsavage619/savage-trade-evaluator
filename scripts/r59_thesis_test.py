@@ -39,6 +39,7 @@ logger = logging.getLogger("r59")
 import numpy as np
 import pandas as pd
 
+from savage_trade_evaluator.modeling.experiment import write_manifest
 from savage_trade_evaluator.modeling.v2.backtest import _crps_empirical
 from savage_trade_evaluator.modeling.v2.features import (
     ACQUIRED_PLAYER_FEATURES,
@@ -215,6 +216,11 @@ def main() -> None:
 
     all_rows: list[dict] = []
     outcomes = ["war_delta", "dollar_surplus"]
+    write_manifest(
+        "r59_thesis_test",
+        {o: V3_OUTCOME_FEATURES[o] for o in outcomes},
+        extra={"acquired_player_features": list(ACQUIRED_PLAYER_FEATURES)},
+    )
 
     for outcome in outcomes:
         splits = walk_forward_splits(outcome, combined)

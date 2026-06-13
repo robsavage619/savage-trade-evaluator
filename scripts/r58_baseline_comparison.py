@@ -36,6 +36,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats as scipy_stats
 
+from savage_trade_evaluator.modeling.experiment import write_manifest
 from savage_trade_evaluator.modeling.v2.backtest import _crps_empirical
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
@@ -273,6 +274,10 @@ def main() -> None:
     # surplus_wins: dollar_surplus / $/WAR — wins-denominated, Phase B.
     # xwoba/kpct: 1 fold only — exploratory, skip baseline comparison.
     outcomes = ["war_delta", "dollar_surplus", "surplus_wins"]
+    write_manifest(
+        "r58_baseline_comparison",
+        {o: V3_OUTCOME_FEATURES[o] for o in outcomes},
+    )
 
     for outcome in outcomes:
         feature_cols = V3_OUTCOME_FEATURES[outcome]

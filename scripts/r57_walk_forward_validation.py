@@ -32,6 +32,7 @@ logger = logging.getLogger("r57")
 
 import pandas as pd
 
+from savage_trade_evaluator.modeling.experiment import write_manifest
 from savage_trade_evaluator.modeling.v3 import V3_OUTCOME_FEATURES, assemble_v3_combined
 from savage_trade_evaluator.modeling.v3_cv import (
     V3CVResult,
@@ -120,10 +121,14 @@ def main() -> None:
     combined = assemble_v3_combined()
     logger.info("combined: %d rows, %d cols", len(combined), len(combined.columns))
 
+    outcomes = ["war_delta", "xwoba_delta", "kpct_delta", "dollar_surplus"]
+    write_manifest(
+        "r57_walk_forward_validation",
+        {o: V3_OUTCOME_FEATURES[o] for o in outcomes},
+    )
+
     # Run all four outcomes. war_delta and dollar_surplus run with ALL_FEATURES (~16).
     # xwoba_delta and kpct_delta use the acquired-player-only subsets.
-    outcomes = ["war_delta", "xwoba_delta", "kpct_delta", "dollar_surplus"]
-
     results: dict[str, V3CVResult] = {}
     for outcome in outcomes:
         try:
