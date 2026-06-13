@@ -28,7 +28,7 @@ Refinement (D-09): **three valuations per player at any decision point** — cur
 - **Phase 0** — research & vault build-up: ✅ done. 22 vault notes, 5 books ingested.
 - **Phase 1** — data spine: ✅ V1 substantively complete. 9 commits. 703K transactions, 182K bWAR rows, full Statcast 2015-2024, coaches + front-office personnel.
 - **Phase 2** — context-aware valuation model: ✅ done. V3 beats naïve baseline 28% MAE (D-51). Production cache at schema33/v3.2. See `docs/NAIVE_BASELINE.md` for baseline design; `scripts/benchmark_vs_naive.py` for the GO result.
-- **Phase 3** — GM-behavior layer: ☐ next. Personnel data is ready.
+- **Phase 3** — GM-behavior layer: ✅ done. 86 GM behavioral profiles + 5 archetypes (D-52). `gmContext` live in War Room. Schema v34. Acceptance-probability model deferred (needs negative examples).
 - **Phase 4** — product surface: ☐ later.
 
 ## Validation philosophy

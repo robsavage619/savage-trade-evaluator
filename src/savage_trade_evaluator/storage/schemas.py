@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 33
+SCHEMA_VERSION = 34
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -1319,9 +1319,45 @@ DDL_STATEMENTS: tuple[str, ...] = (
         trade_event_id         INTEGER NOT NULL,
         receiver_bref          VARCHAR NOT NULL,
         trade_season           INTEGER NOT NULL,
-        expected_war_delta_cf  DOUBLE,     -- org-adjusted Marcel expected WAR delta (if stayed)
+        expected_war_delta_cf  DOUBLE,
         built_at               TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (trade_event_id, receiver_bref, trade_season)
+    )
+    """,
+    # Phase 3: GM behavioral profiles (schema v34)
+    """
+    CREATE TABLE IF NOT EXISTS gm_behavioral_profiles (
+        regime_id              VARCHAR NOT NULL PRIMARY KEY,
+        decision_maker         VARCHAR NOT NULL,
+        bref_code              VARCHAR NOT NULL,
+        regime_start           INTEGER NOT NULL,
+        regime_end             INTEGER NOT NULL,
+        tenure_seasons         INTEGER NOT NULL,
+        n_trades               INTEGER NOT NULL,
+        trades_per_season      DOUBLE,
+        avg_war_received       DOUBLE,
+        avg_war_sent           DOUBLE,
+        war_buyer_bias         DOUBLE,   -- positive = buys WAR, negative = sells
+        avg_age_received       DOUBLE,
+        pct_pitchers_received  DOUBLE,
+        deadline_pct           DOUBLE,
+        fv_received_avg        DOUBLE,
+        fv_sent_avg            DOUBLE,
+        prospect_hugging_ratio DOUBLE,   -- >1 = hoard prospects, <1 = trade them
+        built_at               TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS gm_archetypes (
+        regime_id              VARCHAR NOT NULL PRIMARY KEY,
+        decision_maker         VARCHAR NOT NULL,
+        bref_code              VARCHAR NOT NULL,
+        regime_start           INTEGER NOT NULL,
+        regime_end             INTEGER NOT NULL,
+        archetype              VARCHAR NOT NULL,
+        archetype_description  VARCHAR,
+        cluster_id             INTEGER NOT NULL,
+        built_at               TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """,
 )

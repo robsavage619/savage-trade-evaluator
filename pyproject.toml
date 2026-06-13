@@ -21,6 +21,7 @@ dependencies = [
     "pybaseball>=2.2",
     "pydantic>=2.9",
     "pymc>=6.0.0",
+    "scikit-learn>=1.9.0",
     "typer>=0.12",
 ]
 

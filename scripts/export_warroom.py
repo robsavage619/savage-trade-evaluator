@@ -25,6 +25,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from savage_trade_evaluator.modeling.gm_archetypes import lookup_archetype
 from savage_trade_evaluator.modeling.scenario_engine import score_historical_scenarios
 from savage_trade_evaluator.storage.db import connect
 
@@ -337,6 +338,33 @@ def build_team(
     posture, rationale = window_posture(index_team["winPct"], index_team["gamesBack"])
     expiring = _expiring_contracts(conn, code)
 
+    # GM behavioral context (Phase 3)
+    gm_row = conn.execute(
+        """
+        SELECT gbp.decision_maker, gbp.war_buyer_bias, gbp.avg_age_received,
+               gbp.deadline_pct, gbp.n_trades, gbp.trades_per_season,
+               ga.archetype, ga.archetype_description
+        FROM gm_behavioral_profiles gbp
+        LEFT JOIN gm_archetypes ga USING (regime_id)
+        WHERE gbp.bref_code = ? AND gbp.regime_end >= 2023
+        ORDER BY gbp.regime_end DESC LIMIT 1
+        """,
+        [code],
+    ).fetchone()
+    gm_context = None
+    if gm_row:
+        gm_name, war_bias, avg_age, dl_pct, n_trades, tps, archetype, arch_desc = gm_row
+        gm_context = {
+            "name": gm_name,
+            "archetype": archetype,
+            "archetypeDescription": arch_desc,
+            "warBuyerBias": round(float(war_bias), 2) if war_bias is not None else None,
+            "avgAgeReceived": round(float(avg_age), 1) if avg_age is not None else None,
+            "deadlinePct": round(float(dl_pct) * 100, 1) if dl_pct is not None else None,
+            "nTrades": int(n_trades) if n_trades is not None else None,
+            "tradesPerSeason": round(float(tps), 1) if tps is not None else None,
+        }
+
     return {
         "team": code,
         "context": {
@@ -362,6 +390,7 @@ def build_team(
             else []
         ),
         "lenses": [],  # persona-lens annotations — next pass
+        "gmContext": gm_context,
     }
 
 
