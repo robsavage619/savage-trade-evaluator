@@ -84,16 +84,22 @@ def _build_v3_outcomes() -> pd.DataFrame:
     return merged.merge(fg, on=["trade_event_id", "receiver_bref", "trade_season"], how="left")
 
 
-def assemble_v3_combined(include_marcel_residual: bool = False) -> pd.DataFrame:
+def assemble_v3_combined(
+    include_marcel_residual: bool = False,
+    include_counterfactual: bool = False,
+) -> pd.DataFrame:
     """Feature + outcome matrix with V3-specific window choices for war_delta.
 
     Args:
         include_marcel_residual: If True, merge Marcel expected_war_delta and
             war_delta_residual columns as supplementary outcomes. Gated behind
             D-49 go/no-go — not enabled by default.
+        include_counterfactual: If True, also merge the org-adjusted counterfactual
+            columns (expected_war_delta_cf, war_delta_cf) from C1a. Requires
+            include_marcel_residual=True (war_delta_residual is the baseline).
     """
     combined = assemble_combined(outcomes_df=_build_v3_outcomes())
-    if not include_marcel_residual:
+    if not include_marcel_residual and not include_counterfactual:
         return combined
 
     from savage_trade_evaluator.modeling.marcel import build_marcel_residuals
@@ -108,6 +114,22 @@ def assemble_v3_combined(include_marcel_residual: bool = False) -> pd.DataFrame:
         how="left",
     )
     combined["war_delta_residual"] = combined["war_delta"] - combined["expected_war_delta"]
+
+    if not include_counterfactual:
+        return combined
+
+    from savage_trade_evaluator.modeling.counterfactuals import build_counterfactual_residuals
+
+    cf = build_counterfactual_residuals(
+        war_window_start=V3_WAR_WINDOW[0],
+        war_window_end=V3_WAR_WINDOW[1],
+    )
+    combined = combined.merge(
+        cf,
+        on=["trade_event_id", "receiver_bref", "trade_season"],
+        how="left",
+    )
+    combined["war_delta_cf"] = combined["war_delta"] - combined["expected_war_delta_cf"]
     return combined
 
 

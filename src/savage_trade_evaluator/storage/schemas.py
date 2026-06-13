@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 31
+SCHEMA_VERSION = 32
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -1283,6 +1283,29 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_ofjump_year
         ON statcast_outfielder_jump(year)
+    """,
+    # C1a: org-adjusted Marcel counterfactual tables (schema v32)
+    """
+    CREATE TABLE IF NOT EXISTS org_retention_factors (
+        team_bref       VARCHAR NOT NULL,
+        position_group  VARCHAR NOT NULL,   -- 'SP', 'RP', or 'HIT'
+        season          INTEGER NOT NULL,
+        retention_factor DOUBLE NOT NULL,   -- shrunk mean(actual/Marcel) ratio
+        sample_n        INTEGER NOT NULL,
+        rolling_window  INTEGER NOT NULL,
+        built_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (team_bref, position_group, season)
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS player_counterfactuals (
+        trade_event_id         INTEGER NOT NULL,
+        receiver_bref          VARCHAR NOT NULL,
+        trade_season           INTEGER NOT NULL,
+        expected_war_delta_cf  DOUBLE,     -- org-adjusted Marcel expected WAR delta (if stayed)
+        built_at               TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (trade_event_id, receiver_bref, trade_season)
+    )
     """,
 )
 
