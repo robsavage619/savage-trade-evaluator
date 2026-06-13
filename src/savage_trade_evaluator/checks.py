@@ -59,9 +59,7 @@ class Expectation:
         return CheckResult(
             name=self.name,
             passed=passed,
-            message=(
-                f"{self.metric_label}={actual:.1f} {direction} threshold={threshold:.1f}"
-            ),
+            message=(f"{self.metric_label}={actual:.1f} {direction} threshold={threshold:.1f}"),
             actual=actual,
             threshold=threshold,
         )

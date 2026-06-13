@@ -155,9 +155,7 @@ def test_fold_test_sets_do_not_overlap() -> None:
 
     seen: set[int] = set()
     for s in splits:
-        test_rows = combined[
-            combined["trade_season"].between(s.test_start, s.test_end)
-        ]
+        test_rows = combined[combined["trade_season"].between(s.test_start, s.test_end)]
         test_ids = set(test_rows["trade_event_id"].tolist())
         overlap = seen & test_ids
         assert not overlap, (
@@ -172,12 +170,8 @@ def test_fold_train_seasons_are_strictly_before_test_seasons() -> None:
     combined = _make_combined(seasons)
     splits = walk_forward_splits("war_delta", combined)
     for s in splits:
-        train_rows = combined[
-            combined["trade_season"].between(s.train_start, s.train_end)
-        ]
-        test_rows = combined[
-            combined["trade_season"].between(s.test_start, s.test_end)
-        ]
+        train_rows = combined[combined["trade_season"].between(s.train_start, s.train_end)]
+        test_rows = combined[combined["trade_season"].between(s.test_start, s.test_end)]
         if train_rows.empty or test_rows.empty:
             continue
         assert int(train_rows["trade_season"].max()) < int(test_rows["trade_season"].min()), (

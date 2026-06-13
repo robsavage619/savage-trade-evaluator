@@ -88,9 +88,7 @@ def fit_v3_multilevel(
         # meaningful team variation if it exists.
         sigma_team = pm.HalfNormal("sigma_team", sigma=0.5)
         alpha_team_z = pm.Normal("alpha_team_z", mu=0.0, sigma=1.0, dims="team")
-        alpha_team = pm.Deterministic(
-            "alpha_team", alpha_team_z * sigma_team, dims="team"
-        )
+        alpha_team = pm.Deterministic("alpha_team", alpha_team_z * sigma_team, dims="team")
         beta = pm.Normal("beta", mu=0.0, sigma=0.3, dims="feature")
         sigma = pm.HalfNormal("sigma", sigma=1.0)
         mu = alpha0 + alpha_team[team_idx] + pm.math.dot(x, beta)
