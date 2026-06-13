@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 32
+SCHEMA_VERSION = 33
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -1283,6 +1283,23 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_ofjump_year
         ON statcast_outfielder_jump(year)
+    """,
+    # C4: FV-to-WAR calibration curve (schema v33)
+    """
+    CREATE TABLE IF NOT EXISTS prospect_fv_calibration (
+        fv               INTEGER NOT NULL,
+        n_comparables    INTEGER NOT NULL,
+        mean_war_5yr     DOUBLE  NOT NULL,
+        median_war_5yr   DOUBLE  NOT NULL,
+        std_war_5yr      DOUBLE  NOT NULL,
+        fitted_war_5yr   DOUBLE  NOT NULL,
+        fitted_war_p10   DOUBLE  NOT NULL,
+        fitted_war_p90   DOUBLE  NOT NULL,
+        cohort_start     INTEGER NOT NULL,
+        cohort_end       INTEGER NOT NULL,
+        calibrated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (fv)
+    )
     """,
     # C1a: org-adjusted Marcel counterfactual tables (schema v32)
     """
