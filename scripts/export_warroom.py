@@ -6,22 +6,26 @@ transparent, vault-grounded heuristics computed for the current season, with
 small-sample 2026 stats shrunk toward the 2025 full season (D-12 partial
 pooling, McElreath ch12-13).
 
-This is the *pre-model* layer: every number here is a documented heuristic, not
-a posterior. Slots for the Phase 2 contextual valuation model (``scenarios``)
-ship empty and clearly labeled.
+The ``scenarios`` slot is populated with Phase 2 model posteriors when
+``--with-scenarios`` is passed. The first run trains and caches production fits
+(slow: ~5 min). Subsequent runs load from cache (fast).
 
 Run:
-    uv run python scripts/export_warroom.py
+    uv run python scripts/export_warroom.py                  # fast, no scenarios
+    uv run python scripts/export_warroom.py --with-scenarios  # includes posteriors
+    uv run python scripts/export_warroom.py --warm-cache      # pre-train without exporting
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from savage_trade_evaluator.modeling.scenario_engine import score_historical_scenarios
 from savage_trade_evaluator.storage.db import connect
 
 if TYPE_CHECKING:
@@ -261,6 +265,9 @@ def build_team(
     roles: dict[int, str],
     farm_all: dict[str, dict[str, float]],
     index_team: dict,
+    *,
+    with_scenarios: bool = False,
+    scenarios_season: int = 2024,
 ) -> dict:
     """Build one club's War Room payload: context rail + holes board.
 
@@ -349,7 +356,11 @@ def build_team(
         "holes": holes,
         "surpluses": surpluses,
         "buyLow": [],  # Panel 2 — next pass
-        "scenarios": [],  # Panel 3 — wired to Phase 2 posterior model
+        "scenarios": (
+            score_historical_scenarios(season=scenarios_season, team_bref=code)
+            if with_scenarios
+            else []
+        ),
         "lenses": [],  # persona-lens annotations — next pass
     }
 
@@ -483,7 +494,35 @@ def _expiring_contracts(conn: duckdb.DuckDBPyConnection, code: str) -> list[dict
 
 def main() -> None:
     """Export the index + per-club War Room JSON snapshots."""
+    parser = argparse.ArgumentParser(description="Export War Room JSON snapshots")
+    parser.add_argument(
+        "--with-scenarios",
+        action="store_true",
+        help="Populate the scenarios slot with Phase 2 model posteriors (slow first run).",
+    )
+    parser.add_argument(
+        "--scenarios-season",
+        type=int,
+        default=2024,
+        metavar="YEAR",
+        help="Which trade season to score for the scenarios slot (default: 2024).",
+    )
+    parser.add_argument(
+        "--warm-cache",
+        action="store_true",
+        help="Pre-train and cache production fits without running the full export.",
+    )
+    args = parser.parse_args()
+
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+    if args.warm_cache:
+        from savage_trade_evaluator.modeling.production_fit import warm_cache
+
+        warm_cache()
+        logger.info("cache warmed — rerun without --warm-cache to export")
+        return
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     with connect(read_only=True) as conn:
         games = _games_played(conn)
@@ -505,10 +544,21 @@ def main() -> None:
 
         for t in index["teams"]:
             payload = build_team(
-                conn, t["code"], w, games, war, roles, farm_all, index_by_code[t["code"]]
+                conn,
+                t["code"],
+                w,
+                games,
+                war,
+                roles,
+                farm_all,
+                index_by_code[t["code"]],
+                with_scenarios=args.with_scenarios,
+                scenarios_season=args.scenarios_season,
             )
             (OUT_DIR / f"{t['code']}.json").write_text(json.dumps(payload, indent=2))
         logger.info("wrote %d team files to %s", len(index["teams"]), OUT_DIR)
+        if args.with_scenarios:
+            logger.info("scenarios slot populated for season=%d", args.scenarios_season)
 
 
 if __name__ == "__main__":

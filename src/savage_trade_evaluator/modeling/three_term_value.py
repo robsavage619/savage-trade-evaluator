@@ -159,6 +159,74 @@ def compute_cost_controlled_surplus(
     return surplus, "; ".join(notes_parts)
 
 
+# ---------------------------------------------------------------------------
+# Term 3: delta playoff probability x marginal playoff revenue
+#
+# Win-curve model: logistic sigmoid P(playoff | wins).
+#   P(W) = 1 / (1 + exp(-k * (W - W_50)))
+#   k = 0.18, W_50 = 89 — calibrated to the 2010-2024 10-team playoff era.
+#   Each marginal win ≈ 4.5% playoff probability at W_50, tapering at the tails.
+#
+# Playoff revenue: marginal revenue from reaching the postseason. Estimate
+# based on public reporting: ALDS/NLDS appearance ≈ $10M incremental (RSN,
+# gate, merch); LCS ≈ +$15M; World Series ≈ +$20M. This single-stage model
+# uses $15M as the blended expected playoff-revenue gain (rough midpoint for
+# a wild-card-to-LCS path, expected per unit of playoff probability).
+#
+# D-50 intent: these parameters are named constants, not magic numbers.
+# Supersede with an empirically fitted curve when revenue data is available.
+# ---------------------------------------------------------------------------
+WIN_CURVE_MIDPOINT: float = 89.0       # wins at P(playoff) = 0.50
+WIN_CURVE_STEEPNESS: float = 0.18      # logistic k; calibrated 2010-2024
+MARGINAL_PLAYOFF_REVENUE: float = 15_000_000.0  # $/unit ΔP(playoff), blended single-stage
+
+
+def _playoff_prob(wins: float) -> float:
+    """Logistic playoff-probability curve.
+
+    Args:
+        wins: Projected or prior-year win total.
+
+    Returns:
+        Estimated probability of reaching the postseason.
+    """
+    import math
+
+    return 1.0 / (1.0 + math.exp(-WIN_CURVE_STEEPNESS * (wins - WIN_CURVE_MIDPOINT)))
+
+
+def compute_playoff_revenue_delta(
+    prior_wins: float,
+    delta_war: float,
+    marginal_revenue: float = MARGINAL_PLAYOFF_REVENUE,
+) -> tuple[float, str]:
+    """Term 3: expected increase in playoff revenue from adding ``delta_war`` wins.
+
+    delta_playoff_revenue = [P(playoff | W + delta_WAR) - P(playoff | W)] x marginal_revenue
+
+    Uses a logistic win-curve parameterised by ``WIN_CURVE_MIDPOINT`` and
+    ``WIN_CURVE_STEEPNESS``. 1 WAR ≈ 1 win by construction.
+
+    Args:
+        prior_wins: Team's prior-season win total (proxy for current win level).
+        delta_war: Expected WAR added by the trade (may be negative).
+        marginal_revenue: Dollars per unit of playoff probability gained.
+            Defaults to ``MARGINAL_PLAYOFF_REVENUE`` ($15M blended estimate).
+
+    Returns:
+        Tuple of (playoff_revenue_delta_dollars, notes_string).
+    """
+    p_before = _playoff_prob(prior_wins)
+    p_after = _playoff_prob(prior_wins + delta_war)
+    delta_p = p_after - p_before
+    revenue = delta_p * marginal_revenue
+    notes = (
+        f"prior_wins={prior_wins:.0f}  delta_war={delta_war:+.2f}  "
+        f"P(playoff): {p_before:.3f}→{p_after:.3f}  ΔP={delta_p:+.4f}"
+    )
+    return revenue, notes
+
+
 def evaluate(
     trade_event_id: int,
     receiver_bref: str,
@@ -169,8 +237,8 @@ def evaluate(
 ) -> ThreeTermValue:
     """Compute all three terms for one receiving-team leg of a trade.
 
-    Term 1 (cost-controlled surplus) is computed from live data.
-    Terms 2 and 3 are stubs returning 0.0 pending downstream models.
+    Term 1 (cost-controlled surplus) and Term 3 (playoff revenue delta) are
+    computed from live data. Term 2 is a stub pending the FA projection model.
 
     Args:
         trade_event_id: The transaction_id shared across legs of one trade.
@@ -181,7 +249,7 @@ def evaluate(
             opened and closed within this call.
 
     Returns:
-        ``ThreeTermValue`` with term 1 live and terms 2/3 stubbed at 0.0.
+        ``ThreeTermValue`` with terms 1 and 3 live; term 2 stubbed at 0.0.
     """
     if conn is None:
         with db.connect(read_only=True) as opened:
@@ -201,19 +269,46 @@ def evaluate(
         conn=conn,
     )
 
-    stub_notes: list[str] = [
+    # Term 3: look up prior-year wins and realised WAR delta for the trade.
+    row = conn.execute(
+        """
+        SELECT
+            tsf.prior_year_wins,
+            COALESCE(
+                SUM(w.war_t_plus_1 + w.war_t_plus_2 + w.war_t_plus_3), 0
+            ) AS delta_war
+        FROM trade_player_war_window w
+        JOIN team_season_features tsf
+            ON tsf.bref_code   = w.to_team_bref
+           AND tsf.season       = w.trade_season
+        WHERE w.trade_event_id = ?
+          AND w.to_team_bref   = ?
+        GROUP BY tsf.prior_year_wins
+        """,
+        [trade_event_id, receiver_bref],
+    ).fetchone()
+
+    playoff_3 = 0.0
+    notes_3 = "term3: prior_year_wins not found — defaulting to 0"
+    if row and row[0] is not None:
+        prior_wins = float(row[0])
+        delta_war = float(row[1]) / max(outcome_window_years, 1)
+        playoff_3, notes_3 = compute_playoff_revenue_delta(prior_wins, delta_war)
+        notes_3 = f"term3: {notes_3}"
+
+    notes_parts: list[str] = [
         "term2 (post-FA surplus) stubbed at 0.0 — requires FA projection model (Phase 3)",
-        "term3 (playoff revenue delta) stubbed at 0.0 — requires playoff model (Phase 3)",
+        notes_3,
     ]
     if notes_1:
-        stub_notes.insert(0, f"term1: {notes_1}")
+        notes_parts.insert(0, f"term1: {notes_1}")
 
     return ThreeTermValue(
         trade_event_id=trade_event_id,
         receiver_bref=receiver_bref,
         cost_controlled_surplus=surplus_1,
         post_fa_surplus=0.0,
-        playoff_revenue_delta=0.0,
-        total=surplus_1,
-        notes="; ".join(stub_notes),
+        playoff_revenue_delta=playoff_3,
+        total=surplus_1 + playoff_3,
+        notes="; ".join(notes_parts),
     )

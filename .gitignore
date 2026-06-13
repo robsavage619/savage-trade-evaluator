@@ -243,3 +243,6 @@ data/fangraphs_cache/
 
 # Experiment manifests accumulate per-run; commit selectively when significant
 data/experiments/
+
+# Production model cache — ArviZ NetCDF + JSON sidecars; regenerate locally after schema bump
+data/model_cache/
