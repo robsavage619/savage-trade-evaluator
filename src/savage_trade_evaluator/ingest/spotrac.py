@@ -304,12 +304,19 @@ def _resolve_mlb_ids(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]
         r["mlb_player_id"] = exact_mapping.get(nm) or norm_mapping.get(nm)
 
 
-def _upsert(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None:
+def _upsert(
+    conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]], replace: bool = True
+) -> None:
     if not rows:
         return
     import pandas as pd
 
     df = pd.DataFrame(rows)
+
+    if replace:
+        for s in df["season"].unique():
+            conn.execute(f"DELETE FROM spotrac_player_contracts WHERE season = {s}")
+
     conn.register("_staging_sp", df)
     try:
         cols = (
@@ -320,7 +327,7 @@ def _upsert(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> None
         conn.execute(
             f"INSERT INTO spotrac_player_contracts ({cols}) "
             f"SELECT {cols} FROM _staging_sp "
-            "ON CONFLICT (spotrac_id, season, table_type) DO NOTHING"
+            + ("" if replace else "ON CONFLICT (spotrac_id, season, table_type) DO NOTHING")
         )
     finally:
         conn.unregister("_staging_sp")
@@ -333,14 +340,17 @@ def _upsert_team_payroll(
     totals: dict[str, int],
     active_count: int,
 ) -> None:
-    """Insert a team-payroll-summary row computed from the parsed contracts."""
+    """Replace the team-payroll-summary row for this (team, season)."""
     total = totals["active"] + totals["dead"] + totals["injured"]
+    conn.execute(
+        "DELETE FROM spotrac_team_payroll WHERE team_bref = ? AND season = ?",
+        [team_bref, season],
+    )
     conn.execute(
         "INSERT INTO spotrac_team_payroll "
         "(team_bref, team_slug, season, active_players, active_payroll, "
         "dead_money, injured_payroll, total_payroll, source) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
-        "ON CONFLICT (team_bref, season) DO NOTHING",
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [
             team_bref,
             TEAM_SLUG_BY_BREF[team_bref],

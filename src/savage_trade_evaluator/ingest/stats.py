@@ -136,14 +136,19 @@ def _ingest_savant_table(
     table: str,
     name_col: str,
     rename_map: dict[str, str] | None = None,
+    replace: bool = False,
 ) -> int:
-    """Normalize a Savant DataFrame and upsert into the named table.
+    """Normalize a Savant DataFrame and write to the named table.
 
     Args:
         df: DataFrame as returned by a pybaseball Savant helper.
         table: Destination DuckDB table.
         name_col: Source column to map to ``player_name``.
         rename_map: Extra column renames to apply.
+        replace: If True, delete all existing rows for the same ``year``
+            value(s) found in ``df`` before inserting. Enables idempotent
+            season re-runs for forward-scoring use. If False (historical
+            ingests), silently skip rows that already exist.
 
     Returns:
         Number of rows attempted to insert.
@@ -160,20 +165,34 @@ def _ingest_savant_table(
 
     with db.connect() as conn:
         schemas.initialize(conn)
-        # only keep columns that exist on the target table; DuckDB does this
-        # implicitly when we SELECT by name, so we drop unmapped Savant columns
         target_cols_row = conn.execute(f"DESCRIBE {table}").fetchall()
         target_cols = {r[0] for r in target_cols_row}
         keep = [c for c in df.columns if c in target_cols]
         df = df[keep]
         col_list = ", ".join(df.columns)
+
+        if replace:
+            seasons = df["year"].unique().tolist()
+            for s in seasons:
+                n_del = conn.execute(
+                    f"DELETE FROM {table} WHERE year = {s}"
+                ).rowcount
+                if n_del:
+                    logger.debug("partition-replace %s year=%d: deleted %d rows", table, s, n_del)
+
         conn.register("_staging_savant", df)
         try:
-            conn.execute(
-                f"INSERT INTO {table} ({col_list}) "
-                f"SELECT {col_list} FROM _staging_savant "
-                f"ON CONFLICT (player_id, year) DO NOTHING"
-            )
+            if replace:
+                conn.execute(
+                    f"INSERT INTO {table} ({col_list}) "
+                    f"SELECT {col_list} FROM _staging_savant"
+                )
+            else:
+                conn.execute(
+                    f"INSERT INTO {table} ({col_list}) "
+                    f"SELECT {col_list} FROM _staging_savant "
+                    f"ON CONFLICT (player_id, year) DO NOTHING"
+                )
         finally:
             conn.unregister("_staging_savant")
     return len(df)
@@ -188,7 +207,7 @@ def ingest_statcast_batting_expected(season: int, min_pa: int = 25) -> int:
     """
     df = pb.statcast_batter_expected_stats(season, minPA=str(min_pa))
     n = _ingest_savant_table(
-        df, table="statcast_batting_expected", name_col="last_name, first_name"
+        df, table="statcast_batting_expected", name_col="last_name, first_name", replace=True
     )
     logger.info("ingested %d statcast batting expected rows for %d", n, season)
     return n
@@ -198,7 +217,7 @@ def ingest_statcast_pitching_expected(season: int, min_pa: int = 25) -> int:
     """Pull and store xwOBA / xERA expected stats for pitchers in one season."""
     df = pb.statcast_pitcher_expected_stats(season, minPA=str(min_pa))
     n = _ingest_savant_table(
-        df, table="statcast_pitching_expected", name_col="last_name, first_name"
+        df, table="statcast_pitching_expected", name_col="last_name, first_name", replace=True
     )
     logger.info("ingested %d statcast pitching expected rows for %d", n, season)
     return n
@@ -211,6 +230,7 @@ def ingest_statcast_pitcher_percentile_ranks(season: int) -> int:
         df,
         table="statcast_pitcher_percentile_ranks",
         name_col="player_name",
+        replace=True,
     )
     logger.info("ingested %d pitcher percentile-rank rows for %d", n, season)
     return n

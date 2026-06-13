@@ -69,26 +69,42 @@ def fetch_season(season: int, client: httpx.Client | None = None) -> list[dict[s
     return out
 
 
-def upsert(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> int:
-    """Insert standings rows, joining to ``teams`` and ignoring PK conflicts."""
+def upsert(
+    conn: duckdb.DuckDBPyConnection,
+    rows: list[dict[str, Any]],
+    replace: bool = True,
+) -> int:
+    """Insert standings rows, joining to ``teams``.
+
+    Args:
+        conn: Active DuckDB connection (caller owns lifecycle).
+        rows: Pre-normalised standings dicts.
+        replace: Delete existing rows for each season in ``rows`` before
+            inserting (partition-replace, default True). Set False only for
+            bulk historical loads where idempotency via DO NOTHING is preferred.
+    """
     if not rows:
         return 0
     import pandas as pd
 
     df = pd.DataFrame(rows)
-    # join to teams to get bref_code
     team_map = conn.execute("SELECT mlb_team_id, bref_code FROM teams").df()
     merged = df.merge(team_map, left_on="team_id", right_on="mlb_team_id", how="inner")
     if merged.empty:
         return 0
     merged["source"] = SOURCE
+
+    if replace:
+        for s in merged["season"].unique():
+            conn.execute(f"DELETE FROM standings WHERE season = {s}")
+
     conn.register("_staging_std", merged)
     try:
         conn.execute(
             "INSERT INTO standings (team_id, bref_code, season, wins, losses, win_pct, source) "
             "SELECT team_id, bref_code, season, wins, losses, win_pct, source "
             "FROM _staging_std "
-            "ON CONFLICT (team_id, season) DO NOTHING"
+            + ("" if replace else "ON CONFLICT (team_id, season) DO NOTHING")
         )
     finally:
         conn.unregister("_staging_std")
