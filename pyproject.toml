@@ -73,6 +73,7 @@ extend-immutable-calls = ["typer.Option", "typer.Argument"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D"]
+"scripts/*" = ["E402", "D"]  # sys.path bootstrap precedes imports; scripts don't need docstrings
 
 [tool.pyright]
 pythonVersion = "3.12"
