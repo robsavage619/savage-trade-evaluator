@@ -169,3 +169,51 @@ def score_historical_scenarios(
 
     logger.info("scored %d scenarios for season=%d", len(scenarios), season)
     return scenarios
+
+
+def score_hypothetical(
+    features: pd.DataFrame,
+    outcomes: tuple[str, ...] = SCENARIO_OUTCOMES,
+    receiver_bref: str | None = None,
+    sender_bref: str | None = None,
+    trade_season: int | None = None,
+) -> dict[str, Any]:
+    """Score a hypothetical trade from a pre-assembled feature row.
+
+    Designed to work with ``feature_assembler.assemble_hypothetical()``.
+    The model used is the same production fit as ``score_historical_scenarios``,
+    trained on data through ``TRAIN_END_SEASON``.
+
+    Args:
+        features: 1-row DataFrame from ``assemble_hypothetical()``.
+        outcomes: Outcomes to score (default: war_delta, dollar_surplus, surplus_wins).
+        receiver_bref: Optional receiving team label for the returned dict.
+        sender_bref: Optional sending team label for the returned dict.
+        trade_season: Optional trade season label for the returned dict.
+
+    Returns:
+        Dict with metadata + per-outcome posterior summaries.
+    """
+    if len(features) != 1:
+        raise ValueError(f"features must be a 1-row DataFrame; got {len(features)} rows")
+
+    fits = {o: get_fit(o) for o in outcomes}
+    result: dict[str, Any] = {
+        "receiver_bref": receiver_bref,
+        "sender_bref": sender_bref,
+        "trade_season": trade_season,
+        "model_version": "v3.2",
+        "train_end_season": TRAIN_END_SEASON,
+        "is_hypothetical": True,
+    }
+    for outcome in outcomes:
+        summaries = _score_df(features, outcome, fits[outcome])
+        result[outcome] = summaries[0]
+
+    logger.info(
+        "scored hypothetical trade: %s ← %s  war_delta_mean=%.2f",
+        receiver_bref or "?",
+        sender_bref or "?",
+        result.get("war_delta", {}).get("mean", float("nan")),
+    )
+    return result
