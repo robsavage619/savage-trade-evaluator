@@ -12,7 +12,7 @@
   <a href="https://duckdb.org/"><img src="https://img.shields.io/badge/store-DuckDB-fff100" alt="DuckDB"/></a>
   <a href="frontend/"><img src="https://img.shields.io/badge/frontend-React%2019-61dafb" alt="React 19"/></a>
   <a href="frontend/"><img src="https://img.shields.io/badge/build-Vite%208-646cff" alt="Vite 8"/></a>
-  <a href="src/savage_trade_evaluator/storage/schemas.py"><img src="https://img.shields.io/badge/duckdb_schema-v25-informational" alt="schema"/></a>
+  <a href="src/savage_trade_evaluator/storage/schemas.py"><img src="https://img.shields.io/badge/duckdb_schema-v34-informational" alt="schema"/></a>
   <a href="docs/STATS_CATALOG.md"><img src="https://img.shields.io/badge/duckdb_rows-1.29M%2B-informational" alt="rows"/></a>
   <a href="RESEARCH_LOG.md"><img src="https://img.shields.io/badge/research_rounds-35-success" alt="rounds"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-source--available-lightgrey" alt="license"/></a>
@@ -28,7 +28,7 @@ Most "trade value" tools give every player a single number — a $/WAR price tag
 
 It is built as a working demonstration of baseball-operations thinking end to end: data engineering, valuation modeling under uncertainty, and a product a decision-maker would actually open at the trade deadline.
 
-> **For evaluators:** start the app (`cd frontend && npm run dev`), then read [What we found](#what-the-research-actually-says) for the empirical spine. Every claim links to a reproducible script.
+> **For evaluators:** the screenshots below are live application output — no setup required. Start with [What the research actually says](#what-the-research-actually-says) for the empirical spine, then [AI engineering](#ai-engineering----retrieval-agents-and-grounding) for the technical depth. Every claim links to a reproducible script.
 
 ---
 
@@ -223,15 +223,21 @@ docs/            # synthesis, stats catalog, baseline design
 
 ---
 
-## Run it yourself
+## Local setup (optional)
+
+The screenshots above are live application output from committed seed data. The frontend runs fully client-side off those seeds — no database, no API keys, no backend required.
 
 ```bash
-# Frontend demo — no backend needed (runs off committed seed data)
+# Frontend — runs off committed seed data, no backend needed
 cd frontend
 npm install
 npm run dev          # → http://localhost:5173
+```
 
-# Backend data spine (optional — to rebuild the database)
+The backend steps below are included for completeness. They reproduce the full 1.29M-row database from source APIs — useful if you want to inspect the ingestion pipeline or re-run an analysis, but not required to evaluate the project.
+
+```bash
+# Backend data spine (rebuilds the database from scratch)
 uv sync
 uv run ste init                  # initialize DuckDB schema
 uv run ste ingest transactions   # MLB Stats API trades
@@ -244,14 +250,14 @@ uv run ste catalog --status ingested
 uv run python scripts/export_seed.py
 ```
 
-The screenshots above are reproducible: `scripts/capture_screens.sh` drives a headless browser over the running app.
-
 ---
 
 ## How to read this repo
 
-- **15 min** — [`docs/PHASE1_SYNTHESIS.md`](docs/PHASE1_SYNTHESIS.md): the full narrative arc, findings, and corrections.
-- **30 min** — this README, then skim [`RESEARCH_LOG.md`](RESEARCH_LOG.md) (R-19, R-22, R-30, R-31, R-33/34/35 are the highlights).
+This is a personal project built to demonstrate end-to-end baseball-operations capability — data engineering, Bayesian valuation, and product — not a tool distributed for others to use. The screenshots and analysis throughout are the artifact.
+
+- **15 min** — this README. The screenshots are the live application; the findings table under [What the research actually says](#what-the-research-actually-says) is the empirical spine.
+- **30 min** — add [`docs/PHASE1_SYNTHESIS.md`](docs/PHASE1_SYNTHESIS.md) for the full narrative arc, and skim [`RESEARCH_LOG.md`](RESEARCH_LOG.md) (R-19, R-22, R-30, R-31, R-33/34/35 are the highlights).
 - **An afternoon** — pick a `scripts/*.py`, read its docstring, run it, inspect the output. Every finding is reproducible.
 
 The analytical framing draws on *The MVP Machine* (dev-fit), *Baseball Between the Numbers* ($/WAR currency, log-5 playoff odds), *Statistical Rethinking* (multilevel Bayes), and *Causal Inference: The Mixtape* (treatment-effect framing for trades that actually happened).
@@ -264,4 +270,4 @@ This repository is **source-available** for evaluation, research, and education.
 
 ---
 
-*Built end to end — data engineering, Bayesian modeling, and product — as a working demonstration of baseball-operations capability. Every modeling decision is logged; every finding is reproducible; negative results are reported alongside positive ones. Start at the [War Room](#the-war-room).*
+*Built end to end — data engineering, Bayesian modeling, and product — as a demonstration of baseball-operations capability. Every modeling decision is logged in the ADR; every finding is reproducible from a script; negative results are reported alongside positive ones. This is the work, not a packaged tool.*
