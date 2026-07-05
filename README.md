@@ -170,7 +170,7 @@ Both surfaces follow the same rule the rest of the pipeline does: **outputs carr
 
 ## The data layer
 
-**29 tables · 1.29M+ rows · DuckDB · schema v25**
+**51 tables · 4.19M+ rows · DuckDB · schema v34**
 
 | Source | Coverage | Rows | Role |
 |---|---|---|---|
