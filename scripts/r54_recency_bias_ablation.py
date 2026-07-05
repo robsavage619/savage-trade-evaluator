@@ -32,7 +32,7 @@ from savage_trade_evaluator.modeling.v3 import backtest_outcome_v3, print_backte
 _BASELINE_CRPS = 30.0
 
 _RECENCY_FEATURE = "receiver_org_pitcher_k_jump_recency_bias"
-_FEATURE_COLS = ACQUIRED_PLAYER_FEATURES + (_RECENCY_FEATURE,)
+_FEATURE_COLS = (*ACQUIRED_PLAYER_FEATURES, _RECENCY_FEATURE)
 
 
 def _section(title: str) -> None:
@@ -44,6 +44,7 @@ def _section(title: str) -> None:
 def run_ablation(run_mcmc: bool) -> None:
     """Run the full R-54 ablation."""
     from savage_trade_evaluator.modeling.v3 import assemble_v3_combined
+
     combined = assemble_v3_combined()
     feature_cols = tuple(c for c in _FEATURE_COLS if c in combined.columns)
 

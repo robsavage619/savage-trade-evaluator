@@ -27,7 +27,6 @@ from savage_trade_evaluator.modeling.v2.backtest import (
     assemble_combined,
     backtest_outcome,
 )
-from savage_trade_evaluator.modeling.v2.features import filter_complete_cases
 
 
 def _impute_and_split(
@@ -48,9 +47,7 @@ def _impute_and_split(
     return train, test, feature_cols
 
 
-def _fit_v1_team_only(
-    train: pd.DataFrame, outcome: str, feature_cols: tuple[str, ...]
-) -> dict:
+def _fit_v1_team_only(train: pd.DataFrame, outcome: str, feature_cols: tuple[str, ...]) -> dict:
     """Fit single-level model: alpha0 + alpha_team + beta·x, no regime."""
     teams = tuple(sorted(train["receiver_bref"].unique()))
     team_to_idx = {t: i for i, t in enumerate(teams)}
@@ -75,13 +72,22 @@ def _fit_v1_team_only(
         mu = alpha0 + alpha_team[team_idx] + pm.math.dot(x, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
-            draws=1500, tune=2000, chains=4, random_seed=137,
-            progressbar=False, target_accept=0.99,
+            draws=1500,
+            tune=2000,
+            chains=4,
+            random_seed=137,
+            progressbar=False,
+            target_accept=0.99,
         )
     return {
-        "trace": trace, "teams": teams, "team_to_idx": team_to_idx,
-        "feature_cols": feature_cols, "means": means, "stds": stds,
-        "y_mean": y_mean, "y_std": y_std,
+        "trace": trace,
+        "teams": teams,
+        "team_to_idx": team_to_idx,
+        "feature_cols": feature_cols,
+        "means": means,
+        "stds": stds,
+        "y_mean": y_mean,
+        "y_std": y_std,
     }
 
 
@@ -132,7 +138,9 @@ def main() -> None:
 
         # V2 (existing harness)
         v2_result = backtest_outcome(
-            outcome=o, train_end_season=2020, test_end_season=2024,
+            outcome=o,
+            train_end_season=2020,
+            test_end_season=2024,
             minimum_features_present=5,
         )
         v2_credible = set(
@@ -161,30 +169,44 @@ def main() -> None:
         only_v2 = v2_credible - v1_credible
         shared = v1_credible & v2_credible
 
-        print(f"  V1 (team-only):  MAE={v1_mae:.4f}  CRPS={v1_crps:.4f}  "
-              f"cov90={v1_cov:.1%}  credible={len(v1_credible)}")
-        print(f"  V2 (team+regime):MAE={v2_result.test_mae:.4f}  "
-              f"CRPS={v2_result.test_crps:.4f}  "
-              f"cov90={v2_result.coverage_90:.1%}  credible={len(v2_credible)}")
+        print(
+            f"  V1 (team-only):  MAE={v1_mae:.4f}  CRPS={v1_crps:.4f}  "
+            f"cov90={v1_cov:.1%}  credible={len(v1_credible)}"
+        )
+        print(
+            f"  V2 (team+regime):MAE={v2_result.test_mae:.4f}  "
+            f"CRPS={v2_result.test_crps:.4f}  "
+            f"cov90={v2_result.coverage_90:.1%}  credible={len(v2_credible)}"
+        )
         print(f"  shared credible: {sorted(shared) or '(none)'}")
         print(f"  V1-only:         {sorted(only_v1) or '(none)'}")
         print(f"  V2-only:         {sorted(only_v2) or '(none)'}")
         delta = len(v2_credible) - len(v1_credible)
         verdict = (
-            f"V2 adds {delta} credible features over V1" if delta > 0
-            else f"V1 finds {-delta} more credible features than V2" if delta < 0
+            f"V2 adds {delta} credible features over V1"
+            if delta > 0
+            else f"V1 finds {-delta} more credible features than V2"
+            if delta < 0
             else "V1 and V2 tied on credible-feature count"
         )
         print(f"  verdict: {verdict}")
 
-        rows.append({
-            "outcome": o,
-            "v1_mae": v1_mae, "v2_mae": v2_result.test_mae,
-            "v1_crps": v1_crps, "v2_crps": v2_result.test_crps,
-            "v1_cov90": v1_cov, "v2_cov90": v2_result.coverage_90,
-            "v1_credible": len(v1_credible), "v2_credible": len(v2_credible),
-            "shared": len(shared), "only_v1": len(only_v1), "only_v2": len(only_v2),
-        })
+        rows.append(
+            {
+                "outcome": o,
+                "v1_mae": v1_mae,
+                "v2_mae": v2_result.test_mae,
+                "v1_crps": v1_crps,
+                "v2_crps": v2_result.test_crps,
+                "v1_cov90": v1_cov,
+                "v2_cov90": v2_result.coverage_90,
+                "v1_credible": len(v1_credible),
+                "v2_credible": len(v2_credible),
+                "shared": len(shared),
+                "only_v1": len(only_v1),
+                "only_v2": len(only_v2),
+            }
+        )
 
     print()
     print("=" * 88)

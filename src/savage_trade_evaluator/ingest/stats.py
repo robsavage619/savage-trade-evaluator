@@ -174,9 +174,7 @@ def _ingest_savant_table(
         if replace:
             seasons = df["year"].unique().tolist()
             for s in seasons:
-                n_del = conn.execute(
-                    f"DELETE FROM {table} WHERE year = {s}"
-                ).rowcount
+                n_del = conn.execute(f"DELETE FROM {table} WHERE year = {s}").rowcount
                 if n_del:
                     logger.debug("partition-replace %s year=%d: deleted %d rows", table, s, n_del)
 
@@ -184,8 +182,7 @@ def _ingest_savant_table(
         try:
             if replace:
                 conn.execute(
-                    f"INSERT INTO {table} ({col_list}) "
-                    f"SELECT {col_list} FROM _staging_savant"
+                    f"INSERT INTO {table} ({col_list}) SELECT {col_list} FROM _staging_savant"
                 )
             else:
                 conn.execute(

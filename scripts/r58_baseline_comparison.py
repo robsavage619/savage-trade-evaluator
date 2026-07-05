@@ -40,10 +40,10 @@ from savage_trade_evaluator.modeling.experiment import write_manifest
 from savage_trade_evaluator.modeling.v2.backtest import _crps_empirical
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
+    _split_and_impute,
     assemble_v3_combined,
     fit_v3,
     predict,
-    _split_and_impute,
 )
 from savage_trade_evaluator.modeling.v3_cv import (
     MIN_TEST_N,

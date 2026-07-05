@@ -26,8 +26,8 @@ import numpy as np
 import pandas as pd
 
 from savage_trade_evaluator.modeling.v3 import (
-    V3_OUTCOME_FEATURES,
     _SIGNED_LOG_OUTCOMES,
+    V3_OUTCOME_FEATURES,
     _inv_signed_log,
     _split_and_impute,
     assemble_v3_combined,
@@ -57,7 +57,11 @@ OUT_DIR = Path(__file__).resolve().parent.parent / "frontend" / "src" / "data" /
 #                 deliberately so the demo is honest about where V3 fails.
 FEATURED: tuple[tuple[int, str, str], ...] = (
     (808316, "CHC", "covered"),  # Kyle Tucker → Cubs, 2024 (headline)
-    (768021, "SDP", "tail_miss"),  # Luis Arraez → Padres, 2024 (under-predicted: pred=-$0.3M, realized=$26.5M)
+    (
+        768021,
+        "SDP",
+        "tail_miss",
+    ),  # Luis Arraez → Padres, 2024 (under-predicted: pred=-$0.3M, realized=$26.5M)
     (739097, "BAL", "covered"),  # Corbin Burnes → Orioles, 2024
     (642337, "SDP", "tail_miss"),  # Juan Soto + Josh Bell → Padres, 2022 (under-predicted)
 )
@@ -125,7 +129,7 @@ def _walk_forward_comparison(
         is_break = sp.test_start <= 2017 <= sp.test_end
         folds.append(
             {
-                "label": f"{sp.test_start}–{sp.test_end}",  # noqa: RUF001
+                "label": f"{sp.test_start}–{sp.test_end}",
                 "n_test": int(r["n_test"]),
                 "crps_context": round(float(r["crps_model"]), 1),
                 "crps_quality": round(float(r["crps_quality"]), 1),
@@ -223,7 +227,7 @@ def main() -> None:
     comparison_d = _walk_forward_comparison(OUTCOME, combined)
     for comp, name in ((comparison_w, WINS_OUTCOME), (comparison_d, OUTCOME)):
         logger.info(
-            "  %s: skill vs quality=%+.1f%% (ex-break %+.1f%%) · vs intercept=%+.1f%% (ex-break %+.1f%%)",  # noqa: E501
+            "  %s: skill vs quality=%+.1f%% (ex-break %+.1f%%) · vs intercept=%+.1f%% (ex-break %+.1f%%)",
             name,
             comp["mean_skill_vs_quality"] * 100,
             comp["mean_skill_vs_quality_ex_break"] * 100,

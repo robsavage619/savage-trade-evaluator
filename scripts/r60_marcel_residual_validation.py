@@ -68,7 +68,7 @@ def head_to_head_report(raw: V3CVResult, residual: V3CVResult) -> None:
 
     print()
     print(f"  {'Metric':<30} {'war_delta (raw)':>18} {'war_delta_residual':>20}")
-    print(f"  {'-'*30} {'-'*18} {'-'*20}")
+    print(f"  {'-' * 30} {'-' * 18} {'-' * 20}")
     print(f"  {'mean CRPS (WAR)':<30} {raw.mean_crps:>18.4f} {residual.mean_crps:>20.4f}")
     print(f"  {'std CRPS (WAR)':<30} {raw.std_crps:>18.4f} {residual.std_crps:>20.4f}")
 
@@ -89,7 +89,7 @@ def head_to_head_report(raw: V3CVResult, residual: V3CVResult) -> None:
     # Fold-level detail
     print("  Fold detail:")
     print(f"  {'Fold':<12} {'raw CRPS':>12} {'residual CRPS':>15} {'Δ':>8}")
-    print(f"  {'-'*12} {'-'*12} {'-'*15} {'-'*8}")
+    print(f"  {'-' * 12} {'-' * 12} {'-' * 15} {'-' * 8}")
     for r_fold, res_fold in zip(raw.fold_results, residual.fold_results, strict=False):
         delta = res_fold.crps - r_fold.crps
         sign = "+" if delta >= 0 else ""

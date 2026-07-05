@@ -47,9 +47,7 @@ def _impute_and_split(
     return train, test, feature_cols
 
 
-def _fit_v0(
-    train: pd.DataFrame, outcome: str, feature_cols: tuple[str, ...]
-) -> dict:
+def _fit_v0(train: pd.DataFrame, outcome: str, feature_cols: tuple[str, ...]) -> dict:
     """V0: population intercept + features only. No team, no regime."""
     means = train[list(feature_cols)].mean()
     stds = train[list(feature_cols)].std().replace(0, 1.0)
@@ -67,12 +65,20 @@ def _fit_v0(
         mu = alpha0 + pm.math.dot(x, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
-            draws=1500, tune=2000, chains=4, random_seed=137,
-            progressbar=False, target_accept=0.99,
+            draws=1500,
+            tune=2000,
+            chains=4,
+            random_seed=137,
+            progressbar=False,
+            target_accept=0.99,
         )
     return {
-        "trace": trace, "feature_cols": feature_cols, "means": means, "stds": stds,
-        "y_mean": y_mean, "y_std": y_std,
+        "trace": trace,
+        "feature_cols": feature_cols,
+        "means": means,
+        "stds": stds,
+        "y_mean": y_mean,
+        "y_std": y_std,
     }
 
 
@@ -135,24 +141,36 @@ def main() -> None:
 
         # V2 (reuse existing harness)
         v2_result = backtest_outcome(
-            outcome=o, train_end_season=2020, test_end_season=2024,
+            outcome=o,
+            train_end_season=2020,
+            test_end_season=2024,
             minimum_features_present=5,
         )
         v2_cred = int(v2_result.credible_features["credible"].sum())
 
-        print(f"  V0 (no team):  MAE={v0_mae:.4f}  CRPS={v0_crps:.4f}  "
-              f"cov90={v0_cov:.1%}  credible={v0_cred}")
-        print(f"  V2 (team+reg): MAE={v2_result.test_mae:.4f}  "
-              f"CRPS={v2_result.test_crps:.4f}  "
-              f"cov90={v2_result.coverage_90:.1%}  credible={v2_cred}")
+        print(
+            f"  V0 (no team):  MAE={v0_mae:.4f}  CRPS={v0_crps:.4f}  "
+            f"cov90={v0_cov:.1%}  credible={v0_cred}"
+        )
+        print(
+            f"  V2 (team+reg): MAE={v2_result.test_mae:.4f}  "
+            f"CRPS={v2_result.test_crps:.4f}  "
+            f"cov90={v2_result.coverage_90:.1%}  credible={v2_cred}"
+        )
 
-        rows.append({
-            "outcome": o,
-            "v0_mae": v0_mae, "v2_mae": v2_result.test_mae,
-            "v0_crps": v0_crps, "v2_crps": v2_result.test_crps,
-            "v0_cov90": v0_cov, "v2_cov90": v2_result.coverage_90,
-            "v0_credible": v0_cred, "v2_credible": v2_cred,
-        })
+        rows.append(
+            {
+                "outcome": o,
+                "v0_mae": v0_mae,
+                "v2_mae": v2_result.test_mae,
+                "v0_crps": v0_crps,
+                "v2_crps": v2_result.test_crps,
+                "v0_cov90": v0_cov,
+                "v2_cov90": v2_result.coverage_90,
+                "v0_credible": v0_cred,
+                "v2_credible": v2_cred,
+            }
+        )
 
     print()
     print("=" * 88)

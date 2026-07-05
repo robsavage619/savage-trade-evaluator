@@ -31,16 +31,16 @@ logger = logging.getLogger(__name__)
 # Players improve before PEAK_AGE, decline after.
 # Values from Marcel Projection System documentation / Tom Tango's work.
 PEAK_AGE: int = 27
-IMPROVEMENT_RATE: float = 0.3   # WAR/yr gain before peak (positive)
-DECLINE_RATE: float = 0.3       # WAR/yr loss after peak (positive, applied as loss)
+IMPROVEMENT_RATE: float = 0.3  # WAR/yr gain before peak (positive)
+DECLINE_RATE: float = 0.3  # WAR/yr loss after peak (positive, applied as loss)
 
 # Marcel 3:2:1 recency weights for T-1, T-2, T-3 seasons.
 MARCEL_WEIGHTS: tuple[float, float, float] = (3.0, 2.0, 1.0)
 
 # Regression-to-mean weight: Marcel blends historical with league-average replacement
 # (typically ~0.2 WAR for a full-season player). We use a light blend.
-REGRESSION_WEIGHT: float = 1.0   # light regression toward replacement level
-REPLACEMENT_WAR: float = 0.2     # league-average WAR per 600 PA (full season proxy)
+REGRESSION_WEIGHT: float = 1.0  # light regression toward replacement level
+REPLACEMENT_WAR: float = 0.2  # league-average WAR per 600 PA (full season proxy)
 
 
 def _age_adjustment(age_at_trade: float, year_offset: int) -> float:
@@ -75,7 +75,7 @@ def _marcel_projection(
         Marcel projected WAR for T+1.
     """
     vals = [v for v in [war_t1, war_t2, war_t3] if v is not None]
-    wts  = list(MARCEL_WEIGHTS[: len(vals)])
+    wts = list(MARCEL_WEIGHTS[: len(vals)])
 
     if not vals:
         # No prior data — fall back to replacement level

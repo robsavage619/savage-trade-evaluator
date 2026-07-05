@@ -38,16 +38,10 @@ def main() -> None:
     for receiver_bref in receiver_brefs:
         result = evaluate(trade_event_id, receiver_bref)
         print(f"Receiving team: {receiver_bref}")
-        print(
-            f"  Term 1 — cost-controlled surplus : ${result.cost_controlled_surplus:>14,.0f}"
-        )
-        print(
-            f"  Term 2 — post-FA surplus         : ${result.post_fa_surplus:>14,.0f}"
-        )
-        print(
-            f"  Term 3 — Δ playoff-prob × revenue: ${result.playoff_revenue_delta:>14,.0f}"
-        )
-        print(f"  ─────────────────────────────────────────────────────")
+        print(f"  Term 1 — cost-controlled surplus : ${result.cost_controlled_surplus:>14,.0f}")
+        print(f"  Term 2 — post-FA surplus         : ${result.post_fa_surplus:>14,.0f}")
+        print(f"  Term 3 — Δ playoff-prob × revenue: ${result.playoff_revenue_delta:>14,.0f}")
+        print("  ─────────────────────────────────────────────────────")
         print(f"  Total                            : ${result.total:>14,.0f}")
         print(f"  Notes: {result.notes}")
         print()

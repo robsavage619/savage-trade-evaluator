@@ -10,7 +10,6 @@ from __future__ import annotations
 import os
 
 import numpy as np
-import pandas as pd
 
 os.environ.setdefault(
     "STE_DUCKDB_PATH",
@@ -19,11 +18,9 @@ os.environ.setdefault(
 )
 
 from savage_trade_evaluator.modeling.v3 import (
-    ALL_FEATURES,
     V3_OUTCOME_FEATURES,
     assemble_v3_combined,
     backtest_outcome_v3,
-    coefficient_summary,
     print_backtest_report,
 )
 
@@ -47,17 +44,14 @@ def main() -> None:
     combined = assemble_v3_combined()
 
     # Strip contract-year feature if not yet in DB
-    base_cols = tuple(
-        c for c in V3_OUTCOME_FEATURES["war_delta"]
-        if c in combined.columns
-    )
+    base_cols = tuple(c for c in V3_OUTCOME_FEATURES["war_delta"] if c in combined.columns)
 
     results = []
     for feat in NEW_FEATURES:
         if feat not in combined.columns:
             print(f"\nSKIP {feat} — not in combined DataFrame")
             continue
-        aug_cols = base_cols + (feat,)
+        aug_cols = (*base_cols, feat)
         print(f"\n{'#' * 88}")
         print(f"# R-52: war_delta + {feat}  ({len(aug_cols)} features)")
         print(f"{'#' * 88}")

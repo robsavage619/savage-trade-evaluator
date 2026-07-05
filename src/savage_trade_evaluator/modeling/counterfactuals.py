@@ -185,9 +185,7 @@ def build_org_retention_factors() -> pd.DataFrame:
             if n == 0:
                 continue
             sum_r = float(np.sum(ratios))
-            shrunk = (sum_r + ORG_FACTOR_PRIOR_N * ORG_FACTOR_PRIOR_MEAN) / (
-                n + ORG_FACTOR_PRIOR_N
-            )
+            shrunk = (sum_r + ORG_FACTOR_PRIOR_N * ORG_FACTOR_PRIOR_MEAN) / (n + ORG_FACTOR_PRIOR_N)
             records.append(
                 {
                     "team_bref": team,
@@ -200,9 +198,7 @@ def build_org_retention_factors() -> pd.DataFrame:
             )
 
     result = pd.DataFrame(records)
-    logger.info(
-        "build_org_retention_factors: %d (team, pos, season) cells", len(result)
-    )
+    logger.info("build_org_retention_factors: %d (team, pos, season) cells", len(result))
     return result
 
 

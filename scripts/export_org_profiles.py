@@ -50,7 +50,9 @@ def _jsonify(value: Any) -> Any:
     return value
 
 
-def _rows(conn: duckdb.DuckDBPyConnection, sql: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
+def _rows(
+    conn: duckdb.DuckDBPyConnection, sql: str, params: list[Any] | None = None
+) -> list[dict[str, Any]]:
     cursor = conn.execute(sql, params or [])
     cols = [d[0] for d in cursor.description]
     return [{c: _jsonify(v) for c, v in zip(cols, row, strict=True)} for row in cursor.fetchall()]
@@ -107,9 +109,15 @@ def export_for_team(conn: duckdb.DuckDBPyConnection, bref: str) -> dict[str, Any
 
     # Aggregate dev signature: average over last 5 seasons
     recent = [r for r in dev_rows if r["org_pitcher_k_jump_3yr"] is not None][:5]
-    avg_k_jump = sum(r["org_pitcher_k_jump_3yr"] for r in recent) / max(1, len(recent)) if recent else None
+    avg_k_jump = (
+        sum(r["org_pitcher_k_jump_3yr"] for r in recent) / max(1, len(recent)) if recent else None
+    )
     recent_x = [r for r in dev_rows if r["org_hitter_xwoba_jump_3yr"] is not None][:5]
-    avg_x_jump = sum(r["org_hitter_xwoba_jump_3yr"] for r in recent_x) / max(1, len(recent_x)) if recent_x else None
+    avg_x_jump = (
+        sum(r["org_hitter_xwoba_jump_3yr"] for r in recent_x) / max(1, len(recent_x))
+        if recent_x
+        else None
+    )
 
     # 3) Trade DNA — last 10 trades from naive_baseline_results
     trade_dna = _rows(

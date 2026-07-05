@@ -17,10 +17,10 @@ from __future__ import annotations
 import json
 import logging
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import date, datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -49,11 +49,36 @@ LEVEL_BY_SPORT: dict[int, str] = {
 
 # bref ↔ parent MLB team_id (mirrors lib/format.ts on the frontend)
 MLB_BY_BREF: dict[str, int] = {
-    "ARI": 109, "ATL": 144, "BAL": 110, "BOS": 111, "CHC": 112, "CHW": 145, "CIN": 113,
-    "CLE": 114, "COL": 115, "DET": 116, "HOU": 117, "KCR": 118, "LAA": 108, "LAD": 119,
-    "MIA": 146, "MIL": 158, "MIN": 142, "NYM": 121, "NYY": 147, "OAK": 133, "PHI": 143,
-    "PIT": 134, "SDP": 135, "SEA": 136, "SFG": 137, "STL": 138, "TBR": 139, "TEX": 140,
-    "TOR": 141, "WSN": 120,
+    "ARI": 109,
+    "ATL": 144,
+    "BAL": 110,
+    "BOS": 111,
+    "CHC": 112,
+    "CHW": 145,
+    "CIN": 113,
+    "CLE": 114,
+    "COL": 115,
+    "DET": 116,
+    "HOU": 117,
+    "KCR": 118,
+    "LAA": 108,
+    "LAD": 119,
+    "MIA": 146,
+    "MIL": 158,
+    "MIN": 142,
+    "NYM": 121,
+    "NYY": 147,
+    "OAK": 133,
+    "PHI": 143,
+    "PIT": 134,
+    "SDP": 135,
+    "SEA": 136,
+    "SFG": 137,
+    "STL": 138,
+    "TBR": 139,
+    "TEX": 140,
+    "TOR": 141,
+    "WSN": 120,
 }
 BREF_BY_MLB_ID: dict[int, str] = {v: k for k, v in MLB_BY_BREF.items()}
 
@@ -156,7 +181,11 @@ def main() -> None:
         team_map = fetch_team_parent_map(CURRENT_SEASON)
         # Fall back to the 2024 map for any team_ids that no longer exist in 2026
         legacy_map = fetch_team_parent_map(int(latest_season))
-        logger.info("mapped %d minor-league teams (current) + %d legacy fallback", len(team_map), len(legacy_map))
+        logger.info(
+            "mapped %d minor-league teams (current) + %d legacy fallback",
+            len(team_map),
+            len(legacy_map),
+        )
 
         # Primary team per player this season (most PA/IP). Use the detail table
         # to pick the team they spent the most playing time with; merge with the
@@ -198,33 +227,57 @@ def main() -> None:
             [latest_season, latest_season, latest_season],
         ).fetchall()
         cols = [
-            "mlb_player_id", "group_name", "top_sport_id", "pa", "ab", "hits", "hr", "k", "bb",
-            "ops_pa_weighted", "age", "ip", "era_ip_weighted",
-            "team_id", "team_name", "position", "player_name",
+            "mlb_player_id",
+            "group_name",
+            "top_sport_id",
+            "pa",
+            "ab",
+            "hits",
+            "hr",
+            "k",
+            "bb",
+            "ops_pa_weighted",
+            "age",
+            "ip",
+            "era_ip_weighted",
+            "team_id",
+            "team_name",
+            "position",
+            "player_name",
         ]
 
         # Person bio supplement (height/weight/hand etc.)
         ids = list({int(r[0]) for r in rows})
         placeholders = ",".join(["?"] * len(ids))
-        bio = {
-            int(r[0]): r
-            for r in conn.execute(
-                f"SELECT mlb_player_id, primary_position_name, primary_position_code, "
-                f"primary_position_type, bat_side, pitch_hand, height_inches, "
-                f"weight_lbs, birth_country FROM mlb_people WHERE mlb_player_id IN ({placeholders})",
-                ids,
-            ).fetchall()
-        } if ids else {}
+        bio = (
+            {
+                int(r[0]): r
+                for r in conn.execute(
+                    f"SELECT mlb_player_id, primary_position_name, primary_position_code, "
+                    f"primary_position_type, bat_side, pitch_hand, height_inches, "
+                    f"weight_lbs, birth_country FROM mlb_people WHERE mlb_player_id IN ({placeholders})",
+                    ids,
+                ).fetchall()
+            }
+            if ids
+            else {}
+        )
 
     # Fetch CURRENT team for every farm player — single source of truth for
     # parent-org assignment (handles offseason trades, releases, promotions).
     all_player_ids = sorted({int(r[cols.index("mlb_player_id")]) for r in rows})
-    logger.info("fetching live currentTeam for %d farm players from MLB Stats API…", len(all_player_ids))
+    logger.info(
+        "fetching live currentTeam for %d farm players from MLB Stats API…", len(all_player_ids)
+    )
     current_team_by_id = fetch_all_current_teams(all_player_ids)
-    logger.info("resolved currentTeam for %d/%d players", len(current_team_by_id), len(all_player_ids))
+    logger.info(
+        "resolved currentTeam for %d/%d players", len(current_team_by_id), len(all_player_ids)
+    )
 
     # Distribute rows per parent org — preferring CURRENT alignment
-    buckets: dict[str, dict[str, list[dict[str, Any]]]] = {bref: {"MLB": [], "AAA": [], "AA": [], "A+": [], "A": [], "R": []} for bref in MLB_BY_BREF}
+    buckets: dict[str, dict[str, list[dict[str, Any]]]] = {
+        bref: {"MLB": [], "AAA": [], "AA": [], "A+": [], "A": [], "R": []} for bref in MLB_BY_BREF
+    }
     unmatched = 0
     moved_count = 0
 
@@ -232,7 +285,7 @@ def main() -> None:
         record = dict(zip(cols, r, strict=True))
         pid = int(record["mlb_player_id"])
         b = bio.get(pid)
-        is_pitcher = (record["group_name"] == "pitching")
+        is_pitcher = record["group_name"] == "pitching"
 
         # Resolve current parent org from live API
         ct = current_team_by_id.get(pid) or {}
@@ -252,12 +305,17 @@ def main() -> None:
                 current_team_meta = {"team_name": current_team_name, "team_abbrev": None}
             else:
                 # Case B: on a minor-league team — look it up in the live affiliate map
-                meta_live = team_map.get(int(current_team_id)) or legacy_map.get(int(current_team_id))
+                meta_live = team_map.get(int(current_team_id)) or legacy_map.get(
+                    int(current_team_id)
+                )
                 if meta_live:
                     current_parent_bref = meta_live["parent_bref"]
                     current_level = meta_live["level"]
                     current_team_meta = meta_live
-                elif current_parent_mlb_id is not None and int(current_parent_mlb_id) in BREF_BY_MLB_ID:
+                elif (
+                    current_parent_mlb_id is not None
+                    and int(current_parent_mlb_id) in BREF_BY_MLB_ID
+                ):
                     current_parent_bref = BREF_BY_MLB_ID[int(current_parent_mlb_id)]
                     current_level = "?"
                     current_team_meta = {"team_name": current_team_name, "team_abbrev": None}
@@ -298,40 +356,53 @@ def main() -> None:
             "team_name": (current_team_meta or {}).get("team_name") or current_team_name,
             "team_abbrev": (current_team_meta or {}).get("team_abbrev"),
             "level": current_level,
-            "former_team_name": meta_2024.get("team_name") if meta_2024 else record.get("team_name"),
+            "former_team_name": meta_2024.get("team_name")
+            if meta_2024
+            else record.get("team_name"),
             "former_parent": parent_2024,
             "moved_since_2024": moved,
-            "top_sport_id": int(record["top_sport_id"]) if record["top_sport_id"] is not None else None,
-            "top_level": LEVEL_BY_SPORT.get(int(record["top_sport_id"]), current_level) if record["top_sport_id"] is not None else current_level,
+            "top_sport_id": int(record["top_sport_id"])
+            if record["top_sport_id"] is not None
+            else None,
+            "top_level": LEVEL_BY_SPORT.get(int(record["top_sport_id"]), current_level)
+            if record["top_sport_id"] is not None
+            else current_level,
             # Hitting (2024 stats)
-            "pa": record["pa"], "ab": record["ab"], "hits": record["hits"],
-            "hr": record["hr"], "bb": record["bb"], "k": record["k"],
+            "pa": record["pa"],
+            "ab": record["ab"],
+            "hits": record["hits"],
+            "hr": record["hr"],
+            "bb": record["bb"],
+            "k": record["k"],
             "ops_pa_weighted": record["ops_pa_weighted"],
             # Pitching (2024 stats)
-            "ip": record["ip"], "era_ip_weighted": record["era_ip_weighted"],
+            "ip": record["ip"],
+            "era_ip_weighted": record["era_ip_weighted"],
         }
         buckets[current_parent_bref][current_level].append(player)
 
     # Sort each level: hitters by OPS desc, pitchers by ERA asc (with min IP)
-    LEVEL_ORDER = ["MLB", "AAA", "AA", "A+", "A", "R"]
+    level_order = ["MLB", "AAA", "AA", "A+", "A", "R"]
     teams_out: list[dict[str, Any]] = []
     for bref in sorted(MLB_BY_BREF):
         levels: dict[str, list[dict[str, Any]]] = {}
         total = 0
-        for lv in LEVEL_ORDER:
+        for lv in level_order:
             arr = buckets[bref].get(lv, [])
             # Sort: prioritize position (pitchers separate), then quality
             hitters = [p for p in arr if not p["is_pitcher"]]
             pitchers = [p for p in arr if p["is_pitcher"]]
             hitters.sort(key=lambda p: -(p.get("ops_pa_weighted") or 0))
-            pitchers.sort(key=lambda p: (p.get("era_ip_weighted") or 99))
+            pitchers.sort(key=lambda p: p.get("era_ip_weighted") or 99)
             merged = hitters + pitchers
             levels[lv] = merged
             total += len(merged)
-        teams_out.append({"bref": bref, "season": int(latest_season), "total_players": total, "levels": levels})
+        teams_out.append(
+            {"bref": bref, "season": int(latest_season), "total_players": total, "levels": levels}
+        )
 
     payload = {
-        "generated_at": datetime.now(tz=timezone.utc).isoformat(),
+        "generated_at": datetime.now(tz=UTC).isoformat(),
         "season": int(latest_season),
         "team_count": len(teams_out),
         "player_count": sum(t["total_players"] for t in teams_out),

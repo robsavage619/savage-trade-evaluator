@@ -62,10 +62,7 @@ def score_holdout() -> pd.DataFrame:
     """Score the 2018-2021 holdout rows; return DataFrame with predictions + realized."""
     df = assemble_v3_combined()
     held_out = (
-        df[
-            (df["trade_season"] >= HOLDOUT_START)
-            & (df["trade_season"] <= HOLDOUT_END)
-        ]
+        df[(df["trade_season"] >= HOLDOUT_START) & (df["trade_season"] <= HOLDOUT_END)]
         .dropna(subset=[OUTCOME])
         .copy()
     )
@@ -146,9 +143,9 @@ def main(top_n: int = 15, out: str | None = None) -> None:
     print(f"  MAE: {mae:.3f} WAR    Directional accuracy: {hit_rate:.1%}")
 
     # 1. Highest-confidence wins (model optimistic and correct)
-    true_pos = results[
-        (results["predicted_mean"] > 0.5) & (results[OUTCOME] > 0.5)
-    ].sort_values("predicted_mean", ascending=False)
+    true_pos = results[(results["predicted_mean"] > 0.5) & (results[OUTCOME] > 0.5)].sort_values(
+        "predicted_mean", ascending=False
+    )
     _print_section(
         "HIGH-CONFIDENCE WINS  (model optimistic -> got positive WAR)",
         true_pos,
@@ -182,9 +179,16 @@ def main(top_n: int = 15, out: str | None = None) -> None:
 
     if out:
         cols = [
-            "trade_event_id", "receiver_bref", "trade_season",
-            OUTCOME, "predicted_mean", "predicted_p5", "predicted_p95",
-            "p_positive", "abs_error", "error",
+            "trade_event_id",
+            "receiver_bref",
+            "trade_season",
+            OUTCOME,
+            "predicted_mean",
+            "predicted_p5",
+            "predicted_p95",
+            "p_positive",
+            "abs_error",
+            "error",
         ]
         results[cols].to_csv(out, index=False)
         print(f"  Wrote {len(results)} rows → {out}")

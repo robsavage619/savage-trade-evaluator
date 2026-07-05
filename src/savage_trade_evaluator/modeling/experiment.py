@@ -94,10 +94,7 @@ def write_manifest(
         "git_sha": _git_sha(),
         "schema_version": SCHEMA_VERSION,
         "table_row_counts": _table_row_counts(),
-        "feature_sets": {
-            outcome: list(features)
-            for outcome, features in feature_sets.items()
-        },
+        "feature_sets": {outcome: list(features) for outcome, features in feature_sets.items()},
     }
     if extra:
         manifest["extra"] = extra

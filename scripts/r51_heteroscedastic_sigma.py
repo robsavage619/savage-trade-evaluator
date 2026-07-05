@@ -24,7 +24,7 @@ os.environ.setdefault(
     "/Users/robsavage/Projects/savage-trade-evaluator/.claude/worktrees/gallant-cerf-24bd10/data/duckdb/trades.db",
 )
 
-from savage_trade_evaluator.modeling.v3 import (  # noqa: E402
+from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
     assemble_v3_combined,
     backtest_outcome_v3_heteroscedastic,
@@ -81,7 +81,7 @@ def main() -> None:
     sign = "+" if delta >= 0 else ""
     print(f"  Flat-sigma baseline:      {_FLAT_SIGMA_COVERAGE:.1%}")
     print(f"  Heteroscedastic (R-51):   {result.coverage_90:.1%}   ({sign}{delta:.1%})")
-    print(f"  Target:                    90.0%")
+    print("  Target:                    90.0%")
     if result.coverage_90 <= 0.93:
         print("  => PASS: coverage pulled toward target")
     else:

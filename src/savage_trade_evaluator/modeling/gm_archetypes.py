@@ -28,11 +28,11 @@ logger = logging.getLogger(__name__)
 
 # Feature columns used for clustering (must exist in gm_behavioral_profiles)
 CLUSTER_FEATURES = [
-    "war_buyer_bias",       # positive = buy WAR, negative = sell WAR
-    "avg_age_received",     # higher = buy experience
-    "deadline_pct",         # higher = deadline-concentration style
-    "pct_pitchers_received",# higher = pitching focus
-    "trades_per_season",    # higher = high-activity GM
+    "war_buyer_bias",  # positive = buy WAR, negative = sell WAR
+    "avg_age_received",  # higher = buy experience
+    "deadline_pct",  # higher = deadline-concentration style
+    "pct_pitchers_received",  # higher = pitching focus
+    "trades_per_season",  # higher = high-activity GM
 ]
 
 N_CLUSTERS = 5
@@ -53,19 +53,19 @@ class ArchetypeLabel:
 # Signature features must be distinct across archetypes.
 ARCHETYPE_SIGNATURES: dict[str, tuple[str, str]] = {
     # (signature_feature, direction): the cluster that maximizes/minimizes this feature
-    "Veteran Buyer":     ("avg_age_received", "max"),   # buys experience + WAR
-    "Youth Builder":     ("avg_age_received", "min"),   # sells WAR for youth
-    "Asset Recycler":    ("trades_per_season", "max"),  # high volume
-    "Pitching Factory":  ("pct_pitchers_received", "max"),
-    "Deadline Dealer":   ("deadline_pct", "max"),       # concentrates at deadline
+    "Veteran Buyer": ("avg_age_received", "max"),  # buys experience + WAR
+    "Youth Builder": ("avg_age_received", "min"),  # sells WAR for youth
+    "Asset Recycler": ("trades_per_season", "max"),  # high volume
+    "Pitching Factory": ("pct_pitchers_received", "max"),
+    "Deadline Dealer": ("deadline_pct", "max"),  # concentrates at deadline
 }
 
 ARCHETYPE_DESCRIPTIONS: dict[str, str] = {
-    "Veteran Buyer":    "Acquires older, higher-WAR players; win-now orientation.",
-    "Youth Builder":    "Trades proven talent for youth and cost-control; rebuilder profile.",
-    "Asset Recycler":   "High volume, mixed direction; treats roster as fluid.",
+    "Veteran Buyer": "Acquires older, higher-WAR players; win-now orientation.",
+    "Youth Builder": "Trades proven talent for youth and cost-control; rebuilder profile.",
+    "Asset Recycler": "High volume, mixed direction; treats roster as fluid.",
     "Pitching Factory": "Disproportionately acquires pitching; arm-acquisition focus.",
-    "Deadline Dealer":  "Concentrates activity at the trade deadline; buyer or seller.",
+    "Deadline Dealer": "Concentrates activity at the trade deadline; buyer or seller.",
 }
 
 

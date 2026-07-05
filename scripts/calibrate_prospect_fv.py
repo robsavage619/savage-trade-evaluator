@@ -99,13 +99,18 @@ def _fit_calibration(df: pd.DataFrame) -> pd.DataFrame:
     slope, intercept, r, p, stderr = stats.linregress(df_fit["fv"], df_fit["cum_war_5yr"])
     logger.info(
         "OLS fit: WAR = %.4f + %.4f * FV  |  r=%.3f  p=%.4f  stderr=%.4f",
-        intercept, slope, r, p, stderr,
+        intercept,
+        slope,
+        r,
+        p,
+        stderr,
     )
 
     # Residual sigma for p10/p90 bounds (assumes normal residuals).
     predicted = intercept + slope * df_fit["fv"]
     resid_sigma = float(np.std(df_fit["cum_war_5yr"] - predicted))
     from scipy.stats import norm
+
     z10 = float(norm.ppf(0.10))
     z90 = float(norm.ppf(0.90))
 
@@ -121,10 +126,14 @@ def _fit_calibration(df: pd.DataFrame) -> pd.DataFrame:
     grp["fitted_war_p10"] = (grp["fitted_war_5yr"] + z10 * resid_sigma).clip(lower=0.0)
     grp["fitted_war_p90"] = (grp["fitted_war_5yr"] + z90 * resid_sigma).clip(lower=0.0)
 
-    return grp.rename(columns={
-        "mean": "mean_war_5yr", "median": "median_war_5yr",
-        "std": "std_war_5yr", "n": "n_comparables",
-    })
+    return grp.rename(
+        columns={
+            "mean": "mean_war_5yr",
+            "median": "median_war_5yr",
+            "std": "std_war_5yr",
+            "n": "n_comparables",
+        }
+    )
 
 
 def _persist(calibration: pd.DataFrame, conn: object) -> None:

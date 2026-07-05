@@ -35,8 +35,7 @@ def main() -> None:
 
         # Pull every currently-unmatched distinct Spotrac player name.
         unmatched = conn.execute(
-            "SELECT DISTINCT player_name FROM spotrac_player_contracts "
-            "WHERE mlb_player_id IS NULL"
+            "SELECT DISTINCT player_name FROM spotrac_player_contracts WHERE mlb_player_id IS NULL"
         ).fetchall()
         updates: list[tuple[int, str]] = []
         for (name,) in unmatched:

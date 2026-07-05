@@ -25,7 +25,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from savage_trade_evaluator.modeling.gm_archetypes import lookup_archetype
 from savage_trade_evaluator.modeling.scenario_engine import score_historical_scenarios
 from savage_trade_evaluator.storage.db import connect
 

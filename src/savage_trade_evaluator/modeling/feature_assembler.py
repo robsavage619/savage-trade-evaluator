@@ -114,11 +114,13 @@ def _receiver_team_features(
         "receiver_payroll_pct_of_cap",
         "receiver_payroll_trend_3yr",
     ]
-    features: dict[str, float | None] = dict(zip(
-        col_names,
-        [float(v) if v is not None else None for v in row],
-        strict=True,
-    ))
+    features: dict[str, float | None] = dict(
+        zip(
+            col_names,
+            [float(v) if v is not None else None for v in row],
+            strict=True,
+        )
+    )
 
     pyth = features.get("receiver_prior_year_pyth_pct")
     cap_pct = features.get("receiver_payroll_pct_of_cap")
@@ -153,9 +155,7 @@ def _sender_features(
 
     return {
         "origin_sunk_cost_pressure": float(row[0]) if row[0] is not None else None,
-        "receiver_acquired_from_dev_cluster_score": (
-            float(row[1]) if row[1] is not None else None
-        ),
+        "receiver_acquired_from_dev_cluster_score": (float(row[1]) if row[1] is not None else None),
     }
 
 
@@ -249,9 +249,7 @@ def _player_war_quality(
         return {}
 
     return {
-        "receiver_acquired_player_quality": (
-            float(row[0]) if row[0] is not None else None
-        ),
+        "receiver_acquired_player_quality": (float(row[0]) if row[0] is not None else None),
         "receiver_acquired_player_avg_war_trajectory": (
             float(row[1]) if row[1] is not None else None
         ),
@@ -319,15 +317,9 @@ def _player_milb_quality(
         return {}
 
     return {
-        "receiver_acquired_milb_hit_quality": (
-            float(row[0]) if row[0] is not None else None
-        ),
-        "receiver_acquired_milb_pitch_quality": (
-            float(row[1]) if row[1] is not None else None
-        ),
-        "receiver_acquired_milb_age_advantage": (
-            float(row[2]) if row[2] is not None else None
-        ),
+        "receiver_acquired_milb_hit_quality": (float(row[0]) if row[0] is not None else None),
+        "receiver_acquired_milb_pitch_quality": (float(row[1]) if row[1] is not None else None),
+        "receiver_acquired_milb_age_advantage": (float(row[2]) if row[2] is not None else None),
     }
 
 
@@ -364,12 +356,8 @@ def _player_pedigree(
         return {}
 
     return {
-        "receiver_acquired_avg_prior_awards": (
-            float(row[0]) if row[0] is not None else None
-        ),
-        "receiver_acquired_pct_awarded": (
-            float(row[1]) if row[1] is not None else None
-        ),
+        "receiver_acquired_avg_prior_awards": (float(row[0]) if row[0] is not None else None),
+        "receiver_acquired_pct_awarded": (float(row[1]) if row[1] is not None else None),
     }
 
 
@@ -396,9 +384,7 @@ def _player_statcast(
     ).fetchone()
     if row and row[0] is not None:
         features["receiver_acquired_avg_exit_speed"] = float(row[0])
-        features["receiver_acquired_barrel_rate"] = (
-            float(row[1]) if row[1] is not None else None
-        )
+        features["receiver_acquired_barrel_rate"] = float(row[1]) if row[1] is not None else None
 
     # Sprint speed
     row = conn.execute(
@@ -670,15 +656,20 @@ def assemble_hypothetical(
     n_priority = sum(1 for k in PRIORITY_FEATURES if k in row and not _is_nan(row[k]))
     logger.info(
         "assembled %d/%d total features (%d/%d priority) for %s ← %s [%d players]",
-        n_populated, len(ALL_FEATURES),
-        n_priority, len(PRIORITY_FEATURES),
-        receiver_bref, sender_bref, len(player_mlb_ids),
+        n_populated,
+        len(ALL_FEATURES),
+        n_priority,
+        len(PRIORITY_FEATURES),
+        receiver_bref,
+        sender_bref,
+        len(player_mlb_ids),
     )
     if n_priority < 5:
         logger.warning(
             "only %d/%d priority features populated — "
             "posterior will rely heavily on training-set means",
-            n_priority, len(PRIORITY_FEATURES),
+            n_priority,
+            len(PRIORITY_FEATURES),
         )
 
     return pd.DataFrame([row])

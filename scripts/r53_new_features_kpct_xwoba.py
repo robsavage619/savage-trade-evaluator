@@ -61,7 +61,7 @@ def main() -> None:
     results = []
     for outcome in OUTCOMES:
         for feat in available_new:
-            aug_cols = base_cols + (feat,)
+            aug_cols = (*base_cols, feat)
             print(f"\n{'#' * 88}")
             print(f"# R-53: {outcome} + {feat}  ({len(aug_cols)} features)")
             print(f"{'#' * 88}")
@@ -73,7 +73,9 @@ def main() -> None:
                 )
             except ValueError as e:
                 print(f"  SKIPPED: {e}")
-                results.append((outcome, feat, None, False, float("nan"), float("nan"), float("nan")))
+                results.append(
+                    (outcome, feat, None, False, float("nan"), float("nan"), float("nan"))
+                )
                 continue
             print_backtest_report(result)
             credible, mean_b, p05, p95 = _credibility(result, feat)
@@ -92,10 +94,7 @@ def main() -> None:
         ci_str = f"[{p05:+.3f}, {p95:+.3f}]" if not np.isnan(p05) else "   n/a "
         cov = f"{result.coverage_90:.1%}" if result else "  n/a"
         crps = f"{result.test_crps:.4f}" if result else "   n/a"
-        print(
-            f"  {outcome:<14} {feat:<42} {cov:>6}  {crps:>8}"
-            f"  {flag:>9}  {beta_str}  {ci_str}"
-        )
+        print(f"  {outcome:<14} {feat:<42} {cov:>6}  {crps:>8}  {flag:>9}  {beta_str}  {ci_str}")
 
 
 if __name__ == "__main__":

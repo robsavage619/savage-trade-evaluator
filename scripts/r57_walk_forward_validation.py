@@ -69,10 +69,10 @@ def summarize_verdicts(results: dict[str, V3CVResult]) -> None:
 
     for outcome, result in results.items():
         stability = result.feature_stability.copy()
-        n_confirmed = stability["confirmed"].sum()
-        n_exploratory = len(stability) - n_confirmed
         print()
-        print(f"  {outcome}  ({len(result.fold_results)} folds, mean_CRPS={result.mean_crps:.4f} ± {result.std_crps:.4f})")
+        print(
+            f"  {outcome}  ({len(result.fold_results)} folds, mean_CRPS={result.mean_crps:.4f} ± {result.std_crps:.4f})"
+        )
         if result.exploratory_flag:
             print("    *** EXPLORATORY FLAG: one or more folds n_test < 50 ***")
 

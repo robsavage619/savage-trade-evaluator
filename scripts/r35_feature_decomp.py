@@ -41,8 +41,11 @@ from savage_trade_evaluator.modeling.v2.features import (
 
 
 def _impute_and_split(
-    outcome: str, feature_cols: tuple[str, ...],
-    train_end: int = 2020, test_end: int = 2024, min_present: int = 3,
+    outcome: str,
+    feature_cols: tuple[str, ...],
+    train_end: int = 2020,
+    test_end: int = 2024,
+    min_present: int = 3,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     combined = assemble_combined()
     combined = combined[combined[outcome].notna()].copy()
@@ -58,9 +61,7 @@ def _impute_and_split(
     return train, test
 
 
-def _fit_v0(
-    train: pd.DataFrame, outcome: str, feature_cols: tuple[str, ...]
-) -> dict:
+def _fit_v0(train: pd.DataFrame, outcome: str, feature_cols: tuple[str, ...]) -> dict:
     """Pop intercept + features only."""
     means = train[list(feature_cols)].mean()
     stds = train[list(feature_cols)].std().replace(0, 1.0)
@@ -78,18 +79,25 @@ def _fit_v0(
         mu = alpha0 + pm.math.dot(x, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
-            draws=1500, tune=2000, chains=4, random_seed=137,
-            progressbar=False, target_accept=0.99,
+            draws=1500,
+            tune=2000,
+            chains=4,
+            random_seed=137,
+            progressbar=False,
+            target_accept=0.99,
         )
     return {
-        "trace": trace, "feature_cols": feature_cols, "means": means, "stds": stds,
-        "y_mean": y_mean, "y_std": y_std, "kind": "v0",
+        "trace": trace,
+        "feature_cols": feature_cols,
+        "means": means,
+        "stds": stds,
+        "y_mean": y_mean,
+        "y_std": y_std,
+        "kind": "v0",
     }
 
 
-def _fit_v1_team(
-    train: pd.DataFrame, outcome: str, feature_cols: tuple[str, ...]
-) -> dict:
+def _fit_v1_team(train: pd.DataFrame, outcome: str, feature_cols: tuple[str, ...]) -> dict:
     """Pop + team intercept + features."""
     teams = tuple(sorted(train["receiver_bref"].unique()))
     team_to_idx = {t: i for i, t in enumerate(teams)}
@@ -114,13 +122,23 @@ def _fit_v1_team(
         mu = alpha0 + alpha_team[team_idx] + pm.math.dot(x, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
-            draws=1500, tune=2000, chains=4, random_seed=137,
-            progressbar=False, target_accept=0.99,
+            draws=1500,
+            tune=2000,
+            chains=4,
+            random_seed=137,
+            progressbar=False,
+            target_accept=0.99,
         )
     return {
-        "trace": trace, "teams": teams, "team_to_idx": team_to_idx,
-        "feature_cols": feature_cols, "means": means, "stds": stds,
-        "y_mean": y_mean, "y_std": y_std, "kind": "v1",
+        "trace": trace,
+        "teams": teams,
+        "team_to_idx": team_to_idx,
+        "feature_cols": feature_cols,
+        "means": means,
+        "stds": stds,
+        "y_mean": y_mean,
+        "y_std": y_std,
+        "kind": "v1",
     }
 
 
@@ -200,23 +218,36 @@ def main() -> None:
         v1_p = _fit_v1_team(train_p, o, ACQUIRED_PLAYER_FEATURES)
         s_v1_p = _score(v1_p, test_p, o)
 
-        print(f"  V0_all     (16f, no team):  MAE={s_v0_all['mae']:.4f}  "
-              f"CRPS={s_v0_all['crps']:.4f}  cov={s_v0_all['cov90']:.1%}  "
-              f"cred={s_v0_all['credible']}")
-        print(f"  V0_player  ( 8f, no team):  MAE={s_v0_p['mae']:.4f}  "
-              f"CRPS={s_v0_p['crps']:.4f}  cov={s_v0_p['cov90']:.1%}  "
-              f"cred={s_v0_p['credible']}")
-        print(f"  V1_player  ( 8f + team):    MAE={s_v1_p['mae']:.4f}  "
-              f"CRPS={s_v1_p['crps']:.4f}  cov={s_v1_p['cov90']:.1%}  "
-              f"cred={s_v1_p['credible']}")
+        print(
+            f"  V0_all     (16f, no team):  MAE={s_v0_all['mae']:.4f}  "
+            f"CRPS={s_v0_all['crps']:.4f}  cov={s_v0_all['cov90']:.1%}  "
+            f"cred={s_v0_all['credible']}"
+        )
+        print(
+            f"  V0_player  ( 8f, no team):  MAE={s_v0_p['mae']:.4f}  "
+            f"CRPS={s_v0_p['crps']:.4f}  cov={s_v0_p['cov90']:.1%}  "
+            f"cred={s_v0_p['credible']}"
+        )
+        print(
+            f"  V1_player  ( 8f + team):    MAE={s_v1_p['mae']:.4f}  "
+            f"CRPS={s_v1_p['crps']:.4f}  cov={s_v1_p['cov90']:.1%}  "
+            f"cred={s_v1_p['credible']}"
+        )
 
-        rows.append({
-            "outcome": o,
-            "v0_all_mae": s_v0_all["mae"], "v0_p_mae": s_v0_p["mae"], "v1_p_mae": s_v1_p["mae"],
-            "v0_all_crps": s_v0_all["crps"], "v0_p_crps": s_v0_p["crps"], "v1_p_crps": s_v1_p["crps"],
-            "v0_all_cred": s_v0_all["credible"], "v0_p_cred": s_v0_p["credible"],
-            "v1_p_cred": s_v1_p["credible"],
-        })
+        rows.append(
+            {
+                "outcome": o,
+                "v0_all_mae": s_v0_all["mae"],
+                "v0_p_mae": s_v0_p["mae"],
+                "v1_p_mae": s_v1_p["mae"],
+                "v0_all_crps": s_v0_all["crps"],
+                "v0_p_crps": s_v0_p["crps"],
+                "v1_p_crps": s_v1_p["crps"],
+                "v0_all_cred": s_v0_all["credible"],
+                "v0_p_cred": s_v0_p["credible"],
+                "v1_p_cred": s_v1_p["credible"],
+            }
+        )
 
     print()
     print("=" * 88)

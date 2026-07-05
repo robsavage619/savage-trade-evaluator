@@ -28,9 +28,7 @@ warnings.filterwarnings("ignore")
 from savage_trade_evaluator.modeling.v2.backtest import assemble_combined
 from savage_trade_evaluator.modeling.v2.outcomes import build_outcomes_windowed
 from savage_trade_evaluator.modeling.v3 import (
-    V3_OUTCOME_FEATURES,
     backtest_outcome_v3,
-    print_backtest_report,
 )
 
 WAR_OUTCOMES = ("war_delta", "dollar_surplus")
@@ -59,16 +57,20 @@ def run_q01() -> None:
     for outcome in ALL_OUTCOMES:
         r_all = backtest_outcome_v3(outcome, combined=combined)
         r_filt = backtest_outcome_v3(outcome, combined=combined, meaningful_trades_only=True)
-        rows.append({
-            "outcome": outcome,
-            "scope": "all",
-            **_metrics(r_all),
-        })
-        rows.append({
-            "outcome": outcome,
-            "scope": "meaningful",
-            **_metrics(r_filt),
-        })
+        rows.append(
+            {
+                "outcome": outcome,
+                "scope": "all",
+                **_metrics(r_all),
+            }
+        )
+        rows.append(
+            {
+                "outcome": outcome,
+                "scope": "meaningful",
+                **_metrics(r_filt),
+            }
+        )
 
     df = pd.DataFrame(rows)
     print(df.to_string(index=False))

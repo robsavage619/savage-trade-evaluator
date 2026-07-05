@@ -43,19 +43,19 @@ from savage_trade_evaluator.modeling.experiment import write_manifest
 from savage_trade_evaluator.modeling.v2.backtest import _crps_empirical
 from savage_trade_evaluator.modeling.v2.features import (
     ACQUIRED_PLAYER_FEATURES,
-    ALL_FEATURES,
 )
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
+    _split_and_impute,
     assemble_v3_combined,
     fit_v3,
     predict,
-    _split_and_impute,
 )
 from savage_trade_evaluator.modeling.v3_cv import (
     MIN_TEST_N,
     walk_forward_splits,
 )
+
 sys.path.insert(0, str(Path(__file__).parent))
 from r58_baseline_comparison import _fit_bayesian_intercept_only
 
@@ -69,11 +69,15 @@ def run_fold(
     min_n: int,
 ) -> dict:
     """One fold: intercept-only + player-quality + full-contextual CRPS."""
-    all_cols = V3_OUTCOME_FEATURES[outcome]   # ALL_FEATURES for war_delta/dollar_surplus
+    all_cols = V3_OUTCOME_FEATURES[outcome]  # ALL_FEATURES for war_delta/dollar_surplus
 
     train_full, test_full = _split_and_impute(
-        outcome, all_cols, train_end, test_end,
-        combined=combined, train_start_season=train_start,
+        outcome,
+        all_cols,
+        train_end,
+        test_end,
+        combined=combined,
+        train_start_season=train_start,
     )
     n_train = len(train_full)
     n_test = len(test_full)
@@ -91,8 +95,12 @@ def run_fold(
     crps_player = float("nan")
     if n_train >= 50 and player_cols:
         train_p, test_p = _split_and_impute(
-            outcome, player_cols, train_end, test_end,
-            combined=combined, train_start_season=train_start,
+            outcome,
+            player_cols,
+            train_end,
+            test_end,
+            combined=combined,
+            train_start_season=train_start,
             minimum_features_present=1,
         )
         if len(train_p) >= 50:
@@ -153,7 +161,9 @@ def print_results(rows: list[dict]) -> None:
     print("R-59 THESIS TEST: player-quality-only vs full contextual model")
     print("NAIVE = ACQUIRED_PLAYER_FEATURES only (no team context)")
     print("FULL  = ALL_FEATURES (team context added)")
-    print("Thesis: skill(full/naive) > 0  →  team context adds predictive value beyond player quality")
+    print(
+        "Thesis: skill(full/naive) > 0  →  team context adds predictive value beyond player quality"
+    )
     print(sep)
 
     for outcome in outcomes:
@@ -163,24 +173,50 @@ def print_results(rows: list[dict]) -> None:
         n_cf = int(sub["n_context_features"].iloc[0])
         print()
         print(f"  {outcome}  (naive={n_pf} player features, context_added={n_cf} team features)")
-        print(f"  {'fold window':<15} {'n_test':>7} {'intercept':>10} {'naive':>10} {'full':>10}  "
-              f"{'skill(full/int)':>15}  {'skill(naive/int)':>16}  {'skill(full/naive)':>17}")
+        print(
+            f"  {'fold window':<15} {'n_test':>7} {'intercept':>10} {'naive':>10} {'full':>10}  "
+            f"{'skill(full/int)':>15}  {'skill(naive/int)':>16}  {'skill(full/naive)':>17}"
+        )
         print("  " + "-" * 108)
 
         for _, r in sub.iterrows():
             suf = "" if r["sufficient"] else " INSUF"
-            ci = f"{r['crps_intercept']:>10.4f}" if not np.isnan(r["crps_intercept"]) else "       n/a"
+            ci = (
+                f"{r['crps_intercept']:>10.4f}"
+                if not np.isnan(r["crps_intercept"])
+                else "       n/a"
+            )
             cp = f"{r['crps_player']:>10.4f}" if not np.isnan(r["crps_player"]) else "       n/a"
             cf = f"{r['crps_full']:>10.4f}" if not np.isnan(r["crps_full"]) else "       n/a"
-            s_fi = f"{r['skill_full_vs_intercept']:>+14.1%}" if not np.isnan(r["skill_full_vs_intercept"]) else "             n/a"
-            s_pi = f"{r['skill_player_vs_intercept']:>+15.1%}" if not np.isnan(r["skill_player_vs_intercept"]) else "              n/a"
-            s_fp = f"{r['skill_full_vs_player']:>+16.1%}" if not np.isnan(r["skill_full_vs_player"]) else "               n/a"
-            print(f"  {r['test_end']-1}–{r['test_end']:<10} {r['n_test']:>7} {ci} {cp} {cf}  {s_fi}  {s_pi}  {s_fp}{suf}")
+            s_fi = (
+                f"{r['skill_full_vs_intercept']:>+14.1%}"
+                if not np.isnan(r["skill_full_vs_intercept"])
+                else "             n/a"
+            )
+            s_pi = (
+                f"{r['skill_player_vs_intercept']:>+15.1%}"
+                if not np.isnan(r["skill_player_vs_intercept"])
+                else "              n/a"
+            )
+            s_fp = (
+                f"{r['skill_full_vs_player']:>+16.1%}"
+                if not np.isnan(r["skill_full_vs_player"])
+                else "               n/a"
+            )
+            print(
+                f"  {r['test_end'] - 1}–{r['test_end']:<10} {r['n_test']:>7} {ci} {cp} {cf}  {s_fi}  {s_pi}  {s_fp}{suf}"
+            )
 
         if not sufficient.empty:
             print()
-            agg_cols = ["crps_intercept", "crps_player", "crps_full",
-                        "skill_full_vs_intercept", "skill_player_vs_intercept", "skill_full_vs_player"]
+            agg_cols = [
+                "crps_intercept",
+                "crps_player",
+                "crps_full",
+                "skill_full_vs_intercept",
+                "skill_player_vs_intercept",
+                "skill_full_vs_player",
+            ]
             agg = sufficient[agg_cols].mean()
             print(
                 f"  Mean (sufficient):              "
@@ -191,13 +227,15 @@ def print_results(rows: list[dict]) -> None:
             # Verdict
             mean_skill = agg["skill_full_vs_player"]
             if mean_skill > 0.02:
-                verdict = "THESIS SUPPORTED — team context beats player-quality-only by {:.1%}".format(mean_skill)
+                verdict = (
+                    f"THESIS SUPPORTED — team context beats player-quality-only by {mean_skill:.1%}"
+                )
             elif mean_skill > 0.0:
-                verdict = "WEAK SUPPORT — marginal gain ({:.1%}); likely within noise".format(mean_skill)
+                verdict = f"WEAK SUPPORT — marginal gain ({mean_skill:.1%}); likely within noise"
             elif mean_skill > -0.02:
-                verdict = "PARITY — no detectable difference (skill={:.1%})".format(mean_skill)
+                verdict = f"PARITY — no detectable difference (skill={mean_skill:.1%})"
             else:
-                verdict = "THESIS NOT SUPPORTED — player-quality-alone beats full model by {:.1%}".format(-mean_skill)
+                verdict = f"THESIS NOT SUPPORTED — player-quality-alone beats full model by {-mean_skill:.1%}"
             print(f"\n  VERDICT ({outcome}): {verdict}")
 
     print()
@@ -230,7 +268,10 @@ def main() -> None:
         context_n = len(all_cols) - player_n
         logger.info(
             "%s: %d folds, player_features=%d, context_features=%d",
-            outcome, len(splits), player_n, context_n,
+            outcome,
+            len(splits),
+            player_n,
+            context_n,
         )
 
         for split in splits:
@@ -248,8 +289,11 @@ def main() -> None:
             thesis = row["skill_full_vs_player"]
             logger.info(
                 "    intercept=%.4f  naive=%.4f  full=%.4f  thesis_skill=%+.1f%%  (%.1fs)",
-                row["crps_intercept"], row["crps_player"], row["crps_full"],
-                (thesis * 100) if not np.isnan(thesis) else float("nan"), elapsed,
+                row["crps_intercept"],
+                row["crps_player"],
+                row["crps_full"],
+                (thesis * 100) if not np.isnan(thesis) else float("nan"),
+                elapsed,
             )
             all_rows.append(row)
 

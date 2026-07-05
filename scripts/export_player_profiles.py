@@ -88,7 +88,9 @@ def export_player(conn: duckdb.DuckDBPyConnection, pid: int) -> dict[str, Any] |
     )
 
     # Statcast percentile ranks (which side based on dominant career)
-    is_pitcher = sum(r.get("g") or 0 for r in career_pitching) >= sum(r.get("g") or 0 for r in career_batting)
+    is_pitcher = sum(r.get("g") or 0 for r in career_pitching) >= sum(
+        r.get("g") or 0 for r in career_batting
+    )
 
     pctile_pitcher = _rows(
         conn,
@@ -234,7 +236,9 @@ def main() -> None:
                     skipped += 1
                     continue
                 # Compact for size
-                (OUT_DIR / f"{pid}.json").write_text(json.dumps(payload, separators=(",", ":"), default=_jsonify))
+                (OUT_DIR / f"{pid}.json").write_text(
+                    json.dumps(payload, separators=(",", ":"), default=_jsonify)
+                )
                 written += 1
             except Exception as e:
                 logger.warning("failed for %s: %s", pid, e)
@@ -242,7 +246,10 @@ def main() -> None:
 
     # Index file
     (OUT_DIR / "_index.json").write_text(
-        json.dumps({"generated_at": datetime.utcnow().isoformat(), "count": written, "ids": ids}, default=_jsonify),
+        json.dumps(
+            {"generated_at": datetime.utcnow().isoformat(), "count": written, "ids": ids},
+            default=_jsonify,
+        ),
     )
     logger.info("wrote %d profiles (%d skipped) — index at _index.json", written, skipped)
 

@@ -30,7 +30,6 @@ from savage_trade_evaluator.modeling.v3 import (
     backtest_outcome_v3,
     print_backtest_report,
 )
-from savage_trade_evaluator.modeling.v2.features import ACQUIRED_PLAYER_FEATURES
 
 FEAT = "receiver_acquired_contract_year_pct"
 
@@ -46,7 +45,13 @@ def _credibility(result, feature: str) -> tuple[bool, float, float, float, float
     if row.empty:
         return False, float("nan"), float("nan"), float("nan"), float("nan")
     r = row.iloc[0]
-    return bool(r["credible"]), float(r["mean_beta"]), float(r["p05"]), float(r["p95"]), float(r["directional_mass"])
+    return (
+        bool(r["credible"]),
+        float(r["mean_beta"]),
+        float(r["p05"]),
+        float(r["p95"]),
+        float(r["directional_mass"]),
+    )
 
 
 def main() -> None:
@@ -62,7 +67,7 @@ def main() -> None:
     results = []
     for outcome, base_cols in OUTCOME_BASES.items():
         base_cols = tuple(c for c in base_cols if c in combined.columns)
-        aug_cols = base_cols + (FEAT,)
+        aug_cols = (*base_cols, FEAT)
         print(f"\n{'#' * 88}")
         print(f"# R-56: {outcome} + {FEAT}  ({len(aug_cols)} features)")
         print(f"{'#' * 88}")

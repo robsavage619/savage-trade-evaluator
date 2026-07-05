@@ -164,7 +164,9 @@ def main() -> None:
             writer.writeheader()
             writer.writerows(rows)
 
-        fv_range = f"FV {min(r['fv'] for r in rows)}-{max(r['fv'] for r in rows)}" if rows else "empty"
+        fv_range = (
+            f"FV {min(r['fv'] for r in rows)}-{max(r['fv'] for r in rows)}" if rows else "empty"
+        )
         print(f"{year}: {len(rows):3d} rows  {fv_range}  → {out_path.name}")
 
 

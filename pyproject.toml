@@ -76,7 +76,10 @@ extend-immutable-calls = ["typer.Option", "typer.Argument"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["D"]
-"scripts/*" = ["E402", "D"]  # sys.path bootstrap precedes imports; scripts don't need docstrings
+# E402: sys.path bootstrap precedes imports. D: scripts don't need docstrings.
+# E501: research scripts print wide fixed-width tables. RUF001/2/3: intentional
+# typographic unicode (em-dashes, ×, β) in printed research output.
+"scripts/*" = ["E402", "D", "E501", "RUF001", "RUF002", "RUF003"]
 
 [tool.pyright]
 pythonVersion = "3.12"

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -42,7 +42,9 @@ def _resolve_db() -> Path:
     raise FileNotFoundError(msg)
 
 
-def latest_pitcher_fingerprint(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[int, dict[str, Any]]:
+def latest_pitcher_fingerprint(
+    conn: duckdb.DuckDBPyConnection, ids: list[int]
+) -> dict[int, dict[str, Any]]:
     if not ids:
         return {}
     placeholders = ",".join(["?"] * len(ids))
@@ -79,7 +81,9 @@ def latest_pitcher_fingerprint(conn: duckdb.DuckDBPyConnection, ids: list[int]) 
     return out
 
 
-def latest_batter_fingerprint(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[int, dict[str, Any]]:
+def latest_batter_fingerprint(
+    conn: duckdb.DuckDBPyConnection, ids: list[int]
+) -> dict[int, dict[str, Any]]:
     if not ids:
         return {}
     placeholders = ",".join(["?"] * len(ids))
@@ -170,12 +174,17 @@ def main() -> None:
         )
 
     payload = {
-        "generated_at": datetime.now(tz=timezone.utc).isoformat(),
+        "generated_at": datetime.now(tz=UTC).isoformat(),
         "count": len(out_players),
         "players": out_players,
     }
     OUT_PATH.write_text(json.dumps(payload, separators=(",", ":"), default=str))
-    logger.info("wrote %s — %d players (%.1f KB)", OUT_PATH.relative_to(PROJECT_ROOT), len(out_players), OUT_PATH.stat().st_size / 1024)
+    logger.info(
+        "wrote %s — %d players (%.1f KB)",
+        OUT_PATH.relative_to(PROJECT_ROOT),
+        len(out_players),
+        OUT_PATH.stat().st_size / 1024,
+    )
 
 
 if __name__ == "__main__":

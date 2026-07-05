@@ -1208,9 +1208,7 @@ def score_trade(
             p5_s = f"{p5_v:+.2f}"
             p95_s = f"{p95_v:+.2f}"
 
-        typer.echo(
-            f"  {label:<17}  {mean_s:>8}  {p5_s:>9}  {p95_s:>9}  {p_pos:>5.0%}"
-        )
+        typer.echo(f"  {label:<17}  {mean_s:>8}  {p5_s:>9}  {p95_s:>9}  {p_pos:>5.0%}")
 
     typer.echo("")
 
@@ -1305,9 +1303,7 @@ def suggest_trades(
         )
         raise typer.Exit(code=1)
 
-    typer.echo(
-        f"scoring {len(candidates)} candidates for {receiver} ← * (season={season})…"
-    )
+    typer.echo(f"scoring {len(candidates)} candidates for {receiver} ← * (season={season})…")
 
     rows: list[dict] = []
     for _, cand in candidates.iterrows():

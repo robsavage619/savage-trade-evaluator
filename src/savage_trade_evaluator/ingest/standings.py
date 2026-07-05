@@ -103,8 +103,7 @@ def upsert(
         conn.execute(
             "INSERT INTO standings (team_id, bref_code, season, wins, losses, win_pct, source) "
             "SELECT team_id, bref_code, season, wins, losses, win_pct, source "
-            "FROM _staging_std "
-            + ("" if replace else "ON CONFLICT (team_id, season) DO NOTHING")
+            "FROM _staging_std " + ("" if replace else "ON CONFLICT (team_id, season) DO NOTHING")
         )
     finally:
         conn.unregister("_staging_std")

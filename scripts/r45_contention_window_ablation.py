@@ -42,17 +42,17 @@ _ABLATIONS: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     (
         "Isolated",
         "war_delta",
-        ACQUIRED_PLAYER_FEATURES + (_CONTENTION_SCORE,),
+        (*ACQUIRED_PLAYER_FEATURES, _CONTENTION_SCORE),
     ),
     (
         "Small-n xwoba",
         "xwoba_delta",
-        ACQUIRED_PLAYER_FEATURES + (_CONTENTION_SCORE,),
+        (*ACQUIRED_PLAYER_FEATURES, _CONTENTION_SCORE),
     ),
     (
         "Small-n kpct",
         "kpct_delta",
-        ACQUIRED_PLAYER_FEATURES + (_CONTENTION_SCORE,),
+        (*ACQUIRED_PLAYER_FEATURES, _CONTENTION_SCORE),
     ),
 )
 

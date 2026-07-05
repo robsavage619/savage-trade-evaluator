@@ -43,6 +43,7 @@ LAST_SEASON = 2024
 # Rolling-correlation helper
 # ---------------------------------------------------------------------------
 
+
 def _rolling_corr_table(df: pd.DataFrame, feature: str, outcome: str) -> pd.DataFrame:
     """Compute Pearson r between feature and outcome for each 3-year rolling window."""
     rows: list[dict] = []
@@ -83,6 +84,7 @@ def _verdict(slope: float) -> str:
 # ---------------------------------------------------------------------------
 # MCMC era-split (gated behind --run-mcmc)
 # ---------------------------------------------------------------------------
+
 
 def _run_mcmc_era_split(df: pd.DataFrame) -> None:
     from savage_trade_evaluator.modeling.v3 import coefficient_summary, fit_v3
@@ -127,9 +129,7 @@ def _run_mcmc_era_split(df: pd.DataFrame) -> None:
         mass = float(row["directional_mass"].iloc[0])
         mean_beta = float(row["mean_beta"].iloc[0])
         mass_by_era.append((label, mass))
-        print(
-            f"  {label}:  directional_mass={mass:.1%}  mean_beta={mean_beta:+.4f}"
-        )
+        print(f"  {label}:  directional_mass={mass:.1%}  mean_beta={mean_beta:+.4f}")
 
     if len(mass_by_era) == 2:
         delta = mass_by_era[1][1] - mass_by_era[0][1]
@@ -149,6 +149,7 @@ def _run_mcmc_era_split(df: pd.DataFrame) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="R-49 feature decay diagnostic")
     parser.add_argument(
@@ -161,7 +162,9 @@ def main() -> None:
 
     print("Loading V3 combined feature+outcome matrix …")
     df = assemble_v3_combined()
-    print(f"  Rows loaded: {len(df)}   Seasons: {int(df['trade_season'].min())}–{int(df['trade_season'].max())}")
+    print(
+        f"  Rows loaded: {len(df)}   Seasons: {int(df['trade_season'].min())}–{int(df['trade_season'].max())}"
+    )
 
     verdicts: dict[str, dict[str, str]] = {}
 
@@ -199,9 +202,7 @@ def main() -> None:
     key_feature = "receiver_acquired_pitcher_k_trajectory"
     key_outcome = "kpct_delta"
     top_verdict = verdicts.get(key_feature, {}).get(key_outcome, "too noisy to judge")
-    print(
-        f"\nk_trajectory signal appears {top_verdict} over time."
-    )
+    print(f"\nk_trajectory signal appears {top_verdict} over time.")
 
     if args.run_mcmc:
         _run_mcmc_era_split(df)

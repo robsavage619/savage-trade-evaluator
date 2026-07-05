@@ -58,12 +58,26 @@ def check1_era_variance(combined: pd.DataFrame) -> dict[str, float]:
 
     print(f"\n{'Era':<20} {'n':>6} {'mean':>8} {'std':>8}")
     print("-" * 44)
-    print(f"{'train (pre-2020)':<20} {int(results['pre_2020_n']):>6} {results['pre_2020_mean']:>8.3f} {results['pre_2020_std']:>8.3f}")
-    print(f"{'COVID 2020':<20} {int(results['covid_2020_n']):>6} {results['covid_2020_mean']:>8.3f} {results['covid_2020_std']:>8.3f}")
-    print(f"{'test (2021-2024)':<20} {int(results['test_era_n']):>6} {results['test_era_mean']:>8.3f} {results['test_era_std']:>8.3f}")
+    print(
+        f"{'train (pre-2020)':<20} {int(results['pre_2020_n']):>6} {results['pre_2020_mean']:>8.3f} {results['pre_2020_std']:>8.3f}"
+    )
+    print(
+        f"{'COVID 2020':<20} {int(results['covid_2020_n']):>6} {results['covid_2020_mean']:>8.3f} {results['covid_2020_std']:>8.3f}"
+    )
+    print(
+        f"{'test (2021-2024)':<20} {int(results['test_era_n']):>6} {results['test_era_mean']:>8.3f} {results['test_era_std']:>8.3f}"
+    )
 
-    ratio_covid = results["covid_2020_std"] / results["test_era_std"] if results["test_era_std"] > 0 else float("nan")
-    ratio_pre = results["pre_2020_std"] / results["test_era_std"] if results["test_era_std"] > 0 else float("nan")
+    ratio_covid = (
+        results["covid_2020_std"] / results["test_era_std"]
+        if results["test_era_std"] > 0
+        else float("nan")
+    )
+    ratio_pre = (
+        results["pre_2020_std"] / results["test_era_std"]
+        if results["test_era_std"] > 0
+        else float("nan")
+    )
     print(f"\n  train-std / test-std  : {ratio_pre:.2f}x")
     print(f"  covid-std / test-std  : {ratio_covid:.2f}x")
 
@@ -74,22 +88,26 @@ def check2_drop_covid_refit() -> None:
     """Refit with train_end_season=2019 to isolate COVID inflation effect."""
     _section("Check 2 — Drop 2020 and refit (MCMC)")
 
-    from savage_trade_evaluator.modeling.v3 import backtest_outcome_v3, print_backtest_report
-
     # receiver_acquired_contract_year_pct was added to ACQUIRED_PLAYER_FEATURES
     # but the underlying DB column doesn't exist in the current schema — exclude
     # it here so assemble_v3_combined() doesn't fail on a missing column.
-    from savage_trade_evaluator.modeling.v3 import assemble_v3_combined, V3_OUTCOME_FEATURES
+    from savage_trade_evaluator.modeling.v3 import (
+        V3_OUTCOME_FEATURES,
+        assemble_v3_combined,
+        backtest_outcome_v3,
+        print_backtest_report,
+    )
+
     combined = assemble_v3_combined()
     if "receiver_acquired_contract_year_pct" in combined.columns:
         pass  # column is live — no action needed
     else:
         from savage_trade_evaluator.modeling.v2.features import ALL_FEATURES
+
         feature_cols = tuple(c for c in ALL_FEATURES if c != "receiver_acquired_contract_year_pct")
-    from savage_trade_evaluator.modeling.v3 import V3_OUTCOME_FEATURES
+
     feature_cols = tuple(
-        c for c in V3_OUTCOME_FEATURES["war_delta"]
-        if c != "receiver_acquired_contract_year_pct"
+        c for c in V3_OUTCOME_FEATURES["war_delta"] if c != "receiver_acquired_contract_year_pct"
     )
 
     print("\n  --- Standard fit (train_end_season=2020) ---")
@@ -129,7 +147,9 @@ def check3_heteroscedasticity(combined: pd.DataFrame) -> dict[str, object]:
         print("  No test-era rows with both war_delta and quality — cannot run check.")
         return {}
 
-    test["quality_quartile"] = pd.qcut(test[qcol], q=4, labels=["Q1 (low)", "Q2", "Q3", "Q4 (high)"])
+    test["quality_quartile"] = pd.qcut(
+        test[qcol], q=4, labels=["Q1 (low)", "Q2", "Q3", "Q4 (high)"]
+    )
 
     stats = (
         test.groupby("quality_quartile", observed=True)[col]
@@ -140,7 +160,9 @@ def check3_heteroscedasticity(combined: pd.DataFrame) -> dict[str, object]:
     print(f"\n{'Quartile':<14} {'n':>6} {'mean':>8} {'std':>8}")
     print("-" * 38)
     for _, row in stats.iterrows():
-        print(f"{row['quality_quartile']!s:<14} {int(row['n']):>6} {row['mean']:>8.3f} {row['std']:>8.3f}")
+        print(
+            f"{row['quality_quartile']!s:<14} {int(row['n']):>6} {row['mean']:>8.3f} {row['std']:>8.3f}"
+        )
 
     stds = stats["std"].dropna().tolist()
     ratio = max(stds) / min(stds) if min(stds) > 0 else float("nan")
@@ -162,13 +184,13 @@ def verdict(era_results: dict[str, float], hetero_results: dict[str, object]) ->
         if test_std > 0 and train_std / test_std >= 1.3:
             suspects.append(
                 f"ERA VARIANCE SHIFT — train std ({train_std:.3f}) is "
-                f"{train_std/test_std:.1f}x test std ({test_std:.3f}). "
+                f"{train_std / test_std:.1f}x test std ({test_std:.3f}). "
                 "Model trained on wider distribution than it's predicting → over-wide CIs."
             )
         if test_std > 0 and covid_std / test_std >= 1.3:
             suspects.append(
                 f"COVID 2020 INFLATION — 2020 std ({covid_std:.3f}) is "
-                f"{covid_std/test_std:.1f}x test std ({test_std:.3f}). "
+                f"{covid_std / test_std:.1f}x test std ({test_std:.3f}). "
                 "Run Check 2 (--run-mcmc) to confirm."
             )
 

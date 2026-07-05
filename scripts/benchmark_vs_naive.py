@@ -51,7 +51,9 @@ def crps_sorted(samples: np.ndarray, obs: np.ndarray) -> float:
     residuals = s - obs[:, None]
     indicator = (obs[:, None] <= s).astype(float)
     # CRPS = E|X - y| + (contribution from step function vs indicator)
-    crps_per_obs = np.mean(np.abs(residuals), axis=1) - np.mean(step * (s - obs[:, None] - indicator * (s - obs[:, None])), axis=1)
+    crps_per_obs = np.mean(np.abs(residuals), axis=1) - np.mean(
+        step * (s - obs[:, None] - indicator * (s - obs[:, None])), axis=1
+    )
     return float(crps_per_obs.mean())
 
 
@@ -106,10 +108,7 @@ def main() -> None:
     df = assemble_v3_combined()
 
     held_out = (
-        df[
-            (df["trade_season"] >= HOLDOUT_START)
-            & (df["trade_season"] <= HOLDOUT_END)
-        ]
+        df[(df["trade_season"] >= HOLDOUT_START) & (df["trade_season"] <= HOLDOUT_END)]
         .dropna(subset=[OUTCOME])
         .copy()
     )
@@ -139,9 +138,7 @@ def main() -> None:
     )
     marcel_pred = intercept + slope * held_out["receiver_acquired_player_quality"].fillna(0)
     marcel_mae = float(np.abs(realized - marcel_pred.values).mean())
-    marcel_p_correct = float(
-        np.mean(np.sign(marcel_pred.values) == np.sign(realized))
-    )
+    marcel_p_correct = float(np.mean(np.sign(marcel_pred.values) == np.sign(realized)))
 
     # ── V3 model ──────────────────────────────────────────────────────────────
     print("Scoring V3 posteriors on holdout…")
@@ -152,10 +149,8 @@ def main() -> None:
     print("=" * 72)
     print(f"  D-51 BENCHMARK: V3 vs Naïve  ({OUTCOME}, holdout {HOLDOUT_START}–{HOLDOUT_END})")
     print("=" * 72)
-    print(
-        f"  {'Model':<22} {'MAE':>6}  {'CRPS':>6}  {'Cov90':>6}  {'P(dir)':>6}  {'n':>5}"
-    )
-    print(f"  {'-'*65}")
+    print(f"  {'Model':<22} {'MAE':>6}  {'CRPS':>6}  {'Cov90':>6}  {'P(dir)':>6}  {'n':>5}")
+    print(f"  {'-' * 65}")
     print(
         f"  {'Null (train mean)':<22} {null_mae:>6.3f}  {'—':>6}  {'—':>6}  {null_p_correct:>6.1%}  {len(held_out):>5}"
     )
@@ -165,14 +160,14 @@ def main() -> None:
     print(
         f"  {'V3 (posterior mean)':<22} {v3['mae']:>6.3f}  {v3['crps']:>6.3f}  {v3['cov90']:>6.1%}  {v3['p_correct']:>6.1%}  {v3['n']:>5}"
     )
-    print(f"  {'='*65}")
+    print(f"  {'=' * 65}")
     delta_null = null_mae - v3["mae"]
     print(
-        f"  V3 vs Null:     MAE Δ = {delta_null:+.3f} WAR  ({delta_null/null_mae:.1%} improvement)"
+        f"  V3 vs Null:     MAE Δ = {delta_null:+.3f} WAR  ({delta_null / null_mae:.1%} improvement)"
     )
     delta_marcel = marcel_mae - v3["mae"]
     print(
-        f"  V3 vs Marcel:   MAE Δ = {delta_marcel:+.3f} WAR  ({delta_marcel/marcel_mae:.1%} improvement)"
+        f"  V3 vs Marcel:   MAE Δ = {delta_marcel:+.3f} WAR  ({delta_marcel / marcel_mae:.1%} improvement)"
     )
     print(f"  Marcel r² vs train: {r_marcel**2:.3f}")
     print()

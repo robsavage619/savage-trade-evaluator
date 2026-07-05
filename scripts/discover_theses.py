@@ -169,9 +169,7 @@ def main() -> None:
                         "beta": round(b, 4),
                         "mass": round(m, 4),
                     }
-                    for o, b, m in zip(
-                        info["credible_outcomes"], betas, masses, strict=False
-                    )
+                    for o, b, m in zip(info["credible_outcomes"], betas, masses, strict=False)
                 ],
             }
         )

@@ -37,12 +37,11 @@ import numpy as np
 import pandas as pd
 
 from savage_trade_evaluator.modeling.v2.features import (
-    ALL_FEATURES,
     build_feature_matrix,
 )
 from savage_trade_evaluator.modeling.v3 import (
-    V3_OUTCOME_FEATURES,
     _SIGNED_LOG_OUTCOMES,
+    V3_OUTCOME_FEATURES,
     _inv_signed_log,
     _signed_log,
     assemble_v3_combined,
@@ -182,7 +181,9 @@ def print_scoreboard(merged: pd.DataFrame, top_n: int = 30) -> None:
     print(sep)
     print("R-60: 2025 MLB TRADE PREDICTIONS — POSTERIOR DISTRIBUTIONS")
     print("Trained on 2010-2024 realized outcomes. Outcomes not yet known.")
-    print("war_delta = WAR surplus T+2..T+5 (2027-2031).  dollar_surplus = $/WAR surplus T+1..T+3 (2026-2028).")
+    print(
+        "war_delta = WAR surplus T+2..T+5 (2027-2031).  dollar_surplus = $/WAR surplus T+1..T+3 (2026-2028)."
+    )
     print("80% CI = [p10, p90].  Verdict: CLEAR if 80% CI excludes zero.")
     print(sep)
 
@@ -190,9 +191,11 @@ def print_scoreboard(merged: pd.DataFrame, top_n: int = 30) -> None:
     df = df.sort_values("dollar_surplus_mean", ascending=False)
 
     print()
-    print(f"{'Rank':<4} {'Event':>9} {'Team':>4}  {'Players Received':<40}  "
-          f"{'$surplus':>10} {'[p10':>8} {'p90]':>8}  "
-          f"{'war_delta':>10} {'[p10':>7} {'p90]':>7}  Verdict")
+    print(
+        f"{'Rank':<4} {'Event':>9} {'Team':>4}  {'Players Received':<40}  "
+        f"{'$surplus':>10} {'[p10':>8} {'p90]':>8}  "
+        f"{'war_delta':>10} {'[p10':>7} {'p90]':>7}  Verdict"
+    )
     print("-" * 120)
 
     for rank, (_, row) in enumerate(df.iterrows(), 1):
@@ -218,10 +221,14 @@ def print_scoreboard(merged: pd.DataFrame, top_n: int = 30) -> None:
     clear_wins = (merged["dollar_surplus_p10"] > 0).sum()
     clear_losses = (merged["dollar_surplus_p90"] < 0).sum()
     uncertain = len(merged) - clear_wins - clear_losses
-    print(f"  {len(merged)} trade-sides scored.  "
-          f"Clear wins: {clear_wins}  Clear losses: {clear_losses}  Uncertain: {uncertain}")
-    print(f"  Median predicted dollar_surplus: "
-          f"{merged['dollar_surplus_mean'].median()/DOLLAR_SURPLUS_UNIT:+.1f}M")
+    print(
+        f"  {len(merged)} trade-sides scored.  "
+        f"Clear wins: {clear_wins}  Clear losses: {clear_losses}  Uncertain: {uncertain}"
+    )
+    print(
+        f"  Median predicted dollar_surplus: "
+        f"{merged['dollar_surplus_mean'].median() / DOLLAR_SURPLUS_UNIT:+.1f}M"
+    )
     print(f"  Median predicted war_delta: {merged['war_delta_mean'].median():+.2f} WAR")
     print(sep)
 

@@ -158,9 +158,13 @@ def fetch_war_history(
     # Group baseline rows by player
     by_id: dict[int, list[tuple[int, float]]] = {}
     for mlb_id, yr_offset, war in rows:
-        by_id.setdefault(int(mlb_id), []).append((int(yr_offset), float(war) if war is not None else 0.0))
+        by_id.setdefault(int(mlb_id), []).append(
+            (int(yr_offset), float(war) if war is not None else 0.0)
+        )
 
-    pace_factor = (162.0 / partial_max_g) if (partial_year and partial_max_g and partial_max_g > 0) else None
+    pace_factor = (
+        (162.0 / partial_max_g) if (partial_year and partial_max_g and partial_max_g > 0) else None
+    )
 
     out: dict[int, dict] = {}
     all_ids_seen = set(by_id.keys()) | set(partial_by_id.keys())

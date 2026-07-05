@@ -21,13 +21,12 @@ import logging
 import signal
 import sys
 import time
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
 import numpy as np
 import pandas as pd
 
-from savage_trade_evaluator.modeling.v2.backtest import _crps_empirical
 from savage_trade_evaluator.storage import db
 
 logger = logging.getLogger(__name__)
@@ -41,6 +40,7 @@ _TEST_END = 2024
 # Timeout context manager (SIGALRM — Unix only)
 # ---------------------------------------------------------------------------
 
+
 class _TimeoutError(Exception):
     pass
 
@@ -48,7 +48,8 @@ class _TimeoutError(Exception):
 @contextmanager
 def _timeout(seconds: int) -> Generator[None, None, None]:
     """Raise _TimeoutError if the body takes longer than ``seconds``."""
-    def _handler(signum: int, frame: object) -> None:  # noqa: ARG001
+
+    def _handler(signum: int, frame: object) -> None:
         raise _TimeoutError
 
     old = signal.signal(signal.SIGALRM, _handler)
@@ -63,6 +64,7 @@ def _timeout(seconds: int) -> Generator[None, None, None]:
 # ---------------------------------------------------------------------------
 # Rate-baseline computation
 # ---------------------------------------------------------------------------
+
 
 def _load_xwoba_window() -> pd.DataFrame:
     """Pull trade_player_xwoba_window rows that have both t-1 and t+1 data."""
@@ -128,6 +130,7 @@ def compute_rate_baseline(df_window: pd.DataFrame) -> pd.DataFrame:
 # CRPS for a degenerate point-mass "distribution"
 # ---------------------------------------------------------------------------
 
+
 def _crps_point_mass(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """CRPS for a degenerate point-mass predictive: CRPS = MAE for point forecasts.
 
@@ -147,6 +150,7 @@ def _crps_point_mass(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 # Baseline metrics on the test set
 # ---------------------------------------------------------------------------
 
+
 def evaluate_rate_baseline(
     baseline: pd.DataFrame,
     test_start: int = _TEST_START,
@@ -163,8 +167,7 @@ def evaluate_rate_baseline(
         Dict with keys mae, crps, n.
     """
     test = baseline[
-        (baseline["trade_season"] >= test_start)
-        & (baseline["trade_season"] <= test_end)
+        (baseline["trade_season"] >= test_start) & (baseline["trade_season"] <= test_end)
     ].dropna(subset=["xwoba_surplus_raw"])
 
     # The rate baseline predicts xwoba_surplus_raw; the target is itself (for
@@ -185,13 +188,14 @@ def evaluate_rate_baseline(
 # V3 comparison
 # ---------------------------------------------------------------------------
 
+
 def _run_v3_backtest_with_timeout(timeout_s: int = 60) -> object | None:
     """Try to run backtest_outcome_v3('xwoba_delta') within timeout_s seconds.
 
     Returns the V3BacktestResult or None if timed out / errored.
     """
     try:
-        from savage_trade_evaluator.modeling.v3 import backtest_outcome_v3  # noqa: PLC0415
+        from savage_trade_evaluator.modeling.v3 import backtest_outcome_v3
 
         with _timeout(timeout_s):
             logger.info("Running V3 backtest for xwoba_delta (timeout=%ds)…", timeout_s)
@@ -226,7 +230,7 @@ def _head_to_head(
         test_start: First test season.
         test_end: Last test season.
     """
-    import numpy as np  # noqa: PLC0415 (already imported above, keep local for clarity)
+    import numpy as np
 
     v3_preds: pd.DataFrame = v3_result.test_predictions  # type: ignore[union-attr]
 
@@ -234,8 +238,7 @@ def _head_to_head(
     # predicts xwoba_surplus (same concept but aggregated across all legs).
     # Merge on (trade_event_id, receiver_bref, trade_season) for apples-to-apples.
     test_base = baseline[
-        (baseline["trade_season"] >= test_start)
-        & (baseline["trade_season"] <= test_end)
+        (baseline["trade_season"] >= test_start) & (baseline["trade_season"] <= test_end)
     ].copy()
 
     merged = test_base.merge(
@@ -297,6 +300,7 @@ def _head_to_head(
 # Standalone rate-baseline report
 # ---------------------------------------------------------------------------
 
+
 def _report_standalone(baseline: pd.DataFrame) -> None:
     """Print summary statistics for the rate-surplus baseline across all seasons."""
     print()
@@ -318,8 +322,7 @@ def _report_standalone(baseline: pd.DataFrame) -> None:
     print()
 
     test = baseline[
-        (baseline["trade_season"] >= _TEST_START)
-        & (baseline["trade_season"] <= _TEST_END)
+        (baseline["trade_season"] >= _TEST_START) & (baseline["trade_season"] <= _TEST_END)
     ]
     print(f"  Test-set rows (2021-2024):  {len(test)}")
     if len(test) > 0:
@@ -348,6 +351,7 @@ def _report_standalone(baseline: pd.DataFrame) -> None:
 # Entry point
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     """Compute rate-surplus baseline and optionally compare against V3."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -362,7 +366,7 @@ def main() -> None:
         default=60,
         metavar="SECONDS",
         help="Wall-clock timeout for the V3 backtest (default: 60s). "
-             "Pass 0 to disable timeout (runs until complete).",
+        "Pass 0 to disable timeout (runs until complete).",
     )
     args = parser.parse_args()
 

@@ -42,14 +42,11 @@ CONTENTION_FEATURES = (
 ABLATIONS: list[tuple[str, tuple[str, ...]]] = [
     (
         "composite_only",
-        ACQUIRED_PLAYER_FEATURES + ("receiver_contention_window_score",),
+        (*ACQUIRED_PLAYER_FEATURES, "receiver_contention_window_score"),
     ),
     (
         "components_only",
-        ACQUIRED_PLAYER_FEATURES + (
-            "receiver_prior_year_pyth_pct",
-            "receiver_payroll_pct_of_cap",
-        ),
+        (*ACQUIRED_PLAYER_FEATURES, "receiver_prior_year_pyth_pct", "receiver_payroll_pct_of_cap"),
     ),
     (
         "all_three",
@@ -64,23 +61,34 @@ def _contention_verdicts(result: V3BacktestResult) -> list[dict]:
     for feat in CONTENTION_FEATURES:
         row = summary[summary["feature"] == feat]
         if row.empty:
-            rows.append({"feature": feat, "mean_beta": float("nan"), "p05": float("nan"),
-                         "p95": float("nan"), "mass": float("nan"), "credible": False})
+            rows.append(
+                {
+                    "feature": feat,
+                    "mean_beta": float("nan"),
+                    "p05": float("nan"),
+                    "p95": float("nan"),
+                    "mass": float("nan"),
+                    "credible": False,
+                }
+            )
         else:
             r = row.iloc[0]
-            rows.append({
-                "feature": feat,
-                "mean_beta": r["mean_beta"],
-                "p05": r["p05"],
-                "p95": r["p95"],
-                "mass": r["directional_mass"],
-                "credible": bool(r["credible"]),
-            })
+            rows.append(
+                {
+                    "feature": feat,
+                    "mean_beta": r["mean_beta"],
+                    "p05": r["p05"],
+                    "p95": r["p95"],
+                    "mass": r["directional_mass"],
+                    "credible": bool(r["credible"]),
+                }
+            )
     return rows
 
 
 def main() -> None:
     from savage_trade_evaluator.modeling.v3 import assemble_v3_combined
+
     _combined = assemble_v3_combined()
 
     def _strip_missing(cols: tuple[str, ...]) -> tuple[str, ...]:
@@ -114,19 +122,25 @@ def main() -> None:
             )
 
         for v in verdicts:
-            summary_rows.append({
-                "ablation": label,
-                "n_train": result.train_n,
-                "n_test": result.test_n,
-                "coverage_90": round(result.coverage_90, 3),
-                "crps": round(result.test_crps, 4),
-                "feature": v["feature"],
-                "mean_beta": round(v["mean_beta"], 4) if not np.isnan(v["mean_beta"]) else float("nan"),
-                "p05": round(v["p05"], 3) if not np.isnan(v["p05"]) else float("nan"),
-                "p95": round(v["p95"], 3) if not np.isnan(v["p95"]) else float("nan"),
-                "directional_mass": round(v["mass"], 3) if not np.isnan(v["mass"]) else float("nan"),
-                "credible": v["credible"],
-            })
+            summary_rows.append(
+                {
+                    "ablation": label,
+                    "n_train": result.train_n,
+                    "n_test": result.test_n,
+                    "coverage_90": round(result.coverage_90, 3),
+                    "crps": round(result.test_crps, 4),
+                    "feature": v["feature"],
+                    "mean_beta": round(v["mean_beta"], 4)
+                    if not np.isnan(v["mean_beta"])
+                    else float("nan"),
+                    "p05": round(v["p05"], 3) if not np.isnan(v["p05"]) else float("nan"),
+                    "p95": round(v["p95"], 3) if not np.isnan(v["p95"]) else float("nan"),
+                    "directional_mass": round(v["mass"], 3)
+                    if not np.isnan(v["mass"])
+                    else float("nan"),
+                    "credible": v["credible"],
+                }
+            )
 
     print()
     print("=" * 88)

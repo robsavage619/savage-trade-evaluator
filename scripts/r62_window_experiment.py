@@ -15,13 +15,12 @@ from __future__ import annotations
 
 import pandas as pd
 
+from savage_trade_evaluator.modeling.v2.backtest import assemble_combined
 from savage_trade_evaluator.modeling.v2.outcomes import build_outcomes_windowed
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
-    assemble_v3_combined,
     backtest_outcome_v3,
 )
-from savage_trade_evaluator.modeling.v2.backtest import assemble_combined
 
 
 def _assemble_with_window(war_start: int, war_end: int) -> pd.DataFrame:
@@ -30,6 +29,7 @@ def _assemble_with_window(war_start: int, war_end: int) -> pd.DataFrame:
         war_window_end=war_end,
     )[["trade_event_id", "receiver_bref", "trade_season", "war_delta", "surplus_wins"]]
     from savage_trade_evaluator.modeling.v2.outcomes import build_outcomes
+
     std = build_outcomes()
     merged = std.drop(columns=["war_delta", "surplus_wins"]).merge(
         windowed, on=["trade_event_id", "receiver_bref", "trade_season"], how="left"

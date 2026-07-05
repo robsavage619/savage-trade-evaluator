@@ -176,8 +176,8 @@ def compute_cost_controlled_surplus(
 # D-50 intent: these parameters are named constants, not magic numbers.
 # Supersede with an empirically fitted curve when revenue data is available.
 # ---------------------------------------------------------------------------
-WIN_CURVE_MIDPOINT: float = 89.0       # wins at P(playoff) = 0.50
-WIN_CURVE_STEEPNESS: float = 0.18      # logistic k; calibrated 2010-2024
+WIN_CURVE_MIDPOINT: float = 89.0  # wins at P(playoff) = 0.50
+WIN_CURVE_STEEPNESS: float = 0.18  # logistic k; calibrated 2010-2024
 MARGINAL_PLAYOFF_REVENUE: float = 15_000_000.0  # $/unit ΔP(playoff), blended single-stage
 
 

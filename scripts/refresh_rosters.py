@@ -16,10 +16,10 @@ from __future__ import annotations
 import json
 import logging
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -103,9 +103,9 @@ def fetch_people(ids: list[int]) -> list[dict[str, Any]]:
         return []
     # Chunk to keep URL length safe
     out: list[dict[str, Any]] = []
-    CHUNK = 50
-    for i in range(0, len(ids), CHUNK):
-        chunk = ids[i : i + CHUNK]
+    chunk_size = 50
+    for i in range(0, len(ids), chunk_size):
+        chunk = ids[i : i + chunk_size]
         url = f"{MLB_BASE}/people?personIds={','.join(map(str, chunk))}"
         data = _http_json(url)
         out.extend(data.get("people", []))
@@ -182,7 +182,15 @@ def fetch_awards(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[int, d
     for pid, award_name, n in rows:
         pid = int(pid)
         if pid not in out:
-            out[pid] = {"all_star": 0, "mvp": 0, "cy_young": 0, "silver_slugger": 0, "gold_glove": 0, "rookie_of_year": 0, "total": 0}
+            out[pid] = {
+                "all_star": 0,
+                "mvp": 0,
+                "cy_young": 0,
+                "silver_slugger": 0,
+                "gold_glove": 0,
+                "rookie_of_year": 0,
+                "total": 0,
+            }
         award_lc = (award_name or "").lower()
         if "all-star" in award_lc or "all star" in award_lc:
             out[pid]["all_star"] += int(n)
@@ -204,7 +212,9 @@ _PARTIAL_SEASON_THRESHOLD = 100  # max-g below this → treat season as in-progr
 _WAR_WEIGHTS = {0: 0.50, 1: 0.30, 2: 0.20}  # offset from most-recent completed season
 
 
-def _fetch_war_history(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[int, dict[str, Any]]:
+def _fetch_war_history(
+    conn: duckdb.DuckDBPyConnection, ids: list[int]
+) -> dict[int, dict[str, Any]]:
     """Compute war_3yr_wtd / war_current_pace / war_trend for each player.
 
     Excludes the current partial season from the weighted baseline, then
@@ -273,11 +283,13 @@ def _fetch_war_history(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[
         total_w = sum(_WAR_WEIGHTS.get(o, 0.0) for o, _ in entries)
         wtd = (
             round(sum(_WAR_WEIGHTS.get(o, 0.0) * w for o, w in entries) / total_w, 3)
-            if total_w > 0 else None
+            if total_w > 0
+            else None
         )
         pace = (
             round(partial_war_map[mlb_id] * pace_factor, 3)
-            if (mlb_id in partial_war_map and pace_factor is not None) else None
+            if (mlb_id in partial_war_map and pace_factor is not None)
+            else None
         )
         if pace is not None and wtd is not None:
             trend: float | None = round(pace - wtd, 3)
@@ -320,7 +332,11 @@ def fetch_recent_war(conn: duckdb.DuckDBPyConnection, ids: list[int]) -> dict[in
         ids + ids,
     ).fetchall()
     return {
-        int(r[0]): {"last_year": int(r[1]), "last_war": float(r[2]) if r[2] is not None else None, "last_salary": int(r[3]) if r[3] is not None else None}
+        int(r[0]): {
+            "last_year": int(r[1]),
+            "last_war": float(r[2]) if r[2] is not None else None,
+            "last_salary": int(r[3]) if r[3] is not None else None,
+        }
         for r in rows
     }
 
@@ -334,7 +350,8 @@ def main() -> None:
     team_rosters: dict[str, list[dict[str, Any]]] = {}
     with ThreadPoolExecutor(max_workers=10) as ex:
         future_to_team = {
-            ex.submit(fetch_roster, team_id): (bref, team_id, name) for bref, team_id, name in TEAM_ROSTER
+            ex.submit(fetch_roster, team_id): (bref, team_id, name)
+            for bref, team_id, name in TEAM_ROSTER
         }
         for fut in as_completed(future_to_team):
             bref, team_id, name = future_to_team[fut]
@@ -402,7 +419,9 @@ def main() -> None:
                     "height": bio.get("height"),
                     "weight": bio.get("weight"),
                     "bat_side": bio.get("batSide", {}).get("code") if bio.get("batSide") else None,
-                    "pitch_hand": bio.get("pitchHand", {}).get("code") if bio.get("pitchHand") else None,
+                    "pitch_hand": bio.get("pitchHand", {}).get("code")
+                    if bio.get("pitchHand")
+                    else None,
                     "mlb_debut_date": bio.get("mlbDebutDate"),
                     "last_year": war.get("last_year"),
                     "last_war": war.get("last_war"),
@@ -434,8 +453,11 @@ def main() -> None:
         )
 
     out = {
-        "refreshed_at": datetime.now(tz=timezone.utc).isoformat(),
-        "season_used_for_war": max((p.get("last_year") for t in teams_payload for p in t["players"] if p.get("last_year")), default=None),
+        "refreshed_at": datetime.now(tz=UTC).isoformat(),
+        "season_used_for_war": max(
+            (p.get("last_year") for t in teams_payload for p in t["players"] if p.get("last_year")),
+            default=None,
+        ),
         "team_count": len(teams_payload),
         "player_count": sum(t["roster_count"] for t in teams_payload),
         "teams": teams_payload,
@@ -443,7 +465,12 @@ def main() -> None:
 
     SEED_DIR.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(out, indent=2, default=str))
-    logger.info("wrote %s — %d teams, %d players", OUT_PATH.relative_to(PROJECT_ROOT), out["team_count"], out["player_count"])
+    logger.info(
+        "wrote %s — %d teams, %d players",
+        OUT_PATH.relative_to(PROJECT_ROOT),
+        out["team_count"],
+        out["player_count"],
+    )
 
 
 if __name__ == "__main__":

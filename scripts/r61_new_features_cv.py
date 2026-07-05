@@ -34,8 +34,8 @@ import pymc as pm
 
 from savage_trade_evaluator.modeling.v2.features import ALL_FEATURES
 from savage_trade_evaluator.modeling.v3 import (
-    assemble_v3_combined,
     _split_and_impute,
+    assemble_v3_combined,
 )
 from savage_trade_evaluator.modeling.v3_cv import (
     CV_MASS_THRESHOLD,
@@ -45,10 +45,10 @@ from savage_trade_evaluator.modeling.v3_cv import (
 
 # Four new candidate features being tested
 NEW_FEATURES: tuple[str, ...] = (
-    "receiver_acquired_origin_ytd_war",   # D-42
-    "receiver_devfit_x_peak_age",          # D-43
+    "receiver_acquired_origin_ytd_war",  # D-42
+    "receiver_devfit_x_peak_age",  # D-43
     "receiver_acquired_war_acceleration",  # D-44
-    "receiver_park_factor_3yr",            # D-45
+    "receiver_park_factor_3yr",  # D-45
 )
 
 # Full feature set including all 4 new candidates
@@ -91,8 +91,12 @@ def _fit_and_extract(
         mu = alpha0 + pm.math.dot(x, beta)
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
-            1000, tune=1500, chains=4, random_seed=seed,
-            progressbar=False, target_accept=0.95,
+            1000,
+            tune=1500,
+            chains=4,
+            random_seed=seed,
+            progressbar=False,
+            target_accept=0.95,
         )
 
     post_beta = trace.posterior["beta"].values  # (chains, draws, n_features)
@@ -124,8 +128,12 @@ def run_cv(outcome: str, combined: pd.DataFrame) -> list[dict]:
         logger.info("  %s  %s", outcome, split.label)
         t0 = time.time()
         train, test = _split_and_impute(
-            outcome, feature_cols, split.train_end, split.test_end,
-            combined=combined, train_start_season=split.train_start,
+            outcome,
+            feature_cols,
+            split.train_end,
+            split.test_end,
+            combined=combined,
+            train_start_season=split.train_start,
             minimum_features_present=1,
         )
         n_test = len(test)
@@ -152,15 +160,21 @@ def run_cv(outcome: str, combined: pd.DataFrame) -> list[dict]:
             row[f"{feat}_p05"] = fr.get("p05", float("nan"))
             row[f"{feat}_p95"] = fr.get("p95", float("nan"))
             row[f"{feat}_credible"] = (
-                fr.get("mass", 0) >= CV_MASS_THRESHOLD
-                and (fr.get("p05", 0) > 0 or fr.get("p95", 0) < 0)
-            ) if fr else False
+                (
+                    fr.get("mass", 0) >= CV_MASS_THRESHOLD
+                    and (fr.get("p05", 0) > 0 or fr.get("p95", 0) < 0)
+                )
+                if fr
+                else False
+            )
 
         logger.info(
             "    ytd=%.0f%%  devfit_x_age=%.0f%%  accel=%.0f%%  park=%.0f%%  (%.1fs)",
-            feat_results.get("receiver_acquired_origin_ytd_war", {}).get("mass", float("nan")) * 100,
+            feat_results.get("receiver_acquired_origin_ytd_war", {}).get("mass", float("nan"))
+            * 100,
             feat_results.get("receiver_devfit_x_peak_age", {}).get("mass", float("nan")) * 100,
-            feat_results.get("receiver_acquired_war_acceleration", {}).get("mass", float("nan")) * 100,
+            feat_results.get("receiver_acquired_war_acceleration", {}).get("mass", float("nan"))
+            * 100,
             feat_results.get("receiver_park_factor_3yr", {}).get("mass", float("nan")) * 100,
             time.time() - t0,
         )
@@ -175,16 +189,16 @@ def print_report(all_rows: list[dict]) -> None:
 
     feat_labels = {
         "receiver_acquired_origin_ytd_war": "origin_ytd_war (D-42)",
-        "receiver_devfit_x_peak_age":        "devfit_x_age   (D-43)",
+        "receiver_devfit_x_peak_age": "devfit_x_age   (D-43)",
         "receiver_acquired_war_acceleration": "war_accel      (D-44)",
-        "receiver_park_factor_3yr":           "park_factor    (D-45)",
+        "receiver_park_factor_3yr": "park_factor    (D-45)",
     }
 
     print()
     print(sep)
     print("R-61–R-64: NEW FEATURE WALK-FORWARD CV RESULTS")
     print(f"Threshold: mass ≥ {CV_MASS_THRESHOLD:.0%} + 90% CI excludes zero → credible in fold")
-    print(f"Confirmed: credible ≥ 3/4 sufficient folds with consistent sign")
+    print("Confirmed: credible ≥ 3/4 sufficient folds with consistent sign")
     print(sep)
 
     for outcome in df["outcome"].unique():
@@ -192,7 +206,7 @@ def print_report(all_rows: list[dict]) -> None:
         suf = sub[sub["sufficient"]]
         print(f"\n  {outcome}  ({len(suf)} sufficient folds)")
         print(f"  {'fold':<20} {'n_test':>7}  ", end="")
-        for feat in NEW_FEATURES:
+        for _ in NEW_FEATURES:
             print(f"{'mass%':>7} {'cred?':>6}  ", end="")
         print()
         print(f"  {'':20} {'':>7}  ", end="")
@@ -208,7 +222,7 @@ def print_report(all_rows: list[dict]) -> None:
             for feat in NEW_FEATURES:
                 mass = r[f"{feat}_mass"]
                 cred = r[f"{feat}_credible"]
-                m_str = f"{mass*100:.0f}%" if not np.isnan(mass) else "  n/a"
+                m_str = f"{mass * 100:.0f}%" if not np.isnan(mass) else "  n/a"
                 c_str = "✓" if cred else "·"
                 print(f"{m_str:>7} {c_str:>6}  ", end="")
             print(suf_mark)
@@ -225,7 +239,7 @@ def print_report(all_rows: list[dict]) -> None:
             if total_suf == 0:
                 verdict = "NO SUFFICIENT FOLDS"
             elif cred_folds >= 3:
-                sign_ok = (pos_folds == cred_folds or pos_folds == 0)
+                sign_ok = pos_folds == cred_folds or pos_folds == 0
                 verdict = "CONFIRMED" if sign_ok else "EXPLORATORY (sign flip)"
             elif cred_folds >= 1:
                 verdict = f"EXPLORATORY ({cred_folds}/{total_suf} folds)"

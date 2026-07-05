@@ -104,7 +104,6 @@ def main() -> None:
         )
     print()
 
-    coverages = [r["coverage_90"] for r in rows]
     closest = min(rows, key=lambda r: abs(float(r["coverage_90"]) - 0.90))  # type: ignore[arg-type]
     print(f"Closest to 90% target: {closest['window']} → coverage={closest['coverage_90']:.3f}")
 
