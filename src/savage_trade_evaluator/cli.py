@@ -8,6 +8,7 @@ import webbrowser
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
+import duckdb
 import typer
 
 if TYPE_CHECKING:
@@ -774,6 +775,17 @@ def backtest_trade(
 def status() -> None:
     """Print a summary of what's in the DuckDB store."""
     configure_logging()
+    if not db.DUCKDB_PATH.exists():
+        typer.echo(f"no database found at {db.DUCKDB_PATH}. Run: ste init")
+        raise typer.Exit(code=1)
+    try:
+        _status_body()
+    except duckdb.Error:
+        typer.echo("database exists but schema is not initialized. Run: ste init")
+        raise typer.Exit(code=1) from None
+
+
+def _status_body() -> None:
     with db.connect(read_only=True) as conn:
         count = conn.execute("SELECT COUNT(*) FROM transactions").fetchone()
         if count is None:
@@ -1337,11 +1349,17 @@ def suggest_trades(
                 }
             )
         except Exception as exc:
-            logger.debug("skipped player %s: %s", pid, exc)
+            logger.warning("skipped player %s (%s): %s", pid, name, exc)
 
     if not rows:
         typer.echo("no results — all candidates failed to score")
         raise typer.Exit(code=1)
+
+    n_skipped = len(candidates) - len(rows)
+    if n_skipped:
+        typer.echo(
+            f"scored {len(rows)}/{len(candidates)} candidates; {n_skipped} failed (see logs)"
+        )
 
     scored_df = pd.DataFrame(rows).sort_values("war_delta_mean", ascending=False)
 
