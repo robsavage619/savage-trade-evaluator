@@ -27,6 +27,8 @@ pass = credible features in `war_delta_cf` >= 9 (current `war_delta_residual` ba
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -154,11 +156,15 @@ def build_org_retention_factors() -> pd.DataFrame:
 
     # Compute Marcel expected WAR for T+1 per player-season.
     def _expected(row: pd.Series) -> float:
-        age = float(row["age_t0"]) if not pd.isna(row["age_t0"]) else 28.0
+        age_raw = cast(float, row["age_t0"])
+        w0 = cast(float, row["war_t0"])
+        wm1 = cast(float, row["war_tm1"])
+        wm2 = cast(float, row["war_tm2"])
+        age = float(age_raw) if not pd.isna(age_raw) else 28.0
         base = _marcel_projection(
-            war_t1=row["war_t0"] if not pd.isna(row["war_t0"]) else None,
-            war_t2=row["war_tm1"] if not pd.isna(row["war_tm1"]) else None,
-            war_t3=row["war_tm2"] if not pd.isna(row["war_tm2"]) else None,
+            war_t1=w0 if not pd.isna(w0) else None,
+            war_t2=wm1 if not pd.isna(wm1) else None,
+            war_t3=wm2 if not pd.isna(wm2) else None,
         )
         age_adj = _age_adjustment(age, 1)
         return base + age_adj
@@ -179,8 +185,9 @@ def build_org_retention_factors() -> pd.DataFrame:
             (raw["season_t"] >= season - ORG_FACTOR_HALF_WINDOW)
             & (raw["season_t"] <= season + ORG_FACTOR_HALF_WINDOW)
         ]
-        for (team, pos), group in window.groupby(["team_bref", "position_group"]):
-            ratios = group["ratio"].dropna().values
+        for key, group in window.groupby(["team_bref", "position_group"]):
+            team, pos = cast("tuple[str, str]", key)
+            ratios = cast(pd.Series, group["ratio"]).dropna().to_numpy()
             n = len(ratios)
             if n == 0:
                 continue
@@ -247,7 +254,7 @@ def build_counterfactual_residuals(
     # Build a lookup: (team_bref, position_group, season) → retention_factor
     factor_lookup: dict[tuple[str, str, int], float] = {
         (row.team_bref, row.position_group, row.season): row.retention_factor
-        for row in org_factors.itertuples(index=False)
+        for row in cast(Iterable[Any], org_factors.itertuples(index=False))
     }
 
     with db.connect(read_only=True) as conn:
@@ -308,7 +315,7 @@ def build_counterfactual_residuals(
 
     # Build position-group lookup: (mlb_id, year) → pos_group
     pit_lookup: dict[tuple[int, int], str] = {}
-    for row in pit_rows.itertuples(index=False):
+    for row in cast(Iterable[Any], pit_rows.itertuples(index=False)):
         if pd.isna(row.mlb_id) or pd.isna(row.year_id):
             continue
         pg = POS_SP if (row.total_gs or 0) > 0 else POS_RP
@@ -317,17 +324,21 @@ def build_counterfactual_residuals(
     df["age_at_trade"] = df["trade_season"] - df["birth_year"].astype("Float64")
 
     def _row_cf_expected(row: pd.Series) -> float:
-        age = float(row["age_at_trade"]) if not pd.isna(row["age_at_trade"]) else 28.0
-        w1 = row["war_tm1"] if not pd.isna(row["war_tm1"]) else None
-        w2 = row["war_tm2"] if not pd.isna(row["war_tm2"]) else None
-        w3 = row["war_tm3"] if not pd.isna(row["war_tm3"]) else None
+        age_raw = cast(float, row["age_at_trade"])
+        w1_raw = cast(float, row["war_tm1"])
+        w2_raw = cast(float, row["war_tm2"])
+        w3_raw = cast(float, row["war_tm3"])
+        age = float(age_raw) if not pd.isna(age_raw) else 28.0
+        w1 = w1_raw if not pd.isna(w1_raw) else None
+        w2 = w2_raw if not pd.isna(w2_raw) else None
+        w3 = w3_raw if not pd.isna(w3_raw) else None
 
         # Marcel base projection for T+1
         base_t1 = _marcel_projection(w1, w2, w3)
 
         # Org retention factor for sending team
-        mlb_id = int(row["mlb_player_id"])
-        trade_season = int(row["trade_season"])
+        mlb_id = int(cast(int, row["mlb_player_id"]))
+        trade_season = int(cast(int, row["trade_season"]))
         pos = pit_lookup.get((mlb_id, trade_season - 1), POS_HIT)
         sending = str(row["sending_team"])
 
@@ -351,13 +362,12 @@ def build_counterfactual_residuals(
 
     df["expected_war_delta_cf_player"] = df.apply(_row_cf_expected, axis=1)
 
-    agg = (
+    agg = cast(
+        pd.DataFrame,
         df.groupby(["trade_event_id", "receiver_bref", "trade_season"], as_index=False)[
             "expected_war_delta_cf_player"
-        ]
-        .sum()
-        .rename(columns={"expected_war_delta_cf_player": "expected_war_delta_cf"})
-    )
+        ].sum(),
+    ).rename(columns={"expected_war_delta_cf_player": "expected_war_delta_cf"})
     logger.info(
         "build_counterfactual_residuals: aggregated to %d (trade, team, season) rows", len(agg)
     )

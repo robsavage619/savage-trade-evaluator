@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import arviz as az
 import numpy as np
@@ -116,13 +116,14 @@ def _train_and_cache(outcome: str, combined: pd.DataFrame | None = None) -> V3Fi
     if combined is None:
         combined = assemble_v3_combined()
     feature_cols = V3_OUTCOME_FEATURES[outcome]
-    train = combined[
-        combined[outcome].notna() & (combined["trade_season"] <= TRAIN_END_SEASON)
-    ].copy()
+    train = cast(
+        "pd.DataFrame",
+        combined[combined[outcome].notna() & (combined["trade_season"] <= TRAIN_END_SEASON)],
+    ).copy()
 
     # Impute using training-set means only.
     for c in feature_cols:
-        fill = float(train[c].astype("float64").mean())
+        fill = float(cast("float", train[c].astype("float64").mean()))
         if np.isnan(fill):
             fill = 0.0
         train[c] = train[c].astype("float64").fillna(fill)

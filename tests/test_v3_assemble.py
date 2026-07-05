@@ -11,6 +11,8 @@ Three families:
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -125,8 +127,10 @@ def test_assemble_v3_combined_no_fan_out() -> None:
     # FG columns must exist; spot-check cardinality on rows that have FG data
     assert "wrc_delta" in v3.columns
     fg_rows = v3["wrc_delta"].notna()
-    if fg_rows.any():
-        duped = v3[fg_rows].duplicated(subset=["trade_event_id", "receiver_bref", "trade_season"])
+    if bool(fg_rows.any()):
+        duped = cast("pd.DataFrame", v3[fg_rows]).duplicated(
+            subset=["trade_event_id", "receiver_bref", "trade_season"]
+        )
         assert not duped.any(), "FG merge created duplicate rows on the 3-key"
 
 
@@ -174,6 +178,6 @@ def test_fold_train_seasons_are_strictly_before_test_seasons() -> None:
         test_rows = combined[combined["trade_season"].between(s.test_start, s.test_end)]
         if train_rows.empty or test_rows.empty:
             continue
-        assert int(train_rows["trade_season"].max()) < int(test_rows["trade_season"].min()), (
-            f"{s.label}: train data leaks into test window"
-        )
+        train_max = int(cast("int", train_rows["trade_season"].max()))
+        test_min = int(cast("int", test_rows["trade_season"].min()))
+        assert train_max < test_min, f"{s.label}: train data leaks into test window"

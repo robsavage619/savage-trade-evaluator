@@ -19,7 +19,7 @@ All posterior samples returned by ``predict()`` are in original outcome units
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -88,8 +88,8 @@ def _score_df(
         if c in df.columns:
             scored_df[c] = df[c].astype("float64")
         else:
-            scored_df[c] = float(fit.feature_means.get(c, 0.0))
-        scored_df[c] = scored_df[c].fillna(float(fit.feature_means.get(c, 0.0)))
+            scored_df[c] = float(cast("float", fit.feature_means.get(c, 0.0)))
+        scored_df[c] = scored_df[c].fillna(float(cast("float", fit.feature_means.get(c, 0.0))))
 
     samples_matrix = predict(fit, scored_df)  # (n_rows, n_samples)
     return [summarise_posterior(samples_matrix[i]) for i in range(len(df))]
@@ -133,7 +133,7 @@ def score_historical_scenarios(
     mask = combined["trade_season"] == season
     if team_bref:
         mask = mask & (combined["receiver_bref"] == team_bref)
-    subset = combined[mask].copy()
+    subset = cast("pd.DataFrame", combined[mask]).copy()
 
     if subset.empty:
         logger.warning("no trades found for season=%d team_bref=%s", season, team_bref)
@@ -157,8 +157,8 @@ def score_historical_scenarios(
     scenarios: list[dict[str, Any]] = []
     for row_idx, (_, row) in enumerate(subset.iterrows()):
         scenario: dict[str, Any] = {
-            "trade_event_id": int(row["trade_event_id"]),
-            "trade_season": int(row["trade_season"]),
+            "trade_event_id": int(cast("int", row["trade_event_id"])),
+            "trade_season": int(cast("int", row["trade_season"])),
             "receiver_bref": str(row["receiver_bref"]),
             "model_version": "v3.2",
             "train_end_season": TRAIN_END_SEASON,

@@ -54,6 +54,7 @@ Source = Literal[
     "manual",
     "spotrac",
     "tjstats",
+    "mlb-pipeline",
 ]
 
 

@@ -28,7 +28,7 @@ import logging
 import zipfile
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import httpx
 
@@ -187,7 +187,7 @@ def _load_chadwick_lookup() -> dict[str, tuple[int, str]]:
     from pybaseball import chadwick_register
 
     df: pd.DataFrame = chadwick_register()
-    df = df[df["key_retro"].notna() & df["key_mlbam"].notna()]
+    df = cast("pd.DataFrame", df[df["key_retro"].notna() & df["key_mlbam"].notna()])
     out: dict[str, tuple[int, str]] = {}
     for row in df.itertuples(index=False):
         first = (row.name_first or "").strip() if isinstance(row.name_first, str) else ""

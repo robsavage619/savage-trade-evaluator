@@ -115,14 +115,14 @@ def fit_multilevel_v2(
         # Full regime intercept: team baseline + regime shift
         alpha_regime = pm.Deterministic(
             "alpha_regime",
-            alpha_team[regime_team_idx] + alpha_regime_dev,
+            alpha_team[regime_team_idx] + alpha_regime_dev,  # type: ignore[index]
             dims="regime",
         )
         # Feature coefficients
         beta = pm.Normal("beta", mu=0.0, sigma=0.3, dims="feature")
         # Observation noise
         sigma = pm.HalfNormal("sigma", sigma=1.0)
-        mu = alpha0 + alpha_regime[regime_idx] + pm.math.dot(x, beta)
+        mu = alpha0 + alpha_regime[regime_idx] + pm.math.dot(x, beta)  # type: ignore[index]
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
 
         trace = pm.sample(

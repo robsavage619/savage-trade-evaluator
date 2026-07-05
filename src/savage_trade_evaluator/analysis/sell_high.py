@@ -9,6 +9,8 @@ are *positive* in every regime tested — no system-tax signal anywhere.
 
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from savage_trade_evaluator.storage import db
@@ -97,26 +99,26 @@ def sell_high_decomposition(df: pd.DataFrame | None = None) -> pd.DataFrame:
 
 def regime_decomposition(df: pd.DataFrame, regime_id: str) -> dict[str, dict[str, float]]:
     """Per-bucket mean Δ WAR + counts for one regime."""
-    sub = df[df["regime"] == regime_id].copy()
+    sub = cast(pd.DataFrame, df[df["regime"] == regime_id]).copy()
     if sub.empty:
         return {}
     sub["bucket"] = sub.apply(lambda r: classify_player(r["pre"], r.get("experience")), axis=1)
     out: dict[str, dict[str, float]] = {}
     for b in ("VET-AT-PEAK", "YOUNG-PROSPECT", "MIDDLE"):
-        rows = sub[sub["bucket"] == b]
+        rows = cast(pd.DataFrame, sub[sub["bucket"] == b])
         out[b] = (
             {"n": 0, "mean_delta": float("nan"), "mean_pre": float("nan")}
             if rows.empty
             else {
                 "n": len(rows),
-                "mean_delta": float(rows["delta"].mean()),
-                "mean_pre": float(rows["pre"].mean()),
+                "mean_delta": float(cast(pd.Series, rows["delta"]).mean()),
+                "mean_pre": float(cast(pd.Series, rows["pre"]).mean()),
             }
         )
     out["ALL"] = {
         "n": len(sub),
-        "mean_delta": float(sub["delta"].mean()),
-        "mean_pre": float(sub["pre"].mean()),
+        "mean_delta": float(cast(pd.Series, sub["delta"]).mean()),
+        "mean_pre": float(cast(pd.Series, sub["pre"]).mean()),
     }
     return out
 

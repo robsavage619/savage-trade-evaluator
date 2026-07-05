@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import cast
 
+import pandas as pd
 import plotly.offline as plo
 
 from savage_trade_evaluator.analysis import org_quality, sell_high
@@ -40,12 +42,18 @@ def build_findings_report(out_path: Path | None = None) -> Path:
     sell_chart = _fig_div(charts.sell_high_bars(sell_summary))
 
     # Org quality top/bottom 5 for the prose table
-    top5 = oq.nlargest(5, "total_dev_war")[
-        ["franchise", "full_name", "total_dev_war", "trade_delta", "quadrant"]
-    ]
-    bot5 = oq.nsmallest(5, "total_dev_war")[
-        ["franchise", "full_name", "total_dev_war", "trade_delta", "quadrant"]
-    ]
+    top5 = cast(
+        pd.DataFrame,
+        oq.nlargest(5, "total_dev_war")[
+            ["franchise", "full_name", "total_dev_war", "trade_delta", "quadrant"]
+        ],
+    )
+    bot5 = cast(
+        pd.DataFrame,
+        oq.nsmallest(5, "total_dev_war")[
+            ["franchise", "full_name", "total_dev_war", "trade_delta", "quadrant"]
+        ],
+    )
 
     # Sell-high: TEX-Daniels row detail
     tex = sell_summary[sell_summary["regime"] == "TEX_Jon Daniels"]
@@ -66,8 +74,8 @@ def build_findings_report(out_path: Path | None = None) -> Path:
         bot5=bot5.to_dict(orient="records"),
         tex_row=tex_row,
         sell_summary=sell_summary.to_dict(orient="records"),
-        oq_median_dev=float(oq["total_dev_war"].median()),
-        oq_median_trade=float(oq["trade_delta"].median()),
+        oq_median_dev=float(cast(pd.Series, oq["total_dev_war"]).median()),
+        oq_median_trade=float(cast(pd.Series, oq["trade_delta"]).median()),
         n_regimes=len(sell_summary),
     )
 
@@ -112,11 +120,14 @@ def build_backtest_report(
     summary_chart = _fig_div(charts.backtest_metrics_table(results))
 
     outcome_sections = []
-    credible_dfs: dict[str, object] = {}
+    credible_dfs: dict[str, pd.DataFrame] = {}
     for outcome, result in results.items():
         cal_chart = _fig_div(charts.calibration_scatter(result.test_predictions, outcome))
         coef_chart = _fig_div(charts.coefficient_forest(result.credible_features, outcome))
         credible_dfs[outcome] = result.credible_features
+        credible_rows = cast(
+            pd.DataFrame, result.credible_features[result.credible_features["credible"]]
+        )
         outcome_sections.append(
             {
                 "outcome": outcome,
@@ -125,16 +136,14 @@ def build_backtest_report(
                 "mae": result.test_mae,
                 "crps": result.test_crps,
                 "coverage_90": result.coverage_90,
-                "n_credible": int(result.credible_features["credible"].sum()),
+                "n_credible": int(cast(pd.Series, result.credible_features["credible"]).sum()),
                 "cal_chart": cal_chart,
                 "coef_chart": coef_chart,
-                "credible_rows": result.credible_features[
-                    result.credible_features["credible"]
-                ].to_dict(orient="records"),
+                "credible_rows": credible_rows.to_dict(orient="records"),
             }
         )
 
-    heatmap_chart = _fig_div(charts.feature_credibility_heatmap(credible_dfs))  # type: ignore[arg-type]
+    heatmap_chart = _fig_div(charts.feature_credibility_heatmap(credible_dfs))
 
     from jinja2 import Environment, PackageLoader
 

@@ -20,7 +20,7 @@ data sources). This is the V1 feature set the data layer already supports.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from savage_trade_evaluator.ingest.retrosheet_events import (
     derive_team_season_leverage_features,
@@ -149,7 +149,8 @@ def compute_all() -> int:
         if not fo_df.empty:
             fo_grouped = fo_df.groupby(["bref_code", "season"])
             alumni_records = []
-            for (bref_code_key, season_key), group in fo_grouped:
+            for group_key, group in fo_grouped:
+                bref_code_key, season_key = cast("tuple[str, int]", group_key)
                 rows_list = list(zip(group["person_name"], group["role"], strict=False))
                 score = team_alumni_score(str(bref_code_key), int(season_key), rows_list)
                 alumni_records.append(

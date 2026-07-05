@@ -15,6 +15,8 @@ Each is its own model fit per D-27 (feature importance is outcome-specific).
 
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from savage_trade_evaluator.storage import db
@@ -186,16 +188,19 @@ def build_outcomes_windowed(
     # "wins above what was paid for" — pre-arb cap hits near zero yield surplus_wins
     # close to war_received_total, correctly scoring cheap cost-controlled players.
     df["surplus_wins"] = df["dollar_surplus"] / df["dollar_per_war_season"]
-    return df[
-        [
-            "trade_event_id",
-            "receiver_bref",
-            "trade_season",
-            "war_delta",
-            "dollar_surplus",
-            "surplus_wins",
-        ]
-    ]
+    return cast(
+        "pd.DataFrame",
+        df[
+            [
+                "trade_event_id",
+                "receiver_bref",
+                "trade_season",
+                "war_delta",
+                "dollar_surplus",
+                "surplus_wins",
+            ]
+        ],
+    )
 
 
 def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataFrame:
@@ -278,18 +283,21 @@ def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataF
     ].fillna(0.0)
     df["surplus_wins"] = df["dollar_surplus"] / df["dollar_per_war_season"]
 
-    return df[
-        [
-            "trade_event_id",
-            "receiver_bref",
-            "trade_season",
-            "xwoba_delta",
-            "kpct_delta",
-            "war_delta",
-            "dollar_surplus",
-            "surplus_wins",
-        ]
-    ]
+    return cast(
+        "pd.DataFrame",
+        df[
+            [
+                "trade_event_id",
+                "receiver_bref",
+                "trade_season",
+                "xwoba_delta",
+                "kpct_delta",
+                "war_delta",
+                "dollar_surplus",
+                "surplus_wins",
+            ]
+        ],
+    )
 
 
 def build_outcomes_fg(start_season: int = 2010, end_season: int = 2024) -> pd.DataFrame:
@@ -326,14 +334,17 @@ def build_outcomes_fg(start_season: int = 2010, end_season: int = 2024) -> pd.Da
             WHERE twc.trade_season BETWEEN {start_season} AND {end_season}
             """
         ).df()
-    return df[
-        [
-            "trade_event_id",
-            "receiver_bref",
-            "trade_season",
-            "wrc_delta",
-            "fip_delta",
-            "xfip_delta",
-            "siera_delta",
-        ]
-    ]
+    return cast(
+        "pd.DataFrame",
+        df[
+            [
+                "trade_event_id",
+                "receiver_bref",
+                "trade_season",
+                "wrc_delta",
+                "fip_delta",
+                "xfip_delta",
+                "siera_delta",
+            ]
+        ],
+    )

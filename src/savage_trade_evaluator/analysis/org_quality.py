@@ -5,6 +5,8 @@ Extracted from scripts/dev_credit_full.py for use in reports and CLI.
 
 from __future__ import annotations
 
+from typing import cast
+
 import pandas as pd
 
 from savage_trade_evaluator.storage import db
@@ -185,7 +187,9 @@ def _load_player_facts() -> pd.DataFrame:
         ).df()
 
     df["first_mlb_team"] = df["first_mlb_team_raw"].apply(_alias)
-    drafted["drafting_team_bref"] = drafted["drafting_team_name"].map(DRAFT_NAME_TO_BREF)
+    drafted["drafting_team_bref"] = cast(pd.Series, drafted["drafting_team_name"]).map(
+        DRAFT_NAME_TO_BREF
+    )
     drafted["drafting_team_bref"] = drafted["drafting_team_bref"].apply(_alias)
     df = df.merge(
         drafted[["mlb_player_id", "drafting_team_bref"]],
@@ -198,13 +202,17 @@ def _load_player_facts() -> pd.DataFrame:
 
 def _dev_credit(df: pd.DataFrame, since_year: int = 1990) -> pd.DataFrame:
     keep = df.dropna(subset=["first_mlb_team", "career_war"]).copy()
-    keep = keep[keep["first_year"] >= since_year]
-    keep = keep[keep["first_mlb_team"].isin(CURRENT_30_FRANCHISES)]
-    return (
-        keep.groupby("first_mlb_team")
-        .agg(n_mlb_debutees=("mlb_id", "count"), dev_war=("career_war", "sum"))
-        .sort_values("dev_war", ascending=False)
+    keep = cast(pd.DataFrame, keep[keep["first_year"] >= since_year])
+    keep = cast(
+        pd.DataFrame, keep[cast(pd.Series, keep["first_mlb_team"]).isin(CURRENT_30_FRANCHISES)]
     )
+    grouped = cast(
+        pd.DataFrame,
+        keep.groupby("first_mlb_team").agg(
+            n_mlb_debutees=("mlb_id", "count"), dev_war=("career_war", "sum")
+        ),
+    )
+    return grouped.sort_values("dev_war", ascending=False)
 
 
 def _intl_credit(df: pd.DataFrame) -> pd.DataFrame:
@@ -213,13 +221,15 @@ def _intl_credit(df: pd.DataFrame) -> pd.DataFrame:
         & (df["first_year"] >= 1995)
         & df["first_mlb_team"].notna()
         & df["career_war"].notna()
-        & df["first_mlb_team"].isin(CURRENT_30_FRANCHISES)
+        & cast(pd.Series, df["first_mlb_team"]).isin(CURRENT_30_FRANCHISES)
     ]
-    return (
-        intl.groupby("first_mlb_team")
-        .agg(n_intl=("mlb_id", "count"), intl_war=("career_war", "sum"))
-        .sort_values("intl_war", ascending=False)
+    grouped = cast(
+        pd.DataFrame,
+        intl.groupby("first_mlb_team").agg(
+            n_intl=("mlb_id", "count"), intl_war=("career_war", "sum")
+        ),
     )
+    return grouped.sort_values("intl_war", ascending=False)
 
 
 def _trade_delta() -> pd.DataFrame:
@@ -238,9 +248,12 @@ def _trade_delta() -> pd.DataFrame:
             """
         ).df()
     df["team_bref"] = df["team"].apply(_alias)
-    df = df[df["team_bref"].isin(CURRENT_30_FRANCHISES)]
-    return df.groupby("team_bref").agg(
-        n_trades=("n_trades", "sum"), mean_delta_war=("mean_delta_war", "mean")
+    df = cast(pd.DataFrame, df[cast(pd.Series, df["team_bref"]).isin(CURRENT_30_FRANCHISES)])
+    return cast(
+        pd.DataFrame,
+        df.groupby("team_bref").agg(
+            n_trades=("n_trades", "sum"), mean_delta_war=("mean_delta_war", "mean")
+        ),
     )
 
 
@@ -255,7 +268,7 @@ def org_quality_map() -> pd.DataFrame:
     intl = _intl_credit(df)
     trade = _trade_delta()
 
-    combined = dev[["dev_war", "n_mlb_debutees"]].copy()
+    combined = cast(pd.DataFrame, dev[["dev_war", "n_mlb_debutees"]]).copy()
     combined["intl_war"] = intl["intl_war"].reindex(combined.index, fill_value=0.0)
     combined["n_intl"] = intl["n_intl"].reindex(combined.index, fill_value=0)
     combined["total_dev_war"] = combined["dev_war"] + combined["intl_war"]
@@ -278,7 +291,10 @@ def org_quality_map() -> pd.DataFrame:
 
     combined["quadrant"] = combined.apply(_quadrant, axis=1)
     combined["franchise"] = combined.index
-    combined["full_name"] = combined["franchise"].map(FULL_NAMES).fillna(combined["franchise"])
-    combined["rank_dev"] = combined["total_dev_war"].rank(ascending=False).astype(int)
-    combined["rank_trade"] = combined["trade_delta"].rank(ascending=False).astype(int)
+    franchise = cast(pd.Series, combined["franchise"])
+    combined["full_name"] = franchise.map(FULL_NAMES).fillna(franchise)
+    total_dev = cast(pd.Series, combined["total_dev_war"])
+    trade_delta = cast(pd.Series, combined["trade_delta"])
+    combined["rank_dev"] = total_dev.rank(ascending=False).astype(int)
+    combined["rank_trade"] = trade_delta.rank(ascending=False).astype(int)
     return combined.reset_index(drop=True).sort_values("total_dev_war", ascending=False)

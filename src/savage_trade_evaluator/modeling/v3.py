@@ -25,6 +25,7 @@ Per-outcome feature subset (set empirically by R-35):
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -236,11 +237,14 @@ def _split_and_impute(
         # Q-01: restrict to trades where at least one acquired player had ≥2 WAR
         # in T-1. Uses receiver_acquired_player_quality as an ordinal proxy —
         # the actual war_t_minus_1 filter requires a separate join.
-        combined = combined[
-            combined["receiver_acquired_player_quality"].notna()
-            & (combined["receiver_acquired_player_quality"] >= 1.0)
-        ].copy()
-    combined = combined[combined[outcome].notna()].copy()
+        combined = cast(
+            "pd.DataFrame",
+            combined[
+                combined["receiver_acquired_player_quality"].notna()
+                & (combined["receiver_acquired_player_quality"] >= 1.0)
+            ],
+        ).copy()
+    combined = cast("pd.DataFrame", combined[combined[outcome].notna()]).copy()
     # Default 5 matches V2's smoke-test convention; loose enough that
     # large-feature-set outcomes (war / dollar) keep ~3600 train rows.
     min_present = minimum_features_present if minimum_features_present is not None else 5
@@ -265,7 +269,10 @@ def _split_and_impute(
         train_raw[c] = train_raw[c].astype("float64").fillna(fill)
         test_raw[c] = test_raw[c].astype("float64").fillna(fill)
 
-    return train_raw.reset_index(drop=True), test_raw.reset_index(drop=True)
+    return (
+        cast("pd.DataFrame", train_raw.reset_index(drop=True)),
+        cast("pd.DataFrame", test_raw.reset_index(drop=True)),
+    )
 
 
 def fit_v3(

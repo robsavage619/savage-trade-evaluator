@@ -91,7 +91,7 @@ def fit_v3_multilevel(
         alpha_team = pm.Deterministic("alpha_team", alpha_team_z * sigma_team, dims="team")
         beta = pm.Normal("beta", mu=0.0, sigma=0.3, dims="feature")
         sigma = pm.HalfNormal("sigma", sigma=1.0)
-        mu = alpha0 + alpha_team[team_idx] + pm.math.dot(x, beta)
+        mu = alpha0 + alpha_team[team_idx] + pm.math.dot(x, beta)  # type: ignore[index]
         pm.Normal("y_obs", mu=mu, sigma=sigma, observed=y_z)
         trace = pm.sample(
             draws=draws,

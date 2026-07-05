@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -137,13 +138,16 @@ def cluster_gms(profiles: pd.DataFrame | None = None) -> pd.DataFrame:
     x_scaled = scaler.fit_transform(x_raw)
 
     n_clust = min(N_CLUSTERS, len(df))
-    km = KMeans(n_clusters=n_clust, n_init=20, random_state=RANDOM_STATE)
+    km = KMeans(n_clusters=n_clust, n_init=20, random_state=RANDOM_STATE)  # type: ignore[arg-type]
     km.fit(x_scaled)
 
     labels = _assign_labels(km.cluster_centers_, feat_cols)
-    df["archetype"] = [labels[c] for c in km.labels_]
-    df["archetype_description"] = df["archetype"].map(ARCHETYPE_DESCRIPTIONS).fillna("")
-    df["cluster_id"] = km.labels_
+    cluster_ids = cast("np.ndarray", km.labels_)
+    df["archetype"] = [labels[c] for c in cluster_ids]
+    df["archetype_description"] = (
+        cast("pd.Series", df["archetype"]).map(ARCHETYPE_DESCRIPTIONS).fillna("")
+    )
+    df["cluster_id"] = cluster_ids
 
     logger.info(
         "clustered %d GMs into %d archetypes: %s",

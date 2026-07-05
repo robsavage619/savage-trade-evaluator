@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -260,7 +261,7 @@ def _build_feature_stability(
         )
 
     stability = pd.DataFrame(rows)
-    confirmed = stability[stability["confirmed"]].reset_index(drop=True)
+    confirmed = cast("pd.DataFrame", stability[stability["confirmed"]]).reset_index(drop=True)
     return stability, confirmed
 
 
@@ -401,14 +402,14 @@ def print_cv_report(result: V3CVResult) -> None:
     for _, row in result.feature_stability.sort_values(
         "n_credible_folds", ascending=False
     ).iterrows():
-        flag = "*** YES" if row["confirmed"] else "no"
+        flag = "*** YES" if bool(row["confirmed"]) else "no"
         beta = f"{row['median_beta']:+.4f}" if not np.isnan(row["median_beta"]) else "   n/a"
         rng = (
             f"[{row['beta_min']:+.3f}, {row['beta_max']:+.3f}]"
             if not np.isnan(row["beta_min"])
             else "     n/a     "
         )
-        sign_ok = "✓" if row["consistent_sign"] else "✗"
+        sign_ok = "✓" if bool(row["consistent_sign"]) else "✗"
         print(
             f"  {row['feature']:<48} {row['n_credible_folds']:>3}/{row['n_sufficient_folds']:<3}"
             f" {row['n_needed']:>7}  {beta:>9} {rng:>18}  {sign_ok:>5}  {flag}"

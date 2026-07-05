@@ -6,8 +6,12 @@ import json
 import logging
 import webbrowser
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 import typer
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 from savage_trade_evaluator.analysis import backtest, trade_summary
 from savage_trade_evaluator.config import (
@@ -913,21 +917,24 @@ def v2_predict(
     fit = result.fit
 
     combined = v2_backtest.assemble_combined()
-    combined = combined[combined[outcome].notna()].copy()
+    combined = cast("pd.DataFrame", combined[combined[outcome].notna()]).copy()
     cols = list(fit.feature_cols)
     for c in cols:
         combined[c] = combined[c].astype("float64")
         combined[c] = combined[c].fillna(combined[c].mean())
-    row = combined[
-        (combined["trade_event_id"] == trade_id) & (combined["receiver_bref"] == receiver)
-    ]
+    row = cast(
+        "pd.DataFrame",
+        combined[
+            (combined["trade_event_id"] == trade_id) & (combined["receiver_bref"] == receiver)
+        ],
+    )
     if row.empty:
         typer.echo(f"no row found for trade_id={trade_id} receiver={receiver} outcome={outcome}")
         raise typer.Exit(code=1)
 
     r = row.iloc[0]
     x_row = ((row[cols] - fit.feature_means) / fit.feature_stds).to_numpy(dtype=float)[0]
-    post = fit.trace.posterior
+    post = fit.trace.posterior  # type: ignore[attr-defined]
     n = post["alpha0"].shape[0] * post["alpha0"].shape[1]
     alpha0_s = post["alpha0"].values.reshape(n)
     beta_s = post["beta"].values.reshape(n, len(cols))
@@ -1307,10 +1314,10 @@ def suggest_trades(
 
     rows: list[dict] = []
     for _, cand in candidates.iterrows():
-        pid = int(cand["mlb_id"])
+        pid = int(cast("int", cand["mlb_id"]))
         sender_team = str(cand["team_id"])
         name = str(cand["full_name"] or f"#{pid}")
-        prior_war = float(cand["total_war"])
+        prior_war = float(cast("float", cand["total_war"]))
         try:
             feats = assemble_hypothetical(receiver, sender_team, [pid], season)
             scored = score_hypothetical(

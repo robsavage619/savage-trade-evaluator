@@ -6,8 +6,13 @@ be embedded in HTML via plotly.offline.plot(..., output_type="div").
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any, cast
+
 import pandas as pd
 import plotly.graph_objects as go
+
+if TYPE_CHECKING:
+    from savage_trade_evaluator.modeling.v3 import V3BacktestResult
 
 # Colour palette — consistent across all charts
 _GREEN = "#2ecc71"
@@ -20,7 +25,7 @@ _BG = "#0f1117"
 _PANEL = "#1a1d27"
 _TEXT = "#ecf0f1"
 
-_BASE_LAYOUT = dict(
+_BASE_LAYOUT: dict[str, Any] = dict(
     paper_bgcolor=_BG,
     plot_bgcolor=_PANEL,
     font=dict(color=_TEXT, family="Inter, system-ui, sans-serif"),
@@ -134,7 +139,7 @@ def org_quality_scatter(df: pd.DataFrame) -> go.Figure:
         ("CLE", "Best dev pipeline"),
         ("SFG", "Last on both axes"),
     ]:
-        row = df[df["franchise"] == team]
+        row = cast(pd.DataFrame, df[df["franchise"] == team])
         if row.empty:
             continue
         fig.add_annotation(
@@ -164,7 +169,7 @@ def coefficient_forest(credible_features: pd.DataFrame, outcome: str = "") -> go
     df = credible_features.copy()
     df = df.sort_values("mean_beta")
 
-    colors = df["credible"].map({True: _GREEN, False: _YELLOW}).tolist()
+    colors = cast(pd.Series, df["credible"]).map({True: _GREEN, False: _YELLOW}).tolist()
     # Null features (mass < 85%) get gray
     null_mask = df["directional_mass"] < 0.85
     for i, is_null in enumerate(null_mask):
@@ -253,8 +258,10 @@ def calibration_scatter(test_predictions: pd.DataFrame, outcome: str = "") -> go
     in_band = (df["y_true"] >= df["y_pred_p05"]) & (df["y_true"] <= df["y_pred_p95"])
     coverage = float(in_band.mean())
 
-    ref_min = min(float(df["y_true"].min()), float(df["y_pred_mean"].min()))
-    ref_max = max(float(df["y_true"].max()), float(df["y_pred_mean"].max()))
+    y_true = cast(pd.Series, df["y_true"])
+    y_pred = cast(pd.Series, df["y_pred_mean"])
+    ref_min = min(float(y_true.min()), float(y_pred.min()))
+    ref_max = max(float(y_true.max()), float(y_pred.max()))
     pad = (ref_max - ref_min) * 0.05
 
     fig = go.Figure()
@@ -409,7 +416,7 @@ def feature_credibility_heatmap(results_by_outcome: dict[str, pd.DataFrame]) -> 
         row: list[float] = []
         for oi, outcome in enumerate(outcomes):
             df = results_by_outcome[outcome]
-            match = df[df["feature"] == feat]
+            match = cast(pd.DataFrame, df[df["feature"] == feat])
             if match.empty:
                 row.append(float("nan"))
             else:
@@ -470,19 +477,19 @@ def feature_credibility_heatmap(results_by_outcome: dict[str, pd.DataFrame]) -> 
     return fig
 
 
-def backtest_metrics_table(results: dict[str, object]) -> go.Figure:
+def backtest_metrics_table(results: dict[str, V3BacktestResult]) -> go.Figure:
     """Simple table of MAE, CRPS, 90% coverage across all outcomes."""
     rows = []
     for outcome, r in results.items():
-        ncred = int(r.credible_features["credible"].sum())  # type: ignore[union-attr]
+        ncred = int(cast(pd.Series, r.credible_features["credible"]).sum())
         rows.append(
             {
                 "Outcome": outcome,
-                "Train n": r.train_n,  # type: ignore[union-attr]
-                "Test n": r.test_n,  # type: ignore[union-attr]
-                "MAE": f"{r.test_mae:.4f}",  # type: ignore[union-attr]
-                "CRPS": f"{r.test_crps:.4f}",  # type: ignore[union-attr]
-                "90% Coverage": f"{r.coverage_90:.1%}",  # type: ignore[union-attr]
+                "Train n": r.train_n,
+                "Test n": r.test_n,
+                "MAE": f"{r.test_mae:.4f}",
+                "CRPS": f"{r.test_crps:.4f}",
+                "90% Coverage": f"{r.coverage_90:.1%}",
                 "Credible Features": ncred,
             }
         )

@@ -20,6 +20,7 @@ replace ``war_delta`` without an explicit decision.
 from __future__ import annotations
 
 import logging
+from typing import cast
 
 import pandas as pd
 
@@ -214,11 +215,15 @@ def build_marcel_residuals(
     df["age_at_trade"] = df["trade_season"] - df["birth_year"].astype("Float64")
 
     def _row_expected(row: pd.Series) -> float:
-        age = float(row["age_at_trade"]) if not pd.isna(row["age_at_trade"]) else 28.0
+        age_raw = cast(float, row["age_at_trade"])
+        w1 = cast(float, row["war_tm1"])
+        w2 = cast(float, row["war_tm2"])
+        w3 = cast(float, row["war_tm3"])
+        age = float(age_raw) if not pd.isna(age_raw) else 28.0
         return expected_war_delta(
-            war_t1=row["war_tm1"] if not pd.isna(row["war_tm1"]) else None,
-            war_t2=row["war_tm2"] if not pd.isna(row["war_tm2"]) else None,
-            war_t3=row["war_tm3"] if not pd.isna(row["war_tm3"]) else None,
+            war_t1=w1 if not pd.isna(w1) else None,
+            war_t2=w2 if not pd.isna(w2) else None,
+            war_t3=w3 if not pd.isna(w3) else None,
             age_at_trade=age,
             window_start=war_window_start,
             window_end=war_window_end,
@@ -229,12 +234,11 @@ def build_marcel_residuals(
     # Aggregate per-player estimates to the (trade_event_id, receiver_bref, trade_season) level.
     # war_delta in assemble_combined() is already the SUM across all players going to the receiver
     # team, so expected should also be the SUM.
-    agg = (
+    agg = cast(
+        pd.DataFrame,
         df.groupby(["trade_event_id", "receiver_bref", "trade_season"], as_index=False)[
             "expected_war_delta_player"
-        ]
-        .sum()
-        .rename(columns={"expected_war_delta_player": "expected_war_delta"})
-    )
+        ].sum(),
+    ).rename(columns={"expected_war_delta_player": "expected_war_delta"})
     logger.info("build_marcel_residuals: aggregated to %d (trade, team, season) rows", len(agg))
     return agg
