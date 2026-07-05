@@ -41,3 +41,43 @@ def test_load_chunks_reads_corpus_files(tmp_path: Path) -> None:
 def test_load_chunks_raises_when_corpus_absent(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         corpus.load_chunks(root=tmp_path)
+
+
+def test_strip_frontmatter_removes_yaml_block() -> None:
+    text = "---\ntitle: Note\ntags: [a, b]\n---\n# Body\ncontent"
+    assert corpus._strip_frontmatter(text) == "# Body\ncontent"
+
+
+def test_strip_frontmatter_noop_without_block() -> None:
+    text = "# Body\ncontent"
+    assert corpus._strip_frontmatter(text) == text
+
+
+def test_load_vault_chunks_labels_sources(tmp_path: Path) -> None:
+    (tmp_path / "note.md").write_text("---\ntitle: N\n---\n# Idea\nvault body text")
+    chunks = corpus.load_vault_chunks(vault_dir=tmp_path)
+    assert chunks
+    assert all(c.source == "vault:note.md" for c in chunks)
+    assert not any("title: N" in c.text for c in chunks)
+
+
+def test_load_vault_chunks_missing_dir_returns_empty(tmp_path: Path) -> None:
+    assert corpus.load_vault_chunks(vault_dir=tmp_path / "absent") == []
+
+
+def test_load_chunks_explicit_root_stays_hermetic(tmp_path: Path) -> None:
+    (tmp_path / "RESEARCH_LOG.md").write_text("# Log\nbody")
+    chunks = corpus.load_chunks(root=tmp_path)
+    assert all(not c.source.startswith("vault:") for c in chunks)
+
+
+def test_load_chunks_can_include_vault_with_explicit_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    vault = tmp_path / "wiki"
+    vault.mkdir()
+    (vault / "concept.md").write_text("# Concept\nvault passage")
+    monkeypatch.setattr(corpus, "VAULT_DIR", vault)
+    (tmp_path / "RESEARCH_LOG.md").write_text("# Log\nbody")
+    chunks = corpus.load_chunks(root=tmp_path, include_vault=True)
+    assert any(c.source == "vault:concept.md" for c in chunks)
