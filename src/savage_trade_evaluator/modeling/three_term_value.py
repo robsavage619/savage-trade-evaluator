@@ -107,31 +107,33 @@ def compute_cost_controlled_surplus(
               AND w.to_team_bref   = ?
         ),
         salary_combined AS (
-            SELECT mlb_id, year_id AS season, salary
-            FROM bwar_batting
-            WHERE salary IS NOT NULL
-            UNION ALL
-            SELECT mlb_id, year_id AS season, salary
-            FROM bwar_pitching
-            WHERE salary IS NOT NULL
+            -- Dedup two-way players: bwar_batting and bwar_pitching each carry a salary
+            -- row; take MAX so each player-season is counted once.
+            SELECT mlb_id, year_id AS season, MAX(salary) AS salary
+            FROM (
+                SELECT mlb_id, year_id, salary FROM bwar_batting  WHERE salary IS NOT NULL
+                UNION ALL
+                SELECT mlb_id, year_id, salary FROM bwar_pitching WHERE salary IS NOT NULL
+            )
+            GROUP BY mlb_id, year_id
         ),
         player_salary AS (
             SELECT
                 r.mlb_player_id,
                 r.realized_war,
-                AVG(s.salary) FILTER (
+                SUM(s.salary) FILTER (
                     WHERE s.season BETWEEN r.trade_season
                                       AND r.trade_season + ?
-                ) AS avg_salary
+                ) AS window_salary
             FROM received r
             LEFT JOIN salary_combined s ON s.mlb_id = r.mlb_player_id
             GROUP BY r.mlb_player_id, r.realized_war
         )
         SELECT
-            SUM(realized_war)                                AS total_war,
-            SUM(COALESCE(avg_salary, 0))                     AS total_salary,
-            COUNT(*) FILTER (WHERE avg_salary IS NULL)       AS missing_salary_count,
-            COUNT(*)                                          AS player_count
+            SUM(realized_war)                                  AS total_war,
+            SUM(COALESCE(window_salary, 0))                    AS total_salary,
+            COUNT(*) FILTER (WHERE window_salary IS NULL)      AS missing_salary_count,
+            COUNT(*)                                            AS player_count
         FROM player_salary
         """,
         [trade_event_id, receiver_bref, outcome_window_years],
@@ -164,7 +166,9 @@ def compute_cost_controlled_surplus(
 #
 # Win-curve model: logistic sigmoid P(playoff | wins).
 #   P(W) = 1 / (1 + exp(-k * (W - W_50)))
-#   k = 0.18, W_50 = 89 — calibrated to the 2010-2024 10-team playoff era.
+#   k = 0.18 across eras; W_50 is era-dependent:
+#     pre-2022 (10-team era):  W_50 = 89.0
+#     2022+   (12-team era):  W_50 = 86.0  (expanded wild card lowers bar)
 #   Each marginal win ≈ 4.5% playoff probability at W_50, tapering at the tails.
 #
 # Playoff revenue: marginal revenue from reaching the postseason. Estimate
@@ -176,52 +180,61 @@ def compute_cost_controlled_surplus(
 # D-50 intent: these parameters are named constants, not magic numbers.
 # Supersede with an empirically fitted curve when revenue data is available.
 # ---------------------------------------------------------------------------
-WIN_CURVE_MIDPOINT: float = 89.0  # wins at P(playoff) = 0.50
-WIN_CURVE_STEEPNESS: float = 0.18  # logistic k; calibrated 2010-2024
+
+# Steepness is constant across eras; midpoints differ.
+WIN_CURVE_STEEPNESS: float = 0.18  # logistic k
+# Era-keyed midpoints.  Expand if further format changes occur.
+_WIN_CURVE_MIDPOINT_PRE_2022: float = 89.0  # 10-team playoff era (2010-2021)
+_WIN_CURVE_MIDPOINT_2022_PLUS: float = 86.0  # 12-team playoff era (2022+)
 MARGINAL_PLAYOFF_REVENUE: float = 15_000_000.0  # $/unit ΔP(playoff), blended single-stage
 
 
-def _playoff_prob(wins: float) -> float:
-    """Logistic playoff-probability curve.
+def _playoff_prob(wins: float, season: int) -> float:
+    """Logistic playoff-probability curve, era-aware.
 
     Args:
         wins: Projected or prior-year win total.
+        season: Trade season (selects 10-team vs 12-team midpoint).
 
     Returns:
         Estimated probability of reaching the postseason.
     """
     import math
 
-    return 1.0 / (1.0 + math.exp(-WIN_CURVE_STEEPNESS * (wins - WIN_CURVE_MIDPOINT)))
+    midpoint = _WIN_CURVE_MIDPOINT_2022_PLUS if season >= 2022 else _WIN_CURVE_MIDPOINT_PRE_2022
+    return 1.0 / (1.0 + math.exp(-WIN_CURVE_STEEPNESS * (wins - midpoint)))
 
 
 def compute_playoff_revenue_delta(
     prior_wins: float,
     delta_war: float,
+    trade_season: int,
     marginal_revenue: float = MARGINAL_PLAYOFF_REVENUE,
 ) -> tuple[float, str]:
     """Term 3: expected increase in playoff revenue from adding ``delta_war`` wins.
 
     delta_playoff_revenue = [P(playoff | W + delta_WAR) - P(playoff | W)] x marginal_revenue
 
-    Uses a logistic win-curve parameterised by ``WIN_CURVE_MIDPOINT`` and
-    ``WIN_CURVE_STEEPNESS``. 1 WAR ≈ 1 win by construction.
+    Uses a logistic win-curve with era-adjusted midpoint (86 wins for 12-team era
+    2022+, 89 wins for 10-team era pre-2022). 1 WAR ≈ 1 win by construction.
 
     Args:
         prior_wins: Team's prior-season win total (proxy for current win level).
         delta_war: Expected WAR added by the trade (may be negative).
+        trade_season: Year of the trade; selects the correct win-curve midpoint.
         marginal_revenue: Dollars per unit of playoff probability gained.
             Defaults to ``MARGINAL_PLAYOFF_REVENUE`` ($15M blended estimate).
 
     Returns:
         Tuple of (playoff_revenue_delta_dollars, notes_string).
     """
-    p_before = _playoff_prob(prior_wins)
-    p_after = _playoff_prob(prior_wins + delta_war)
+    era_label = "12-team" if trade_season >= 2022 else "10-team"
+    p_before = _playoff_prob(prior_wins, trade_season)
+    p_after = _playoff_prob(prior_wins + delta_war, trade_season)
     delta_p = p_after - p_before
     revenue = delta_p * marginal_revenue
     notes = (
-        f"prior_wins={prior_wins:.0f}  delta_war={delta_war:+.2f}  "
+        f"era={era_label}  prior_wins={prior_wins:.0f}  delta_war={delta_war:+.2f}  "
         f"P(playoff): {p_before:.3f}→{p_after:.3f}  ΔP={delta_p:+.4f}"
     )
     return revenue, notes
@@ -269,21 +282,22 @@ def evaluate(
         conn=conn,
     )
 
-    # Term 3: look up prior-year wins and realised WAR delta for the trade.
+    # Term 3: look up prior-year wins, trade season, and realised WAR delta for the trade.
     row = conn.execute(
         """
         SELECT
             tsf.prior_year_wins,
             COALESCE(
                 SUM(w.war_t_plus_1 + w.war_t_plus_2 + w.war_t_plus_3), 0
-            ) AS delta_war
+            ) AS delta_war,
+            w.trade_season
         FROM trade_player_war_window w
         JOIN team_season_features tsf
             ON tsf.bref_code   = w.to_team_bref
            AND tsf.season       = w.trade_season
         WHERE w.trade_event_id = ?
           AND w.to_team_bref   = ?
-        GROUP BY tsf.prior_year_wins
+        GROUP BY tsf.prior_year_wins, w.trade_season
         """,
         [trade_event_id, receiver_bref],
     ).fetchone()
@@ -293,7 +307,8 @@ def evaluate(
     if row and row[0] is not None:
         prior_wins = float(row[0])
         delta_war = float(row[1]) / max(outcome_window_years, 1)
-        playoff_3, notes_3 = compute_playoff_revenue_delta(prior_wins, delta_war)
+        trade_season_val = int(row[2])
+        playoff_3, notes_3 = compute_playoff_revenue_delta(prior_wins, delta_war, trade_season_val)
         notes_3 = f"term3: {notes_3}"
 
     notes_parts: list[str] = [
