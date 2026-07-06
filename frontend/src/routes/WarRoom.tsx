@@ -314,6 +314,7 @@ export default function WarRoom() {
                           currentL: indexTeam.l,
                           gamesBack: indexTeam.gamesBack,
                         }}
+                        scenarios={yourPayload?.scenarios}
                       />
                     </motion.div>
                   )}

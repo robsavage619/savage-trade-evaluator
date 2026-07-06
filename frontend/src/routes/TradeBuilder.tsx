@@ -449,6 +449,13 @@ export default function TradeBuilder() {
                 </div>
               </div>
 
+              {/* Heuristic method badge */}
+              {verdict.method === 'heuristic' && (
+                <div className="border-t border-ink-700/40 px-5 py-2 font-mono text-[9px] text-ink-400">
+                  Heuristic estimate — uncertainty band is a rule-of-thumb (√n·1.2), not a model posterior
+                </div>
+              )}
+
               {/* Player comparison */}
               {(sendingPlayers.length > 0 || receivingPlayers.length > 0) && (
                 <div className="border-t border-ink-700 px-5 pb-5 pt-4">

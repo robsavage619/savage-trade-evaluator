@@ -138,6 +138,8 @@ export type Verdict = {
   recommendation: 'strong-buy' | 'lean-buy' | 'neutral' | 'lean-pass' | 'strong-pass'
   recommendationLabel: string
   reasoningTone: 'pos' | 'neutral' | 'neg'
+  /** Always "heuristic" — uncertainty band is √n·1.2, not a model posterior. */
+  method: 'heuristic'
 }
 
 export type VerdictContext = {
@@ -311,6 +313,7 @@ export function computeVerdict(
     recommendation: rec,
     recommendationLabel: recLabel,
     reasoningTone: tone,
+    method: 'heuristic' as const,
   }
 }
 

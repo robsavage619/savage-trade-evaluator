@@ -7,6 +7,7 @@ import { forecastArb, isControlled } from '../../lib/arbForecast'
 import { computeVerdict, fvToWar } from '../../lib/hypothetical'
 import type { ProspectEntry, VerdictContext } from '../../lib/hypothetical'
 import type { CurrentPlayer } from '../../data/players'
+import type { ScenarioCard } from '../../data/warroom/types'
 import { useTeamsByBref } from '../../lib/rosterStore'
 import { fmtMoney } from '../../lib/format'
 import { AnimatedNumber } from './primitives'
@@ -94,10 +95,72 @@ function WinImpact({
 
 // ── trade workshop ─────────────────────────────────────────────────────────────
 
-export function TradeWorkshop({ yourBref, partnerBref, verdictCtx }: {
+const GRADE_COLOR: Record<string, string> = {
+  A: 'text-positive-400 border-positive-400/40',
+  B: 'text-accent-300 border-accent-400/40',
+  C: 'text-yellow-400 border-yellow-400/40',
+  D: 'text-negative-400 border-negative-400/40',
+}
+
+function ScenarioCardRow({ sc }: { sc: ScenarioCard }) {
+  const wd = sc.warDelta
+  const grade = wd?.coverageGrade ?? null
+  const gradeClass = grade ? GRADE_COLOR[grade] ?? '' : ''
+  const pPos = wd?.pPositive != null ? Math.round(wd.pPositive * 100) : null
+  const sparseLow = grade === 'C' || grade === 'D'
+  return (
+    <div className="rounded border border-ink-700/50 bg-ink-800/30 px-3 py-2">
+      <div className="mb-1 flex items-center gap-2">
+        <span className="font-mono text-[9px] text-ink-500">Season {sc.tradeSeason}</span>
+        {grade && (
+          <span className={`rounded border px-1.5 py-0.5 font-mono text-[8px] font-bold ${gradeClass}`}>
+            {grade}
+          </span>
+        )}
+        {sparseLow && (
+          <span className="font-mono text-[8px] text-yellow-500/80">extrapolating from training means</span>
+        )}
+      </div>
+      {wd && (
+        <div className="flex flex-wrap gap-4">
+          <div className="font-mono text-[10px]">
+            <span className="text-ink-400">WAR Δ </span>
+            <span className={wd.mean != null && wd.mean >= 0 ? 'text-positive-400' : 'text-negative-400'}>
+              {wd.mean != null ? (wd.mean >= 0 ? '+' : '') + wd.mean.toFixed(2) : '—'}
+            </span>
+            {wd.p5 != null && wd.p95 != null && (
+              <span className="text-ink-500"> [{wd.p5.toFixed(1)}, {wd.p95.toFixed(1)}]</span>
+            )}
+          </div>
+          {pPos != null && (
+            <div className="font-mono text-[10px] text-ink-400">
+              P(+) <span className="text-ink-200">{pPos}%</span>
+            </div>
+          )}
+        </div>
+      )}
+      {wd?.attribution && wd.attribution.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5">
+          {wd.attribution.map((a, i) => (
+            <span key={i} className="font-mono text-[8px] text-ink-500">
+              <span className={a.contribution >= 0 ? 'text-positive-400/70' : 'text-negative-400/70'}>
+                {a.contribution >= 0 ? '+' : ''}{a.contribution.toFixed(3)}
+              </span>
+              {' '}{a.feature.replace(/_/g, ' ')}
+              {!a.observed && <span className="text-ink-600"> (imp.)</span>}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [] }: {
   yourBref: string
   partnerBref: string
   verdictCtx: VerdictContext
+  scenarios?: ScenarioCard[]
 }) {
   const teamsByBref = useTeamsByBref()
   const yourTeam = teamsByBref[yourBref]
@@ -244,6 +307,11 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx }: {
             gamesBack={gamesBack}
             playoffProb={playoffProb}
           />
+          {verdict.method === 'heuristic' && (
+            <div className="mt-2 rounded border border-ink-700/50 bg-ink-800/40 px-2.5 py-1.5 font-mono text-[9px] text-ink-400">
+              Heuristic estimate — uncertainty band is a rule-of-thumb (√n·1.2), not a model posterior
+            </div>
+          )}
         </div>
       ) : (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-dashed border-ink-700 px-3 py-2.5 text-[11px] text-ink-400">
@@ -309,6 +377,20 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx }: {
           onAdd={p => setReceivedIds(prev => prev.includes(p.mlb_player_id) ? prev : [...prev, p.mlb_player_id])}
           selectedIds={new Set(receivedIds)} title={`${partnerBref} roster`} hint={`Click → '${yourBref} receives'`} />
       </div>
+
+      {/* Historical model scenarios */}
+      {scenarios.filter(sc => sc.warDelta != null).length > 0 && (
+        <div className="mt-3">
+          <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">
+            Historical model scenarios · v{scenarios[0].modelVersion}
+          </div>
+          <div className="flex flex-col gap-2">
+            {scenarios.filter(sc => sc.warDelta != null).map(sc => (
+              <ScenarioCardRow key={sc.tradeEventId} sc={sc} />
+            ))}
+          </div>
+        </div>
+      )}
     </motion.div>
   )
 }
