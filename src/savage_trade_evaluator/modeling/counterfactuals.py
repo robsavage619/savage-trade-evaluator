@@ -339,6 +339,8 @@ def build_counterfactual_residuals(
         # Org retention factor for sending team
         mlb_id = int(cast(int, row["mlb_player_id"]))
         trade_season = int(cast(int, row["trade_season"]))
+        # T-1 is intentional: use the player's established role in the season
+        # before the trade, not the trade year itself (which may be a partial season).
         pos = pit_lookup.get((mlb_id, trade_season - 1), POS_HIT)
         sending = str(row["sending_team"])
 
