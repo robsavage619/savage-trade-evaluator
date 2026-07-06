@@ -8,7 +8,8 @@ import {
 
 // ── article JSON loader ───────────────────────────────────────────────────────
 
-const ARTICLES: Record<string, () => Promise<{ default: Article }>> = {
+// JSON modules infer literal shapes with `type: string`; cast once to the Article union.
+const ARTICLES = {
   'reliever-war-illusion': () => import('../data/research/reliever-war-illusion.json'),
   'change-of-scenery-myth': () => import('../data/research/change-of-scenery-myth.json'),
   'pitching-coach-mirage': () => import('../data/research/pitching-coach-mirage.json'),
@@ -17,7 +18,7 @@ const ARTICLES: Record<string, () => Promise<{ default: Article }>> = {
   'international-pitcher-pipeline': () => import('../data/research/international-pitcher-pipeline.json'),
   'award-breadth-vs-depth': () => import('../data/research/award-breadth-vs-depth.json'),
   'k-trajectory-split': () => import('../data/research/k-trajectory-split.json'),
-}
+} as unknown as Record<string, () => Promise<{ default: Article }>>
 
 // ── types ─────────────────────────────────────────────────────────────────────
 
@@ -193,7 +194,7 @@ function HorizontalBarPlot({ section }: { section: ChartSection }) {
             <LabelList
               dataKey={section.y_key!}
               position="right"
-              formatter={(v: number) => v.toFixed(2)}
+              formatter={(v) => (typeof v === 'number' ? v.toFixed(2) : v)}
               style={{ fill: '#8a96c0', fontSize: 10 }}
             />
           </Bar>

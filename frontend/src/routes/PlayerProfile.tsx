@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, AlertCircle, Terminal, Copy, ClipboardCheck, X, CheckCircle2, RotateCcw, Sparkles, Users, ChevronRight } from 'lucide-react'
+import { ArrowLeft, AlertCircle, Terminal, Copy, ClipboardCheck, X, CheckCircle2, RotateCcw, Sparkles, Users, ChevronRight, Loader2 } from 'lucide-react'
 import { ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid, ScatterChart, Scatter, ZAxis } from 'recharts'
 import { loadPlayerProfile, type PlayerProfile, type PctilePitcherRow, type PctileBatterRow } from '../data/playerTypes'
 import { findPlayer } from '../data/players'
@@ -76,7 +76,14 @@ export default function PlayerProfileRoute() {
     setPasteOk(true)
   }
 
-  if (loading) return <main className="mx-auto max-w-[1480px] px-6 py-10 text-[14px] text-ink-400">Loading player profile…</main>
+  if (loading) return (
+    <main className="mx-auto max-w-[1480px] px-6 py-10">
+      <div className="flex items-center gap-2 text-[14px] text-ink-400">
+        <Loader2 className="h-4 w-4 animate-spin text-accent-400" />
+        Loading player profile…
+      </div>
+    </main>
+  )
   if (!profile) {
     // Fall back to farm-only profile if we have MiLB data for this player
     const farmEntry = farmLookup.get(id)

@@ -7,7 +7,7 @@ import {
 } from 'recharts'
 import {
   AlertTriangle, Sparkles, Eye, Shield, Clock, Zap, Phone, ArrowLeftRight,
-  ArrowRight, DollarSign, Activity,
+  DollarSign, Activity,
 } from 'lucide-react'
 import { TeamLogo } from './TeamLogo'
 import type {

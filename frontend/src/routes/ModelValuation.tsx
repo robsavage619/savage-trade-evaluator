@@ -414,7 +414,7 @@ function CoverageGauge({ coverage, target = 0.9, label }: { coverage: number; ta
 /* ─── Main page ────────────────────────────────────────────────────────────── */
 
 export default function ModelValuation() {
-  const { scoreboard, comparison, wins_comparison, credible_features, cards, train_window, test_window } =
+  const { scoreboard, wins_comparison, credible_features, cards, train_window, test_window } =
     modelPosteriors
   const covered = cards.filter((c) => c.role === 'covered')
   const tail = cards.filter((c) => c.role === 'tail_miss')

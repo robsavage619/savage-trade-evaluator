@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeftRight, Brain, Terminal, Trash2, BadgePlus, Coins, Gauge, TrendingUp, TrendingDown, XCircle, Minus } from 'lucide-react'
+import { ArrowLeftRight, Brain, Terminal, Trash2, BadgePlus, TrendingUp, TrendingDown, XCircle, Minus } from 'lucide-react'
 import { type CurrentPlayer, type CurrentTeam } from '../data/players'
 import { useRoster, useTeamsByBref } from '../lib/rosterStore'
 import { useIdentityStore, TEAM_THEME } from '../lib/identityStore'

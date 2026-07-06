@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, LineChart, Line, ScatterChart, Scatter, CartesianGrid, BarChart, Bar } from 'recharts'
-import { ArrowLeft, ArrowRight, Brain, Trophy, AlertTriangle, Terminal, Copy, ClipboardCheck, X, CheckCircle2, AlertCircle, RotateCcw, GitCompare, Sparkles, TrendingUp, Coins, Trees, Activity, Users, Search, ChevronDown, ChevronUp, Sprout, Star } from 'lucide-react'
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, Line, ScatterChart, Scatter, CartesianGrid, BarChart, Bar } from 'recharts'
+import { ArrowLeft, Terminal, Copy, ClipboardCheck, X, CheckCircle2, AlertCircle, RotateCcw, GitCompare, Sparkles, Search, ChevronDown, ChevronUp, Star } from 'lucide-react'
 import { getOrgProfile, orgProfiles } from '../data/orgs'
 import { useIdentityStore, TEAM_THEME } from '../lib/identityStore'
-import { useRoster, useTeamsByBref } from '../lib/rosterStore'
+import { useRoster } from '../lib/rosterStore'
 import { TeamLogo } from '../components/TeamLogo'
-import { Section, Stat } from '../components/Section'
-import { teamColor, fmtSigned, fmtMoney } from '../lib/format'
+import { Section } from '../components/Section'
+import { fmtSigned, fmtMoney } from '../lib/format'
 import { composeOrgScoutPrompt } from '../lib/composeOrgScout'
 import { useReasoningStore, parseReasoningResponse } from '../lib/reasoningStore'
 import { useFarmForOrg } from '../lib/farmStore'
@@ -23,11 +23,8 @@ export default function OrgScout() {
   if (!profile) return <Navigate to="/orgs" replace />
 
   const roster = useRoster()
-  const teamsByBref = useTeamsByBref()
   const yourBref = useIdentityStore((s) => s.activeTeam)
   const yourProfile = getOrgProfile(yourBref)
-  const team = teamsByBref[bref]
-  const yourTeam = teamsByBref[yourBref]
   const theme = TEAM_THEME[bref] ?? TEAM_THEME.NYM
   const teamMeta = roster.teams.find((t) => t.bref === bref)
   const teamName = teamMeta?.name ?? bref
@@ -198,7 +195,7 @@ export default function OrgScout() {
 
         {/* Full 40-man */}
         <Section eyebrow="40-Man Roster" title={`Every active player · ${teamMeta?.players.length ?? 0} on the books`} hint="Live MLB Stats API roster. Sort + filter. Every row links to the full player workup.">
-          <FullRosterTable players={teamMeta?.players ?? []} bref={bref} />
+          <FullRosterTable players={teamMeta?.players ?? []} />
         </Section>
 
         {/* Farm System */}
@@ -311,7 +308,7 @@ export default function OrgScout() {
 
         {/* FO continuity */}
         <Section eyebrow="Decision-Makers" title="Front office continuity (5 yr)" hint="Stable orgs trade differently than rebuilding ones.">
-          <FoTimeline fo={profile.fo_history} themeColor={theme.primary} />
+          <FoTimeline fo={profile.fo_history} />
         </Section>
 
         {/* Positional WAR breakdown */}
@@ -475,7 +472,7 @@ function AgeCurveChart({ rows, themeColor }: { rows: import('../data/orgs').AgeC
   )
 }
 
-function FoTimeline({ fo, themeColor }: { fo: import('../data/orgs').FoEntry[]; themeColor: string }) {
+function FoTimeline({ fo }: { fo: import('../data/orgs').FoEntry[] }) {
   // Build per-role timeline of seasons → person
   const ROLES = ['President', 'General Manager', 'Manager', 'Farm Director', 'Scouting Director']
   const seasons = [...new Set(fo.map((f) => f.season))].sort((a, b) => a - b)
@@ -664,7 +661,7 @@ function Seg({ color, label, value }: { color: string; label: string; value: num
 
 type RosterSortKey = 'pos' | 'name' | 'age' | 'war' | 'cap' | 'svc' | 'status'
 
-function FullRosterTable({ players, bref }: { players: import('../data/players').CurrentPlayer[]; bref: string }) {
+function FullRosterTable({ players }: { players: import('../data/players').CurrentPlayer[] }) {
   const [sortKey, setSortKey] = useState<RosterSortKey>('cap')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [filter, setFilter] = useState<'all' | 'pitcher' | 'hitter' | 'injured'>('all')
@@ -772,21 +769,6 @@ function FullRosterTable({ players, bref }: { players: import('../data/players')
     </div>
   )
 }
-
-function FarmPlaceholder({ bref }: { bref: string }) {
-  return (
-    <div className="card flex items-center gap-3 p-5">
-      <div className="grid h-10 w-10 place-items-center rounded-md bg-positive-500/15 text-positive-500">
-        <Sprout className="h-5 w-5" />
-      </div>
-      <div className="flex-1">
-        <div className="text-[13px] font-semibold text-ink-100">{bref} farm system · awaiting ingest</div>
-        <div className="text-[11px] text-ink-400">MiLB rosters pull (AAA → Rookie) is being built in a parallel worktree. This panel will populate with affiliates, prospects, and ETA proxies once that lands.</div>
-      </div>
-    </div>
-  )
-}
-
 
 function countFarm(farm: import('../data/farm').FarmTeam): number {
   // MiLB-only count — excludes the MLB bucket (those show in the 40-man table)

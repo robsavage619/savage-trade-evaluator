@@ -31,6 +31,12 @@ Refinement (D-09): **three valuations per player at any decision point** — cur
 - **Phase 3** — GM-behavior layer: ✅ done. 86 GM behavioral profiles + 5 archetypes (D-52). `gmContext` live in War Room. Schema v34. Acceptance-probability model deferred (needs negative examples).
 - **Phase 4** — product surface: ✅ done. `ste score-trade` + `ste suggest-trades` + `scripts/case_studies.py`. All three wired to V3.2 production fit via `assemble_hypothetical` + `score_hypothetical`.
 
+## State addendum (2026-07-05)
+
+- **WarRoom refactor committed**: `frontend/src/routes/WarRoom.tsx` (−1704 lines) extracted into `frontend/src/routes/warroom/` — 11 component files (`AiBrief`, `TradeWorkshop`, `PayrollSection`, `RosterShape`, `WindowClock`, `IntelligenceFeed`, `PartnerPanel`, `PostureBanner`, `LeagueTicker`, `primitives`, `shared`). Build verified clean (zero TS errors) before commit.
+- **`.agents/skills/` added, untracked**: 3 skill definitions (`source-command-check`, `source-command-pressly`, `source-command-decisions`).
+- Phase-1 commit count above (9) is a snapshot; history has moved on. Trust `git log`, not this file, for counts.
+
 ## Validation philosophy
 
 **Diagnose with distributions, not single trades.** The actual diagnostics are:

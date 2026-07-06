@@ -41,7 +41,7 @@ export async function generateBriefRaw(prompt: string, opts: GenOptions): Promis
     })
   } catch (e) {
     if (e instanceof DOMException && e.name === 'AbortError') throw e
-    throw new Error('Network/CORS error reaching Anthropic — check your connection or use the manual prompt fallback.')
+    throw new Error('Network/CORS error reaching Anthropic — check your connection or use the manual prompt fallback.', { cause: e })
   }
 
   if (!res.ok) {

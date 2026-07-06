@@ -38,7 +38,6 @@ type Props = {
 }
 
 export function DrawsHistogram({ draws, realized, p05, p95, mean, formatter = (v) => v.toFixed(2) }: Props) {
-  const plotW = W - PAD_X * 2
   const plotH = H - PAD_TOP - PAD_BOT
 
   const { bins, lo, hi } = useMemo(() => buildBins(draws), [draws])

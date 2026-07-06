@@ -24,7 +24,7 @@ export function FarmSystem({ farm, themeColor }: Props) {
   const [activeLevel, setActiveLevel] = useState<FarmPlayer['level']>(defaultLevel)
   const [view, setView] = useState<'all' | 'hitters' | 'pitchers'>('all')
   const [sortBy, setSortBy] = useState<'grade' | 'stat'>('grade')
-  const players = farm.levels[activeLevel] ?? []
+  const players = useMemo(() => farm.levels[activeLevel] ?? [], [farm, activeLevel])
 
   // Compute grades once per level for stable sort
   const withGrade = useMemo(() => players.map((p) => ({ p, grade: scoutGrade(p) })), [players])
@@ -241,26 +241,3 @@ function GradeChip({ grade }: { grade: number }) {
   )
 }
 
-function TopRow({ player, rank, kind, themeColor }: { player: FarmPlayer; rank: number; kind: 'hitter' | 'pitcher'; themeColor: string }) {
-  return (
-    <li>
-      <Link to={`/player/${player.mlb_player_id}`} className="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-ink-800/60">
-        <span className="mono w-5 text-right text-[10px] font-bold tabular text-ink-500">{rank}</span>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-[12px] font-semibold text-ink-100 group-hover:text-accent-300">{player.name}</div>
-          <div className="mono text-[10px] tabular text-ink-400">
-            {player.position_abbr ?? '—'} · age {player.age} · <span className="text-accent-300">{player.level}</span>
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="mono text-[12px] font-semibold tabular" style={{ color: themeColor }}>
-            {kind === 'hitter' ? (player.ops_pa_weighted ?? 0).toFixed(3) : (player.era_ip_weighted ?? 0).toFixed(2)}
-          </div>
-          <div className="mono text-[10px] tabular text-ink-400">
-            {kind === 'hitter' ? `${player.pa ?? 0}pa` : `${player.ip ?? 0}ip`}
-          </div>
-        </div>
-      </Link>
-    </li>
-  )
-}
