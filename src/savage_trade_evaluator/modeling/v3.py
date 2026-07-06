@@ -337,6 +337,8 @@ def predict(
     fit: V3FitResult,
     df: pd.DataFrame,
     era_cutoff: int | None = None,
+    *,
+    multiple_imputation: bool = False,
 ) -> np.ndarray:
     """Posterior-predictive samples for a held-out set. Shape (n_rows, n_samples).
 
@@ -346,12 +348,36 @@ def predict(
         era_cutoff: When set, compute per-row post_era from df["trade_season"] and
             use it to reconstruct the heteroscedastic sigma. Pass None (default)
             for flat-sigma fits.
+        multiple_imputation: When True, rows with missing features receive per-sample
+            z-space draws from N(0,1) clipped to [-5,5] instead of fixed mean imputation.
+            This widens posterior intervals for sparse rows; complete rows are bit-identical
+            to the non-MI code path.
+
+            KNOWN LIMITATION: draws are MARGINAL — each missing feature is sampled
+            independently from its z-space marginal, ignoring feature correlations
+            (e.g. exit velocity and barrel rate). This is intentionally conservative;
+            intervals are systematically over-wide relative to conditional imputation.
+            Calibration is validated empirically in docs/revalidation/2026-07-post-mi.md.
     """
     cols = list(fit.feature_cols)
+
+    # Reindex to all expected columns; absent ones become NaN (treated as fully missing).
+    df_full = df.reindex(columns=cols)
+
+    # Capture the NaN mask BEFORE any filling so MI can see which cells are missing.
+    missing = df_full.isna().to_numpy()  # (n_rows, n_features)
+
+    # Fill NaNs with training means so clip/standardize is numerically safe.
+    # In MI mode the filled values are overridden per-sample for missing cells below.
+    df_filled = df_full.copy()
+    for c in cols:
+        df_filled[c] = df_filled[c].fillna(float(fit.feature_means.get(c, 0.0)))
+
     # Clip test features to training ±5 SD bounds before standardizing.
     # Prevents catastrophic linear extrapolation on out-of-distribution inputs.
-    df_clipped = df[cols].clip(lower=fit.feature_clip_lo, upper=fit.feature_clip_hi, axis=1)
+    df_clipped = df_filled.clip(lower=fit.feature_clip_lo, upper=fit.feature_clip_hi, axis=1)
     x_test = ((df_clipped - fit.feature_means) / fit.feature_stds).to_numpy(dtype=float)
+
     post = fit.trace.posterior
     n_samples = post["alpha0"].shape[0] * post["alpha0"].shape[1]
     alpha0_s = post["alpha0"].values.reshape(n_samples)
@@ -371,8 +397,23 @@ def predict(
         nu_s = post["nu_minus_two"].values.reshape(n_samples) + 2.0
 
     for i in range(n_test):
-        mu = alpha0_s + beta_s @ x_test[i]
         rng = np.random.default_rng(seed=137 + i)
+
+        if multiple_imputation and missing[i].any():
+            # Build per-sample x matrix: observed features fixed, missing features drawn.
+            # z_draws are clipped to ±5 SD (z-space winsorization).
+            missing_idx = np.where(missing[i])[0]
+            n_missing = len(missing_idx)
+            z_draws = np.clip(rng.normal(0.0, 1.0, (n_samples, n_missing)), -5.0, 5.0)
+            # x_i_matrix: (n_samples, n_features) — observed cols replicated, missing per-sample
+            x_i_matrix = np.tile(x_test[i], (n_samples, 1))  # (n_samples, n_features)
+            x_i_matrix[:, missing_idx] = z_draws
+            # mu varies across samples due to imputed uncertainty
+            mu = alpha0_s + (beta_s * x_i_matrix).sum(axis=1)
+        else:
+            # Complete row or MI disabled: bit-identical to the pre-MI code path.
+            mu = alpha0_s + beta_s @ x_test[i]
+
         if heteroscedastic:
             sigma_i = np.exp(log_sigma_base_s + beta_sigma_era_s * post_era_vec[i])
             noise = rng.normal(0.0, sigma_i)

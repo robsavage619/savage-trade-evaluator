@@ -212,8 +212,9 @@ def _score_df(
 ) -> list[dict[str, Any]]:
     """Posterior-predictive summaries for each row of ``df``.
 
-    Missing features in ``df`` are filled with the training-set column means
-    stored in ``fit.feature_means`` (Step 8 replaces this with multiple imputation).
+    Missing features are handled via multiple imputation inside ``predict()``
+    (per-sample z-space draws, marginal), which widens posteriors for sparse
+    rows relative to the old mean-fill approach.
 
     Args:
         df: Feature DataFrame — must have at least the columns in ``fit.feature_cols``.
@@ -224,15 +225,16 @@ def _score_df(
         List of posterior-summary dicts, one per row.
     """
     feat_cols = list(fit.feature_cols)
+    # Ensure all expected columns are present and float64; leave NaN as NaN
+    # so predict() can identify and impute them per-sample.
     scored_df = pd.DataFrame(index=df.index)
     for c in feat_cols:
         if c in df.columns:
             scored_df[c] = df[c].astype("float64")
         else:
-            scored_df[c] = float(cast("float", fit.feature_means.get(c, 0.0)))
-        scored_df[c] = scored_df[c].fillna(float(cast("float", fit.feature_means.get(c, 0.0))))
+            scored_df[c] = float("nan")  # absent column = fully missing
 
-    samples_matrix = predict(fit, scored_df)  # (n_rows, n_samples)
+    samples_matrix = predict(fit, scored_df, multiple_imputation=True)  # (n_rows, n_samples)
     return [summarise_posterior(samples_matrix[i]) for i in range(len(df))]
 
 
