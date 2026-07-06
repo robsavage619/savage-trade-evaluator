@@ -212,9 +212,11 @@ def _score_df(
 ) -> list[dict[str, Any]]:
     """Posterior-predictive summaries for each row of ``df``.
 
-    Missing features are handled via multiple imputation inside ``predict()``
-    (per-sample z-space draws, marginal), which widens posteriors for sparse
-    rows relative to the old mean-fill approach.
+    Missing features are filled with training-set column means (mean imputation).
+    Marginal multiple imputation (predict multiple_imputation=True) was validated
+    in docs/revalidation/2026-07-post-mi.md and returned NO-GO: CRPS degraded
+    +14-17% because independent z-draws per missing feature ignore feature
+    correlations. Conditional imputation is a D-38 experiment for a future pass.
 
     Args:
         df: Feature DataFrame — must have at least the columns in ``fit.feature_cols``.
@@ -225,16 +227,15 @@ def _score_df(
         List of posterior-summary dicts, one per row.
     """
     feat_cols = list(fit.feature_cols)
-    # Ensure all expected columns are present and float64; leave NaN as NaN
-    # so predict() can identify and impute them per-sample.
     scored_df = pd.DataFrame(index=df.index)
     for c in feat_cols:
         if c in df.columns:
             scored_df[c] = df[c].astype("float64")
         else:
-            scored_df[c] = float("nan")  # absent column = fully missing
+            scored_df[c] = float(cast("float", fit.feature_means.get(c, 0.0)))
+        scored_df[c] = scored_df[c].fillna(float(cast("float", fit.feature_means.get(c, 0.0))))
 
-    samples_matrix = predict(fit, scored_df, multiple_imputation=True)  # (n_rows, n_samples)
+    samples_matrix = predict(fit, scored_df)  # (n_rows, n_samples)
     return [summarise_posterior(samples_matrix[i]) for i in range(len(df))]
 
 
