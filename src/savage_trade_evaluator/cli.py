@@ -1161,8 +1161,6 @@ def score_trade(
         ste score-trade --receiver HOU --sender NYY --players 592450 --season 2025
     """
     configure_logging()
-    import math
-
     receiver = receiver.upper()
     sender = sender.upper()
 
@@ -1287,26 +1285,42 @@ def score_trade(
         typer.echo(f"    Trades/season:      {gm_rcv[5]:.1f}")
         typer.echo("")
 
-    feat_display = [
-        ("player_war_t_minus_1", "WAR prior year"),
-        ("player_avg_age", "Avg player age"),
-        ("receiver_contention_window", "Contention window"),
-        ("receiver_dev_fit_pitching", "Dev-fit pitching"),
-        ("receiver_dev_fit_hitting", "Dev-fit hitting"),
-        ("player_prospect_fv_avg", "Prospect FV avg"),
-    ]
-    key_feats = [
-        (label, float(features[col].iloc[0]))
-        for col, label in feat_display
-        if col in features.columns and not math.isnan(float(features[col].iloc[0]))
-    ]
-    if key_feats:
-        typer.echo("  Key features:")
-        for label, val in key_feats:
-            typer.echo(f"    {label:<26}  {val:.2f}")
+    # WHY THIS SCORE block — derived from model attribution + coverage.
+    wd = result.get("war_delta", {})
+    cov = wd.get("coverage") or result.get("data_coverage", {})
+    attr = wd.get("attribution", {})
+
+    if cov:
+        grade = cov.get("grade", "?")
+        n_obs = cov.get("n_observed", "?")
+        n_tot = cov.get("n_total", "?")
+        typer.echo(
+            f"  Data coverage (war_delta): {n_obs}/{n_tot} features observed — grade {grade}"
+        )
+        if grade in ("C", "D"):
+            typer.echo("  ⚠ extrapolating from training means — treat intervals as optimistic")
         typer.echo("")
 
-    typer.echo(f"  Model: V3.2  |  Trained through {result['train_end_season']}")
+    if attr:
+        typer.echo("  WHY THIS SCORE (war_delta):")
+        baseline = attr.get("baseline")
+        if baseline is not None:
+            typer.echo(f"    Baseline (training mean):        {baseline:+.2f}")
+        for contrib in attr.get("top_contributors", []):
+            feat_name = contrib["feature"]
+            c_val = contrib["contribution"]
+            obs_flag = "" if contrib["observed"] else " [imputed]"
+            cred_flag = " *" if contrib["credible"] else ""
+            typer.echo(f"    {feat_name:<32}  {c_val:+.3f}{obs_flag}{cred_flag}")
+        reconstructed = attr.get("reconstructed_mean")
+        if reconstructed is not None:
+            typer.echo(f"    {'─' * 40}")
+            typer.echo(f"    Reconstructed mean:              {reconstructed:+.2f}")
+        typer.echo("    (* = 90% CI excludes zero, directional mass ≥ 95%)")
+        typer.echo("")
+
+    mv = result.get("model_version", "V3.2")
+    typer.echo(f"  Model: {mv}  |  Trained through {result['train_end_season']}")
     typer.echo("")
 
 

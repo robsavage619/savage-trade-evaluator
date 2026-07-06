@@ -672,4 +672,7 @@ def assemble_hypothetical(
             len(PRIORITY_FEATURES),
         )
 
-    return pd.DataFrame([row])
+    df = pd.DataFrame([row])
+    df.attrs["n_populated"] = n_populated
+    df.attrs["n_priority"] = n_priority
+    return df
