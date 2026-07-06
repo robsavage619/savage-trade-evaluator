@@ -1,5 +1,5 @@
 // Types mirror the JSON contract emitted by scripts/export_warroom.py.
-// Pre-model heuristic layer: scenarios/buyLow/lenses are intentionally empty slots.
+// buyLow and lenses remain empty slots. scenarios is now model-backed (--with-scenarios).
 
 export type WindowPosture = 'buy' | 'hold' | 'sell'
 export type Severity = 'critical' | 'warning' | 'ok'
@@ -46,6 +46,32 @@ export type ExpiringContract = {
   status: string | null
 }
 
+export type AttributionItem = {
+  feature: string
+  contribution: number
+  observed: boolean
+}
+
+export type OutcomeCard = {
+  mean: number | null
+  p5: number | null
+  p95: number | null
+  pPositive: number | null
+  coverageGrade: 'A' | 'B' | 'C' | 'D' | null
+  observedFraction: number | null
+}
+
+export type ScenarioCard = {
+  tradeEventId: number
+  tradeSeason: number
+  receiverBref: string
+  modelVersion: string
+  trainEndSeason: number
+  warDelta: OutcomeCard & { attribution: AttributionItem[] }
+  dollarSurplus: OutcomeCard
+  surplusWins: OutcomeCard
+}
+
 export type TeamPayload = {
   team: string
   context: {
@@ -60,6 +86,6 @@ export type TeamPayload = {
   holes: HoleEntry[]
   surpluses: HoleEntry[]
   buyLow: unknown[]
-  scenarios: unknown[]
+  scenarios: ScenarioCard[]
   lenses: unknown[]
 }

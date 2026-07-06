@@ -23,7 +23,7 @@ import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from savage_trade_evaluator.modeling.scenario_engine import score_historical_scenarios
 from savage_trade_evaluator.storage.db import connect
@@ -256,6 +256,43 @@ def _pitcher_roles(conn: duckdb.DuckDBPyConnection) -> dict[int, str]:
     return roles
 
 
+def _trim_scenario(sc: dict[str, Any]) -> dict[str, Any]:
+    """Trim a full scenario payload to the fields consumed by the War Room UI."""
+
+    def _outcome(o: dict[str, Any], with_attribution: bool = False) -> dict[str, Any]:
+        cov = o.get("coverage", {})
+        result: dict[str, Any] = {
+            "mean": o.get("mean"),
+            "p5": o.get("p5"),
+            "p95": o.get("p95"),
+            "pPositive": o.get("p_positive"),
+            "coverageGrade": cov.get("grade"),
+            "observedFraction": cov.get("observed_fraction"),
+        }
+        if with_attribution:
+            top = o.get("attribution", {}).get("top_contributors", [])[:3]
+            result["attribution"] = [
+                {
+                    "feature": c["feature"],
+                    "contribution": c["contribution"],
+                    "observed": c["observed"],
+                }
+                for c in top
+            ]
+        return result
+
+    return {
+        "tradeEventId": sc["trade_event_id"],
+        "tradeSeason": sc["trade_season"],
+        "receiverBref": sc["receiver_bref"],
+        "modelVersion": sc["model_version"],
+        "trainEndSeason": sc["train_end_season"],
+        "warDelta": _outcome(sc.get("war_delta", {}), with_attribution=True),
+        "dollarSurplus": _outcome(sc.get("dollar_surplus", {})),
+        "surplusWins": _outcome(sc.get("surplus_wins", {})),
+    }
+
+
 def build_team(
     conn: duckdb.DuckDBPyConnection,
     code: str,
@@ -384,7 +421,10 @@ def build_team(
         "surpluses": surpluses,
         "buyLow": [],  # Panel 2 — next pass
         "scenarios": (
-            score_historical_scenarios(season=scenarios_season, team_bref=code)
+            [
+                _trim_scenario(s)
+                for s in score_historical_scenarios(season=scenarios_season, team_bref=code)
+            ]
             if with_scenarios
             else []
         ),
