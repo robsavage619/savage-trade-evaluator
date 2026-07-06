@@ -2,6 +2,62 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions track the V1/V2 milestones from the planning brief.
 
+## [Unreleased] — Trust + Explainability release (2026-07-05)
+
+### Phase A — Housekeeping
+- Verified and committed War Room route refactor: `WarRoom.tsx` (−1704 lines) extracted into
+  `frontend/src/routes/warroom/` — 11 component files (`AiBrief`, `TradeWorkshop`, `PayrollSection`,
+  `RosterShape`, `WindowClock`, `IntelligenceFeed`, `PartnerPanel`, `PostureBanner`, `LeagueTicker`,
+  `primitives`, `shared`). Build verified clean (zero TS errors). (`refactor(frontend): extract War Room route into warroom/ modules`)
+- Recorded V3.2 baseline backtest metrics in `docs/revalidation/2026-07-baseline.md` (SHA + date header).
+
+### Phase B — Non-model bug fixes (D-53, D-54, D-55 partial)
+- **D-53** `three_term_value.py`: deduped salary to one row per `(mlb_id, season)` via `MAX()`,
+  switched `AVG(salary)` → `SUM(salary)` over the control window. Prior code inflated surplus ~N×
+  for N-year windows; two-way players had salary double-counted.
+- **D-54** `three_term_value.py`: era-aware playoff win curve — pre-2022 midpoint=89, post-2022
+  midpoint=86 (12-team expanded playoffs). `evaluate()` threads `trade_season` to Term-3.
+- **CLI validation** (`cli.py`): `score-trade` and `suggest-trades` now validate receiver/sender
+  bref codes against the `teams` table before feature assembly; unknown code → exit 1 with valid-codes
+  list. Missing org-context row and missing GM profile emit explicit warnings instead of silent
+  league-average fallback.
+- Investigated `counterfactuals.py:342` T−1 position lookup — confirmed intentional (pre-trade role);
+  added clarifying comment.
+
+### Phase C — Trust metadata + attribution (D-56)
+- **Coverage report** per outcome in `scenario_engine.py`: pre-imputation NaN mask →
+  `{n_total, n_observed, n_imputed, imputed_features, observed_fraction, grade}` (A–D). Attached
+  to every outcome dict under `"coverage"`.
+- **Feature attribution** in `scenario_engine.py`: `attribute_score(fit, features, top_k=5)` —
+  `contribution_i = beta_mean_i × x_z_i × y_std`; NaN → 0 by construction; top-K with
+  observed/imputed + credible flags. Wired to `war_delta` outcome and `score-trade` CLI output.
+- `score-trade` CLI prints "WHY THIS SCORE" block: baseline + top-5 contributors + coverage grade
+  + `⚠ extrapolating` warning when grade is C/D.
+- `MODEL_VERSION` literal (`"v3.2"`) replaced with `MODEL_VERSION` import throughout.
+
+### Phase D — Model-touching change + revalidation (D-55)
+- `v3.py::predict` gains `multiple_imputation: bool = False` API. When enabled, missing features
+  receive per-sample draws from N(0,1) clipped to ±5 (z-space) before the noise draw. Complete
+  rows are bit-identical to the prior path. (`feat(modeling): predict-time multiple imputation`)
+- D-38 revalidation in `docs/revalidation/2026-07-post-mi.md`: **NO-GO** — marginal MI degraded
+  CRPS +14.5% (war_delta) and +16.8% (surplus_wins) on sparse rows due to independent feature draws
+  ignoring correlations. `_score_df` reverted to mean-fill. API stays committed for future conditional
+  imputation experiment.
+
+### Phase E — Product surface (D-56)
+- **Typed ScenarioCard**: `frontend/src/data/warroom/types.ts` — `AttributionItem`, `OutcomeCard`,
+  `ScenarioCard` types; `scenarios: unknown[]` → `scenarios: ScenarioCard[]`.
+- `scripts/export_warroom.py`: `_trim_scenario()` trims historical scenario dicts to camelCase UI
+  fields (war_delta/dollarSurplus/surplusWins means, p5/p95/pPositive, coverage grade +
+  observed_fraction, top-3 attribution).
+- **Frontend honesty pass**: `computeVerdict` in `hypothetical.ts` gains `method: 'heuristic'`.
+  TradeWorkshop and TradeBuilder render persistent badge: "Heuristic estimate — uncertainty band is
+  a rule-of-thumb (√n·1.2), not a model posterior." War Room TradeWorkshop renders historical
+  ScenarioCards with A–D coverage chips (color-coded) and top-3 attribution lines; gated on
+  `sc.warDelta != null` for backward compat with old-format JSON.
+
+---
+
 ## [Unreleased] — V1 data spine
 
 ### Added
