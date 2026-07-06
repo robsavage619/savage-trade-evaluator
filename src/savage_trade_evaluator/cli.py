@@ -1120,6 +1120,34 @@ def research_ask(
 # ── Phase 4: product surface ──────────────────────────────────────────────────
 
 
+def _validate_bref_codes(conn: duckdb.DuckDBPyConnection, codes: list[str]) -> None:
+    """Exit 1 if any code in ``codes`` is not a known Baseball Reference team code.
+
+    Queries the union of standings + team_season_features as the authority.
+    Skips validation gracefully when the DB has no rows in either table (fresh init).
+    Codes are expected to already be uppercased by the caller.
+    """
+    known_rows = conn.execute(
+        """
+        SELECT DISTINCT bref_code FROM standings
+        UNION
+        SELECT DISTINCT bref_code FROM team_season_features
+        """
+    ).fetchall()
+    if not known_rows:
+        return  # DB not yet populated — skip validation
+    known = {r[0].upper() for r in known_rows}
+    unknown = [c for c in codes if c.upper() not in known]
+    if unknown:
+        sample = sorted(known)[:20]
+        typer.echo(
+            f"unknown team code(s): {', '.join(unknown)}\n"
+            f"known codes (sample): {', '.join(sample)}{'…' if len(known) > 20 else ''}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+
 @app.command(name="score-trade")
 def score_trade(
     receiver: str = typer.Option(..., "--receiver", "-r", help="Acquiring team bref code."),
@@ -1135,6 +1163,9 @@ def score_trade(
     configure_logging()
     import math
 
+    receiver = receiver.upper()
+    sender = sender.upper()
+
     try:
         player_ids = [int(x.strip()) for x in players.split(",") if x.strip()]
     except ValueError:
@@ -1149,6 +1180,18 @@ def score_trade(
     from savage_trade_evaluator.modeling.scenario_engine import score_hypothetical
 
     with db.connect(read_only=True) as conn:
+        _validate_bref_codes(conn, [receiver, sender])
+
+        tsf_row = conn.execute(
+            "SELECT 1 FROM team_season_features WHERE bref_code = ? AND season = ? LIMIT 1",
+            [receiver, season],
+        ).fetchone()
+        if tsf_row is None:
+            typer.echo(
+                f"⚠ no org context for {receiver}/{season} — scored as league average",
+                err=False,
+            )
+
         name_map: dict[int, str] = dict(
             conn.execute(
                 "SELECT mlb_player_id, full_name FROM mlb_people WHERE mlb_player_id IN ("
@@ -1196,8 +1239,12 @@ def score_trade(
     typer.echo(f"  Players: {', '.join(player_strs)}")
     if gm_rcv:
         typer.echo(f"  Receiver GM: {gm_rcv[0]} — {gm_rcv[1] or 'Unknown'}")
+    else:
+        typer.echo(f"  Receiver GM: no GM profile for {receiver}")
     if gm_snd:
         typer.echo(f"  Sender GM:   {gm_snd[0]} — {gm_snd[1] or 'Unknown'}")
+    else:
+        typer.echo(f"  Sender GM:   no GM profile for {sender}")
     typer.echo(sep)
     typer.echo("")
 
@@ -1282,13 +1329,27 @@ def suggest_trades(
     configure_logging()
     import pandas as pd
 
+    receiver = receiver.upper()
+
     from savage_trade_evaluator.modeling.feature_assembler import assemble_hypothetical
     from savage_trade_evaluator.modeling.scenario_engine import score_hypothetical
 
     lookup_season = season - 1
 
     with db.connect(read_only=True) as conn:
-        candidates = conn.execute(
+        _validate_bref_codes(conn, [receiver])
+
+        tsf_row = conn.execute(
+            "SELECT 1 FROM team_season_features WHERE bref_code = ? AND season = ? LIMIT 1",
+            [receiver, season],
+        ).fetchone()
+        if tsf_row is None:
+            typer.echo(
+                f"⚠ no org context for {receiver}/{season} — scored as league average",
+                err=False,
+            )
+
+        candidates_raw = conn.execute(
             """
             SELECT
                 COALESCE(b.mlb_id, p.mlb_id)                    AS mlb_id,
@@ -1315,6 +1376,13 @@ def suggest_trades(
             """,
             [lookup_season, lookup_season, min_war, receiver, pool_size],
         ).fetchdf()
+
+    # Drop rows where team_id is NULL (player's current team unknown — can't build sender context).
+    n_before = len(candidates_raw)
+    candidates = candidates_raw[candidates_raw["team_id"].notna()].copy()
+    n_excluded = n_before - len(candidates)
+    if n_excluded:
+        typer.echo(f"excluded {n_excluded} candidate(s) with unknown current team")
 
     if candidates.empty:
         typer.echo(
