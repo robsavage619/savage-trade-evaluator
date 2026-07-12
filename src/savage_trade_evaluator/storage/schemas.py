@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 34
+SCHEMA_VERSION = 35
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -1292,6 +1292,28 @@ DDL_STATEMENTS: tuple[str, ...] = (
         cluster_id             INTEGER NOT NULL,
         built_at               TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
+    """,
+    # Phase 5: MLBTR rumor archive (schema v35)
+    """
+    CREATE TABLE IF NOT EXISTS trade_rumors (
+        url              VARCHAR NOT NULL PRIMARY KEY,
+        post_date        DATE NOT NULL,
+        slug             VARCHAR NOT NULL,
+        -- post_type: trade_rumor | signing | extension | release
+        --            injury | minor_move | links_roundup | other
+        post_type        VARCHAR NOT NULL,
+        teams_mentioned  JSON,    -- JSON array of bref team codes found in slug
+        players_mentioned JSON,   -- JSON array of name tokens from slug
+        is_trade_rumor   BOOLEAN NOT NULL DEFAULT false,
+        source           VARCHAR NOT NULL DEFAULT 'mlbtraderumors',
+        ingested_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_trade_rumors_date ON trade_rumors(post_date)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_trade_rumors_type ON trade_rumors(post_type)
     """,
 )
 

@@ -55,6 +55,7 @@ Source = Literal[
     "spotrac",
     "tjstats",
     "mlb-pipeline",
+    "mlbtraderumors",
 ]
 
 
@@ -1006,6 +1007,32 @@ CATALOG: tuple[StatSource, ...] = (
             "Current snapshot only — page is current-only; keyed (fetched_at, "
             "mlbam_id). Historical pre-2017 prospect rankings remain a known gap "
             "(no clean free source; FG Board covers 2017+)."
+        ),
+    ),
+    # === Rumor archive ===
+    StatSource(
+        name="mlbtr",
+        source="mlbtraderumors",
+        granularity="reference",
+        era_start=2005,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.mlbtr.ingest",
+        primary_columns=(
+            "url",
+            "post_date",
+            "slug",
+            "post_type",
+            "teams_mentioned",
+        ),
+        target_table="trade_rumors",
+        ingested=True,
+        notes=(
+            "MLB Trade Rumors full post archive via WordPress XML sitemaps "
+            "(52 sitemap files, ~1000 posts each). Date extracted from URL path; "
+            "post type classified by slug keywords; team names extracted from slug "
+            "via nickname lookup. No individual post scraping — slug is sufficient "
+            "for v1 acceptance model (rumored-but-not-consummated = weak negative). "
+            "Egress allowed: mlbtraderumors.com added 2026-07-11."
         ),
     ),
 )

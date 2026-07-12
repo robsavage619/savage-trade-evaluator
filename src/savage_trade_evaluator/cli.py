@@ -30,6 +30,7 @@ from savage_trade_evaluator.ingest import (
     front_office,
     milb_stats,
     mlb_pipeline,
+    mlbtr,
     prospects,
     retrosheet_gamelogs,
     retrosheet_transactions,
@@ -40,7 +41,13 @@ from savage_trade_evaluator.ingest import (
     tjstats,
     transactions,
 )
-from savage_trade_evaluator.modeling import bayesian, context_aware, features, naive_baseline
+from savage_trade_evaluator.modeling import (
+    bayesian,
+    context_aware,
+    features,
+    gm_acceptance,
+    naive_baseline,
+)
 from savage_trade_evaluator.modeling import v3 as v3_module
 from savage_trade_evaluator.modeling.v2 import backtest as v2_backtest
 from savage_trade_evaluator.storage import db, outcome_views, schemas, teams, trade_views
@@ -1610,5 +1617,72 @@ def suggest_trades(
         f"  Evaluated {len(rows)}/{len(candidates)} candidates  |  "
         f"min_war={min_war}  |  Model: V3.2"
     )
+    typer.echo(sep)
+    typer.echo("")
+
+
+@ingest_app.command("mlbtr")
+def ingest_mlbtr(
+    start: int = typer.Option(1, "--start", help="First sitemap index (1-52)."),
+    end: int = typer.Option(mlbtr.N_SITEMAPS, "--end", help="Last sitemap index (inclusive)."),
+    reload: bool = typer.Option(False, "--reload", help="Delete existing rows and re-load."),
+) -> None:
+    """Ingest MLBTR post archive via WordPress XML sitemaps.
+
+    Scrapes up to 52 sitemap XML files (~1000 posts each) from
+    mlbtraderumors.com, classifies post type by slug keywords, and loads
+    into the ``trade_rumors`` table.
+
+    Example:
+        ste ingest mlbtr
+        ste ingest mlbtr --start 1 --end 10   # first ~10k posts (test run)
+        ste ingest mlbtr --reload              # wipe and re-load all
+    """
+    configure_logging()
+    typer.echo(f"  Fetching sitemaps {start}-{end}  (upsert={not reload}) ...")
+    n = mlbtr.ingest(start_sitemap=start, end_sitemap=end, upsert=not reload)
+    typer.echo(f"  Done — {n} rows inserted into trade_rumors.")
+
+
+@analyze_app.command("acceptance")
+def analyze_acceptance(
+    team: str = typer.Option(..., "--team", "-t", help="Team bref code to score (e.g. HOU)."),
+) -> None:
+    """Fit GM acceptance model and score one team's current decision maker.
+
+    Trains a logistic regression on MLBTR rumor weak labels, then outputs
+    P(accept) for the given team's active GM profile.
+
+    Requires: trade_rumors populated (run 'ste ingest mlbtr' first).
+
+    Example:
+        ste analyze acceptance --team HOU
+        ste analyze acceptance --team SEA
+    """
+    configure_logging()
+
+    try:
+        model = gm_acceptance.fit()
+    except RuntimeError as exc:
+        typer.echo(f"  Error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    p = gm_acceptance.predict_proba_from_profile(team.upper())
+
+    sep = "━" * 60
+    typer.echo("")
+    typer.echo(sep)
+    typer.echo(f"  GM ACCEPTANCE MODEL  |  team {team.upper()}")
+    typer.echo(sep)
+    typer.echo(f"  Training: {model.n_pos} accepted / {model.n_neg} rejected rumors")
+    typer.echo(f"  Train AUC: {model.train_auc:.3f}")
+    typer.echo("")
+    if p is None:
+        typer.echo(f"  No GM profile found for {team.upper()} — cannot score.")
+    else:
+        bar_len = 40
+        filled = round(p * bar_len)
+        bar = "█" * filled + "░" * (bar_len - filled)
+        typer.echo(f"  P(accept)  [{bar}]  {p:.1%}")
     typer.echo(sep)
     typer.echo("")
