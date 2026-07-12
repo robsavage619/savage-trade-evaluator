@@ -5,10 +5,19 @@ import {
   Settings, KeyRound, Maximize2, Loader2, Wand2, X, Trash2,
 } from 'lucide-react'
 import { warRoomIndex } from '../../lib/warroomData'
-import { buildAnalysisPrompt, parseAnalysisReport } from '../../lib/analysisPrompt'
+import { buildAnalysisPrompt, parseAnalysisReport, normalizePlayerName } from '../../lib/analysisPrompt'
 import type { AnalysisReport, PromptInput } from '../../lib/analysisPrompt'
 import { generateBriefRaw } from '../../lib/analysisClient'
 import { IntelligenceReport } from '../../components/IntelligenceReport'
+import { roster } from '../../data/players'
+
+/** Normalized names of every player on a current 40-man roster — the guard set
+ *  for dropping fabricated trade participants from parsed briefs. */
+const VALID_PLAYER_NAMES: Set<string> = (() => {
+  const s = new Set<string>()
+  for (const t of roster.teams) for (const p of t.players) if (p.name) s.add(normalizePlayerName(p.name))
+  return s
+})()
 
 // ── AI intelligence brief (bring-your-own-Claude) ──────────────────────────────
 
@@ -56,7 +65,7 @@ export function AiBrief({ promptInput }: { promptInput: PromptInput }) {
       .then(text => {
         if (!alive || !text || !text.trim()) return
         try {
-          const r = parseAnalysisReport(text); r.team = team
+          const r = parseAnalysisReport(text, VALID_PLAYER_NAMES); r.team = team
           setReport(r)
           try { localStorage.setItem(storageKey, JSON.stringify(r)) } catch { /* quota */ }
         } catch { /* no valid brief on disk yet */ }
@@ -70,7 +79,7 @@ export function AiBrief({ promptInput }: { promptInput: PromptInput }) {
     [storageKey],
   )
   const accept = useCallback((raw: string) => {
-    const r = parseAnalysisReport(raw); r.team = team
+    const r = parseAnalysisReport(raw, VALID_PLAYER_NAMES); r.team = team
     setReport(r); persist(r); setError(null); setWorking(false); setWatching(false)
   }, [team, persist])
 

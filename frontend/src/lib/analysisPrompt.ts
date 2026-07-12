@@ -159,6 +159,20 @@ const tier3 = (v: unknown): 0 | 1 | 2 | 3 => {
   return (n === 1 || n === 2 || n === 3 ? n : 0)
 }
 
+/**
+ * Normalize a player name for roster-membership comparison:
+ * lowercase, strip diacritics and punctuation (José → jose, Jr. → jr dropped),
+ * collapse whitespace. Used to catch fabricated trade participants.
+ */
+export function normalizePlayerName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[^a-z\s]/g, '') // strips combining diacritics (post-NFD) and punctuation
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function pkgPlayers(v: unknown): PackagePlayer[] {
   return arr(v).map(p => {
     const r = p as Record<string, unknown>
@@ -171,8 +185,16 @@ function pkgPlayers(v: unknown): PackagePlayer[] {
   })
 }
 
-/** Lenient parse — coerces and defaults so partial responses still render. */
-export function parseAnalysisReport(raw: string): AnalysisReport {
+/**
+ * Lenient parse — coerces and defaults so partial responses still render.
+ *
+ * When ``validPlayers`` (a set of normalized current-roster names) is supplied,
+ * any proposed package that names a player not on a current roster is dropped
+ * and surfaced as a critical finding. The prompt already instructs the model to
+ * use only rostered players; this is the guard for when it fabricates one anyway
+ * (e.g. a released player like Nick Castellanos).
+ */
+export function parseAnalysisReport(raw: string, validPlayers?: Set<string>): AnalysisReport {
   const o = extractJsonObject(raw) as Record<string, unknown>
 
   const tm = o.todaysMove as Record<string, unknown> | undefined
@@ -293,6 +315,28 @@ export function parseAnalysisReport(raw: string): AnalysisReport {
     }).sort((a, b) => a.year - b.year),
 
     generatedAt: new Date().toISOString(),
+  }
+
+  // Roster-membership guard: drop any package naming a player not on a current
+  // roster, and surface it — fabricated participants (released/invented players)
+  // must not reach the UI as real deals.
+  if (validPlayers && validPlayers.size > 0) {
+    const fabricated = new Set<string>()
+    report.proposedPackages = report.proposedPackages.filter(pkg => {
+      const named = [...pkg.youReceive, ...pkg.youSend].filter(p => p.player && p.player !== '?')
+      const invalid = named.filter(p => !validPlayers.has(normalizePlayerName(p.player)))
+      invalid.forEach(p => fabricated.add(p.player))
+      return invalid.length === 0
+    })
+    if (fabricated.size > 0) {
+      report.keyFindings.unshift({
+        title: 'Dropped fabricated trade package(s)',
+        detail:
+          `Removed proposed package(s) naming players not on any current roster: ${[...fabricated].join(', ')}. ` +
+          'These were not in the provided candidate pool and were not shown as real deals.',
+        kind: 'critical',
+      })
+    }
   }
 
   if (report.keyFindings.length === 0 && report.recommendations.length === 0 && report.proposedPackages.length === 0) {
