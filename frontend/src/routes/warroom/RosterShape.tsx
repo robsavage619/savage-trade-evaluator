@@ -94,6 +94,11 @@ export function HolesBoard({ holes, surpluses }: { holes: HoleEntry[]; surpluses
                   {h.severity === 'critical' && (
                     <span className="rounded bg-negative-500/15 px-1 py-px font-mono text-[8px] font-bold uppercase tracking-wider text-negative-400">CRIT</span>
                   )}
+                  {h.farmWar > 0 && (
+                    <span className="font-mono text-[8px] text-accent-400/60" title="Farm pipeline WAR">
+                      +{h.farmWar.toFixed(1)} farm
+                    </span>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -125,9 +130,16 @@ export function HolesBoard({ holes, surpluses }: { holes: HoleEntry[]; surpluses
                     style={{ boxShadow: '0 0 8px rgba(61,220,151,0.4)' }}
                   />
                 </div>
-                <span className="font-mono shrink-0 text-[15px] font-black leading-none tabular text-positive-400">
-                  +{(h.surplus ?? 0).toFixed(1)}
-                </span>
+                <div className="shrink-0 flex items-center gap-1.5">
+                  <span className="font-mono text-[15px] font-black leading-none tabular text-positive-400">
+                    +{(h.surplus ?? 0).toFixed(1)}
+                  </span>
+                  {h.farmWar > 0 && (
+                    <span className="font-mono text-[8px] text-accent-400/60" title="Farm pipeline WAR">
+                      +{h.farmWar.toFixed(1)} farm
+                    </span>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
