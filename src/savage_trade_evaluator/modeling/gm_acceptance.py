@@ -151,13 +151,15 @@ def _build_labeled_dataset(conn: Any) -> pd.DataFrame:
         window_end = post_date + timedelta(days=_MATCH_WINDOW_DAYS)
 
         # Weak label: did any transaction in the window mention a player token from this rumor?
+        # Slug tokens are individual words; transaction player_name is "Firstname Lastname".
+        # Match on token membership (e.g. "harris" in {"brett", "harris"} from "Brett Harris").
         accepted = 0
         if not txns.empty and players:
             in_window = (txn_dates >= post_date) & (txn_dates <= window_end)
-            window_players = set(
-                txns.loc[in_window, "player_name"].dropna().str.lower().str.replace(" ", "-")
-            )
-            if any(p in window_players for p in players):
+            window_tokens: set[str] = set()
+            for name in txns.loc[in_window, "player_name"].dropna():
+                window_tokens.update(name.lower().split())
+            if any(p in window_tokens for p in players if len(p) > 3):
                 accepted = 1
 
         # Emit one row per mentioned team (the "receiving" GM context)
