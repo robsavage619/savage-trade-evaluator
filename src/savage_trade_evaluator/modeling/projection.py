@@ -46,14 +46,21 @@ FULL_SEASON_RELIEF_APP: int = 62
 # Role true-talent anchors for regression (league-ish full-season WAR).
 STARTER_BASELINE_WAR: float = 1.6
 RELIEVER_BASELINE_WAR: float = 0.7
+BATTER_BASELINE_WAR: float = 1.5
+
+# Full-season plate-appearance anchor for batter playing-time weighting
+# (regular-hitter PA median 2021-25 ~580, rounded).
+FULL_SEASON_PA: int = 600
 
 # Shrinkage strength: phantom full-baseline-seasons mixed in. Calibrated against
-# 2841 pitcher Y->Y+1 pairs (scripts/calibrate_projection.py): ~21% MAE improvement
-# over naive last-season WAR, at the elbow of the curve (both roles' MAE flattens
-# past ~3; larger values overfit the tail). The residual downward bias is mostly a
-# selection artifact of the eval (targets condition on a full next season). A
-# playing-time-informed baseline is the follow-up to remove the rest.
-DEFAULT_REGRESSION_PT: float = 3.0
+# held-out Y->Y+1 pairs (scripts/calibrate_projection.py). Pitchers: ~21% MAE
+# improvement over naive last-season WAR at the elbow (MAE flattens past ~3;
+# larger overfits the tail). Batters carry more PA per season (more evidence),
+# so they minimize distinctly lower at ~1.5 and over-shrink past it. The residual
+# downward bias is mostly a selection artifact of the eval (targets condition on
+# a full next season). A playing-time-informed baseline is the follow-up.
+DEFAULT_REGRESSION_PT: float = 3.0  # pitchers
+BATTER_REGRESSION_PT: float = 1.5
 
 # Marcel recency weights for the 3 most recent seasons (most recent first).
 RECENCY_WEIGHTS: tuple[float, float, float] = (3.0, 2.0, 1.0)
@@ -220,6 +227,71 @@ def project_player(
     return ProjectedWar(
         full_season_war=projected,
         is_reliever=is_reliever,
+        seasons_used=len(seasons),
+        note=note,
+    )
+
+
+def project_batter(
+    mlb_player_id: int,
+    season: int,
+    *,
+    regression_pt: float = BATTER_REGRESSION_PT,
+    conn: duckdb.DuckDBPyConnection | None = None,
+) -> ProjectedWar:
+    """Project a hitter's full-season true-talent WAR from the 3 latest seasons.
+
+    Pulls ``season``, ``season-1``, ``season-2`` from ``bwar_batting`` (summing
+    stints), weights each season by plate appearances (``pa / 600``), and
+    regresses toward the batter baseline. The ``season`` row may be a partial
+    in-progress total — its low playing-time fraction down-weights it correctly.
+
+    Args:
+        mlb_player_id: MLBAM player id.
+        season: Season of the decision point (its in-progress total is used).
+        regression_pt: Shrinkage strength in phantom full-baseline-seasons.
+        conn: Optional open read-only connection.
+
+    Returns:
+        A :class:`ProjectedWar` with ``is_reliever=False``.
+    """
+    if conn is None:
+        with db.connect(read_only=True) as opened:
+            return project_batter(mlb_player_id, season, regression_pt=regression_pt, conn=opened)
+
+    rows = conn.execute(
+        """
+        SELECT year_id, SUM(pa) AS pa, SUM(war) AS war
+        FROM bwar_batting
+        WHERE mlb_id = ? AND year_id BETWEEN ? AND ? AND is_pitcher = false
+        GROUP BY year_id
+        ORDER BY year_id DESC
+        """,
+        [mlb_player_id, season - 2, season],
+    ).fetchall()
+
+    if not rows:
+        return ProjectedWar(
+            full_season_war=BATTER_BASELINE_WAR,
+            is_reliever=False,
+            seasons_used=0,
+            note="no bwar_batting rows — returned batter baseline",
+        )
+
+    seasons: list[SeasonWar] = []
+    partial_flags: list[str] = []
+    for year_id, pa, war in rows:
+        pa_i = int(pa or 0)
+        pt = pa_i / FULL_SEASON_PA
+        seasons.append(SeasonWar(int(year_id), float(war or 0.0), pt, is_reliever=False))
+        if pt < 0.5:
+            partial_flags.append(f"{int(year_id)} ({pt:.2f} season)")
+
+    projected = project_war(seasons, BATTER_BASELINE_WAR, regression_pt=regression_pt)
+    note = "regressed partial/small samples: " + ", ".join(partial_flags) if partial_flags else ""
+    return ProjectedWar(
+        full_season_war=projected,
+        is_reliever=False,
         seasons_used=len(seasons),
         note=note,
     )

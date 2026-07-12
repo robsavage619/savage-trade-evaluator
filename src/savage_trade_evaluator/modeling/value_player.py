@@ -33,7 +33,7 @@ from savage_trade_evaluator.modeling.leverage_value import (
     leverage_adjusted_war,
     player_game_leverage,
 )
-from savage_trade_evaluator.modeling.projection import project_player
+from savage_trade_evaluator.modeling.projection import project_batter, project_player
 from savage_trade_evaluator.storage import db
 
 if TYPE_CHECKING:
@@ -238,10 +238,12 @@ def value_player(
                 conn=opened,
             )
 
+    is_pitcher = (position_abbr or "").upper() in ("P", "SP", "RP")
+    project = project_player if is_pitcher else project_batter
     proj = (
-        project_player(mlb_player_id, season, conn=conn)
+        project(mlb_player_id, season, conn=conn)
         if regression_pt is None
-        else project_player(mlb_player_id, season, regression_pt=regression_pt, conn=conn)
+        else project(mlb_player_id, season, regression_pt=regression_pt, conn=conn)
     )
     war = proj.full_season_war
     is_reliever = proj.is_reliever

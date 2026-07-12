@@ -1,10 +1,10 @@
-"""Enrich current_players.json with calibrated Python valuations (pitchers).
+"""Enrich current_players.json with calibrated Python valuations.
 
-Reads the roster seed and, for every pitcher, attaches the canonical
-``value_player`` outputs — regressed + leverage-adjusted projected WAR and
-control-window surplus — so the frontend reads these numbers instead of
-recomputing surplus from raw last-season WAR. No network; reproducible from the
-local DuckDB. Batters are left untouched (projection is pitcher-only for now).
+Reads the roster seed and, for every position player and pitcher, attaches the
+canonical ``value_player`` outputs — regressed (role-calibrated shrinkage) and
+leverage-adjusted projected WAR plus control-window surplus — so the frontend
+reads these numbers instead of recomputing surplus from raw last-season WAR.
+No network; reproducible from the local DuckDB.
 
 Run:
     uv run python scripts/enrich_player_projection.py
@@ -29,7 +29,6 @@ SEED_PATH = (
     / "seed"
     / "current_players.json"
 )
-PITCHER_POS = {"P", "SP", "RP"}
 
 
 def _debut_year(debut: str | None) -> int | None:
@@ -51,11 +50,9 @@ def main() -> None:
     with connect(read_only=True) as conn:
         for team in seed["teams"]:
             for p in team["players"]:
-                if (p.get("position_abbr") or "").upper() not in PITCHER_POS:
-                    continue
                 pid = p.get("mlb_player_id")
                 age = p.get("age")
-                if pid is None or age is None:
+                if pid is None or age is None or not p.get("position_abbr"):
                     continue
                 v = value_player(
                     int(pid),
@@ -82,7 +79,7 @@ def main() -> None:
     seed["projection_enriched"] = True
     SEED_PATH.write_text(json.dumps(seed, indent=2, default=str))
     logger.info(
-        "enriched %d pitchers (%d skipped, no bWAR history) -> %s",
+        "enriched %d players (%d skipped, no bWAR history) -> %s",
         enriched,
         skipped_no_data,
         SEED_PATH.name,
