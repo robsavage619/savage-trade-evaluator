@@ -1,59 +1,22 @@
 {
   "team": "PIT",
   "context": {
-    "standingsLine": "26-24 (0.520), 4.5 GB \u00b7 NL Central",
-    "windowPosture": "buy",
-    "postureRationale": "In the hunt (4.5 GB, 0.520) \u2014 marginal wins are high-leverage.",
+    "standingsLine": "49-47 (0.510), 10.5 GB \u00b7 NL Central",
+    "windowPosture": "hold",
+    "postureRationale": "On the bubble (10.5 GB, 0.510) \u2014 direction not yet forced.",
     "citation": {
       "label": "Click & Keri \u00b7 BBtN \u00b7 ch9 (Beane playoffs)",
       "detail": "Contention-window framing: marginal win value spikes near a playoff berth."
     },
     "payroll": {
-      "committed": 101801760,
+      "committed": 99834262,
       "cbtThreshold": 244000000,
-      "headroom": 142198240
+      "headroom": 144165738
     },
-    "expiringContracts": [
-      {
-        "player": "Mitch Keller",
-        "position": "SP",
-        "capHit": 16911500,
-        "status": "Veteran"
-      },
-      {
-        "player": "Bryan Reynolds",
-        "position": "LF",
-        "capHit": 14250000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Ryan O'Hearn",
-        "position": "RF",
-        "capHit": 14000000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Brandon Lowe",
-        "position": "2B",
-        "capHit": 11500000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Marcell Ozuna",
-        "position": "DH",
-        "capHit": 10500000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Gregory Soto",
-        "position": "RP",
-        "capHit": 7750000,
-        "status": "Veteran"
-      }
-    ],
+    "expiringContracts": [],
     "blend": {
-      "w2026": 0.433,
-      "w2025": 0.567,
+      "w2026": 0.808,
+      "w2025": 0.192,
       "citation": {
         "label": "McElreath \u00b7 Statistical Rethinking \u00b7 ch12-13",
         "detail": "Partial pooling: small 2026 samples shrunk toward the 2025 full-season prior."
@@ -62,11 +25,23 @@
   },
   "holes": [
     {
+      "position": "SP",
+      "rosteredWar": 7.59,
+      "farmWar": 0.73,
+      "replacementBaseline": 12.0,
+      "holeScore": 3.68,
+      "severity": "warning",
+      "citation": {
+        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
+        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
+      }
+    },
+    {
       "position": "DH",
-      "rosteredWar": 0.0,
+      "rosteredWar": -0.62,
       "farmWar": 0.0,
       "replacementBaseline": 1.5,
-      "holeScore": 1.5,
+      "holeScore": 2.12,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -75,11 +50,11 @@
     },
     {
       "position": "RP",
-      "rosteredWar": 2.31,
-      "farmWar": 0.88,
+      "rosteredWar": 0.72,
+      "farmWar": 1.23,
       "replacementBaseline": 4.0,
-      "holeScore": 0.81,
-      "severity": "ok",
+      "holeScore": 2.05,
+      "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
         "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
@@ -87,10 +62,10 @@
     },
     {
       "position": "C",
-      "rosteredWar": 1.27,
+      "rosteredWar": 1.05,
       "farmWar": 0.0,
       "replacementBaseline": 2.0,
-      "holeScore": 0.73,
+      "holeScore": 0.95,
       "severity": "warning",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -99,10 +74,10 @@
     },
     {
       "position": "3B",
-      "rosteredWar": 0.87,
+      "rosteredWar": 0.97,
       "farmWar": 1.01,
       "replacementBaseline": 2.5,
-      "holeScore": 0.62,
+      "holeScore": 0.52,
       "severity": "ok",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -113,55 +88,16 @@
   "surpluses": [
     {
       "position": "2B",
-      "rosteredWar": 3.55,
-      "farmWar": 0.22,
+      "rosteredWar": 2.85,
+      "farmWar": 0.21,
       "replacementBaseline": 2.0,
-      "holeScore": -1.77,
+      "holeScore": -1.06,
       "severity": "ok",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
         "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
       },
-      "surplus": 1.77
-    },
-    {
-      "position": "LF",
-      "rosteredWar": 3.29,
-      "farmWar": 0.0,
-      "replacementBaseline": 2.0,
-      "holeScore": -1.29,
-      "severity": "ok",
-      "citation": {
-        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
-        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
-      },
-      "surplus": 1.29
-    },
-    {
-      "position": "SP",
-      "rosteredWar": 12.36,
-      "farmWar": 0.72,
-      "replacementBaseline": 12.0,
-      "holeScore": -1.08,
-      "severity": "ok",
-      "citation": {
-        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
-        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
-      },
-      "surplus": 1.08
-    },
-    {
-      "position": "SS",
-      "rosteredWar": 2.95,
-      "farmWar": 0.6,
-      "replacementBaseline": 2.5,
-      "holeScore": -1.05,
-      "severity": "ok",
-      "citation": {
-        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
-        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
-      },
-      "surplus": 1.05
+      "surplus": 1.06
     }
   ],
   "buyLow": [],
@@ -176,5 +112,75 @@
     "deadlinePct": 42.2,
     "nTrades": 64,
     "tradesPerSeason": 12.8
+  },
+  "devSystem": {
+    "avgKLift": -6.43,
+    "stdKLift": 9.42,
+    "nTrades": 7,
+    "rank": 20,
+    "nOrgs": 28,
+    "zKLift": -0.25,
+    "topTargets": [
+      {
+        "playerName": "Senzatela, Antonio",
+        "kPctRank": 1,
+        "whiffRank": 4,
+        "fbVelo": 62.0
+      },
+      {
+        "playerName": "Wilson, Bryse",
+        "kPctRank": 1,
+        "whiffRank": 3,
+        "fbVelo": 18.0
+      },
+      {
+        "playerName": "Gomber, Austin",
+        "kPctRank": 1,
+        "whiffRank": 1,
+        "fbVelo": 3.0
+      },
+      {
+        "playerName": "Fedde, Erick",
+        "kPctRank": 1,
+        "whiffRank": 3,
+        "fbVelo": 30.0
+      },
+      {
+        "playerName": "King, John",
+        "kPctRank": 1,
+        "whiffRank": 11,
+        "fbVelo": 28.0
+      },
+      {
+        "playerName": "Blalock, Bradley",
+        "kPctRank": 1,
+        "whiffRank": 1,
+        "fbVelo": 53.0
+      },
+      {
+        "playerName": "V\u00e1squez, Randy",
+        "kPctRank": 2,
+        "whiffRank": 1,
+        "fbVelo": 32.0
+      },
+      {
+        "playerName": "Ure\u00f1a, Jos\u00e9",
+        "kPctRank": 2,
+        "whiffRank": 11,
+        "fbVelo": 80.0
+      },
+      {
+        "playerName": "Hill, Tim",
+        "kPctRank": 2,
+        "whiffRank": 2,
+        "fbVelo": 2.0
+      },
+      {
+        "playerName": "M\u00e1rquez, Germ\u00e1n",
+        "kPctRank": 3,
+        "whiffRank": 7,
+        "fbVelo": 53.0
+      }
+    ]
   }
 }

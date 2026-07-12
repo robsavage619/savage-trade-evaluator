@@ -83,6 +83,23 @@ export type GmContext = {
   tradesPerSeason: number
 }
 
+export type DevSystemTarget = {
+  playerName: string
+  kPctRank: number
+  whiffRank: number | null
+  fbVelo: number | null
+}
+
+export type DevSystem = {
+  avgKLift: number
+  stdKLift: number | null
+  nTrades: number
+  rank: number
+  nOrgs: number
+  zKLift: number
+  topTargets: DevSystemTarget[]
+}
+
 export type TeamPayload = {
   team: string
   context: {
@@ -100,4 +117,5 @@ export type TeamPayload = {
   scenarios: ScenarioCard[]
   lenses: unknown[]
   gmContext?: GmContext
+  devSystem?: DevSystem
 }

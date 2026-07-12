@@ -1,59 +1,22 @@
 {
   "team": "SFG",
   "context": {
-    "standingsLine": "20-30 (0.400), 11.0 GB \u00b7 NL West",
+    "standingsLine": "40-55 (0.421), 20.5 GB \u00b7 NL West",
     "windowPosture": "sell",
-    "postureRationale": "Out of contention (11.0 GB, 0.400) \u2014 sell pending free agents.",
+    "postureRationale": "Out of contention (20.5 GB, 0.421) \u2014 sell pending free agents.",
     "citation": {
       "label": "Click & Keri \u00b7 BBtN \u00b7 ch9 (Beane playoffs)",
       "detail": "Contention-window framing: marginal win value spikes near a playoff berth."
     },
     "payroll": {
-      "committed": 196939504,
+      "committed": 198002021,
       "cbtThreshold": 244000000,
-      "headroom": 47060496
+      "headroom": 45997979
     },
-    "expiringContracts": [
-      {
-        "player": "Rafael Devers",
-        "position": "3B",
-        "capHit": 27000000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Matt Chapman",
-        "position": "3B",
-        "capHit": 25166666,
-        "status": "Veteran"
-      },
-      {
-        "player": "Robbie Ray",
-        "position": "SP",
-        "capHit": 25000000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Jung Hoo Lee",
-        "position": "RF",
-        "capHit": 23250000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Logan Webb",
-        "position": "SP",
-        "capHit": 23000000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Willy Adames",
-        "position": "SS",
-        "capHit": 13142857,
-        "status": "Veteran"
-      }
-    ],
+    "expiringContracts": [],
     "blend": {
-      "w2026": 0.433,
-      "w2025": 0.567,
+      "w2026": 0.808,
+      "w2025": 0.192,
       "citation": {
         "label": "McElreath \u00b7 Statistical Rethinking \u00b7 ch12-13",
         "detail": "Partial pooling: small 2026 samples shrunk toward the 2025 full-season prior."
@@ -64,9 +27,9 @@
     {
       "position": "SP",
       "rosteredWar": 0.0,
-      "farmWar": 1.62,
+      "farmWar": 1.83,
       "replacementBaseline": 12.0,
-      "holeScore": 10.38,
+      "holeScore": 10.17,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -76,9 +39,9 @@
     {
       "position": "RP",
       "rosteredWar": 0.0,
-      "farmWar": 1.03,
+      "farmWar": 1.61,
       "replacementBaseline": 4.0,
-      "holeScore": 2.97,
+      "holeScore": 2.39,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -124,9 +87,9 @@
     {
       "position": "C",
       "rosteredWar": 0.0,
-      "farmWar": 0.49,
+      "farmWar": 0.5,
       "replacementBaseline": 2.0,
-      "holeScore": 1.51,
+      "holeScore": 1.5,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -195,5 +158,6 @@
     "deadlinePct": 45.6,
     "nTrades": 80,
     "tradesPerSeason": 13.3
-  }
+  },
+  "devSystem": null
 }

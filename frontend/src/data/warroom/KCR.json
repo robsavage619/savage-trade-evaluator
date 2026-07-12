@@ -1,59 +1,22 @@
 {
   "team": "KCR",
   "context": {
-    "standingsLine": "20-30 (0.400), 9.0 GB \u00b7 AL Central",
-    "windowPosture": "hold",
-    "postureRationale": "On the bubble (9.0 GB, 0.400) \u2014 direction not yet forced.",
+    "standingsLine": "38-58 (0.396), 12.0 GB \u00b7 AL Central",
+    "windowPosture": "sell",
+    "postureRationale": "Out of contention (12.0 GB, 0.396) \u2014 sell pending free agents.",
     "citation": {
       "label": "Click & Keri \u00b7 BBtN \u00b7 ch9 (Beane playoffs)",
       "detail": "Contention-window framing: marginal win value spikes near a playoff berth."
     },
     "payroll": {
-      "committed": 146632656,
+      "committed": 144185719,
       "cbtThreshold": 244000000,
-      "headroom": 97367344
+      "headroom": 99814281
     },
-    "expiringContracts": [
-      {
-        "player": "Seth Lugo",
-        "position": "SP",
-        "capHit": 21500000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Michael Wacha",
-        "position": "SP",
-        "capHit": 18000000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Bobby Witt Jr.",
-        "position": "SS",
-        "capHit": 14111111,
-        "status": "Arbitration 2 Bypassed"
-      },
-      {
-        "player": "Salvador Perez",
-        "position": "C",
-        "capHit": 12500000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Carlos Estevez",
-        "position": "RP",
-        "capHit": 10100000,
-        "status": "Veteran"
-      },
-      {
-        "player": "Jonathan India",
-        "position": "2B",
-        "capHit": 8000000,
-        "status": "Arbitration 3"
-      }
-    ],
+    "expiringContracts": [],
     "blend": {
-      "w2026": 0.433,
-      "w2025": 0.567,
+      "w2026": 0.808,
+      "w2025": 0.192,
       "citation": {
         "label": "McElreath \u00b7 Statistical Rethinking \u00b7 ch12-13",
         "detail": "Partial pooling: small 2026 samples shrunk toward the 2025 full-season prior."
@@ -64,9 +27,9 @@
     {
       "position": "SP",
       "rosteredWar": 0.0,
-      "farmWar": 0.04,
+      "farmWar": 0.23,
       "replacementBaseline": 12.0,
-      "holeScore": 11.96,
+      "holeScore": 11.77,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -76,9 +39,9 @@
     {
       "position": "RP",
       "rosteredWar": 0.0,
-      "farmWar": 0.71,
+      "farmWar": 0.72,
       "replacementBaseline": 4.0,
-      "holeScore": 3.29,
+      "holeScore": 3.28,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -158,18 +121,6 @@
       }
     },
     {
-      "position": "RF",
-      "rosteredWar": 0.0,
-      "farmWar": 0.6,
-      "replacementBaseline": 2.0,
-      "holeScore": 1.4,
-      "severity": "critical",
-      "citation": {
-        "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
-        "detail": "Roster construction vs replacement baseline; surplus depth is tradeable."
-      }
-    },
-    {
       "position": "1B",
       "rosteredWar": 0.0,
       "farmWar": 0.84,
@@ -195,5 +146,75 @@
     "deadlinePct": 42.9,
     "nTrades": 23,
     "tradesPerSeason": 11.5
+  },
+  "devSystem": {
+    "avgKLift": -3.42,
+    "stdKLift": 18.17,
+    "nTrades": 12,
+    "rank": 11,
+    "nOrgs": 28,
+    "zKLift": 0.07,
+    "topTargets": [
+      {
+        "playerName": "Senzatela, Antonio",
+        "kPctRank": 1,
+        "whiffRank": 4,
+        "fbVelo": 62.0
+      },
+      {
+        "playerName": "Wilson, Bryse",
+        "kPctRank": 1,
+        "whiffRank": 3,
+        "fbVelo": 18.0
+      },
+      {
+        "playerName": "Gomber, Austin",
+        "kPctRank": 1,
+        "whiffRank": 1,
+        "fbVelo": 3.0
+      },
+      {
+        "playerName": "Fedde, Erick",
+        "kPctRank": 1,
+        "whiffRank": 3,
+        "fbVelo": 30.0
+      },
+      {
+        "playerName": "King, John",
+        "kPctRank": 1,
+        "whiffRank": 11,
+        "fbVelo": 28.0
+      },
+      {
+        "playerName": "Blalock, Bradley",
+        "kPctRank": 1,
+        "whiffRank": 1,
+        "fbVelo": 53.0
+      },
+      {
+        "playerName": "V\u00e1squez, Randy",
+        "kPctRank": 2,
+        "whiffRank": 1,
+        "fbVelo": 32.0
+      },
+      {
+        "playerName": "Ure\u00f1a, Jos\u00e9",
+        "kPctRank": 2,
+        "whiffRank": 11,
+        "fbVelo": 80.0
+      },
+      {
+        "playerName": "Hill, Tim",
+        "kPctRank": 2,
+        "whiffRank": 2,
+        "fbVelo": 2.0
+      },
+      {
+        "playerName": "M\u00e1rquez, Germ\u00e1n",
+        "kPctRank": 3,
+        "whiffRank": 7,
+        "fbVelo": 53.0
+      }
+    ]
   }
 }

@@ -25,6 +25,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from savage_trade_evaluator.analysis import dev_system as dev_system_mod
 from savage_trade_evaluator.modeling.scenario_engine import score_historical_scenarios
 from savage_trade_evaluator.storage.db import connect
 
@@ -256,6 +257,48 @@ def _pitcher_roles(conn: duckdb.DuckDBPyConnection) -> dict[int, str]:
     return roles
 
 
+def _all_dev_system_fingerprints(season: int = 2025) -> dict[str, dict[str, Any]]:
+    """Compute dev-system fingerprints for every org + low-K targets, keyed by bref_code.
+
+    Called once at export time; result is sliced per-team inside build_team().
+    Low-K threshold fixed at 35th percentile to surface the most actionable targets.
+    """
+    fingerprints = dev_system_mod.org_fingerprints()
+    candidates = dev_system_mod.low_k_candidates(season=season, k_pct_rank_max=35.0)
+
+    if fingerprints.empty:
+        return {}
+
+    # Rank orgs by avg_k_lift (1 = best K developer)
+    fingerprints = fingerprints.sort_values("avg_k_lift", ascending=False).reset_index(drop=True)
+    fingerprints["rank"] = range(1, len(fingerprints) + 1)
+
+    result: dict[str, dict[str, Any]] = {}
+    for _, row in fingerprints.iterrows():
+        bref = str(row["receiver_bref"])
+        top_targets: list[dict[str, Any]] = []
+        if not candidates.empty:
+            for _, p in candidates.head(10).iterrows():
+                top_targets.append(
+                    {
+                        "playerName": str(p["player_name"]),
+                        "kPctRank": int(p["k_percent"]),  # type: ignore[arg-type]
+                        "whiffRank": int(p["whiff_percent"]) if p.get("whiff_percent") is not None else None,  # type: ignore[arg-type]
+                        "fbVelo": float(p["fb_velocity"]) if p.get("fb_velocity") is not None else None,  # percentile rank, not mph  # type: ignore[arg-type]
+                    }
+                )
+        result[bref] = {
+            "avgKLift": round(float(row["avg_k_lift"]), 2),  # type: ignore[arg-type]
+            "stdKLift": round(float(row["std_k_lift"]), 2) if row["std_k_lift"] is not None else None,  # type: ignore[arg-type]
+            "nTrades": int(row["n_trades"]),  # type: ignore[arg-type]
+            "rank": int(row["rank"]),
+            "nOrgs": len(fingerprints),
+            "zKLift": round(float(row["z_k_lift"]), 2),  # type: ignore[arg-type]
+            "topTargets": top_targets,
+        }
+    return result
+
+
 def _trim_scenario(sc: dict[str, Any]) -> dict[str, Any]:
     """Trim a full scenario payload to the fields consumed by the War Room UI."""
 
@@ -302,6 +345,7 @@ def build_team(
     roles: dict[int, str],
     farm_all: dict[str, dict[str, float]],
     index_team: dict,
+    dev_fingerprints: dict[str, dict[str, Any]],
     *,
     with_scenarios: bool = False,
     scenarios_season: int = 2024,
@@ -430,6 +474,7 @@ def build_team(
         ),
         "lenses": [],  # persona-lens annotations — next pass
         "gmContext": gm_context,
+        "devSystem": dev_fingerprints.get(code),
     }
 
 
@@ -610,6 +655,9 @@ def main() -> None:
         logger.info("farm depth computed for %d clubs", len(farm_all))
         index_by_code = {t["code"]: t for t in index["teams"]}
 
+        dev_fingerprints = _all_dev_system_fingerprints(season=2025)
+        logger.info("dev-system fingerprints computed for %d orgs", len(dev_fingerprints))
+
         for t in index["teams"]:
             payload = build_team(
                 conn,
@@ -620,6 +668,7 @@ def main() -> None:
                 roles,
                 farm_all,
                 index_by_code[t["code"]],
+                dev_fingerprints,
                 with_scenarios=args.with_scenarios,
                 scenarios_season=args.scenarios_season,
             )

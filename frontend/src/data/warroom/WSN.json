@@ -1,17 +1,17 @@
 {
   "team": "WSN",
   "context": {
-    "standingsLine": "25-26 (0.490), 9.5 GB \u00b7 NL East",
+    "standingsLine": "48-48 (0.500), 7.0 GB \u00b7 NL East",
     "windowPosture": "hold",
-    "postureRationale": "On the bubble (9.5 GB, 0.490) \u2014 direction not yet forced.",
+    "postureRationale": "On the bubble (7.0 GB, 0.500) \u2014 direction not yet forced.",
     "citation": {
       "label": "Click & Keri \u00b7 BBtN \u00b7 ch9 (Beane playoffs)",
       "detail": "Contention-window framing: marginal win value spikes near a playoff berth."
     },
     "payroll": {
-      "committed": 56017957,
+      "committed": 56099521,
       "cbtThreshold": 244000000,
-      "headroom": 187982043
+      "headroom": 187900479
     },
     "expiringContracts": [
       {
@@ -52,8 +52,8 @@
       }
     ],
     "blend": {
-      "w2026": 0.433,
-      "w2025": 0.567,
+      "w2026": 0.808,
+      "w2025": 0.192,
       "citation": {
         "label": "McElreath \u00b7 Statistical Rethinking \u00b7 ch12-13",
         "detail": "Partial pooling: small 2026 samples shrunk toward the 2025 full-season prior."
@@ -64,9 +64,9 @@
     {
       "position": "SP",
       "rosteredWar": 0.0,
-      "farmWar": 1.91,
+      "farmWar": 1.96,
       "replacementBaseline": 12.0,
-      "holeScore": 10.09,
+      "holeScore": 10.04,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -76,9 +76,9 @@
     {
       "position": "RP",
       "rosteredWar": 0.0,
-      "farmWar": 0.69,
+      "farmWar": 0.92,
       "replacementBaseline": 4.0,
-      "holeScore": 3.31,
+      "holeScore": 3.08,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -172,9 +172,9 @@
     {
       "position": "SS",
       "rosteredWar": 0.0,
-      "farmWar": 1.16,
+      "farmWar": 1.15,
       "replacementBaseline": 2.5,
-      "holeScore": 1.34,
+      "holeScore": 1.35,
       "severity": "critical",
       "citation": {
         "label": "Lewis \u00b7 Moneyball + replacement-level WAR",
@@ -207,5 +207,75 @@
     "deadlinePct": 49.1,
     "nTrades": 81,
     "tradesPerSeason": 5.4
+  },
+  "devSystem": {
+    "avgKLift": -34.67,
+    "stdKLift": 11.09,
+    "nTrades": 3,
+    "rank": 28,
+    "nOrgs": 28,
+    "zKLift": -3.28,
+    "topTargets": [
+      {
+        "playerName": "Senzatela, Antonio",
+        "kPctRank": 1,
+        "whiffRank": 4,
+        "fbVelo": 62.0
+      },
+      {
+        "playerName": "Wilson, Bryse",
+        "kPctRank": 1,
+        "whiffRank": 3,
+        "fbVelo": 18.0
+      },
+      {
+        "playerName": "Gomber, Austin",
+        "kPctRank": 1,
+        "whiffRank": 1,
+        "fbVelo": 3.0
+      },
+      {
+        "playerName": "Fedde, Erick",
+        "kPctRank": 1,
+        "whiffRank": 3,
+        "fbVelo": 30.0
+      },
+      {
+        "playerName": "King, John",
+        "kPctRank": 1,
+        "whiffRank": 11,
+        "fbVelo": 28.0
+      },
+      {
+        "playerName": "Blalock, Bradley",
+        "kPctRank": 1,
+        "whiffRank": 1,
+        "fbVelo": 53.0
+      },
+      {
+        "playerName": "V\u00e1squez, Randy",
+        "kPctRank": 2,
+        "whiffRank": 1,
+        "fbVelo": 32.0
+      },
+      {
+        "playerName": "Ure\u00f1a, Jos\u00e9",
+        "kPctRank": 2,
+        "whiffRank": 11,
+        "fbVelo": 80.0
+      },
+      {
+        "playerName": "Hill, Tim",
+        "kPctRank": 2,
+        "whiffRank": 2,
+        "fbVelo": 2.0
+      },
+      {
+        "playerName": "M\u00e1rquez, Germ\u00e1n",
+        "kPctRank": 3,
+        "whiffRank": 7,
+        "fbVelo": 53.0
+      }
+    ]
   }
 }

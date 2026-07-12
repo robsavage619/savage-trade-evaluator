@@ -21,6 +21,7 @@ import { WindowClock } from './warroom/WindowClock'
 import { PositionMarketScan, DealsThatClear } from './warroom/IntelligenceFeed'
 import { AiBrief } from './warroom/AiBrief'
 import { GmContext } from './warroom/GmContext'
+import { DevSystem } from './warroom/DevSystem'
 
 // ── snapshot age utilities ────────────────────────────────────────────────────
 
@@ -339,6 +340,11 @@ export default function WarRoom() {
 
                 {/* 8 — Front office context (GM archetype, behavioral profile) */}
                 <GmContext gmContext={yourPayload?.gmContext} />
+
+                {/* 9 — Dev-system fingerprint (org K% development + low-K targets) */}
+                {yourPayload?.devSystem && (
+                  <DevSystem data={yourPayload.devSystem} />
+                )}
 
               </motion.div>
             ) : (
