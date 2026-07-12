@@ -1009,35 +1009,6 @@ CATALOG: tuple[StatSource, ...] = (
             "(no clean free source; FG Board covers 2017+)."
         ),
     ),
-    # === Monthly pitch trends (drift detector) ===
-    StatSource(
-        name="statcast-monthly",
-        source="baseball-savant",
-        granularity="player-season",
-        era_start=2021,
-        era_end=None,
-        fetcher="savage_trade_evaluator.ingest.statcast_monthly.ingest",
-        primary_columns=(
-            "pitcher_id",
-            "pitch_type",
-            "year_id",
-            "month",
-            "mean_velo",
-            "mean_spin",
-            "mean_release_x",
-            "mean_release_z",
-            "mean_pfx_x",
-            "mean_pfx_z",
-        ),
-        target_table="pitcher_monthly_trends",
-        ingested=True,
-        notes=(
-            "Monthly per-(pitcher, pitch_type) aggregates from the Savant "
-            "pitch-arsenal leaderboard endpoint with date-range filters. "
-            "2021+ only (stable pitch classification). Aggregated at ingest — "
-            "not raw pitch rows. Powers the decline-drift detector."
-        ),
-    ),
     # === Rumor archive ===
     StatSource(
         name="mlbtr",

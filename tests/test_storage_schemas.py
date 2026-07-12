@@ -13,8 +13,8 @@ def _table_names(conn: duckdb.DuckDBPyConnection) -> set[str]:
     return {r[0] for r in rows}
 
 
-def test_schema_version_is_36() -> None:
-    assert SCHEMA_VERSION == 36
+def test_schema_version_is_37() -> None:
+    assert SCHEMA_VERSION == 37
 
 
 def test_initialize_records_schema_version() -> None:

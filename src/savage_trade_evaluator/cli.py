@@ -43,7 +43,6 @@ from savage_trade_evaluator.ingest import (
     spotrac,
     standings,
     statcast_extended,
-    statcast_monthly,
     stats,
     tjstats,
     transactions,
@@ -1730,35 +1729,6 @@ def analyze_acceptance(
     typer.echo("")
 
 
-@ingest_app.command("statcast-monthly")
-def ingest_statcast_monthly(
-    season: int | None = typer.Option(None, "--season", help="Single season to ingest."),
-    start: int = typer.Option(2021, "--start", help="First season (inclusive, min 2021)."),
-    end: int | None = typer.Option(None, "--end", help="Last season inclusive (default: current)."),
-) -> None:
-    """Ingest monthly per-pitcher pitch-arsenal aggregates from Baseball Savant.
-
-    Fetches per-(pitcher, pitch_type) monthly averages for velo, spin, and
-    release position. Used by the decline-drift detector. 2021+ only.
-
-    Example:
-        ste ingest statcast-monthly --season 2024
-        ste ingest statcast-monthly --start 2021 --end 2024
-    """
-    configure_logging()
-
-    if season is not None:
-        s, e = season, season
-    else:
-        import datetime
-
-        s, e = start, end or datetime.date.today().year
-
-    typer.echo(f"  Ingesting statcast-monthly {s}-{e} ...")
-    n = statcast_monthly.ingest(start_year=s, end_year=e)
-    typer.echo(f"  Done — {n} rows inserted into pitcher_monthly_trends.")
-
-
 @analyze_app.command("drift")
 def analyze_drift(
     season: int = typer.Option(2025, "--season", help="Season to evaluate."),
@@ -1767,10 +1737,9 @@ def analyze_drift(
 ) -> None:
     """Identify pitchers showing early decline signals (velo/movement drift).
 
-    Computes within-season OLS velo slope and YoY velo delta per pitch type.
-    Z-scores within pitch-type cohorts. Ranks by composite drift signal.
-
-    Requires: statcast-monthly data (run 'ste ingest statcast-monthly' first).
+    Sources from statcast_pitch_movement (already populated 2015-2026).
+    Computes YoY velo and movement deltas per pitch type, z-scored within
+    pitch-type cohorts. Ranks by composite drift signal.
 
     Example:
         ste analyze drift --season 2025
@@ -1785,9 +1754,7 @@ def analyze_drift(
     )
 
     if df.empty:
-        typer.echo(
-            f"  No data for season {season}. Run: ste ingest statcast-monthly --season {season}"
-        )
+        typer.echo(f"  No data for season {season} in statcast_pitch_movement.")
         raise typer.Exit(code=1)
 
     sep = "━" * 90
@@ -1797,18 +1764,19 @@ def analyze_drift(
     typer.echo(sep)
     typer.echo(
         f"  {'#':<3}  {'Pitcher':<24}  {'Type':>4}  {'N':>5}  "
-        f"{'Velo/mo':>7}  {'YoY':>7}  {'DriftZ':>7}"
+        f"{'Velo':>6}  {'VeloYoY':>8}  {'HMvYoY':>8}  {'DriftZ':>7}"
     )
-    typer.echo("  " + "-" * 66)
+    typer.echo("  " + "-" * 72)
 
     for rank, (_, r) in enumerate(df.iterrows(), start=1):
-        velo_slope_str = f"{r['velo_slope']:>+.3f}" if r["velo_slope"] is not None else "   N/A"
-        yoy_str = f"{r['velo_delta_yoy']:>+.2f}" if r["velo_delta_yoy"] is not None else "  N/A"
-        drift_z = float(r["drift_z"]) if r["drift_z"] is not None else 0.0
-        name_trunc = str(r["pitcher_name"])[:23]
+        velo_str = f"{r['avg_speed_cur']:>5.1f}" if r["avg_speed_cur"] is not None else "  N/A"
+        yoy_str = f"{r['velo_delta_yoy']:>+.2f}" if r["velo_delta_yoy"] is not None else "   N/A"
+        hmov_str = f"{r['hmove_delta_yoy']:>+.2f}" if r["hmove_delta_yoy"] is not None else "   N/A"
+        drift_z = float(r["drift_z"]) if r["drift_z"] is not None else 0.0  # type: ignore[arg-type]
+        name_trunc = str(r["player_name"])[:23]
         typer.echo(
-            f"  {rank:<3}  {name_trunc:<24}  {r['pitch_type']:>4}  {int(r['n_pitches']):>5}  "
-            f"{velo_slope_str:>7}  {yoy_str:>7}  {drift_z:>+7.2f}"
+            f"  {rank:<3}  {name_trunc:<24}  {r['pitch_type']:>4}  {int(r['n_pitches']):>5}  "  # type: ignore[arg-type]
+            f"{velo_str:>6}  {yoy_str:>8}  {hmov_str:>8}  {drift_z:>+7.2f}"
         )
 
     typer.echo("")
