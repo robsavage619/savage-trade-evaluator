@@ -8,9 +8,18 @@ from savage_trade_evaluator.modeling.value_player import (
     MLB_MIN,
     _project_salary,
     aging_delta,
+    arb_class_from_service_years,
     infer_player_type,
     parse_arb_class,
 )
+
+
+def test_arb_class_from_service_years() -> None:
+    assert arb_class_from_service_years(1.0) == "pre-arb"
+    assert arb_class_from_service_years(3.0) == "arb1"
+    assert arb_class_from_service_years(4.5) == "arb2"
+    assert arb_class_from_service_years(5.5) == "arb3"
+    assert arb_class_from_service_years(7.0) == "fa"
 
 
 def test_parse_arb_class() -> None:

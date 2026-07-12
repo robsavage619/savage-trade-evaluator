@@ -104,6 +104,25 @@ def parse_arb_class(status: str | None) -> str:
     return "fa"
 
 
+def arb_class_from_service_years(service_years: float) -> str:
+    """Approximate arb class from MLB service years (debut-derived fallback).
+
+    Used when Spotrac contract_status is missing (it covers ~4% of the roster
+    seed). Approximate: ignores exact service days, Super Two, and service-time
+    manipulation — the same order of approximation as the frontend arb model.
+    Standard control ladder: <3 yrs pre-arb, 3 arb1, 4 arb2, 5 arb3, 6+ FA.
+    """
+    if service_years < 3:
+        return "pre-arb"
+    if service_years < 4:
+        return "arb1"
+    if service_years < 5:
+        return "arb2"
+    if service_years < 6:
+        return "arb3"
+    return "fa"
+
+
 def _arb_rank(cls: str) -> int:
     return _ARB_SEQUENCE.index(cls)
 
@@ -180,6 +199,7 @@ def value_player(
     age: float,
     *,
     cap_hit: float | None = None,
+    debut_year: int | None = None,
     window_years: int = 3,
     regression_pt: float | None = None,
     conn: duckdb.DuckDBPyConnection | None = None,
@@ -193,6 +213,8 @@ def value_player(
         position_abbr: Position abbreviation (SS, CF, SP, RP, …).
         age: Player age at the decision point.
         cap_hit: Known cap hit, used for FA/veteran salary years.
+        debut_year: MLB debut year. When ``contract_status`` is missing, control
+            years are approximated from service = ``season - debut_year``.
         window_years: Max control years to value (default 3).
         regression_pt: Optional override for projection shrinkage strength.
         conn: Optional open read-only connection.
@@ -209,6 +231,7 @@ def value_player(
                 position_abbr,
                 age,
                 cap_hit=cap_hit,
+                debut_year=debut_year,
                 window_years=window_years,
                 regression_pt=regression_pt,
                 conn=opened,
@@ -233,7 +256,14 @@ def value_player(
     player_type = infer_player_type(position_abbr, is_reliever=is_reliever)
     rate = MARKET_RATE[player_type]
 
-    current_class = parse_arb_class(contract_status)
+    control_note = ""
+    if contract_status:
+        current_class = parse_arb_class(contract_status)
+    elif debut_year is not None:
+        current_class = arb_class_from_service_years(season - debut_year)
+        control_note = f"control derived from debut {debut_year} ({current_class})"
+    else:
+        current_class = "fa"
     years_controlled = min(window_years, max(0, 4 - _arb_rank(current_class)))
 
     surplus_war = 0.0
@@ -247,7 +277,7 @@ def value_player(
         salaries.append(salary)
         surplus_war += running_war - salary / rate
 
-    notes = [n for n in (proj.note, leverage_note) if n]
+    notes = [n for n in (proj.note, leverage_note, control_note) if n]
     return PlayerValue(
         mlb_player_id=mlb_player_id,
         projected_war=war,
