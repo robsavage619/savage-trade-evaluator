@@ -31,7 +31,7 @@ const MLB_MIN = 740_000
  * (which drags the average down to ~$5.7M). Starter rate from ~$6.9M observed,
  * rounded up slightly for 2026 inflation. Reliever remains cheapest per WAR.
  */
-const MARKET_RATE: Record<PlayerType, number> = {
+export const MARKET_RATE_BY_TYPE: Record<PlayerType, number> = {
   batter: 8_500_000,
   starter: 7_200_000,
   reliever: 6_000_000,
@@ -148,7 +148,7 @@ function projectSalary(
   positionAbbr: string | null | undefined,
   knownCapHit?: number | null,
 ): number {
-  const rate = MARKET_RATE[playerType]
+  const rate = MARKET_RATE_BY_TYPE[playerType]
   const posPremium = POSITION_PREMIUM[positionAbbr?.toUpperCase() ?? ''] ?? 1.0
   const openMarket = Math.max(MLB_MIN, war * rate * posPremium)
 

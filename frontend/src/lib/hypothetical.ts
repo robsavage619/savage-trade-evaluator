@@ -1,8 +1,19 @@
 import type { CurrentPlayer, CurrentTeam } from '../data/players'
-import { forecastArb } from './arbForecast'
+import { forecastArb, inferPlayerType, MARKET_RATE_BY_TYPE } from './arbForecast'
 
-/** Open-market $/WAR — mirrors arbForecast.ts constant. */
+/** Open-market $/WAR — league blended, for headline dollar display only. */
 export const MARKET_RATE = 8_500_000
+
+/**
+ * Effective position for pricing: seed pitchers carry a bare 'P', which the arb
+ * model would mistype as a starter. The enrichment's is_reliever flag corrects
+ * relievers to 'RP' so both salary projection and the $/WAR rate match the
+ * canonical value_player (reliever $6M/WAR vs starter $7.2M).
+ */
+function effectivePos(p: CurrentPlayer): string | null {
+  if (p.is_reliever) return 'RP'
+  return p.position_abbr
+}
 
 // ── prospect support ──────────────────────────────────────────────────────────
 
@@ -110,7 +121,11 @@ export function devAdjust(war: number, age: number, devMul: number): number {
 function projectedSurplus3yr(p: CurrentPlayer, devMul: number): number {
   const startWar = baseWar(p)
   const age = p.age ?? 28
-  const arb = forecastArb(p.contract_status, baseWar(p), p.cap_hit, p.position_abbr)
+  const pos = effectivePos(p)
+  const arb = forecastArb(p.contract_status, baseWar(p), p.cap_hit, pos)
+  // Role-specific $/WAR so cost-in-WAR matches how the salary was priced
+  // (a reliever's cheaper control is not penalised by a flat league rate).
+  const rate = MARKET_RATE_BY_TYPE[inferPlayerType(pos)]
 
   let total = 0
   let currentWar = startWar
@@ -118,7 +133,7 @@ function projectedSurplus3yr(p: CurrentPlayer, devMul: number): number {
     // Advance WAR by one aging step each year
     currentWar = Math.max(0, currentWar + agingDelta(age + t))
     const adjWar = devAdjust(currentWar, age + t, devMul)
-    total += adjWar - arb.projections[t] / MARKET_RATE
+    total += adjWar - arb.projections[t] / rate
   }
   return total
 }
@@ -260,14 +275,14 @@ export function computeVerdict(
   const pPositive = 0.5 * (1 + erf(z / Math.sqrt(2)))
 
   const costSent = sending.players.reduce(
-    (a, p) => a + forecastArb(p.contract_status, baseWar(p), p.cap_hit, p.position_abbr).projections[0], 0,
+    (a, p) => a + forecastArb(p.contract_status, baseWar(p), p.cap_hit, effectivePos(p)).projections[0], 0,
   )
   const costReceived = receiving.players.reduce(
-    (a, p) => a + forecastArb(p.contract_status, baseWar(p), p.cap_hit, p.position_abbr).projections[0], 0,
+    (a, p) => a + forecastArb(p.contract_status, baseWar(p), p.cap_hit, effectivePos(p)).projections[0], 0,
   )
   // Show extension estimate for controlled players on received side (Issue 5)
   const extensionEstReceived = receiving.players.reduce((a, p) => {
-    const arb = forecastArb(p.contract_status, baseWar(p), p.cap_hit, p.position_abbr)
+    const arb = forecastArb(p.contract_status, baseWar(p), p.cap_hit, effectivePos(p))
     return a + (arb.yearsControlled > 0 ? arb.extensionEst3yr : 0)
   }, 0)
 
