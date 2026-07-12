@@ -139,19 +139,50 @@ function ScenarioCardRow({ sc }: { sc: ScenarioCard }) {
           )}
         </div>
       )}
-      {wd?.attribution && wd.attribution.length > 0 && (
-        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5">
-          {wd.attribution.map((a, i) => (
-            <span key={i} className="font-mono text-[8px] text-ink-500">
-              <span className={a.contribution >= 0 ? 'text-positive-400/70' : 'text-negative-400/70'}>
-                {a.contribution >= 0 ? '+' : ''}{a.contribution.toFixed(3)}
-              </span>
-              {' '}{a.feature.replace(/_/g, ' ')}
-              {!a.observed && <span className="text-ink-600"> (imp.)</span>}
-            </span>
-          ))}
-        </div>
-      )}
+      {wd?.attribution && wd.attribution.length > 0 && (() => {
+        const maxAbs = Math.max(...wd.attribution.map(a => Math.abs(a.contribution)), 0.001)
+        return (
+          <div className="mt-2 space-y-1">
+            {wd.attribution.map((a, i) => {
+              const pct = Math.abs(a.contribution) / maxAbs * 100
+              const pos = a.contribution >= 0
+              return (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="w-28 shrink-0 font-mono text-[8px] text-ink-500 truncate" title={a.feature.replace(/_/g, ' ')}>
+                    {a.feature.replace(/_/g, ' ')}
+                    {!a.observed && <span className="ml-0.5 text-ink-700">*</span>}
+                  </div>
+                  <div className="flex flex-1 items-center">
+                    {/* negative half */}
+                    <div className="flex flex-1 justify-end">
+                      {!pos && (
+                        <div
+                          className="h-1.5 rounded-l-sm bg-negative-400/60"
+                          style={{ width: `${pct}%` }}
+                        />
+                      )}
+                    </div>
+                    {/* centre line */}
+                    <div className="mx-px h-3 w-px bg-ink-700 shrink-0" />
+                    {/* positive half */}
+                    <div className="flex flex-1">
+                      {pos && (
+                        <div
+                          className="h-1.5 rounded-r-sm bg-positive-400/60"
+                          style={{ width: `${pct}%` }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <div className={`w-12 shrink-0 text-right font-mono text-[8px] ${pos ? 'text-positive-400/70' : 'text-negative-400/70'}`}>
+                    {pos ? '+' : ''}{a.contribution.toFixed(3)}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )
+      })()}
     </div>
   )
 }

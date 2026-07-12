@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { X, Loader2 } from 'lucide-react'
+import { X } from 'lucide-react'
 import type { TeamPayload } from '../../data/warroom/types'
 import { warRoomIndex } from '../../lib/warroomData'
 import { TeamLogo } from '../../components/TeamLogo'
@@ -76,9 +76,13 @@ export function PartnerPanel({ bref, payload, onClose }: {
           )}
         </>
       ) : (
-        <div className="flex items-center justify-center gap-2 py-6 font-mono text-[11px] text-ink-600">
-          <Loader2 className="h-4 w-4 animate-spin text-accent-400" />
-          Loading {bref} intel…
+        <div className="space-y-2 animate-pulse" aria-label={`Loading ${bref} intel`}>
+          <div className="h-3 w-3/4 rounded bg-ink-800" />
+          <div className="h-3 w-full rounded bg-ink-800" />
+          <div className="h-3 w-5/6 rounded bg-ink-800" />
+          <div className="mt-3 h-16 w-full rounded bg-ink-800" />
+          <div className="h-3 w-2/3 rounded bg-ink-800" />
+          <div className="h-3 w-full rounded bg-ink-800" />
         </div>
       )}
     </motion.div>
