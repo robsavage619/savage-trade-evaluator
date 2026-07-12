@@ -138,5 +138,14 @@
     "nTrades": 22,
     "tradesPerSeason": 11.0
   },
-  "devSystem": null
+  "devSystem": null,
+  "driftFlags": [
+    {
+      "pitcherName": "Finnegan, Kyle",
+      "pitchType": "FF",
+      "driftZ": 1.62,
+      "veloYoY": -0.9,
+      "nPitches": 493
+    }
+  ]
 }

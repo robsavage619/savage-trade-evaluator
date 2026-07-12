@@ -183,5 +183,21 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Liberatore, Matthew",
+      "pitchType": "SI",
+      "driftZ": 1.73,
+      "veloYoY": -1.4,
+      "nPitches": 281
+    },
+    {
+      "pitcherName": "Liberatore, Matthew",
+      "pitchType": "FC",
+      "driftZ": 1.68,
+      "veloYoY": -1.2,
+      "nPitches": 248
+    }
+  ]
 }

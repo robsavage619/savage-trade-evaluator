@@ -172,5 +172,21 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Eovaldi, Nathan",
+      "pitchType": "FF",
+      "driftZ": 1.9,
+      "veloYoY": -1.3,
+      "nPitches": 432
+    },
+    {
+      "pitcherName": "Eovaldi, Nathan",
+      "pitchType": "FC",
+      "driftZ": 1.68,
+      "veloYoY": -0.8,
+      "nPitches": 385
+    }
+  ]
 }

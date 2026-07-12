@@ -210,5 +210,14 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Boyd, Matthew",
+      "pitchType": "CH",
+      "driftZ": 1.86,
+      "veloYoY": -2.2,
+      "nPitches": 650
+    }
+  ]
 }

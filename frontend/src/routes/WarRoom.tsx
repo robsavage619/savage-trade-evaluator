@@ -18,7 +18,7 @@ import { LeagueTicker } from './warroom/LeagueTicker'
 import { PartnerPanel } from './warroom/PartnerPanel'
 import { TradeWorkshop } from './warroom/TradeWorkshop'
 import { WindowClock } from './warroom/WindowClock'
-import { PositionMarketScan, DealsThatClear } from './warroom/IntelligenceFeed'
+import { PositionMarketScan, DealsThatClear, DriftWarnings } from './warroom/IntelligenceFeed'
 import { AiBrief } from './warroom/AiBrief'
 import { GmContext } from './warroom/GmContext'
 import { DevSystem } from './warroom/DevSystem'
@@ -344,6 +344,19 @@ export default function WarRoom() {
                 {/* 9 — Dev-system fingerprint (org K% development + low-K targets) */}
                 {yourPayload?.devSystem && (
                   <DevSystem data={yourPayload.devSystem} />
+                )}
+
+                {/* 10 — Decline-drift warnings (pitchers showing velo/movement decay) */}
+                {yourPayload && (
+                  <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-yellow-400">
+                        Decline Watch
+                      </span>
+                      <span className="font-mono text-[8.5px] text-ink-500">pitch movement drift · z≥1.5σ</span>
+                    </div>
+                    <DriftWarnings flags={yourPayload.driftFlags ?? []} />
+                  </div>
                 )}
 
               </motion.div>

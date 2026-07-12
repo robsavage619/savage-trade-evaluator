@@ -220,5 +220,28 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Ober, Bailey",
+      "pitchType": "ST",
+      "driftZ": 2.29,
+      "veloYoY": -1.9,
+      "nPitches": 253
+    },
+    {
+      "pitcherName": "Ober, Bailey",
+      "pitchType": "SL",
+      "driftZ": 2.16,
+      "veloYoY": -2.5,
+      "nPitches": 418
+    },
+    {
+      "pitcherName": "Ober, Bailey",
+      "pitchType": "FF",
+      "driftZ": 1.75,
+      "veloYoY": -1.4,
+      "nPitches": 846
+    }
+  ]
 }

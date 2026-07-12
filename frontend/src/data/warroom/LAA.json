@@ -207,5 +207,14 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Kikuchi, Yusei",
+      "pitchType": "CU",
+      "driftZ": 1.61,
+      "veloYoY": -2.5,
+      "nPitches": 476
+    }
+  ]
 }

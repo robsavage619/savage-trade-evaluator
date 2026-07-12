@@ -219,5 +219,21 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Kremer, Dean",
+      "pitchType": "FS",
+      "driftZ": 2.21,
+      "veloYoY": -2.2,
+      "nPitches": 567
+    },
+    {
+      "pitcherName": "Cano, Yennier",
+      "pitchType": "FF",
+      "driftZ": 1.62,
+      "veloYoY": -1.6,
+      "nPitches": 113
+    }
+  ]
 }

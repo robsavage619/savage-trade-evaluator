@@ -170,5 +170,21 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Francis, Bowden",
+      "pitchType": "FS",
+      "driftZ": 1.88,
+      "veloYoY": -1.6,
+      "nPitches": 256
+    },
+    {
+      "pitcherName": "Berr\u00edos, Jos\u00e9",
+      "pitchType": "FF",
+      "driftZ": 1.53,
+      "veloYoY": -1.1,
+      "nPitches": 463
+    }
+  ]
 }

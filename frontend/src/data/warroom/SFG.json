@@ -159,5 +159,6 @@
     "nTrades": 80,
     "tradesPerSeason": 13.3
   },
-  "devSystem": null
+  "devSystem": null,
+  "driftFlags": []
 }

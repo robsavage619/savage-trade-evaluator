@@ -197,5 +197,14 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Gray, Sonny",
+      "pitchType": "CH",
+      "driftZ": 1.7,
+      "veloYoY": -2.1,
+      "nPitches": 229
+    }
+  ]
 }

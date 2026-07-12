@@ -83,6 +83,14 @@ export type GmContext = {
   tradesPerSeason: number
 }
 
+export type DriftFlag = {
+  pitcherName: string
+  pitchType: string
+  driftZ: number
+  veloYoY: number | null
+  nPitches: number
+}
+
 export type DevSystemTarget = {
   playerName: string
   kPctRank: number
@@ -118,4 +126,5 @@ export type TeamPayload = {
   lenses: unknown[]
   gmContext?: GmContext
   devSystem?: DevSystem
+  driftFlags: DriftFlag[]
 }

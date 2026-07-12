@@ -230,5 +230,35 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Holmes, Clay",
+      "pitchType": "SI",
+      "driftZ": 2.82,
+      "veloYoY": -2.9,
+      "nPitches": 1129
+    },
+    {
+      "pitcherName": "Holmes, Clay",
+      "pitchType": "ST",
+      "driftZ": 2.38,
+      "veloYoY": -1.8,
+      "nPitches": 526
+    },
+    {
+      "pitcherName": "Holmes, Clay",
+      "pitchType": "SL",
+      "driftZ": 1.7,
+      "veloYoY": -1.8,
+      "nPitches": 295
+    },
+    {
+      "pitcherName": "Myers, Tobias",
+      "pitchType": "FC",
+      "driftZ": 1.52,
+      "veloYoY": -1.7,
+      "nPitches": 165
+    }
+  ]
 }

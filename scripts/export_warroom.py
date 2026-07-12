@@ -25,6 +25,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from savage_trade_evaluator.analysis import decline_drift
 from savage_trade_evaluator.analysis import dev_system as dev_system_mod
 from savage_trade_evaluator.modeling.scenario_engine import score_historical_scenarios
 from savage_trade_evaluator.storage.db import connect
@@ -283,19 +284,70 @@ def _all_dev_system_fingerprints(season: int = 2025) -> dict[str, dict[str, Any]
                     {
                         "playerName": str(p["player_name"]),
                         "kPctRank": int(p["k_percent"]),  # type: ignore[arg-type]
-                        "whiffRank": int(p["whiff_percent"]) if p.get("whiff_percent") is not None else None,  # type: ignore[arg-type]
-                        "fbVelo": float(p["fb_velocity"]) if p.get("fb_velocity") is not None else None,  # percentile rank, not mph  # type: ignore[arg-type]
+                        "whiffRank": int(p["whiff_percent"])  # type: ignore[arg-type]
+                        if p.get("whiff_percent") is not None
+                        else None,
+                        "fbVelo": float(p["fb_velocity"])  # type: ignore[arg-type]  # percentile rank, not mph
+                        if p.get("fb_velocity") is not None
+                        else None,
                     }
                 )
         result[bref] = {
             "avgKLift": round(float(row["avg_k_lift"]), 2),  # type: ignore[arg-type]
-            "stdKLift": round(float(row["std_k_lift"]), 2) if row["std_k_lift"] is not None else None,  # type: ignore[arg-type]
+            "stdKLift": round(float(row["std_k_lift"]), 2)  # type: ignore[arg-type]
+            if row["std_k_lift"] is not None
+            else None,
             "nTrades": int(row["n_trades"]),  # type: ignore[arg-type]
-            "rank": int(row["rank"]),
+            "rank": int(row["rank"]),  # type: ignore[arg-type]
             "nOrgs": len(fingerprints),
             "zKLift": round(float(row["z_k_lift"]), 2),  # type: ignore[arg-type]
             "topTargets": top_targets,
         }
+    return result
+
+
+def _drift_flags_by_team(season: int = 2025) -> dict[str, list[dict[str, Any]]]:
+    """Run decline-drift detection and group top flags by current team.
+
+    Returns {bref_code: [{pitcherName, pitchType, driftZ, veloYoY, nPitches}]}.
+    Only flags with driftZ >= 1.5 (about 1.5 sigma above cohort mean — sell signal).
+    """
+    df = decline_drift.flag_drift_pitchers(season=season, min_pitches=100, top_n=80)
+    if df.empty:
+        return {}
+
+    with connect(read_only=True) as conn:
+        roster = conn.execute(
+            "SELECT player_id, team_bref FROM team_rosters WHERE season = ? AND roster_type = '40Man'",
+            [SEASON],
+        ).fetchall()
+        if not roster:
+            roster = conn.execute(
+                "SELECT player_id, team_bref FROM team_rosters WHERE season = ?", [SEASON]
+            ).fetchall()
+
+    roster_map: dict[int, str] = {int(pid): str(tbref) for pid, tbref in roster if pid is not None}
+
+    result: dict[str, list[dict[str, Any]]] = {}
+    for _, row in df.iterrows():
+        drift_z = float(row["drift_z"]) if row["drift_z"] is not None else 0.0  # type: ignore[arg-type]
+        if drift_z < 1.5:
+            continue
+        pid = int(row["player_id"])  # type: ignore[arg-type]
+        team = roster_map.get(pid)
+        if team is None:
+            continue
+        flag: dict[str, Any] = {
+            "pitcherName": str(row["player_name"]),
+            "pitchType": str(row["pitch_type"]),
+            "driftZ": round(drift_z, 2),
+            "veloYoY": round(float(row["velo_delta_yoy"]), 2)  # type: ignore[arg-type]
+            if row["velo_delta_yoy"] is not None
+            else None,
+            "nPitches": int(row["n_pitches"]),  # type: ignore[arg-type]
+        }
+        result.setdefault(team, []).append(flag)
+
     return result
 
 
@@ -346,6 +398,7 @@ def build_team(
     farm_all: dict[str, dict[str, float]],
     index_team: dict,
     dev_fingerprints: dict[str, dict[str, Any]],
+    drift_flags: dict[str, list[dict[str, Any]]],
     *,
     with_scenarios: bool = False,
     scenarios_season: int = 2024,
@@ -475,6 +528,7 @@ def build_team(
         "lenses": [],  # persona-lens annotations — next pass
         "gmContext": gm_context,
         "devSystem": dev_fingerprints.get(code),
+        "driftFlags": drift_flags.get(code, []),
     }
 
 
@@ -658,6 +712,9 @@ def main() -> None:
         dev_fingerprints = _all_dev_system_fingerprints(season=2025)
         logger.info("dev-system fingerprints computed for %d orgs", len(dev_fingerprints))
 
+        drift_flags = _drift_flags_by_team(season=2025)
+        logger.info("drift flags computed for %d teams", len(drift_flags))
+
         for t in index["teams"]:
             payload = build_team(
                 conn,
@@ -669,6 +726,7 @@ def main() -> None:
                 farm_all,
                 index_by_code[t["code"]],
                 dev_fingerprints,
+                drift_flags,
                 with_scenarios=args.with_scenarios,
                 scenarios_season=args.scenarios_season,
             )

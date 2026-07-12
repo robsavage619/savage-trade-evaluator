@@ -74,18 +74,18 @@ def flag_drift_pitchers(
         pri = grp[grp["year"] == season - 1]
         if cur.empty:
             continue
-        n_pitches = int(cur["pitches_thrown"].iloc[0] or 0)
+        n_pitches = int(cur["pitches_thrown"].iloc[0] or 0)  # type: ignore[union-attr]
         if n_pitches < min_pitches:
             continue
         if pri.empty:
             continue
 
-        cur_speed = cur["avg_speed"].iloc[0]
-        pri_speed = pri["avg_speed"].iloc[0]
-        cur_hmove = cur["horizontal_break_inches"].iloc[0]
-        pri_hmove = pri["horizontal_break_inches"].iloc[0]
-        cur_vmove = cur["vertical_break_inches"].iloc[0]
-        pri_vmove = pri["vertical_break_inches"].iloc[0]
+        cur_speed = cur["avg_speed"].iloc[0]  # type: ignore[union-attr]
+        pri_speed = pri["avg_speed"].iloc[0]  # type: ignore[union-attr]
+        cur_hmove = cur["horizontal_break_inches"].iloc[0]  # type: ignore[union-attr]
+        pri_hmove = pri["horizontal_break_inches"].iloc[0]  # type: ignore[union-attr]
+        cur_vmove = cur["vertical_break_inches"].iloc[0]  # type: ignore[union-attr]
+        pri_vmove = pri["vertical_break_inches"].iloc[0]  # type: ignore[union-attr]
 
         def _delta(a: Any, b: Any) -> float | None:
             if a is None or b is None:
@@ -101,7 +101,7 @@ def flag_drift_pitchers(
         records.append(
             {
                 "player_id": int(pid),  # type: ignore[arg-type]
-                "player_name": str(cur["player_name"].iloc[0]),
+                "player_name": str(cur["player_name"].iloc[0]),  # type: ignore[union-attr]
                 "pitch_type": str(pt),  # type: ignore[arg-type]
                 "n_pitches": n_pitches,
                 "avg_speed_cur": float(cur_speed) if cur_speed is not None else None,

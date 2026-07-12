@@ -234,5 +234,28 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "P\u00e9rez, Mart\u00edn",
+      "pitchType": "FC",
+      "driftZ": 1.97,
+      "veloYoY": -1.9,
+      "nPitches": 255
+    },
+    {
+      "pitcherName": "Carrasco, Carlos",
+      "pitchType": "CH",
+      "driftZ": 1.63,
+      "veloYoY": -1.9,
+      "nPitches": 166
+    },
+    {
+      "pitcherName": "P\u00e9rez, Mart\u00edn",
+      "pitchType": "CH",
+      "driftZ": 1.52,
+      "veloYoY": -1.1,
+      "nPitches": 260
+    }
+  ]
 }

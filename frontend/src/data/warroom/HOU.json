@@ -220,5 +220,14 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Okert, Steven",
+      "pitchType": "FF",
+      "driftZ": 1.73,
+      "veloYoY": -1.0,
+      "nPitches": 435
+    }
+  ]
 }

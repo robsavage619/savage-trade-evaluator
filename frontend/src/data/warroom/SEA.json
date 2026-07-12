@@ -183,5 +183,14 @@
         "fbVelo": 53.0
       }
     ]
-  }
+  },
+  "driftFlags": [
+    {
+      "pitcherName": "Gilbert, Logan",
+      "pitchType": "FS",
+      "driftZ": 2.16,
+      "veloYoY": -2.8,
+      "nPitches": 423
+    }
+  ]
 }

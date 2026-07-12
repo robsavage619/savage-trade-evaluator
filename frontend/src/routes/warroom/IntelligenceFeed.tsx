@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import type { HoleEntry } from '../../data/warroom/types'
+import type { DriftFlag, HoleEntry } from '../../data/warroom/types'
 import type { DealCandidate } from '../../lib/dealsEngine'
 import type { BuyLowCandidate } from '../../lib/buyLowEngine'
 import { TeamLogo } from '../../components/TeamLogo'
@@ -142,6 +142,58 @@ export function DealsThatClear({ deals, onSelect }: { deals: DealCandidate[]; on
           </motion.button>
         )
       })}
+    </div>
+  )
+}
+
+// ── decline watch ─────────────────────────────────────────────────────────────
+
+const PITCH_LABEL: Record<string, string> = {
+  FF: 'Four-Seam', SI: 'Sinker', FC: 'Cutter', SL: 'Slider',
+  CU: 'Curve', CH: 'Change', ST: 'Sweeper', SV: 'Slurve', KC: 'Knuckle-Curve',
+}
+
+/** Warning chips for pitchers on the current team showing significant decline drift. */
+export function DriftWarnings({ flags }: { flags: DriftFlag[] }) {
+  if (flags.length === 0) return (
+    <div className="py-4 text-center font-mono text-[11px] text-ink-500">No flagged pitchers on current roster.</div>
+  )
+
+  return (
+    <div className="space-y-2">
+      {flags.map((f, i) => (
+        <motion.div
+          key={`${f.pitcherName}-${f.pitchType}`}
+          initial={{ opacity: 0, x: -6 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: i * 0.05 }}
+          className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-3 py-2"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="shrink-0 font-mono text-[9px] font-bold text-yellow-400">!</span>
+              <span className="truncate font-mono text-[11px] font-semibold text-ink-100">{f.pitcherName}</span>
+              <span className="shrink-0 rounded bg-ink-800 px-1 py-px font-mono text-[8px] text-ink-400">
+                {PITCH_LABEL[f.pitchType] ?? f.pitchType}
+              </span>
+            </div>
+            <div className="shrink-0 font-mono text-[10px] text-yellow-400/80">
+              z={f.driftZ.toFixed(1)}
+            </div>
+          </div>
+          {f.veloYoY != null && (
+            <div className="mt-1 flex gap-3 font-mono text-[9px] text-ink-500">
+              <span>
+                velo{' '}
+                <span className={f.veloYoY < 0 ? 'text-negative-400' : 'text-positive-400'}>
+                  {f.veloYoY >= 0 ? '+' : ''}{f.veloYoY.toFixed(1)} mph YoY
+                </span>
+              </span>
+              <span className="text-ink-600">{f.nPitches} pitches</span>
+            </div>
+          )}
+        </motion.div>
+      ))}
     </div>
   )
 }
