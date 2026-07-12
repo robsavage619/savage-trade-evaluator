@@ -184,153 +184,153 @@
   "trade_results": [
     {
       "team_bref": "ARI",
-      "mean_surplus_3yr": -0.11561855670103093,
-      "n_trades": 194
-    },
-    {
-      "team_bref": "ATL",
-      "mean_surplus_3yr": 0.10202764976958514,
-      "n_trades": 217
-    },
-    {
-      "team_bref": "BAL",
-      "mean_surplus_3yr": -0.0017452830188679522,
-      "n_trades": 212
-    },
-    {
-      "team_bref": "BOS",
-      "mean_surplus_3yr": -0.08802884615384611,
-      "n_trades": 208
-    },
-    {
-      "team_bref": "CHC",
-      "mean_surplus_3yr": 0.15153409090909095,
-      "n_trades": 176
-    },
-    {
-      "team_bref": "CHW",
-      "mean_surplus_3yr": 0.009722222222222245,
-      "n_trades": 180
-    },
-    {
-      "team_bref": "CIN",
-      "mean_surplus_3yr": -0.053725490196078474,
-      "n_trades": 153
-    },
-    {
-      "team_bref": "CLE",
-      "mean_surplus_3yr": -0.13160427807486624,
-      "n_trades": 187
-    },
-    {
-      "team_bref": "COL",
-      "mean_surplus_3yr": -0.2914035087719299,
-      "n_trades": 114
-    },
-    {
-      "team_bref": "DET",
-      "mean_surplus_3yr": -0.1428688524590162,
-      "n_trades": 122
-    },
-    {
-      "team_bref": "HOU",
-      "mean_surplus_3yr": 0.2433082706766919,
-      "n_trades": 133
-    },
-    {
-      "team_bref": "KCR",
-      "mean_surplus_3yr": 0.125081081081081,
-      "n_trades": 185
-    },
-    {
-      "team_bref": "LAA",
-      "mean_surplus_3yr": 0.16353932584269656,
-      "n_trades": 178
-    },
-    {
-      "team_bref": "LAD",
-      "mean_surplus_3yr": 0.5671806167400881,
-      "n_trades": 227
-    },
-    {
-      "team_bref": "MIA",
-      "mean_surplus_3yr": -0.01115853658536585,
-      "n_trades": 164
-    },
-    {
-      "team_bref": "MIL",
-      "mean_surplus_3yr": 0.30519125683060105,
-      "n_trades": 183
-    },
-    {
-      "team_bref": "MIN",
-      "mean_surplus_3yr": -0.3190510948905108,
-      "n_trades": 137
-    },
-    {
-      "team_bref": "NYM",
-      "mean_surplus_3yr": 0.14582822085889563,
-      "n_trades": 163
-    },
-    {
-      "team_bref": "NYY",
-      "mean_surplus_3yr": 0.3547846889952152,
-      "n_trades": 209
-    },
-    {
-      "team_bref": "OAK",
-      "mean_surplus_3yr": -0.0006666666666667201,
-      "n_trades": 210
-    },
-    {
-      "team_bref": "PHI",
-      "mean_surplus_3yr": 0.20953846153846153,
+      "mean_surplus_3yr": -0.13369230769230767,
       "n_trades": 195
     },
     {
-      "team_bref": "PIT",
-      "mean_surplus_3yr": -0.03777327935222665,
-      "n_trades": 247
+      "team_bref": "ATL",
+      "mean_surplus_3yr": 0.08961038961038953,
+      "n_trades": 231
     },
     {
-      "team_bref": "SDP",
-      "mean_surplus_3yr": 0.11842391304347825,
-      "n_trades": 184
+      "team_bref": "BAL",
+      "mean_surplus_3yr": -0.01599118942731274,
+      "n_trades": 227
     },
     {
-      "team_bref": "SEA",
-      "mean_surplus_3yr": 0.21657142857142864,
-      "n_trades": 245
+      "team_bref": "BOS",
+      "mean_surplus_3yr": -0.07873303167420806,
+      "n_trades": 221
     },
     {
-      "team_bref": "SFG",
-      "mean_surplus_3yr": 0.2949333333333333,
-      "n_trades": 150
+      "team_bref": "CHC",
+      "mean_surplus_3yr": 0.12834224598930474,
+      "n_trades": 187
     },
     {
-      "team_bref": "STL",
-      "mean_surplus_3yr": 0.03397849462365597,
-      "n_trades": 93
+      "team_bref": "CHW",
+      "mean_surplus_3yr": 0.025526315789473702,
+      "n_trades": 190
     },
     {
-      "team_bref": "TBR",
-      "mean_surplus_3yr": 0.2540433212996389,
-      "n_trades": 277
+      "team_bref": "CIN",
+      "mean_surplus_3yr": -0.04915151515151519,
+      "n_trades": 165
     },
     {
-      "team_bref": "TEX",
-      "mean_surplus_3yr": -0.005539906103286374,
+      "team_bref": "CLE",
+      "mean_surplus_3yr": -0.052912087912087895,
+      "n_trades": 182
+    },
+    {
+      "team_bref": "COL",
+      "mean_surplus_3yr": -0.2824369747899159,
+      "n_trades": 119
+    },
+    {
+      "team_bref": "DET",
+      "mean_surplus_3yr": -0.1528030303030302,
+      "n_trades": 132
+    },
+    {
+      "team_bref": "HOU",
+      "mean_surplus_3yr": 0.2241496598639457,
+      "n_trades": 147
+    },
+    {
+      "team_bref": "KCR",
+      "mean_surplus_3yr": 0.12051813471502588,
+      "n_trades": 193
+    },
+    {
+      "team_bref": "LAA",
+      "mean_surplus_3yr": 0.18994652406417115,
+      "n_trades": 187
+    },
+    {
+      "team_bref": "LAD",
+      "mean_surplus_3yr": 0.5156198347107441,
+      "n_trades": 242
+    },
+    {
+      "team_bref": "MIA",
+      "mean_surplus_3yr": 0.014034090909090939,
+      "n_trades": 176
+    },
+    {
+      "team_bref": "MIL",
+      "mean_surplus_3yr": 0.32442211055276376,
+      "n_trades": 199
+    },
+    {
+      "team_bref": "MIN",
+      "mean_surplus_3yr": -0.38939189189189194,
+      "n_trades": 148
+    },
+    {
+      "team_bref": "NYM",
+      "mean_surplus_3yr": 0.13925714285714277,
+      "n_trades": 175
+    },
+    {
+      "team_bref": "NYY",
+      "mean_surplus_3yr": 0.44037209302325586,
+      "n_trades": 215
+    },
+    {
+      "team_bref": "OAK",
+      "mean_surplus_3yr": 0.04840375586854472,
       "n_trades": 213
     },
     {
+      "team_bref": "PHI",
+      "mean_surplus_3yr": 0.10985915492957744,
+      "n_trades": 213
+    },
+    {
+      "team_bref": "PIT",
+      "mean_surplus_3yr": -0.01732283464566929,
+      "n_trades": 254
+    },
+    {
+      "team_bref": "SDP",
+      "mean_surplus_3yr": 0.15132978723404256,
+      "n_trades": 188
+    },
+    {
+      "team_bref": "SEA",
+      "mean_surplus_3yr": 0.21869230769230777,
+      "n_trades": 260
+    },
+    {
+      "team_bref": "SFG",
+      "mean_surplus_3yr": 0.26062893081761007,
+      "n_trades": 159
+    },
+    {
+      "team_bref": "STL",
+      "mean_surplus_3yr": -0.08831578947368422,
+      "n_trades": 95
+    },
+    {
+      "team_bref": "TBR",
+      "mean_surplus_3yr": 0.15344481605351154,
+      "n_trades": 299
+    },
+    {
+      "team_bref": "TEX",
+      "mean_surplus_3yr": -0.012954545454545491,
+      "n_trades": 220
+    },
+    {
       "team_bref": "TOR",
-      "mean_surplus_3yr": 0.12725663716814162,
-      "n_trades": 226
+      "mean_surplus_3yr": 0.14921161825726145,
+      "n_trades": 241
     },
     {
       "team_bref": "WSN",
-      "mean_surplus_3yr": 0.09151515151515151,
-      "n_trades": 99
+      "mean_surplus_3yr": 0.05198019801980211,
+      "n_trades": 101
     }
   ]
 }

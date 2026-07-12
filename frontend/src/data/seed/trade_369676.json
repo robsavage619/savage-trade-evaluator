@@ -113,7 +113,9 @@
       "war_t_with_receiver": 2.58,
       "war_t_plus_1": 2.51,
       "war_t_plus_2": 3.03,
-      "war_t_plus_3": 5.03
+      "war_t_plus_3": 5.03,
+      "war_t_plus_4": 6.78,
+      "war_t_plus_5": 2.66
     },
     {
       "trade_event_id": 369676,
@@ -129,7 +131,9 @@
       "war_t_with_receiver": 0.01,
       "war_t_plus_1": 0.13,
       "war_t_plus_2": null,
-      "war_t_plus_3": -0.02
+      "war_t_plus_3": -0.02,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 369676,
@@ -145,7 +149,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": 0.48,
-      "war_t_plus_3": -0.87
+      "war_t_plus_3": -0.87,
+      "war_t_plus_4": 2.67,
+      "war_t_plus_5": 1.41
     },
     {
       "trade_event_id": 369676,
@@ -161,7 +167,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": 0.06
+      "war_t_plus_3": 0.06,
+      "war_t_plus_4": 0.71,
+      "war_t_plus_5": -0.37
     },
     {
       "trade_event_id": 369676,
@@ -177,7 +185,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": null
+      "war_t_plus_3": null,
+      "war_t_plus_4": -0.17,
+      "war_t_plus_5": -0.16
     },
     {
       "trade_event_id": 369676,
@@ -193,7 +203,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": null
+      "war_t_plus_3": null,
+      "war_t_plus_4": -0.03,
+      "war_t_plus_5": null
     }
   ],
   "arsenal_window": [
@@ -476,7 +488,7 @@
       "surplus": -10.78,
       "players_received": "Breyvic Valera, Yusniel D\u00edaz, Rylan Bannon, Dean Kremer, Zach Pop",
       "players_given_up": "Manny Machado",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     },
     {
       "trade_event_id": 369676,
@@ -488,7 +500,7 @@
       "surplus": 13.37,
       "players_received": "Manny Machado",
       "players_given_up": "Breyvic Valera, Yusniel D\u00edaz, Rylan Bannon, Dean Kremer, Zach Pop",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     }
   ],
   "people": [
@@ -915,7 +927,7 @@
       "mlb_player_id": 665152,
       "year": 2026,
       "team_id": "BAL",
-      "war": -0.07,
+      "war": -0.05,
       "salary": 5750000.0
     }
   ],
@@ -1071,7 +1083,7 @@
       "mlb_player_id": 592518,
       "year": 2026,
       "team_id": "SDP",
-      "war": 0.13,
+      "war": -0.21,
       "salary": 25090909.0
     },
     {
@@ -1108,6 +1120,13 @@
       "team_id": "TOR",
       "war": null,
       "salary": 765500.0
+    },
+    {
+      "mlb_player_id": 647315,
+      "year": 2025,
+      "team_id": "NYM",
+      "war": null,
+      "salary": null
     },
     {
       "mlb_player_id": 647315,
@@ -1150,6 +1169,13 @@
       "team_id": "BAL",
       "war": null,
       "salary": 756600.0
+    },
+    {
+      "mlb_player_id": 665152,
+      "year": 2025,
+      "team_id": "BAL",
+      "war": null,
+      "salary": 2950000.0
     },
     {
       "mlb_player_id": 666783,

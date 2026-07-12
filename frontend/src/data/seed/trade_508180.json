@@ -101,22 +101,6 @@
   "war_window": [
     {
       "trade_event_id": 508180,
-      "leg_index": 0,
-      "date": "2021-07-30",
-      "trade_season": 2021,
-      "mlb_player_id": 660688,
-      "player_name": "Keibert Ruiz",
-      "from_team_bref": "LAD",
-      "to_team_bref": "WSN",
-      "war_t_minus_1": 0.06,
-      "war_t_total": 0.53,
-      "war_t_with_receiver": 0.53,
-      "war_t_plus_1": 1.49,
-      "war_t_plus_2": 1.39,
-      "war_t_plus_3": 0.55
-    },
-    {
-      "trade_event_id": 508180,
       "leg_index": 5,
       "date": "2021-07-30",
       "trade_season": 2021,
@@ -129,7 +113,27 @@
       "war_t_with_receiver": 2.47,
       "war_t_plus_1": 5.26,
       "war_t_plus_2": 3.05,
-      "war_t_plus_3": 0.33
+      "war_t_plus_3": 0.33,
+      "war_t_plus_4": 0.25,
+      "war_t_plus_5": -0.76
+    },
+    {
+      "trade_event_id": 508180,
+      "leg_index": 0,
+      "date": "2021-07-30",
+      "trade_season": 2021,
+      "mlb_player_id": 660688,
+      "player_name": "Keibert Ruiz",
+      "from_team_bref": "LAD",
+      "to_team_bref": "WSN",
+      "war_t_minus_1": 0.06,
+      "war_t_total": 0.53,
+      "war_t_with_receiver": 0.53,
+      "war_t_plus_1": 1.49,
+      "war_t_plus_2": 1.39,
+      "war_t_plus_3": 0.55,
+      "war_t_plus_4": 0.82,
+      "war_t_plus_5": 0.42
     },
     {
       "trade_event_id": 508180,
@@ -145,7 +149,9 @@
       "war_t_with_receiver": 2.4,
       "war_t_plus_1": 5.22,
       "war_t_plus_2": 3.5,
-      "war_t_plus_3": 2.82
+      "war_t_plus_3": 2.82,
+      "war_t_plus_4": 5.44,
+      "war_t_plus_5": 0.36
     },
     {
       "trade_event_id": 508180,
@@ -161,7 +167,9 @@
       "war_t_with_receiver": -0.16,
       "war_t_plus_1": 0.58,
       "war_t_plus_2": 3.04,
-      "war_t_plus_3": -0.54
+      "war_t_plus_3": -0.54,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 508180,
@@ -177,7 +185,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": null
+      "war_t_plus_3": null,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 508180,
@@ -193,7 +203,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": null
+      "war_t_plus_3": null,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     }
   ],
   "arsenal_window": [
@@ -567,7 +579,7 @@
       "surplus": 18.54,
       "players_received": "Trea Turner, Max Scherzer",
       "players_given_up": "Keibert Ruiz, Josiah Gray, Gerardo Carrillo, Donovan Casey",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     },
     {
       "trade_event_id": 508180,
@@ -579,7 +591,7 @@
       "surplus": -13.3,
       "players_received": "Keibert Ruiz, Josiah Gray, Gerardo Carrillo, Donovan Casey",
       "players_given_up": "Trea Turner, Max Scherzer",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     }
   ],
   "people": [
@@ -1175,6 +1187,13 @@
       "salary": 43333334.0
     },
     {
+      "mlb_player_id": 453286,
+      "year": 2025,
+      "team_id": "TOR",
+      "war": null,
+      "salary": 15500000.0
+    },
+    {
       "mlb_player_id": 607208,
       "year": 2015,
       "team_id": "WSN",
@@ -1262,7 +1281,7 @@
       "mlb_player_id": 607208,
       "year": 2026,
       "team_id": "PHI",
-      "war": 0.03,
+      "war": 0.36,
       "salary": 27272727.0
     },
     {
@@ -1318,7 +1337,7 @@
       "mlb_player_id": 660688,
       "year": 2026,
       "team_id": "WSN",
-      "war": 0.01,
+      "war": 0.42,
       "salary": 5375000.0
     },
     {

@@ -71,22 +71,6 @@
   "war_window": [
     {
       "trade_event_id": 384506,
-      "leg_index": 0,
-      "date": "2018-12-05",
-      "trade_season": 2018,
-      "mlb_player_id": 502671,
-      "player_name": "Paul Goldschmidt",
-      "from_team_bref": "ARI",
-      "to_team_bref": "STL",
-      "war_t_minus_1": 6.08,
-      "war_t_total": 5.77,
-      "war_t_with_receiver": null,
-      "war_t_plus_1": 2.55,
-      "war_t_plus_2": 1.95,
-      "war_t_plus_3": 5.94
-    },
-    {
-      "trade_event_id": 384506,
       "leg_index": 2,
       "date": "2018-12-05",
       "trade_season": 2018,
@@ -99,7 +83,27 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": 1.54,
       "war_t_plus_2": -0.11000000000000001,
-      "war_t_plus_3": 2.14
+      "war_t_plus_3": 2.14,
+      "war_t_plus_4": 0.78,
+      "war_t_plus_5": 0.020000000000000004
+    },
+    {
+      "trade_event_id": 384506,
+      "leg_index": 0,
+      "date": "2018-12-05",
+      "trade_season": 2018,
+      "mlb_player_id": 502671,
+      "player_name": "Paul Goldschmidt",
+      "from_team_bref": "ARI",
+      "to_team_bref": "STL",
+      "war_t_minus_1": 6.08,
+      "war_t_total": 5.77,
+      "war_t_with_receiver": null,
+      "war_t_plus_1": 2.55,
+      "war_t_plus_2": 1.95,
+      "war_t_plus_3": 5.94,
+      "war_t_plus_4": 7.65,
+      "war_t_plus_5": 3.29
     },
     {
       "trade_event_id": 384506,
@@ -115,7 +119,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": 1.68,
       "war_t_plus_2": -0.33,
-      "war_t_plus_3": 1.01
+      "war_t_plus_3": 1.01,
+      "war_t_plus_4": -0.62,
+      "war_t_plus_5": -0.5599999999999999
     },
     {
       "trade_event_id": 384506,
@@ -131,7 +137,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": -0.12,
-      "war_t_plus_3": -0.74
+      "war_t_plus_3": -0.74,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     }
   ],
   "arsenal_window": [
@@ -381,7 +389,7 @@
       "surplus": -5.37,
       "players_received": "Andrew Young, Carson Kelly, Luke Weaver",
       "players_given_up": "Paul Goldschmidt",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     },
     {
       "trade_event_id": 384506,
@@ -393,7 +401,7 @@
       "surplus": 5.37,
       "players_received": "Paul Goldschmidt",
       "players_given_up": "Andrew Young, Carson Kelly, Luke Weaver",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     }
   ],
   "people": [
@@ -838,7 +846,7 @@
       "mlb_player_id": 596133,
       "year": 2026,
       "team_id": "NYM",
-      "war": 0.08,
+      "war": 0.33,
       "salary": 9500000.0
     },
     {
@@ -868,6 +876,13 @@
       "team_id": "DET",
       "war": -0.03,
       "salary": null
+    },
+    {
+      "mlb_player_id": 608348,
+      "year": 2026,
+      "team_id": "CHC",
+      "war": -0.07,
+      "salary": 5000000.0
     }
   ],
   "career_war_batting": [
@@ -980,7 +995,7 @@
       "mlb_player_id": 502671,
       "year": 2026,
       "team_id": "NYY",
-      "war": 0.59,
+      "war": 0.83,
       "salary": 4000000.0
     },
     {
@@ -1066,6 +1081,13 @@
       "team_id": "NYY",
       "war": null,
       "salary": 2000000.0
+    },
+    {
+      "mlb_player_id": 596133,
+      "year": 2025,
+      "team_id": "NYY",
+      "war": null,
+      "salary": 2500000.0
     },
     {
       "mlb_player_id": 596133,
@@ -1162,7 +1184,7 @@
       "mlb_player_id": 608348,
       "year": 2026,
       "team_id": "CHC",
-      "war": 0.77,
+      "war": 0.95,
       "salary": 5000000.0
     },
     {

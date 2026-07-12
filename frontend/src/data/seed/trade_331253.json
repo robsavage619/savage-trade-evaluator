@@ -83,7 +83,9 @@
       "war_t_with_receiver": 1.83,
       "war_t_plus_1": 6.31,
       "war_t_plus_2": 7.34,
-      "war_t_plus_3": 0.16
+      "war_t_plus_3": 0.16,
+      "war_t_plus_4": null,
+      "war_t_plus_5": 5.61
     },
     {
       "trade_event_id": 331253,
@@ -99,7 +101,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": -0.48
+      "war_t_plus_3": -0.48,
+      "war_t_plus_4": -0.26,
+      "war_t_plus_5": -0.01
     },
     {
       "trade_event_id": 331253,
@@ -115,7 +119,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": -0.63,
-      "war_t_plus_3": null
+      "war_t_plus_3": null,
+      "war_t_plus_4": 1.1199999999999999,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 331253,
@@ -131,7 +137,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": null
+      "war_t_plus_3": null,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     }
   ],
   "arsenal_window": [
@@ -381,7 +389,7 @@
       "surplus": -14.92,
       "players_received": "Daz Cameron, Franklin P\u00e9rez, Jake Rogers",
       "players_given_up": "Justin Verlander",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     },
     {
       "trade_event_id": 331253,
@@ -393,7 +401,7 @@
       "surplus": 16.75,
       "players_received": "Justin Verlander",
       "players_given_up": "Daz Cameron, Franklin P\u00e9rez, Jake Rogers",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     }
   ],
   "people": [
@@ -1014,6 +1022,13 @@
       "salary": 43333333.0
     },
     {
+      "mlb_player_id": 434378,
+      "year": 2025,
+      "team_id": "SFG",
+      "war": null,
+      "salary": 15000000.0
+    },
+    {
       "mlb_player_id": 663662,
       "year": 2020,
       "team_id": "DET",
@@ -1087,7 +1102,7 @@
       "mlb_player_id": 668670,
       "year": 2026,
       "team_id": "DET",
-      "war": -0.18,
+      "war": -0.16,
       "salary": 3050000.0
     }
   ]

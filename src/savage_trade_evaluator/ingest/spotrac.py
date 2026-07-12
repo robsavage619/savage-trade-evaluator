@@ -317,6 +317,7 @@ def _upsert(
         for s in df["season"].unique():
             conn.execute(f"DELETE FROM spotrac_player_contracts WHERE season = {s}")
 
+    df = df.drop_duplicates(subset=["spotrac_id", "season", "table_type"], keep="last")
     conn.register("_staging_sp", df)
     try:
         cols = (

@@ -5,7 +5,7 @@
     "trade_season": 2012,
     "player_count": 12,
     "description": "Miami Marlins traded 2B Emilio Bonifacio, C John Buck, LHP Mark Buehrle, RHP Josh Johnson and SS Jose Reyes to Toronto Blue Jays for RHP Henderson Alvarez, SS Yunel Escobar, SS Adeiny Hechavarria, C Jeff Mathis, RHP Anthony DeSclafani, CF Jake Marisnick and LHP Justin Nicolino.",
-    "total_war_flow": 15.01
+    "total_war_flow": 15.009999999999998
   },
   {
     "trade_event_id": 734714,
@@ -37,7 +37,7 @@
     "trade_season": 2012,
     "player_count": 7,
     "description": "Boston Red Sox traded 1B Adrian Gonzalez, LF Carl Crawford, RHP Josh Beckett and SS Nick Punto to Los Angeles Dodgers for 1B James Loney, 2B Ivan De Jesus Jr. and RHP Allen Webster.",
-    "total_war_flow": 11.63
+    "total_war_flow": 11.629999999999999
   },
   {
     "trade_event_id": 212887,
@@ -77,7 +77,7 @@
     "trade_season": 2010,
     "player_count": 6,
     "description": "Seattle Mariners traded LHP Cliff Lee and RHP Mark Lowe to Texas Rangers for RHP Blake Beavan, RHP Josh Lueke, 1B Justin Smoak and 2B Matt Lawson.",
-    "total_war_flow": 11.100000000000001
+    "total_war_flow": 11.1
   },
   {
     "trade_event_id": 131023,
@@ -133,7 +133,7 @@
     "trade_season": 2018,
     "player_count": 5,
     "description": "Pittsburgh Pirates traded RHP Gerrit Cole to Houston Astros for 3B Colin Moran, LF Jason Martin, RHP Joe Musgrove and RHP Michael Feliz.",
-    "total_war_flow": 10.19
+    "total_war_flow": 10.189999999999998
   },
   {
     "trade_event_id": 214432,
@@ -216,19 +216,19 @@
     "total_war_flow": 9.21
   },
   {
-    "trade_event_id": 808316,
-    "trade_date": "2024-12-13",
-    "trade_season": 2024,
-    "player_count": 4,
-    "description": "Houston Astros traded RF Kyle Tucker to Chicago Cubs for 3B Isaac Paredes, RHP Hayden Wesneski and 3B Cam Smith.",
-    "total_war_flow": 9.02
-  },
-  {
     "trade_event_id": 141152,
     "trade_date": "2012-12-09",
     "trade_season": 2012,
     "player_count": 6,
     "description": "Tampa Bay Rays traded RHP James Shields, RHP Wade Davis and Player To Be Named Later to Kansas City Royals for LHP Mike Montgomery, RHP Jake Odorizzi, 3B Patrick Leonard and RF Wil Myers.",
+    "total_war_flow": 9.020000000000001
+  },
+  {
+    "trade_event_id": 808316,
+    "trade_date": "2024-12-13",
+    "trade_season": 2024,
+    "player_count": 4,
+    "description": "Houston Astros traded RF Kyle Tucker to Chicago Cubs for 3B Isaac Paredes, RHP Hayden Wesneski and 3B Cam Smith.",
     "total_war_flow": 9.02
   },
   {
@@ -261,7 +261,7 @@
     "trade_season": 2018,
     "player_count": 5,
     "description": "Seattle Mariners traded SS Jean Segura, RHP Juan Nicasio and LHP James Pazos to Philadelphia Phillies for 1B Carlos Santana and SS J.P. Crawford.",
-    "total_war_flow": 8.57
+    "total_war_flow": 8.569999999999999
   },
   {
     "trade_event_id": 107710,
@@ -269,7 +269,7 @@
     "trade_season": 2011,
     "player_count": 5,
     "description": "Cincinnati Reds traded Brad Boxberger, RHP Edinson Volquez, C Yasmani Grandal and 1B Yonder Alonso to San Diego Padres for RHP Mat Latos.",
-    "total_war_flow": 8.56
+    "total_war_flow": 8.559999999999999
   },
   {
     "trade_event_id": 130675,
@@ -317,7 +317,7 @@
     "trade_season": 2011,
     "player_count": 3,
     "description": "Toronto Blue Jays traded 2B Aaron Hill and SS John McDonald to Arizona Diamondbacks for 2B Kelly Johnson.",
-    "total_war_flow": 7.970000000000001
+    "total_war_flow": 7.97
   },
   {
     "trade_event_id": 281544,
@@ -333,7 +333,7 @@
     "trade_season": 2011,
     "player_count": 6,
     "description": "Oakland Athletics traded LHP Gio Gonzalez and RHP Robert Gilliam to Washington Nationals for RHP A.J. Cole, RHP Brad Peacock, C Derek Norris and LHP Tommy Milone.",
-    "total_war_flow": 7.829999999999999
+    "total_war_flow": 7.83
   },
   {
     "trade_event_id": 254276,
@@ -373,7 +373,7 @@
     "trade_season": 2013,
     "player_count": 7,
     "description": "Arizona Diamondbacks traded LF Justin Upton and 3B Chris Johnson to Atlanta Braves for 3B Martin Prado, RHP Randall Delgado, RHP Zeke Spruill, SS Nick Ahmed and 3B Brandon Drury.",
-    "total_war_flow": 7.47
+    "total_war_flow": 7.469999999999999
   },
   {
     "trade_event_id": 438093,
@@ -389,7 +389,7 @@
     "trade_season": 2015,
     "player_count": 5,
     "description": "Atlanta Braves traded RHP Shelby Miller and LHP Gabe Speier to Arizona Diamondbacks for RF Ender Inciarte, RHP Aaron Blair and SS Dansby Swanson.",
-    "total_war_flow": 7.37
+    "total_war_flow": 7.369999999999999
   },
   {
     "trade_event_id": 450386,
@@ -421,7 +421,7 @@
     "trade_season": 2014,
     "player_count": 4,
     "description": "Boston Red Sox traded RHP John Lackey, LHP Corey Littrell and cash to St. Louis Cardinals for RF Allen Craig and RHP Joe Kelly.",
-    "total_war_flow": 7.29
+    "total_war_flow": 7.289999999999999
   },
   {
     "trade_event_id": 75188,
@@ -472,19 +472,19 @@
     "total_war_flow": 6.66
   },
   {
-    "trade_event_id": 131392,
-    "trade_date": "2012-07-31",
-    "trade_season": 2012,
-    "player_count": 3,
-    "description": "Philadelphia Phillies traded CF Shane Victorino to Los Angeles Dodgers for RHP Josh Lindblom and RHP Ethan Martin.",
-    "total_war_flow": 6.59
-  },
-  {
     "trade_event_id": 75204,
     "trade_date": "2010-12-06",
     "trade_season": 2010,
     "player_count": 2,
     "description": "Toronto Blue Jays traded RHP Shaun Marcum to Milwaukee Brewers for Brett Lawrie.",
+    "total_war_flow": 6.59
+  },
+  {
+    "trade_event_id": 131392,
+    "trade_date": "2012-07-31",
+    "trade_season": 2012,
+    "player_count": 3,
+    "description": "Philadelphia Phillies traded CF Shane Victorino to Los Angeles Dodgers for RHP Josh Lindblom and RHP Ethan Martin.",
     "total_war_flow": 6.59
   },
   {
@@ -573,7 +573,7 @@
     "trade_season": 2013,
     "player_count": 4,
     "description": "Detroit Tigers traded RHP Doug Fister to Washington Nationals for LHP Ian Krol, 2B Steve Lombardozzi and LHP Robbie Ray.",
-    "total_war_flow": 6.109999999999999
+    "total_war_flow": 6.11
   },
   {
     "trade_event_id": 178232,
@@ -709,7 +709,7 @@
     "trade_season": 2017,
     "player_count": 7,
     "description": "Chicago White Sox traded 3B Todd Frazier, RHP David Robertson and RHP Tommy Kahnle to New York Yankees for Tyler Clippard, LHP Ian Clarkin, CF Blake Rutherford and CF Tito Polo.",
-    "total_war_flow": 5.52
+    "total_war_flow": 5.5200000000000005
   },
   {
     "trade_event_id": 64680,
@@ -741,7 +741,7 @@
     "trade_season": 2020,
     "player_count": 8,
     "description": "Cleveland Indians traded RHP Mike Clevinger, LF Greg Allen and Player To Be Named Later to San Diego Padres for C Austin Hedges, RHP Cal Quantrill, Josh Naylor, Gabriel Arias, Joey Cantillo and Owen Miller.",
-    "total_war_flow": 5.409999999999999
+    "total_war_flow": 5.41
   },
   {
     "trade_event_id": 214091,
@@ -768,19 +768,19 @@
     "total_war_flow": 5.28
   },
   {
-    "trade_event_id": 251150,
-    "trade_date": "2015-12-02",
-    "trade_season": 2015,
-    "player_count": 4,
-    "description": "San Diego Padres traded LHP Marc Rzepczynski and 1B Yonder Alonso to Oakland Athletics for LHP Drew Pomeranz, LHP Jose Torres and Player To Be Named Later.",
-    "total_war_flow": 5.26
-  },
-  {
     "trade_event_id": 64874,
     "trade_date": "2010-07-31",
     "trade_season": 2010,
     "player_count": 4,
     "description": "Houston Astros traded cash and 1B Lance Berkman to New York Yankees for Jimmy Paredes and RHP Mark Melancon.",
+    "total_war_flow": 5.26
+  },
+  {
+    "trade_event_id": 251150,
+    "trade_date": "2015-12-02",
+    "trade_season": 2015,
+    "player_count": 4,
+    "description": "San Diego Padres traded LHP Marc Rzepczynski and 1B Yonder Alonso to Oakland Athletics for LHP Drew Pomeranz, LHP Jose Torres and Player To Be Named Later.",
     "total_war_flow": 5.26
   },
   {

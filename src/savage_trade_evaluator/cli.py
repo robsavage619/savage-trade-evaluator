@@ -18,6 +18,7 @@ from savage_trade_evaluator.analysis import backtest, trade_summary
 from savage_trade_evaluator.config import (
     BACKTESTER_END_SEASON,
     BACKTESTER_START_SEASON,
+    CURRENT_SEASON,
     configure_logging,
 )
 from savage_trade_evaluator.ingest import (
@@ -171,7 +172,7 @@ def catalog_(
 def ingest_milb(
     season: int | None = typer.Option(None, help="Single season to ingest."),
     start: int = typer.Option(2010, help="First season (inclusive)."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season (inclusive)."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season (inclusive)."),
     sport_ids: str = typer.Option(
         "11,12,13,14",
         help="Comma-separated MLB sportIds (11=AAA, 12=AA, 13=Hi-A, 14=Lo-A).",
@@ -194,7 +195,7 @@ def ingest_milb(
 def ingest_transactions(
     season: int | None = typer.Option(None, help="Single season to ingest."),
     start: int = typer.Option(BACKTESTER_START_SEASON, help="First season (inclusive)."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season (inclusive)."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season (inclusive)."),
 ) -> None:
     """Pull MLB transactions from the Stats API and store them in DuckDB.
 
@@ -221,7 +222,7 @@ def ingest_bwar() -> None:
 def ingest_coaches(
     season: int | None = typer.Option(None, help="Single season to ingest."),
     start: int = typer.Option(2010, help="First season (coaches endpoint coverage starts ~2010)."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season."),
 ) -> None:
     """Pull team coaching staff (manager + assistants) per team-season from MLB Stats API."""
     configure_logging()
@@ -236,7 +237,7 @@ def ingest_coaches(
 def ingest_front_office(
     season: int | None = typer.Option(None, help="Single season to ingest."),
     start: int = typer.Option(2010, help="First season."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season."),
 ) -> None:
     """Scrape front-office personnel (GM, POBO, Farm/Scouting Director) from Baseball Reference.
 
@@ -356,7 +357,7 @@ def ingest_retrosheet_transactions(
 def ingest_spotrac(
     year: int | None = typer.Option(None, help="Single season."),
     start: int = typer.Option(2011, help="First season (Spotrac coverage)."),
-    end: int = typer.Option(2025, help="Last season."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season."),
     team: str | None = typer.Option(None, help="Single team bref_code (e.g. LAD)."),
 ) -> None:
     """Ingest MLB player contracts + team payrolls from Spotrac."""
@@ -372,7 +373,7 @@ def ingest_spotrac(
 @ingest_app.command("team-season-stats")
 def ingest_team_season_stats(
     start: int = typer.Option(1990, help="First season."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season."),
 ) -> None:
     """Ingest per-team per-season hitting/pitching/fielding aggregates."""
     configure_logging()
@@ -399,7 +400,7 @@ def ingest_parks() -> None:
 @ingest_app.command("pitch-movement")
 def ingest_pitch_movement(
     start: int = typer.Option(2015, help="First year."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last year."),
 ) -> None:
     """Ingest Statcast pitch-movement leaderboard across all pitch types."""
     configure_logging()
@@ -410,7 +411,7 @@ def ingest_pitch_movement(
 @ingest_app.command("rosters")
 def ingest_rosters(
     start: int = typer.Option(2010, help="First season."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season."),
 ) -> None:
     """Ingest team 40-man rosters from MLB Stats API."""
     configure_logging()
@@ -443,7 +444,7 @@ def ingest_chadwick() -> None:
 def ingest_catcher_framing(
     year: int | None = typer.Option(None, help="Single year."),
     start: int = typer.Option(2015, help="First year."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last year."),
 ) -> None:
     """Ingest Statcast catcher framing leaderboard from Baseball Savant."""
     configure_logging()
@@ -457,7 +458,7 @@ def ingest_catcher_framing(
 @ingest_app.command("awards")
 def ingest_awards(
     start: int = typer.Option(1990, help="First season."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season."),
 ) -> None:
     """Ingest MVP/Cy Young/ROY/Gold Glove/Silver Slugger recipients from MLB Stats API."""
     configure_logging()
@@ -469,7 +470,7 @@ def ingest_awards(
 def ingest_statcast_extended(
     year: int | None = typer.Option(None, help="Single year to ingest."),
     start: int = typer.Option(2015, help="First year (Statcast era begins)."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last year."),
 ) -> None:
     """Ingest batter percentile ranks + pitcher arsenal stats + OAA from Savant."""
     configure_logging()
@@ -485,7 +486,7 @@ def ingest_statcast_extended(
 def ingest_statcast_sprint_speed(
     year: int | None = typer.Option(None, help="Single year to ingest."),
     start: int = typer.Option(2015, help="First year (Statcast era begins)."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last year."),
 ) -> None:
     """Ingest Statcast sprint-speed leaderboard (Baseball Savant) for 2015-present."""
     configure_logging()
@@ -503,7 +504,7 @@ def ingest_statcast_sprint_speed(
 def ingest_statcast_exit_velo(
     year: int | None = typer.Option(None, help="Single year to ingest."),
     start: int = typer.Option(2015, help="First year (Statcast era begins)."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last year."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last year."),
 ) -> None:
     """Ingest Statcast batter exit-velocity + barrels leaderboard (Baseball Savant)."""
     configure_logging()
@@ -521,7 +522,7 @@ def ingest_statcast_exit_velo(
 def ingest_draft(
     year: int | None = typer.Option(None, help="Single draft year to ingest."),
     start: int = typer.Option(1990, help="First draft year (MLB Stats API coverage)."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last draft year."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last draft year."),
 ) -> None:
     """Ingest MLB Draft picks per year from the MLB Stats API."""
     configure_logging()
@@ -537,7 +538,7 @@ def ingest_draft(
 def ingest_standings(
     season: int | None = typer.Option(None, help="Single season to ingest."),
     start: int = typer.Option(BACKTESTER_START_SEASON, help="First season."),
-    end: int = typer.Option(BACKTESTER_END_SEASON, help="Last season."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last season."),
 ) -> None:
     """Pull final-standings per season via pybaseball.standings()."""
     configure_logging()

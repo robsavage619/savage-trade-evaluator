@@ -21,6 +21,7 @@ MLB_STATS_API_BASE = "https://statsapi.mlb.com/api/v1"
 
 BACKTESTER_START_SEASON = 1990
 BACKTESTER_END_SEASON = 2024
+CURRENT_SEASON = 2026
 
 
 def configure_logging(level: int = logging.INFO) -> None:

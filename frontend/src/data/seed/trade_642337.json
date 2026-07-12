@@ -131,19 +131,21 @@
   "war_window": [
     {
       "trade_event_id": 642337,
-      "leg_index": 7,
+      "leg_index": 3,
       "date": "2022-08-02",
       "trade_season": 2022,
-      "mlb_player_id": 572228,
-      "player_name": "Luke Voit",
-      "from_team_bref": "SDP",
-      "to_team_bref": "WSN",
-      "war_t_minus_1": 0.29,
-      "war_t_total": 0.7,
-      "war_t_with_receiver": 0.09,
-      "war_t_plus_1": -0.25,
-      "war_t_plus_2": null,
-      "war_t_plus_3": null
+      "mlb_player_id": 665742,
+      "player_name": "Juan Soto",
+      "from_team_bref": "WSN",
+      "to_team_bref": "SDP",
+      "war_t_minus_1": 7.33,
+      "war_t_total": 5.47,
+      "war_t_with_receiver": 1.74,
+      "war_t_plus_1": 5.29,
+      "war_t_plus_2": 8.0,
+      "war_t_plus_3": 6.24,
+      "war_t_plus_4": 1.48,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 642337,
@@ -159,23 +161,27 @@
       "war_t_with_receiver": -0.45,
       "war_t_plus_1": -0.10000000000000003,
       "war_t_plus_2": -0.30000000000000004,
-      "war_t_plus_3": 0.5
+      "war_t_plus_3": 0.5,
+      "war_t_plus_4": -0.45,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 642337,
-      "leg_index": 3,
+      "leg_index": 7,
       "date": "2022-08-02",
       "trade_season": 2022,
-      "mlb_player_id": 665742,
-      "player_name": "Juan Soto",
-      "from_team_bref": "WSN",
-      "to_team_bref": "SDP",
-      "war_t_minus_1": 7.33,
-      "war_t_total": 5.47,
-      "war_t_with_receiver": 1.74,
-      "war_t_plus_1": 5.29,
-      "war_t_plus_2": 8.0,
-      "war_t_plus_3": 6.24
+      "mlb_player_id": 572228,
+      "player_name": "Luke Voit",
+      "from_team_bref": "SDP",
+      "to_team_bref": "WSN",
+      "war_t_minus_1": 0.29,
+      "war_t_total": 0.7,
+      "war_t_with_receiver": 0.09,
+      "war_t_plus_1": -0.25,
+      "war_t_plus_2": null,
+      "war_t_plus_3": null,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 642337,
@@ -191,7 +197,9 @@
       "war_t_with_receiver": 0.0,
       "war_t_plus_1": 3.45,
       "war_t_plus_2": 3.33,
-      "war_t_plus_3": 3.43
+      "war_t_plus_3": 3.43,
+      "war_t_plus_4": 1.74,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 642337,
@@ -207,7 +215,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": 1.89,
       "war_t_plus_2": 0.85,
-      "war_t_plus_3": 2.98
+      "war_t_plus_3": 2.98,
+      "war_t_plus_4": -0.07,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 642337,
@@ -223,7 +233,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": 1.07,
-      "war_t_plus_3": 3.68
+      "war_t_plus_3": 3.68,
+      "war_t_plus_4": 1.59,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 642337,
@@ -239,7 +251,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": -0.14
+      "war_t_plus_3": -0.14,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     },
     {
       "trade_event_id": 642337,
@@ -255,7 +269,9 @@
       "war_t_with_receiver": null,
       "war_t_plus_1": null,
       "war_t_plus_2": null,
-      "war_t_plus_3": null
+      "war_t_plus_3": null,
+      "war_t_plus_4": null,
+      "war_t_plus_5": null
     }
   ],
   "arsenal_window": [
@@ -626,7 +642,7 @@
       "surplus": 0.63,
       "players_received": "Josh Bell, Juan Soto",
       "players_given_up": "CJ Abrams, James Wood, Robert Hassell III, MacKenzie Gore, Jarlin Susana, Luke Voit",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     },
     {
       "trade_event_id": 642337,
@@ -638,7 +654,7 @@
       "surplus": 0.75,
       "players_received": "CJ Abrams, James Wood, Robert Hassell III, MacKenzie Gore, Jarlin Susana, Luke Voit",
       "players_given_up": "Josh Bell, Juan Soto",
-      "evaluated_at": "2026-05-15T21:41:15.399118"
+      "evaluated_at": "2026-05-20T19:09:33.630747"
     }
   ],
   "people": [
@@ -1035,7 +1051,7 @@
       "mlb_player_id": 669022,
       "year": 2026,
       "team_id": "TEX",
-      "war": 0.2,
+      "war": -0.07,
       "salary": 5600000.0
     }
   ],
@@ -1198,7 +1214,7 @@
       "mlb_player_id": 605137,
       "year": 2026,
       "team_id": "MIN",
-      "war": -0.65,
+      "war": -0.45,
       "salary": 5750000.0
     },
     {
@@ -1268,7 +1284,7 @@
       "mlb_player_id": 665742,
       "year": 2026,
       "team_id": "NYM",
-      "war": 0.8,
+      "war": 1.48,
       "salary": 51875000.0
     },
     {
@@ -1291,6 +1307,13 @@
       "team_id": "WSN",
       "war": null,
       "salary": 749600.0
+    },
+    {
+      "mlb_player_id": 669022,
+      "year": 2025,
+      "team_id": "WSN",
+      "war": null,
+      "salary": 2890000.0
     },
     {
       "mlb_player_id": 682928,
@@ -1331,7 +1354,7 @@
       "mlb_player_id": 682928,
       "year": 2026,
       "team_id": "WSN",
-      "war": 1.64,
+      "war": 1.74,
       "salary": 4200000.0
     },
     {
@@ -1359,7 +1382,7 @@
       "mlb_player_id": 695578,
       "year": 2026,
       "team_id": "WSN",
-      "war": 1.31,
+      "war": 1.59,
       "salary": null
     }
   ]
