@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-import numpy as np
 import pandas as pd
-import pytest
 
 from savage_trade_evaluator.modeling.production_fit import MODEL_VERSION
 from savage_trade_evaluator.modeling.scenario_engine import (
@@ -15,7 +13,6 @@ from savage_trade_evaluator.modeling.scenario_engine import (
     score_hypothetical,
 )
 from savage_trade_evaluator.modeling.v3 import V3FitResult
-
 
 # ---------------------------------------------------------------------------
 # coverage_report

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 from savage_trade_evaluator.analysis import (
     backtest,
     decline_drift,
+    dev_system,
     roster_mechanics,
     trade_cycles,
     trade_summary,
@@ -1781,5 +1782,134 @@ def analyze_drift(
 
     typer.echo("")
     typer.echo(f"  {len(df)} flagged  |  drift_z = z-score within pitch-type cohort")
+    typer.echo(sep)
+    typer.echo("")
+
+
+@analyze_app.command("dev-system")
+def analyze_dev_system(
+    team: str | None = typer.Option(
+        None, "--team", help="Show fingerprint for this team (bref code, e.g. TBR)."
+    ),
+    season: int = typer.Option(2025, "--season", help="Season to pull current pitcher stats from."),
+    k_rank_max: float = typer.Option(
+        40.0, "--k-rank-max", help="Max K% percentile rank for low-K candidates."
+    ),
+    top_orgs: int = typer.Option(5, "--top-orgs", help="Number of top K-lifting orgs to show."),
+    top_pitchers: int = typer.Option(15, "--top-pitchers", help="Low-K candidates to show."),
+) -> None:
+    """Dev-system fingerprints: which orgs improve pitcher K%, and who should target them.
+
+    Aggregates post-trade K-trajectory deltas from trade_acquired_pitcher_arsenal_features.
+    Inverts: find current low-K pitchers whose deficiency matches high-K-lift orgs.
+
+    Examples:
+        ste analyze dev-system
+        ste analyze dev-system --team TBR
+        ste analyze dev-system --season 2025 --k-rank-max 35 --top-orgs 8
+    """
+    configure_logging()
+
+    sep = "━" * 90
+
+    # --- Org fingerprints ---
+    fingerprints = dev_system.org_fingerprints()
+
+    if fingerprints.empty:
+        typer.echo(
+            "  No org fingerprint data — run ste ingest statcast to populate"
+            " trade_acquired_pitcher_arsenal_features."
+        )
+        raise typer.Exit(code=1)
+
+    typer.echo("")
+    typer.echo(sep)
+    typer.echo("  DEV-SYSTEM FINGERPRINTS  |  avg K% lift for acquired pitchers by receiving org")
+    typer.echo(sep)
+    typer.echo(
+        f"  {'Org':>5}  {'Trades':>6}  {'AvgKLift':>9}  {'StdK':>7}  {'Z':>6}  {'VolLift':>8}"
+    )
+    typer.echo("  " + "-" * 52)
+
+    if team:
+        team_row = fingerprints[fingerprints["receiver_bref"] == team.upper()]
+        if team_row.empty:
+            typer.echo(f"  No fingerprint data for team: {team.upper()} (need >= 3 trades in DB)")
+        else:
+            typer.echo(f"\n  [{team.upper()} fingerprint]")
+            for _, r in team_row.iterrows():
+                std_str = (
+                    f"{float(r['std_k_lift']):>+.2f}"  # type: ignore[arg-type]
+                    if r["std_k_lift"] is not None
+                    else "  N/A"
+                )
+                vol_str = (
+                    f"{float(r['avg_vol_lift']):>+.3f}"  # type: ignore[arg-type]
+                    if r["avg_vol_lift"] is not None
+                    else "   N/A"
+                )
+                typer.echo(
+                    f"  {r['receiver_bref']!s:>5}  {int(r['n_trades']):>6}  "  # type: ignore[arg-type]
+                    f"{float(r['avg_k_lift']):>+9.2f}  {std_str:>7}  "  # type: ignore[arg-type]
+                    f"{float(r['z_k_lift']):>+6.2f}  {vol_str:>8}"  # type: ignore[arg-type]
+                )
+        typer.echo("")
+
+    typer.echo(f"\n  Top {top_orgs} K-developing orgs:")
+    for _, r in fingerprints.head(top_orgs).iterrows():
+        std_str = (
+            f"{float(r['std_k_lift']):>+.2f}" if r["std_k_lift"] is not None else "  N/A"  # type: ignore[arg-type]
+        )
+        vol_str = (
+            f"{float(r['avg_vol_lift']):>+.3f}" if r["avg_vol_lift"] is not None else "   N/A"  # type: ignore[arg-type]
+        )
+        typer.echo(
+            f"  {r['receiver_bref']!s:>5}  {int(r['n_trades']):>6}  "  # type: ignore[arg-type]
+            f"{float(r['avg_k_lift']):>+9.2f}  {std_str:>7}  "  # type: ignore[arg-type]
+            f"{float(r['z_k_lift']):>+6.2f}  {vol_str:>8}"  # type: ignore[arg-type]
+        )
+
+    typer.echo("\n  Bottom 3 (K-suppressing):")
+    for _, r in fingerprints.tail(3).iterrows():
+        std_str = (
+            f"{float(r['std_k_lift']):>+.2f}" if r["std_k_lift"] is not None else "  N/A"  # type: ignore[arg-type]
+        )
+        typer.echo(
+            f"  {r['receiver_bref']!s:>5}  {int(r['n_trades']):>6}  "  # type: ignore[arg-type]
+            f"{float(r['avg_k_lift']):>+9.2f}  {std_str:>7}  "  # type: ignore[arg-type]
+            f"{float(r['z_k_lift']):>+6.2f}"  # type: ignore[arg-type]
+        )
+
+    # --- Low-K pitcher candidates ---
+    typer.echo("")
+    typer.echo(sep)
+    typer.echo(f"  LOW-K CANDIDATES  |  season {season}  |  K% rank <= {k_rank_max}")
+    typer.echo(sep)
+
+    candidates = dev_system.low_k_candidates(season=season, k_pct_rank_max=k_rank_max)
+
+    if candidates.empty:
+        typer.echo(f"  No pitcher data for season {season} in statcast_pitcher_percentile_ranks.")
+        typer.echo("")
+        return
+
+    typer.echo(f"  {'Pitcher':<26}  {'K%Rnk':>6}  {'Whiff':>6}  {'BB%':>5}  {'FBVelo':>7}")
+    typer.echo("  " + "-" * 56)
+
+    for _, r in candidates.head(top_pitchers).iterrows():
+        whiff = (
+            f"{int(r['whiff_percent']):>6}"  # type: ignore[arg-type]
+            if r.get("whiff_percent") is not None
+            else "   N/A"
+        )
+        bb = f"{int(r['bb_percent']):>5}" if r.get("bb_percent") is not None else "  N/A"  # type: ignore[arg-type]
+        fb = f"{float(r['fb_velocity']):>7.1f}" if r.get("fb_velocity") is not None else "    N/A"  # type: ignore[arg-type]
+        typer.echo(
+            f"  {str(r['player_name'])[:25]:<26}  {int(r['k_percent']):>6}  "  # type: ignore[arg-type]
+            f"{whiff}  {bb}  {fb}"
+        )
+
+    typer.echo("")
+    typer.echo(f"  {len(candidates)} total low-K pitchers in season {season}")
     typer.echo(sep)
     typer.echo("")
