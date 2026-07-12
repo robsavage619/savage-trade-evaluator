@@ -72,6 +72,17 @@ export type ScenarioCard = {
   surplusWins: OutcomeCard
 }
 
+export type GmContext = {
+  name: string
+  archetype: string
+  archetypeDescription: string
+  warBuyerBias: number
+  avgAgeReceived: number
+  deadlinePct: number
+  nTrades: number
+  tradesPerSeason: number
+}
+
 export type TeamPayload = {
   team: string
   context: {
@@ -88,4 +99,5 @@ export type TeamPayload = {
   buyLow: unknown[]
   scenarios: ScenarioCard[]
   lenses: unknown[]
+  gmContext?: GmContext
 }

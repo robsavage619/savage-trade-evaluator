@@ -14,7 +14,7 @@ import typer
 if TYPE_CHECKING:
     import pandas as pd
 
-from savage_trade_evaluator.analysis import backtest, trade_summary
+from savage_trade_evaluator.analysis import backtest, roster_mechanics, trade_cycles, trade_summary
 from savage_trade_evaluator.config import (
     BACKTESTER_END_SEASON,
     BACKTESTER_START_SEASON,
@@ -1322,6 +1322,143 @@ def score_trade(
 
     mv = result.get("model_version", "V3.2")
     typer.echo(f"  Model: {mv}  |  Trained through {result['train_end_season']}")
+    typer.echo("")
+
+
+@app.command(name="build-value-matrix")
+def build_value_matrix_cmd(
+    season: int = typer.Option(2025, "--season", help="Trade season."),
+    min_war: float = typer.Option(2.0, "--min-war", help="Minimum prior-season WAR."),
+    pool_size: int = typer.Option(100, "--pool-size", help="Max candidates (sorted by WAR desc)."),
+) -> None:
+    """Score every candidate player against all 29-30 clubs and cache the result.
+
+    Builds the N-player x 30-club value matrix used by ``suggest-cycles``.
+    Logs progress every 10 players. Writes to data/trade_value_matrix/matrix_{season}.parquet.
+
+    Example:
+        ste build-value-matrix --season 2025 --pool-size 100
+    """
+    import time
+
+    configure_logging()
+
+    typer.echo(f"Building value matrix for {season}  (min_war={min_war}, pool_size={pool_size}) …")
+    t0 = time.perf_counter()
+    df = trade_cycles.build_value_matrix(season=season, min_war=min_war, pool_size=pool_size)
+    elapsed = time.perf_counter() - t0
+
+    if df.empty:
+        typer.echo("no rows — check DB has bwar data for the prior season")
+        raise typer.Exit(code=1)
+
+    path = trade_cycles.save_matrix(df, season=season)
+    n_players = df["mlb_id"].nunique()
+    n_clubs = df["receiver_bref"].nunique()
+    typer.echo(
+        f"Done: {len(df)} rows  ({n_players} players x {n_clubs} clubs)  "
+        f"in {elapsed / 60:.1f} min  →  {path}"
+    )
+
+
+@app.command(name="suggest-cycles")
+def suggest_cycles_cmd(
+    season: int = typer.Option(2025, "--season", help="Season of the cached value matrix."),
+    max_teams: int = typer.Option(3, "--max-teams", help="Max clubs per cycle (2 or 3)."),
+    min_gain: float = typer.Option(0.25, "--min-gain", help="Minimum WAR gain per club."),
+    top_n: int = typer.Option(10, "--top-n", help="Cycles to display."),
+) -> None:
+    """Find positive-sum trade loops from the cached value matrix.
+
+    Requires ``ste build-value-matrix --season {season}`` to have run first.
+    Ranked by total WAR gained across all clubs in the deal.
+
+    Example:
+        ste suggest-cycles --season 2025 --max-teams 3 --min-gain 0.25 --top-n 10
+    """
+    configure_logging()
+
+    try:
+        matrix = trade_cycles.load_matrix(season)
+    except FileNotFoundError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1) from exc
+
+    cycles = trade_cycles.find_cycles(matrix, max_len=max_teams, min_gain=min_gain)
+
+    sep = "━" * 80
+    typer.echo("")
+    typer.echo(sep)
+    typer.echo(f"  POSITIVE-SUM TRADE CYCLES  |  season {season}  |  min_gain={min_gain}")
+    typer.echo(sep)
+
+    if not cycles:
+        typer.echo(f"  No cycles found (min_gain={min_gain}, max_teams={max_teams})")
+        typer.echo(sep)
+        return
+
+    for rank, cyc in enumerate(cycles[:top_n], start=1):
+        legs = "  →  ".join(
+            f"{cyc.clubs[i]} sends {cyc.players[i][1]}" for i in range(len(cyc.clubs))
+        )
+        gains_str = "  ".join(f"{club}:+{gain:.2f}W" for club, gain in sorted(cyc.gains.items()))
+        typer.echo(f"\n  {rank}. {legs}")
+        typer.echo(f"     Gains:  {gains_str}  |  Total: +{cyc.total_gain:.2f}W")
+
+    typer.echo("")
+    typer.echo(f"  {len(cycles)} cycles found  |  showing top {min(top_n, len(cycles))}")
+    typer.echo(sep)
+    typer.echo("")
+
+
+@analyze_app.command("forty-man")
+def analyze_forty_man(
+    team: str = typer.Option(..., "--team", "-t", help="Team bref code (e.g. SEA)."),
+    season: int = typer.Option(2025, "--season", help="Season for 40-man snapshot."),
+) -> None:
+    """40-man crunch report: flags roster players at risk by end of season.
+
+    Flags:
+      out_of_options  — 3+ option seasons used (2010+ transactions)
+      rule5_risk      — draft-year heuristic says exposed + low prior-WAR
+      il_burden       — 3+ IL stints on record + low prior-WAR
+
+    Example:
+        ste analyze forty-man --team SEA --season 2025
+    """
+    configure_logging()
+
+    df = roster_mechanics.forty_man_report(team=team, season=season)
+    if df.empty:
+        typer.echo(f"No 40-man data for {team}/{season}")
+        raise typer.Exit(code=1)
+
+    sep = "━" * 80
+    typer.echo("")
+    typer.echo(sep)
+    typer.echo(f"  40-MAN CRUNCH REPORT: {team.upper()}  |  season {season}")
+    typer.echo(sep)
+    typer.echo(
+        f"  {'Flag':<18}  {'Player':<24}  {'Pos':>4}  {'WAR(pr)':>7}  {'Opts':>4}  {'IL':>3}"
+    )
+    typer.echo("  " + "─" * 68)
+
+    for _, r in df.iterrows():
+        flag_display = r["crunch_flag"].replace("_", " ").upper()
+        flag_color = flag_display if r["crunch_flag"] == "ok" else f"⚠ {flag_display}"
+        name_trunc = str(r["player_name"])[:23]
+        pos = str(r["position"] or "?")[:4]
+        typer.echo(
+            f"  {flag_color:<18}  {name_trunc:<24}  {pos:>4}  "
+            f"{r['surplus_war']:>7.1f}  "
+            f"{int(r['options_used']):>4}  "
+            f"{int(r['il_stints_career']):>3}"
+        )
+
+    n_flagged = int((df["crunch_flag"] != "ok").sum())
+    typer.echo("")
+    typer.echo(f"  {len(df)} players  |  {n_flagged} flagged")
+    typer.echo(sep)
     typer.echo("")
 
 

@@ -20,6 +20,7 @@ import { TradeWorkshop } from './warroom/TradeWorkshop'
 import { WindowClock } from './warroom/WindowClock'
 import { PositionMarketScan, DealsThatClear } from './warroom/IntelligenceFeed'
 import { AiBrief } from './warroom/AiBrief'
+import { GmContext } from './warroom/GmContext'
 
 // ── snapshot age utilities ────────────────────────────────────────────────────
 
@@ -335,6 +336,9 @@ export default function WarRoom() {
                     allPayloads: allPayloads ?? {},
                   }}
                 />
+
+                {/* 8 — Front office context (GM archetype, behavioral profile) */}
+                <GmContext gmContext={yourPayload?.gmContext} />
 
               </motion.div>
             ) : (

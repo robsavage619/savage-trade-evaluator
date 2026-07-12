@@ -58,6 +58,70 @@ VIEW_STATEMENTS: tuple[str, ...] = (
       AND list_min(teams_receiving) BETWEEN 100 AND 199
       AND list_max(teams_receiving) BETWEEN 100 AND 199
     """,
+    # IL stints: pair each placement with the next activation for the same player.
+    # Matching is positional (N-th placement ↔ N-th activation) — correct for the
+    # common case; may mis-align for concurrent stints or re-assignments across levels.
+    # Players still on the IL at query time have a NULL activation_date / NULL days_on_il.
+    """
+    CREATE OR REPLACE VIEW il_stints AS
+    WITH placements AS (
+        SELECT
+            player_id,
+            player_name,
+            season,
+            date AS placement_date,
+            CASE
+                WHEN description ILIKE '%60%day%' THEN 60
+                WHEN description ILIKE '%15%day%' THEN 15
+                WHEN description ILIKE '%10%day%' THEN 10
+                WHEN description ILIKE '%7%day%'  THEN 7
+                ELSE NULL
+            END AS list_type_days,
+            ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY date) AS stint_num
+        FROM transactions
+        WHERE type_desc = 'Status Change'
+          AND player_id IS NOT NULL
+          AND (description ILIKE '%placed%injured list%'
+            OR description ILIKE '%placed%disabled list%')
+    ),
+    activations AS (
+        SELECT
+            player_id,
+            date AS activation_date,
+            ROW_NUMBER() OVER (PARTITION BY player_id ORDER BY date) AS stint_num
+        FROM transactions
+        WHERE type_desc = 'Status Change'
+          AND player_id IS NOT NULL
+          AND (description ILIKE '%activated%injured list%'
+            OR description ILIKE '%activated%disabled list%')
+    )
+    SELECT
+        p.player_id,
+        p.player_name,
+        p.season,
+        p.placement_date,
+        a.activation_date,
+        p.list_type_days,
+        DATEDIFF('day', p.placement_date, a.activation_date) AS days_on_il
+    FROM placements p
+    LEFT JOIN activations a
+        ON p.player_id = a.player_id
+       AND a.stint_num = p.stint_num
+    """,
+    # Options usage: seasons in which a player appeared on an 'Optioned' transaction.
+    # Counts distinct seasons, not individual option exercises within a season.
+    """
+    CREATE OR REPLACE VIEW player_option_years AS
+    SELECT
+        player_id,
+        player_name,
+        season,
+        COUNT(*) AS times_optioned
+    FROM transactions
+    WHERE type_desc = 'Optioned'
+      AND player_id IS NOT NULL
+    GROUP BY player_id, player_name, season
+    """,
 )
 
 

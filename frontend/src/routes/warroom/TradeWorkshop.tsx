@@ -379,18 +379,32 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
       </div>
 
       {/* Historical model scenarios */}
-      {scenarios.filter(sc => sc.warDelta != null).length > 0 && (
-        <div className="mt-3">
-          <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">
-            Historical model scenarios · v{scenarios[0].modelVersion}
-          </div>
-          <div className="flex flex-col gap-2">
-            {scenarios.filter(sc => sc.warDelta != null).map(sc => (
-              <ScenarioCardRow key={sc.tradeEventId} sc={sc} />
-            ))}
-          </div>
-        </div>
-      )}
+      {(() => {
+        const scored = scenarios.filter(sc => sc.warDelta != null)
+        if (scored.length > 0) {
+          return (
+            <div className="mt-3">
+              <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">
+                Historical model scenarios · v{scored[0].modelVersion}
+              </div>
+              <div className="flex flex-col gap-2">
+                {scored.map(sc => (
+                  <ScenarioCardRow key={sc.tradeEventId} sc={sc} />
+                ))}
+              </div>
+            </div>
+          )
+        }
+        if (scenarios.length > 0) {
+          return (
+            <div className="mt-3 rounded border border-dashed border-ink-700 px-3 py-2.5 font-mono text-[10px] text-ink-500">
+              No scored scenarios on file for this team — run{' '}
+              <code className="text-ink-400">ste export-warroom --with-scenarios</code> to populate.
+            </div>
+          )
+        }
+        return null
+      })()}
     </motion.div>
   )
 }
