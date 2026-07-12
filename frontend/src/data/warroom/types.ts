@@ -81,6 +81,7 @@ export type GmContext = {
   deadlinePct: number
   nTrades: number
   tradesPerSeason: number
+  pAccept: number | null
 }
 
 export type DriftFlag = {

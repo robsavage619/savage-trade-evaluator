@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING, Any
 
 from savage_trade_evaluator.analysis import decline_drift
 from savage_trade_evaluator.analysis import dev_system as dev_system_mod
+from savage_trade_evaluator.modeling import gm_acceptance
 from savage_trade_evaluator.modeling.scenario_engine import score_historical_scenarios
 from savage_trade_evaluator.storage.db import connect
 
@@ -351,6 +352,35 @@ def _drift_flags_by_team(season: int = 2025) -> dict[str, list[dict[str, Any]]]:
     return result
 
 
+def _all_gm_acceptance() -> dict[str, float]:
+    """Fit the GM acceptance model once and score every team's current GM.
+
+    Returns {bref_code: P(accept)}. Returns {} if trade_rumors is unpopulated
+    or the model can't train (insufficient weak-labeled examples) — logs a
+    warning rather than failing the whole export.
+    """
+    try:
+        gm_acceptance.fit()
+    except RuntimeError as exc:
+        logger.warning("gm acceptance model unavailable: %s", exc)
+        return {}
+
+    with connect(read_only=True) as conn:
+        codes = [
+            str(row[0])
+            for row in conn.execute(
+                "SELECT DISTINCT bref_code FROM gm_behavioral_profiles"
+            ).fetchall()
+        ]
+
+    result: dict[str, float] = {}
+    for code in codes:
+        p = gm_acceptance.predict_proba_from_profile(code)
+        if p is not None:
+            result[code] = round(p, 3)
+    return result
+
+
 def _trim_scenario(sc: dict[str, Any]) -> dict[str, Any]:
     """Trim a full scenario payload to the fields consumed by the War Room UI."""
 
@@ -399,6 +429,7 @@ def build_team(
     index_team: dict,
     dev_fingerprints: dict[str, dict[str, Any]],
     drift_flags: dict[str, list[dict[str, Any]]],
+    gm_acceptance_by_team: dict[str, float],
     *,
     with_scenarios: bool = False,
     scenarios_season: int = 2024,
@@ -496,6 +527,7 @@ def build_team(
             "deadlinePct": round(float(dl_pct) * 100, 1) if dl_pct is not None else None,
             "nTrades": int(n_trades) if n_trades is not None else None,
             "tradesPerSeason": round(float(tps), 1) if tps is not None else None,
+            "pAccept": gm_acceptance_by_team.get(code),
         }
 
     return {
@@ -715,6 +747,9 @@ def main() -> None:
         drift_flags = _drift_flags_by_team(season=2025)
         logger.info("drift flags computed for %d teams", len(drift_flags))
 
+        gm_acceptance_by_team = _all_gm_acceptance()
+        logger.info("gm acceptance scored for %d teams", len(gm_acceptance_by_team))
+
         for t in index["teams"]:
             payload = build_team(
                 conn,
@@ -727,6 +762,7 @@ def main() -> None:
                 index_by_code[t["code"]],
                 dev_fingerprints,
                 drift_flags,
+                gm_acceptance_by_team,
                 with_scenarios=args.with_scenarios,
                 scenarios_season=args.scenarios_season,
             )

@@ -1,9 +1,14 @@
 import type { GmContext as GmContextType } from '../../data/warroom/types'
-import { SectionHeader } from './primitives'
+import { Cite, SectionHeader } from './primitives'
 
 const GM_CITE = {
   label: 'GM Archetype',
   detail: 'Behavioral profile derived from 2010–2024 trade history. Archetype clustering on: WAR buyer bias, avg player age at acquisition, deadline concentration, pitching focus, and trade volume. 86 regimes, 5 archetypes.',
+}
+
+const ACCEPT_CITE = {
+  label: 'P(accept)',
+  detail: 'Logistic regression trained on MLBTR rumor weak labels (rumored player+team pair matched to a real transaction within 90 days = accepted). Features: this GM\'s war_buyer_bias, avg_age_received, deadline_pct, archetype cluster. Diagnostic prior, not a hard gate.',
 }
 
 function StatChip({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -49,7 +54,7 @@ export function GmContext({ gmContext }: { gmContext?: GmContextType }) {
         </p>
 
         {/* Stat grid */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+        <div className={`grid grid-cols-2 gap-x-6 gap-y-3 ${gmContext.pAccept != null ? 'sm:grid-cols-5' : 'sm:grid-cols-4'}`}>
           <StatChip
             label="Trade bias"
             value={biasLabel.charAt(0).toUpperCase() + biasLabel.slice(1)}
@@ -70,6 +75,20 @@ export function GmContext({ gmContext }: { gmContext?: GmContextType }) {
             value={`${gmContext.tradesPerSeason.toFixed(1)}`}
             sub={`trades/season · ${gmContext.nTrades} total`}
           />
+          {gmContext.pAccept != null && (
+            <div className="flex flex-col gap-0.5">
+              <div className="flex items-center gap-1">
+                <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">
+                  P(accept)
+                </div>
+                <Cite cite={ACCEPT_CITE} />
+              </div>
+              <div className={`font-mono text-[13px] font-bold tabular ${gmContext.pAccept >= 0.5 ? 'text-positive-400' : 'text-negative-400'}`}>
+                {(gmContext.pAccept * 100).toFixed(0)}%
+              </div>
+              <div className="font-mono text-[9px] text-ink-500">rumor-outcome model</div>
+            </div>
+          )}
         </div>
 
         {/* Bias color bar */}

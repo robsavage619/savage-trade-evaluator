@@ -169,7 +169,8 @@
     "avgAgeReceived": 26.3,
     "deadlinePct": 35.2,
     "nTrades": 118,
-    "tradesPerSeason": 10.7
+    "tradesPerSeason": 10.7,
+    "pAccept": 0.498
   },
   "devSystem": {
     "avgKLift": 1.26,
