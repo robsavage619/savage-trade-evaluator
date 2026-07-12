@@ -47,8 +47,13 @@ FULL_SEASON_RELIEF_APP: int = 62
 STARTER_BASELINE_WAR: float = 1.6
 RELIEVER_BASELINE_WAR: float = 0.7
 
-# Shrinkage strength: phantom full-baseline-seasons mixed in. Backtest-tunable.
-DEFAULT_REGRESSION_PT: float = 1.5
+# Shrinkage strength: phantom full-baseline-seasons mixed in. Calibrated against
+# 2841 pitcher Y->Y+1 pairs (scripts/calibrate_projection.py): ~21% MAE improvement
+# over naive last-season WAR, at the elbow of the curve (both roles' MAE flattens
+# past ~3; larger values overfit the tail). The residual downward bias is mostly a
+# selection artifact of the eval (targets condition on a full next season). A
+# playing-time-informed baseline is the follow-up to remove the rest.
+DEFAULT_REGRESSION_PT: float = 3.0
 
 # Marcel recency weights for the 3 most recent seasons (most recent first).
 RECENCY_WEIGHTS: tuple[float, float, float] = (3.0, 2.0, 1.0)

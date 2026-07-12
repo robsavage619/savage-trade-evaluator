@@ -31,13 +31,16 @@ def test_small_hot_sample_is_regressed_not_extrapolated() -> None:
 
 
 def test_full_repeated_seasons_dominate_baseline() -> None:
-    # Three full ~3-WAR seasons should project close to 3, not dragged to baseline.
+    # Three full ~3-WAR seasons project well above baseline (1.6), regressed toward
+    # it by the calibrated shrinkage — ~2.5 at the default regression_pt=3.0.
     steady = [
         SeasonWar(2026, war=3.0, pt_fraction=1.0, is_reliever=False),
         SeasonWar(2025, war=3.0, pt_fraction=1.0, is_reliever=False),
         SeasonWar(2024, war=3.0, pt_fraction=1.0, is_reliever=False),
     ]
-    assert project_war(steady, STARTER_BASELINE_WAR) == pytest.approx(2.8, abs=0.25)
+    proj = project_war(steady, STARTER_BASELINE_WAR)
+    assert proj == pytest.approx(2.5, abs=0.25)
+    assert proj - STARTER_BASELINE_WAR > 0.7  # stays much closer to 3 than to baseline
 
 
 def test_partial_current_season_downweighted_vs_full_prior() -> None:
