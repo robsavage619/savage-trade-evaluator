@@ -188,6 +188,7 @@ class PlayerValue:
     control_salaries: tuple[float, ...]
     surplus_war: float
     surplus_dollars: float
+    seasons_used: int
     note: str
 
 
@@ -287,5 +288,6 @@ def value_player(
         control_salaries=tuple(salaries),
         surplus_war=surplus_war,
         surplus_dollars=surplus_war * rate,
+        seasons_used=proj.seasons_used,
         note="; ".join(notes),
     )

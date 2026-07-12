@@ -39,6 +39,16 @@ export type CurrentPlayer = {
   cap_hit: number | null
   base_salary_spotrac: number | null
   awards: AwardsSummary | null
+  // Calibrated Python valuation (pitchers only; scripts/enrich_player_projection.py).
+  // Regressed + leverage-adjusted projection and control-window surplus — the
+  // frontend reads these instead of recomputing surplus from raw last_war.
+  projected_war?: number
+  valued_war?: number
+  is_reliever?: boolean
+  years_controlled?: number
+  surplus_war?: number
+  surplus_dollars?: number
+  yr1_cost?: number
 }
 
 export type CurrentTeam = {

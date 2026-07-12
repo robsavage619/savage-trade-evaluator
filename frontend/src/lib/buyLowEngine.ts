@@ -107,14 +107,36 @@ export function computeBuyLow(
     const surplusPositions = new Set(partnerPayload.surpluses.map(s => s.position))
 
     for (const player of team.players) {
-      // Pass position_abbr so arb pricing uses the correct player-type $/WAR + premium.
-      const arb = forecastArb(player.contract_status, player.last_war, player.cap_hit, player.position_abbr)
-      if (!isControlled(arb.currentClass)) continue        // FA — open market, not a buy-low
-      if (arb.yearsControlled === 0) continue
-      const war = player.last_war ?? 0
-      if (war <= 0) continue                               // replacement or below — not worth it
+      // Prefer the precomputed, calibrated Python valuation (pitchers): regressed +
+      // leverage-adjusted WAR and control-window surplus with debut-derived control
+      // years. Batters (no precomputed fields) fall back to the arb/aging TS path.
+      const hasPrecomputed =
+        player.surplus_war != null && player.valued_war != null && player.years_controlled != null
 
-      const surplusWar = controlWindowSurplus(player, devMul, arb)
+      let surplusWar: number
+      let yearsControlled: number
+      let adjWar: number
+      let yr1Cost: number
+
+      if (hasPrecomputed) {
+        surplusWar = player.surplus_war as number
+        yearsControlled = player.years_controlled as number
+        adjWar = player.valued_war as number
+        yr1Cost = player.yr1_cost ?? 0
+        if (yearsControlled === 0) continue
+      } else {
+        const arb = forecastArb(player.contract_status, player.last_war, player.cap_hit, player.position_abbr)
+        if (!isControlled(arb.currentClass)) continue      // FA — open market, not a buy-low
+        if (arb.yearsControlled === 0) continue
+        const war = player.last_war ?? 0
+        if (war <= 0) continue                             // replacement or below — not worth it
+        surplusWar = controlWindowSurplus(player, devMul, arb)
+        yearsControlled = arb.yearsControlled
+        const age = player.age ?? 27
+        adjWar = devAdjust(Math.max(0, war + agingDelta(age)), age, devMul)
+        yr1Cost = arb.projections[0]
+      }
+
       if (surplusWar < 0.3) continue                       // must be a net-positive surplus
 
       // Does player's position match any of our holes?
@@ -129,9 +151,6 @@ export function computeBuyLow(
       )
       if (!hasMatchingSurplus) continue
 
-      const age = player.age ?? 27
-      const yr1War = Math.max(0, war + agingDelta(age))
-      const yr1Cost = arb.projections[0]
       const costInWar = yr1Cost / MARKET_RATE
       results.push({
         player,
@@ -140,8 +159,8 @@ export function computeBuyLow(
         holesFilled,
         surplusWar,
         yr1Cost,
-        yearsControlled: arb.yearsControlled,
-        adjWar: devAdjust(yr1War, age, devMul),
+        yearsControlled,
+        adjWar,
         valueScore: costInWar > 0 ? surplusWar / costInWar : surplusWar,
       })
     }
