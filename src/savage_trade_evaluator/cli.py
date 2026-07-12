@@ -14,7 +14,13 @@ import typer
 if TYPE_CHECKING:
     import pandas as pd
 
-from savage_trade_evaluator.analysis import backtest, roster_mechanics, trade_cycles, trade_summary
+from savage_trade_evaluator.analysis import (
+    backtest,
+    decline_drift,
+    roster_mechanics,
+    trade_cycles,
+    trade_summary,
+)
 from savage_trade_evaluator.config import (
     BACKTESTER_END_SEASON,
     BACKTESTER_START_SEASON,
@@ -37,6 +43,7 @@ from savage_trade_evaluator.ingest import (
     spotrac,
     standings,
     statcast_extended,
+    statcast_monthly,
     stats,
     tjstats,
     transactions,
@@ -1374,14 +1381,22 @@ def suggest_cycles_cmd(
     max_teams: int = typer.Option(3, "--max-teams", help="Max clubs per cycle (2 or 3)."),
     min_gain: float = typer.Option(0.25, "--min-gain", help="Minimum WAR gain per club."),
     top_n: int = typer.Option(10, "--top-n", help="Cycles to display."),
+    weight_acceptance: bool = typer.Option(
+        False,
+        "--weight-acceptance",
+        help="Re-rank by WAR gain * min P(accept) across legs (requires trade_rumors populated).",
+    ),
 ) -> None:
     """Find positive-sum trade loops from the cached value matrix.
 
     Requires ``ste build-value-matrix --season {season}`` to have run first.
-    Ranked by total WAR gained across all clubs in the deal.
+    Ranked by total WAR gained across all clubs. With --weight-acceptance,
+    cycles are re-ranked by WAR * min_GM_acceptance so deals no GM would
+    accept float to the bottom.
 
     Example:
         ste suggest-cycles --season 2025 --max-teams 3 --min-gain 0.25 --top-n 10
+        ste suggest-cycles --season 2025 --weight-acceptance
     """
     configure_logging()
 
@@ -1393,10 +1408,31 @@ def suggest_cycles_cmd(
 
     cycles = trade_cycles.find_cycles(matrix, max_len=max_teams, min_gain=min_gain)
 
+    # Build acceptance-probability cache if requested
+    accept_cache: dict[str, float] = {}
+    if weight_acceptance:
+        try:
+            gm_acceptance.fit()
+            for club in {c for cyc in cycles for c in cyc.clubs}:
+                p = gm_acceptance.predict_proba_from_profile(club)
+                accept_cache[club] = p if p is not None else 0.5
+        except RuntimeError as exc:
+            typer.echo(f"  Warning: acceptance model unavailable ({exc}) — ignoring.", err=True)
+            weight_acceptance = False
+
+    def _sort_key(cyc: trade_cycles.Cycle) -> float:
+        if not weight_acceptance:
+            return cyc.total_gain
+        min_p = min(accept_cache.get(c, 0.5) for c in cyc.clubs)
+        return cyc.total_gain * min_p
+
+    cycles = sorted(cycles, key=_sort_key, reverse=True)
+
     sep = "━" * 80
     typer.echo("")
     typer.echo(sep)
-    typer.echo(f"  POSITIVE-SUM TRADE CYCLES  |  season {season}  |  min_gain={min_gain}")
+    rank_label = "WAR x P(accept)" if weight_acceptance else "WAR gain"
+    typer.echo(f"  POSITIVE-SUM TRADE CYCLES  |  season {season}  |  ranked by {rank_label}")
     typer.echo(sep)
 
     if not cycles:
@@ -1405,12 +1441,18 @@ def suggest_cycles_cmd(
         return
 
     for rank, cyc in enumerate(cycles[:top_n], start=1):
-        legs = "  →  ".join(
+        legs = "  ->  ".join(
             f"{cyc.clubs[i]} sends {cyc.players[i][1]}" for i in range(len(cyc.clubs))
         )
         gains_str = "  ".join(f"{club}:+{gain:.2f}W" for club, gain in sorted(cyc.gains.items()))
         typer.echo(f"\n  {rank}. {legs}")
-        typer.echo(f"     Gains:  {gains_str}  |  Total: +{cyc.total_gain:.2f}W")
+        if weight_acceptance:
+            accept_str = "  ".join(f"{c}:{accept_cache.get(c, 0.5):.0%}" for c in sorted(cyc.clubs))
+            weighted = _sort_key(cyc)
+            typer.echo(f"     Gains:  {gains_str}  |  Total: +{cyc.total_gain:.2f}W")
+            typer.echo(f"     Accept: {accept_str}  |  Weighted: {weighted:.3f}")
+        else:
+            typer.echo(f"     Gains:  {gains_str}  |  Total: +{cyc.total_gain:.2f}W")
 
     typer.echo("")
     typer.echo(f"  {len(cycles)} cycles found  |  showing top {min(top_n, len(cycles))}")
@@ -1684,5 +1726,92 @@ def analyze_acceptance(
         filled = round(p * bar_len)
         bar = "█" * filled + "░" * (bar_len - filled)
         typer.echo(f"  P(accept)  [{bar}]  {p:.1%}")
+    typer.echo(sep)
+    typer.echo("")
+
+
+@ingest_app.command("statcast-monthly")
+def ingest_statcast_monthly(
+    season: int | None = typer.Option(None, "--season", help="Single season to ingest."),
+    start: int = typer.Option(2021, "--start", help="First season (inclusive, min 2021)."),
+    end: int | None = typer.Option(None, "--end", help="Last season inclusive (default: current)."),
+) -> None:
+    """Ingest monthly per-pitcher pitch-arsenal aggregates from Baseball Savant.
+
+    Fetches per-(pitcher, pitch_type) monthly averages for velo, spin, and
+    release position. Used by the decline-drift detector. 2021+ only.
+
+    Example:
+        ste ingest statcast-monthly --season 2024
+        ste ingest statcast-monthly --start 2021 --end 2024
+    """
+    configure_logging()
+
+    if season is not None:
+        s, e = season, season
+    else:
+        import datetime
+
+        s, e = start, end or datetime.date.today().year
+
+    typer.echo(f"  Ingesting statcast-monthly {s}-{e} ...")
+    n = statcast_monthly.ingest(start_year=s, end_year=e)
+    typer.echo(f"  Done — {n} rows inserted into pitcher_monthly_trends.")
+
+
+@analyze_app.command("drift")
+def analyze_drift(
+    season: int = typer.Option(2025, "--season", help="Season to evaluate."),
+    min_pitches: int = typer.Option(150, "--min-pitches", help="Min pitches in current season."),
+    top_n: int = typer.Option(20, "--top-n", help="Pitchers to display."),
+) -> None:
+    """Identify pitchers showing early decline signals (velo/movement drift).
+
+    Computes within-season OLS velo slope and YoY velo delta per pitch type.
+    Z-scores within pitch-type cohorts. Ranks by composite drift signal.
+
+    Requires: statcast-monthly data (run 'ste ingest statcast-monthly' first).
+
+    Example:
+        ste analyze drift --season 2025
+        ste analyze drift --season 2024 --min-pitches 200 --top-n 30
+    """
+    configure_logging()
+
+    df = decline_drift.flag_drift_pitchers(
+        season=season,
+        min_pitches=min_pitches,
+        top_n=top_n,
+    )
+
+    if df.empty:
+        typer.echo(
+            f"  No data for season {season}. Run: ste ingest statcast-monthly --season {season}"
+        )
+        raise typer.Exit(code=1)
+
+    sep = "━" * 90
+    typer.echo("")
+    typer.echo(sep)
+    typer.echo(f"  DECLINE-DRIFT DETECTOR  |  season {season}  |  min_pitches={min_pitches}")
+    typer.echo(sep)
+    typer.echo(
+        f"  {'#':<3}  {'Pitcher':<24}  {'Type':>4}  {'N':>5}  "
+        f"{'Velo/mo':>7}  {'YoY':>7}  {'DriftZ':>7}"
+    )
+    typer.echo("  " + "-" * 66)
+
+    for rank, (_, r) in enumerate(df.iterrows(), start=1):
+        velo_slope_str = f"{r['velo_slope']:>+.3f}" if r["velo_slope"] is not None else "   N/A"
+        yoy_str = f"{r['velo_delta_yoy']:>+.2f}" if r["velo_delta_yoy"] is not None else "  N/A"
+        drift_z = float(r["drift_z"]) if r["drift_z"] is not None else 0.0
+        name_trunc = str(r["pitcher_name"])[:23]
+        typer.echo(
+            f"  {rank:<3}  {name_trunc:<24}  {r['pitch_type']:>4}  {int(r['n_pitches']):>5}  "
+            f"{velo_slope_str:>7}  {yoy_str:>7}  {drift_z:>+7.2f}"
+        )
+
+    typer.echo("")
+    typer.echo(f"  {len(df)} flagged  |  drift_z = z-score within pitch-type cohort")
     typer.echo(sep)
     typer.echo("")

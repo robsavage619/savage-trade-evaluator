@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 35
+SCHEMA_VERSION = 36
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -1314,6 +1314,30 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """,
     """
     CREATE INDEX IF NOT EXISTS idx_trade_rumors_type ON trade_rumors(post_type)
+    """,
+    # Phase 4: monthly pitcher pitch-arsenal trends (schema v36)
+    """
+    CREATE TABLE IF NOT EXISTS pitcher_monthly_trends (
+        pitcher_id     INTEGER NOT NULL,
+        pitcher_name   VARCHAR,
+        pitch_type     VARCHAR NOT NULL,
+        year_id        INTEGER NOT NULL,
+        month          INTEGER NOT NULL,
+        n_pitches      INTEGER NOT NULL,
+        mean_velo      DOUBLE,
+        mean_spin      DOUBLE,
+        mean_release_x DOUBLE,
+        mean_release_z DOUBLE,
+        mean_pfx_x     DOUBLE,
+        mean_pfx_z     DOUBLE,
+        source         VARCHAR NOT NULL DEFAULT 'baseball-savant',
+        ingested_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (pitcher_id, pitch_type, year_id, month)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_pitcher_monthly_pitcher
+        ON pitcher_monthly_trends(pitcher_id, year_id)
     """,
 )
 
