@@ -46,6 +46,17 @@ export function fvToWar(fv: number): number {
   return FV_TO_WAR[fv] ?? 0.3
 }
 
+/**
+ * True-talent WAR base for valuation: the calibrated Python projection
+ * (regressed + leverage-adjusted, from scripts/enrich_player_projection.py) when
+ * present, else raw last-season WAR. This is what feeds the aging/dev/arb layers
+ * below — the trade-workshop keeps its dev-system edge and deadline premium, but
+ * on a base that no longer extrapolates a hot partial season.
+ */
+export function baseWar(p: CurrentPlayer): number {
+  return Math.max(0, p.valued_war ?? p.last_war ?? 0.5)
+}
+
 // ── aging curve ───────────────────────────────────────────────────────────────
 
 /**
@@ -97,12 +108,12 @@ export function devAdjust(war: number, age: number, devMul: number): number {
  * observed-season WAR with a 3yr projection and used a fabricated multiplier.
  */
 function projectedSurplus3yr(p: CurrentPlayer, devMul: number): number {
-  const baseWar = Math.max(0, p.last_war ?? 0.5)
+  const startWar = baseWar(p)
   const age = p.age ?? 28
-  const arb = forecastArb(p.contract_status, p.last_war, p.cap_hit, p.position_abbr)
+  const arb = forecastArb(p.contract_status, baseWar(p), p.cap_hit, p.position_abbr)
 
   let total = 0
-  let currentWar = baseWar
+  let currentWar = startWar
   for (let t = 0; t < 3; t++) {
     // Advance WAR by one aging step each year
     currentWar = Math.max(0, currentWar + agingDelta(age + t))
@@ -198,10 +209,10 @@ export function computeVerdict(
 
   // Raw WAR for display — dev-adjusted at age but NOT the surplus calc basis
   const warSent = sending.players.reduce(
-    (a, p) => a + devAdjust(Math.max(0, p.last_war ?? 0.5), p.age ?? 28, partnerDevMul), 0,
+    (a, p) => a + devAdjust(baseWar(p), p.age ?? 28, partnerDevMul), 0,
   )
   const warReceived = receiving.players.reduce(
-    (a, p) => a + devAdjust(Math.max(0, p.last_war ?? 0.5), p.age ?? 28, yourDevMul), 0,
+    (a, p) => a + devAdjust(baseWar(p), p.age ?? 28, yourDevMul), 0,
   )
 
   // 3yr surplus sums via year-by-year aging + dev-adjusted model (Issue 1 + 2 fix)
@@ -249,14 +260,14 @@ export function computeVerdict(
   const pPositive = 0.5 * (1 + erf(z / Math.sqrt(2)))
 
   const costSent = sending.players.reduce(
-    (a, p) => a + forecastArb(p.contract_status, p.last_war, p.cap_hit, p.position_abbr).projections[0], 0,
+    (a, p) => a + forecastArb(p.contract_status, baseWar(p), p.cap_hit, p.position_abbr).projections[0], 0,
   )
   const costReceived = receiving.players.reduce(
-    (a, p) => a + forecastArb(p.contract_status, p.last_war, p.cap_hit, p.position_abbr).projections[0], 0,
+    (a, p) => a + forecastArb(p.contract_status, baseWar(p), p.cap_hit, p.position_abbr).projections[0], 0,
   )
   // Show extension estimate for controlled players on received side (Issue 5)
   const extensionEstReceived = receiving.players.reduce((a, p) => {
-    const arb = forecastArb(p.contract_status, p.last_war, p.cap_hit, p.position_abbr)
+    const arb = forecastArb(p.contract_status, baseWar(p), p.cap_hit, p.position_abbr)
     return a + (arb.yearsControlled > 0 ? arb.extensionEst3yr : 0)
   }, 0)
 
