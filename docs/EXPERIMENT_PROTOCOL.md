@@ -1,4 +1,4 @@
-# Experiment Protocol — savage-trade-evaluator
+# Experiment Protocol
 
 **Version:** 1.0  
 **Adopted:** 2026-05-20  
@@ -12,8 +12,8 @@ recorded as "confirmed" unless it was run under this protocol.
 
 ## Motivation
 
-The ablation phase (R-01 → R-56) tested 56 feature variants on a single 2021-2024
-holdout. All 56 saw the same test window before a decision was recorded — a textbook
+The ablation phase (R-01 to R-56) tested 56 feature variants on a single 2021-2024
+holdout. All 56 saw the same test window before a decision was recorded, a textbook
 case of researcher degrees of freedom. The multiple-comparisons exposure is
 uncontrolled; any feature that looked good on this specific 4-year window is
 capitalizing on chance by construction.
@@ -46,7 +46,7 @@ All feature-credibility claims must be validated through walk-forward CV
 
 | Outcome | N folds | Note |
 |---|---|---|
-| war_delta | 5 | Full 2009-2023 trade history; robust multi-fold validation |
+| war_delta | 5 | Full 2009-2023 trade history; multi-fold validation holds up |
 | dollar_surplus | 5 | Same population as war_delta |
 | xwoba_delta | 1 | Statcast era only (2015+); single-fold = temporal robustness check, not multi-fold confirmation |
 | kpct_delta | 1 | Same as xwoba_delta; all kpct results remain exploratory by design |
@@ -69,12 +69,12 @@ do **not** count toward confirmation.
 
 A feature is credible in a fold if **both** of:
 1. 90% posterior CI excludes zero (`p05 > 0` or `p95 < 0`)
-2. Directional mass ≥ **97.5%** (stricter than ablation-phase 95%)
+2. Directional mass of at least **97.5%** (stricter than the ablation-phase 95%)
 
 ### Confirmation threshold
 
 A feature is **CONFIRMED** if **all three** of:
-1. Credible in ≥ `K/N` sufficient folds (see table)
+1. Credible in at least `K/N` sufficient folds (see table)
 2. Sign (direction) is consistent across **every** credible fold
 3. At least one sufficient fold exists
 
@@ -85,7 +85,7 @@ A feature is **CONFIRMED** if **all three** of:
 | kpct_delta | 2/3 (67%) |
 | dollar_surplus | 3/4 (75%) |
 
-Features that fail confirmation are **EXPLORATORY** — they may inform future
+Features that fail confirmation are **EXPLORATORY**. They may inform future
 pre-registered hypotheses but must not appear in production feature sets.
 
 ---
@@ -96,7 +96,7 @@ Every experiment must have a record filed **before** the script is run.
 Record in `wiki/trade-eval--decisions.md` as a new entry:
 
 ```
-### D-NN: <Feature name> — <Outcome>
+### D-NN: <Feature name>, <Outcome>
 
 **Status:** PRE-REGISTERED  
 **Filed:** YYYY-MM-DD  
@@ -109,7 +109,7 @@ Record in `wiki/trade-eval--decisions.md` as a new entry:
 - Mechanistic rationale: [1-3 sentences explaining WHY this feature should move the outcome]
 
 **Falsifiability criteria (pre-committed):**
-- Confirmed if: credible in ≥ K/N sufficient folds with consistent sign (per EXPERIMENT_PROTOCOL.md)
+- Confirmed if: credible in at least K/N sufficient folds with consistent sign (per EXPERIMENT_PROTOCOL.md)
 - Exploratory if: credible in some folds but fails K/N or sign-consistency gate
 - Null if: fails single-fold credibility in all sufficient folds
 
@@ -147,17 +147,17 @@ A feature graduates from CONFIRMED to the production feature set only after:
 
 The following safeguards are implemented in `modeling/v3.py` and must remain active:
 
-1. **Training-only imputation** — missing features in the test set are filled with the
+1. **Training-only imputation.** Missing features in the test set are filled with the
    training set mean, not the global mean. Prevents test-data leakage in imputation.
 
-2. **Feature winsorization** — test features are clipped to `[training_mean ± 5·training_std]`
+2. **Feature winsorization.** Test features are clipped to `[training_mean +/- 5 * training_std]`
    before standardization. Prevents catastrophic linear extrapolation when the test period
    contains out-of-distribution feature values (e.g., a feature not present in the training
    era receives a zero/imputed value that is far from the training distribution).
 
 These are not optional. Walk-forward folds with early training windows (2009-2013)
 commonly produce test observations with extreme standardized feature values on
-Statcast-era features (null → imputed to a value far from early-era distribution).
+Statcast-era features (null, then imputed to a value far from the early-era distribution).
 
 ## What Does NOT Count as Evidence
 
@@ -174,7 +174,7 @@ Statcast-era features (null → imputed to a value far from early-era distributi
 
 ## Known Exploratory Findings (Pre-Protocol)
 
-The following were claimed "credible" under the old single-split standard (R-01 → R-56)
+The following were claimed "credible" under the old single-split standard (R-01 to R-56)
 and are **not confirmed** under this protocol until R-57 walk-forward validation completes:
 
 **war_delta** (claimed credible, must re-validate):

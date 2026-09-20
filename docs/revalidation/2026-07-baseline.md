@@ -1,9 +1,9 @@
-# V3.2 Revalidation — baseline
+# V3.2 revalidation: baseline
 
 **Git SHA:** `1536b5f`  **Date:** 2026-07-06
 
 ## Single-split backtest
-Train through 2020, test 2021–2024.
+Train through 2020, test 2021 to 2024.
 
 | Outcome | train_n | test_n | MAE | CRPS | 90% coverage | credible_features |
 |---|---|---|---|---|---|---|
@@ -22,6 +22,6 @@ Train through 2020, test 2021–2024.
 ## Acceptance criteria (D-38)
 
 - **Go**: all three outcomes have `coverage_90 >= 0.80` (grade B or better).
-- **Stop**: any outcome below 0.80 — do NOT retrain or tweak; record and report.
+- **Stop**: any outcome below 0.80. Do NOT retrain or tweak; record and report.
 
-Coverage grades: A ≥ 0.80, B ≥ 0.60, C ≥ 0.40, D < 0.40 (note: plan uses A≥0.8 threshold; single-split 90% CI should be near 0.90 if well-calibrated).
+Coverage grades: A >= 0.80, B >= 0.60, C >= 0.40, D < 0.40 (the plan uses the A >= 0.80 threshold; a well-calibrated single-split 90% CI should land near 0.90).

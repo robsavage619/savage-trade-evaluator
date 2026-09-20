@@ -3,7 +3,7 @@
 One-off and repeatable scripts, grouped by role. Everything runs as
 `uv run python scripts/<name>.py` against the DuckDB store.
 
-## Product / validation (repeatable — keep working)
+## Product / validation (repeatable, keep working)
 
 | Script | Role |
 |---|---|
@@ -17,18 +17,19 @@ One-off and repeatable scripts, grouped by role. Everything runs as
 
 | Script | Role |
 |---|---|
-| `parse_fg_prospects.py` | FanGraphs The Board scrape → `prospect_rankings` |
-| `calibrate_prospect_fv.py` | C4 prospect FV→WAR calibration |
+| `parse_fg_prospects.py` | FanGraphs The Board scrape -> `prospect_rankings` |
+| `calibrate_prospect_fv.py` | C4 prospect FV-to-WAR calibration |
 | `build_gm_profiles.py` | Phase 3 GM behavioral profiles |
 | `refresh_rosters.py` | Roster snapshot refresh from MLB Stats API |
-| `rebuild_spotrac_matches.py` | Contract ↔ player ID re-matching |
+| `rebuild_spotrac_matches.py` | Contract to player ID re-matching |
 | `enrich_player_war.py` | Player WAR enrichment pass |
 | `probe_data_sources.py` | Availability probe for candidate stat sources |
 
-## Numbered research rounds (`r33`–`r62` — historical, one-off)
+## Numbered research rounds (`r33` to `r62`, historical, one-off)
 
-Each `rNN_*.py` backs an entry in [`RESEARCH_LOG.md`](../RESEARCH_LOG.md)
-(R-33 … R-62) and a decision in the ADR log. They are kept for
+Rounds R-01 to R-32 are written up in [`RESEARCH_LOG.md`](../RESEARCH_LOG.md).
+R-33 onward were never written up there: the script and its printed output
+are the record. Each backs a decision in the ADR log. They are kept for
 reproducibility of the published findings, not maintained as product code.
 
 ## Ablations & exploratory analyses (historical, one-off)
@@ -38,5 +39,5 @@ reproducibility of the published findings, not maintained as product code.
 `all_regimes_ranked.py`, `cross_metric_pairwise.py`,
 `regime_control_reruns.py`, `investigate_regime_anomalies.py`,
 `discover_theses.py`, `three_term_demo.py`, `q01_q02_q07_experiments.py`,
-`rate_surplus_baseline.py` — feature ablations and thesis explorations
+`rate_surplus_baseline.py`: feature ablations and thesis explorations
 feeding the research log. Same status as the numbered rounds.

@@ -2,7 +2,7 @@
 """Part 2 of Step 9 revalidation: compare MI vs mean-imputation on the backtest test set.
 
 For each production outcome:
-1. Load the production fit (cached — no MCMC).
+1. Load the production fit (cached, no MCMC).
 2. Assemble the raw (un-imputed) test set using the same temporal split as
    backtest_outcome_v3 (train_end=2020, test=2021-2024).
 3. Score with two modes:
@@ -46,7 +46,7 @@ CLIP_DOLLAR = 200e6
 def _build_raw_test(outcome: str, cols: tuple[str, ...]) -> pd.DataFrame:
     """Return the raw (un-imputed) test rows with NaN intact."""
     combined = assemble_v3_combined()
-    # Keep only rows where the outcome label exists and ≥ MIN_FEATURES_PRESENT features present.
+    # Keep only rows where the outcome label exists and at least MIN_FEATURES_PRESENT features are present.
     combined = combined[combined[outcome].notna()].copy()
     present = combined[list(cols)].notna().sum(axis=1)
     combined = combined[present >= MIN_FEATURES_PRESENT].copy()
@@ -77,7 +77,7 @@ def _score_mode(
             feat_df[c] = feat_df[c].fillna(fill)
         pred_t = predict(fit, feat_df, multiple_imputation=False)
 
-    # The production fit (get_fit) trains on raw dollar values — no signed-log transform.
+    # The production fit (get_fit) trains on raw dollar values, with no signed-log transform.
     # _inv_signed_log only applies when scoring backtest fits that trained with the transform.
     pred = pred_t
     mean_pred = pred.mean(axis=1)
@@ -93,7 +93,7 @@ def _score_mode(
 
 
 def _sparse_mask(test_raw: pd.DataFrame, cols: tuple[str, ...]) -> np.ndarray:
-    """Boolean row mask: True where ≥SPARSE_THRESHOLD fraction of cols are NaN."""
+    """Boolean row mask: True where at least SPARSE_THRESHOLD of the columns are NaN."""
     n_cols = len(cols)
     if n_cols == 0:
         return np.zeros(len(test_raw), dtype=bool)
@@ -160,7 +160,7 @@ def run(out_path: Path | None) -> None:
         if float(mean_row["n_sparse"]) > 0:
             cov_pass = sparse_dev_mi <= sparse_dev_mean
         else:
-            cov_pass = True  # no sparse rows → criterion not applicable
+            cov_pass = True  # no sparse rows, so the criterion does not apply
             verdict_lines.append(f"  - {outcome}: no sparse rows, coverage criterion N/A")
 
         # MAE/CRPS degradation criterion (overall)
@@ -181,7 +181,7 @@ def run(out_path: Path | None) -> None:
             f"(sparse |dev| mean={sparse_dev_mean:.4f} MI={sparse_dev_mi:.4f}), "
             f"mae_degrade={mae_degrade:+.2%} {'PASS' if mae_pass else 'FAIL'}, "
             f"crps_degrade={crps_degrade:+.2%} {'PASS' if crps_pass else 'FAIL'} "
-            f"→ {'GO' if outcome_go else 'NO-GO'}"
+            f"-> {'GO' if outcome_go else 'NO-GO'}"
         )
 
     overall_verdict = "**GO**" if go else "**NO-GO**"
@@ -194,10 +194,10 @@ def run(out_path: Path | None) -> None:
         "",
         "---",
         "",
-        "## Part 2 — MI coverage validation",
+        "## Part 2: MI coverage validation",
         "",
-        f"Sparse threshold: ≥{SPARSE_THRESHOLD:.0%} features missing. "
-        f"GO criteria: sparse |cov90−0.90| under MI ≤ mean-imp; "
+        f"Sparse threshold: at least {SPARSE_THRESHOLD:.0%} of features missing. "
+        f"GO criteria: sparse |cov90 - 0.90| under MI no worse than mean-imp; "
         f"overall MAE/CRPS degrade <2%.",
         "",
         "| outcome | mode | n_total | n_sparse | overall_cov90 | overall_mae | overall_crps | sparse_cov90 | sparse_mae | sparse_crps |",
@@ -222,7 +222,9 @@ def run(out_path: Path | None) -> None:
     if not go:
         import sys
 
-        logger.error("MI validation NO-GO — do not label as 'honest intervals' in product surface")
+        logger.error(
+            "MI validation NO-GO. Do not label these as 'honest intervals' in the product surface."
+        )
         sys.exit(1)
 
 
