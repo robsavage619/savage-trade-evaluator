@@ -1,4 +1,4 @@
-# Savage Trade Evaluator — Phase 1 Synthesis
+# Phase 1 synthesis
 
 **Status as of 2026-05-16.** This document consolidates the R-06 through R-31 research arc into a single readable narrative. It is the project's "where we are" reference point before any Phase 2 (product build) work begins.
 
@@ -10,13 +10,13 @@ The project started with one specific thesis: **the Dodgers' MLB-leading dev sys
 
 **Five things you should know:**
 
-1. **The original system-tax thesis is empirically rejected.** Across all 16 regimes tested, the YOUNG-PROSPECT bucket is *positive* in every single one — young players who get traded *gain* WAR after, regardless of which org they leave. No regime in V1 data shows the predicted pattern. (R-30, D-29)
+1. **The original system-tax thesis is empirically rejected.** Across all 16 regimes tested, the YOUNG-PROSPECT bucket is *positive* in every single one. Young players who get traded *gain* WAR afterward, regardless of which org they leave. No regime in V1 data shows the predicted pattern. (R-30, D-29)
 
 2. **The Dodgers aren't anomalous.** They're #4 in dev, near-median in trade Δ. Top-tier on both axes, but not exceptional on either. The "elite system" reputation overstates them. (R-31)
 
-3. **The strongest specific-regime finding is TEX-Jon Daniels' sell-high skill** — 9 vets traded with mean Δ -2.54 WAR (Lucroy, Minor, Michael Young, Darvish, Chirinos). Different mechanism than the original thesis but the cleanest single-person finding in the project. (R-29, R-30)
+3. **The strongest specific-regime finding is TEX-Jon Daniels' sell-high skill.** 9 vets traded with mean delta -2.54 WAR (Lucroy, Minor, Michael Young, Darvish, Chirinos). Different mechanism than the original thesis but the cleanest single-person finding in the project. (R-29, R-30)
 
-4. **The strongest pure-predictive finding is R-22's pitcher K%-trajectory coefficient** — mass=100%, mean -10.8 K-percentile-points, 90% CI [-17.1, -4.3]. Plain English: pitchers coming off K%-jump seasons regress hard post-trade. Largest credible coefficient in the entire ablation program. (R-22)
+4. **The strongest pure-predictive finding is R-22's pitcher K%-trajectory coefficient.** Mass 100%, mean -10.8 K-percentile-points, 90% CI [-17.1, -4.3]. Plain English: pitchers coming off K%-jump seasons regress hard post-trade. Largest credible coefficient in the entire ablation program. (R-22)
 
 5. **The product-relevant artifact is the 2D org-quality map.** Each franchise gets a (dev WAR, trade Δ) coordinate. Quadrants identify strategic implications. HOU is unique in being HIGH-DEV / TRULY-POSITIVE-TRADE; SFG and SDP are bottom-quadrant on both axes. (R-31)
 
@@ -26,7 +26,7 @@ The project started with one specific thesis: **the Dodgers' MLB-leading dev sys
 
 ### Origin
 
-Rob's framing: some MLB clubs function like college football programs. They install development advantages through analytics, tech, and coaching that elevate prospect production *while in-system*. Those prospects fail post-trade because the system advantage doesn't travel.
+Rob's framing: some MLB clubs function like college football programs. They install development advantages through analytics, tech, and coaching that raise prospect production *while in-system*. Those prospects fail post-trade because the system advantage doesn't travel.
 
 The Dodgers were the canonical example. The thesis predicted that LAD-departed prospects should systematically underperform their pedigree.
 
@@ -34,15 +34,15 @@ The Dodgers were the canonical example. The thesis predicted that LAD-departed p
 
 Each correction emerged from a specific empirical surprise.
 
-**1. Architectural correction — within-team variation (D-24).** Five rounds of feature engineering (R-06, R-07, R-09, R-14, R-15) all returned null results on WAR-based outcomes. Diagnosis: static team-level features (org dev-fit, per-coach record, draft pedigree, analytics cluster) cannot earn predictive keep against a multilevel model that already has team-cluster random intercepts. Features must vary *within* team to claim residual variance. R-15's first within-team-variation feature (acquired-player-quality) was directionally positive but still sub-threshold.
+**1. Architectural correction: within-team variation (D-24).** Five rounds of feature engineering (R-06, R-07, R-09, R-14, R-15) all returned null results on WAR-based outcomes. Diagnosis: static team-level features (org dev-fit, per-coach record, draft pedigree, analytics cluster) cannot earn predictive keep against a multilevel model that already has team-cluster random intercepts. Features must vary *within* team to claim residual variance. R-15's first within-team-variation feature (acquired-player-quality) was directionally positive but still sub-threshold.
 
-**2. Metric correction — rate-based outcomes (D-25, D-26).** R-16 ran the origin-org test using pitcher K% instead of WAR. Cross-metric replication revealed that R-12/R-13's WAR-based findings were partly artifactual — HOU/CLE/TBR/SDP all sign-flipped between metrics, while only HOU stayed consistent. R-19 then ran the R-15 ablation against an xwOBA outcome. **Three features became credibly real for the first time in the program** (mass >= 96%): acquired-player avg experience (-), war trajectory (-), and player quality (+). The same features on WAR-outcome were null. The outcome variable was hiding signal that rate-based outcomes surface.
+**2. Metric correction: rate-based outcomes (D-25, D-26).** R-16 ran the origin-org test using pitcher K% instead of WAR. Cross-metric replication revealed that R-12/R-13's WAR-based findings were partly artifactual. HOU/CLE/TBR/SDP all sign-flipped between metrics, while only HOU stayed consistent. R-19 then ran the R-15 ablation against an xwOBA outcome. **Three features became credibly real for the first time in the program** (mass 96% or better): acquired-player avg experience (-), war trajectory (-), and player quality (+). The same features on WAR-outcome were null. The outcome variable was hiding signal that rate-based outcomes surface.
 
-**3. Regime correction — GM identity matters more than team identity (D-28).** R-25 split each team's trade history into decades and ran a multilevel with (team × decade) clusters. Variance decomposition: 90% within-team (regime/decade shifts), 33% between-team (org culture). GM regimes drive ~3× more variance than franchise identity. R-27 confirmed: when we replace team-clusters with regime-clusters, the WAR-based "LAD < HOU" pairwise weakens from 70% to 59%; the xwOBA-based version survives at 65%.
+**3. Regime correction: GM identity matters more than team identity (D-28).** R-25 split each team's trade history into decades and ran a multilevel with (team x decade) clusters. Variance decomposition: 90% within-team (regime/decade shifts), 33% between-team (org culture). GM regimes drive roughly 3x more variance than franchise identity. R-27 confirmed: when we replace team-clusters with regime-clusters, the WAR-based "LAD < HOU" pairwise weakens from 70% to 59%; the xwOBA-based version survives at 65%.
 
-**4. Mechanism correction — sell-high vs system-tax are not the same thing (D-29).** R-29 archaeology on TEX-Daniels showed his negative regime is driven entirely by veterans at peak (Lucroy, Minor, Young, Darvish) — sell-high mechanic. R-30 decomposed every regime's trades into vet-at-peak vs young-prospect buckets. **The YOUNG-PROSPECT bucket is positive in every single regime tested**, including LAD-Friedman, HOU-Luhnow, OAK-Beane, MIL-Stearns. There is no regime in our data where the system-tax mechanism is credibly present.
+**4. Mechanism correction: sell-high and system-tax are not the same thing (D-29).** R-29 archaeology on TEX-Daniels showed his negative regime is driven entirely by veterans at peak (Lucroy, Minor, Young, Darvish), which is the sell-high mechanic. R-30 decomposed every regime's trades into vet-at-peak vs young-prospect buckets. **The YOUNG-PROSPECT bucket is positive in every single regime tested**, including LAD-Friedman, HOU-Luhnow, OAK-Beane, MIL-Stearns. There is no regime in our data where the system-tax mechanism is credibly present.
 
-**5. Coverage correction — dev credit is not trade Δ (D-30 candidate).** Rob noted that trade-outcome metrics don't credit teams for developing players who eventually became stars elsewhere. R-31 built a separate dev-credit attribution from `draft_picks` + first-MLB-team. Three iterations (raw → debuted-with-drafter filter → franchise-aliases + international-proxy + scout-to-sign + 2D map). The final 2D coordinate map is the product-relevant artifact.
+**5. Coverage correction: dev credit is not trade delta (D-30 candidate).** Rob noted that trade-outcome metrics don't credit teams for developing players who eventually became stars elsewhere. R-31 built a separate dev-credit attribution from `draft_picks` + first-MLB-team. Three iterations: raw, then a debuted-with-drafter filter, then franchise aliases plus international proxy plus scout-to-sign plus the 2D map. The final 2D coordinate map is the product-relevant artifact.
 
 ### Surviving findings
 
@@ -53,9 +53,9 @@ After all the corrections, three things survive at conventional credibility thre
 **Specific-coefficient finding (R-22):** Pitcher K%-trajectory predicts post-trade K% decline. Mass=100%, mean -10.8 K-percentile-points, 90% CI [-17.1, -4.3]. The largest credible coefficient in the project. Mechanism: heavy regression-to-the-mean at the pitcher arsenal-trajectory level.
 
 **Three rate-based-outcome features (R-19):** On the xwOBA-delta outcome with n=143:
-- acquired_player_avg_experience: 99% negative mass — aging effect, cleanly captured
-- acquired_player_avg_war_trajectory: 98% negative mass — momentum effect
-- acquired_player_quality: 96% positive mass — talent carryover with RTM partially absorbed
+- acquired_player_avg_experience: 99% negative mass, an aging effect cleanly captured
+- acquired_player_avg_war_trajectory: 98% negative mass, a momentum effect
+- acquired_player_quality: 96% positive mass, talent carryover with RTM partially absorbed
 
 **Specific-team observation (R-31):** Only HOU is HIGH-DEV / TRULY-POSITIVE-TRADE. Only STL is LOW-DEV / strongly-POSITIVE-TRADE (best trade Δ in baseball at +0.10). Only SFG is dead-last-on-both-axes. The 2D map cleanly characterizes franchise strategy without requiring a system-tax narrative.
 
@@ -122,7 +122,7 @@ The two axes are roughly orthogonal. Being good at dev does not predict being go
 - **Pitcher K%-trajectory predicts post-trade K% decline** (R-22; mass=100%).
 - **Within-team-variation features beat static team features** in our multilevel architecture (D-24, validated by R-19).
 - **Rate-based outcomes surface signal that WAR-outcomes hide** (D-26, R-19, R-22).
-- **GM regimes explain ~3× more variance than team identity** in origin-org effects (R-25).
+- **GM regimes explain roughly 3x more variance than team identity** in origin-org effects (R-25).
 - **CLE has the best amateur+international dev pipeline** at 1754 WAR (R-31).
 - **HOU is the only HIGH-DEV / POS-TRADE franchise** in the 2D map (R-31).
 - **STL has the best trade-Δ in baseball** at +0.10 (R-31).
@@ -130,14 +130,14 @@ The two axes are roughly orthogonal. Being good at dev does not predict being go
 ### Rejected by V1 data
 
 - **The original Dodgers system-tax thesis** (R-30, D-29). No regime shows the predicted young-prospect-declines pattern.
-- **The "analytics-leader cluster" as a coherent group** (R-16, D-23). HOU/TBR/SDP/BOS/CLE don't cluster — they split on every cross-metric replication.
+- **The "analytics-leader cluster" as a coherent group** (R-16, D-23). HOU/TBR/SDP/BOS/CLE don't cluster; they split on every cross-metric replication.
 - **Modern CLE as a dev-travels org** (R-27). Their R-12/R-17 positive signal was almost entirely a Shapiro-era (2000s) echo we couldn't isolate in regime-controlled data.
 - **HOU-Luhnow as a "dev-installs-travel" story** (R-27, R-30). The clean Luhnow-specific WAR intercept is +0.005 (near zero); HOU's positive signal is "rich-roster surplus prospects thrived elsewhere," not Strom-coaching-traveled-with-them.
 - **The R-17 LAD < HOU/CLE pairwise on WAR** (R-27). Weakened from 70% to 59% under regime control. The xwOBA version (65%) survives but is no longer the project's headline finding.
 
 ### Inconclusive
 
-- **LAD-specific system-tax pattern.** Across four progressively-controlled tests (R-10 raw → R-10 high-cohort split → R-10 multilevel → R-13 pairwise → R-27 regime-controlled), LAD trends slightly negative but never credibly separable from zero. Best statement V1 supports: "LAD trends marginally below HOU/CLE on rate-based outcomes; cannot reject H0 at any sample size we can reach."
+- **LAD-specific system-tax pattern.** Across four progressively-controlled tests (R-10 raw, R-10 high-cohort split, R-10 multilevel, R-13 pairwise, R-27 regime-controlled), LAD trends slightly negative but never credibly separable from zero. Best statement V1 supports: "LAD trends marginally below HOU/CLE on rate-based outcomes; cannot reject H0 at any sample size we can reach."
 - **The Anthopoulos "sign flip"** (TOR positive, ATL negative). R-29 showed both regimes have 95% CIs crossing zero. Apparent flip is consistent with sampling variation at n=23-31.
 
 ---
@@ -192,10 +192,10 @@ The two axes are roughly orthogonal. Being good at dev does not predict being go
 
 ## Files of record
 
-- `RESEARCH_LOG.md` — full chronological R-01 through R-31 log with reproducibility details.
-- `~/Vault/savage_vault/wiki/trade-eval--decisions.md` — D-01 through D-29 modeling/scope decisions.
-- `scripts/` — 17 standalone scripts for each round's analysis, all runnable.
-- `src/savage_trade_evaluator/` — V1 data spine + model code.
-- `data/duckdb/trades.db` — DuckDB store with all ingested data.
+- `RESEARCH_LOG.md`: the chronological R-01 through R-32 log with reproducibility details.
+- `~/Vault/savage_vault/wiki/trade-eval--decisions.md`: D-01 through D-29 modeling and scope decisions.
+- `scripts/`: one runnable script per round's analysis.
+- `src/savage_trade_evaluator/`: V1 data spine and model code.
+- `data/duckdb/trades.db`: the DuckDB store.
 
 This document is the synthesis index. Read it first for the narrative; reach into the research log for any specific result's setup, sample size, and reproducibility detail.

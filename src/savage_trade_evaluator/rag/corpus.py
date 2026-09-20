@@ -1,9 +1,9 @@
 """Load and chunk the project's markdown corpus for retrieval.
 
 The corpus has two layers:
-  1. Project docs — the project's own documented thinking: research log,
+  1. Project docs: the project's own documented thinking, such as the research log,
      synthesis docs, stats catalog.
-  2. Vault wiki — ingested book/paper notes and concept pages, loaded
+  2. Vault wiki: ingested book and paper notes plus concept pages, loaded
      alongside project docs so retrieval spans both. Location defaults to
      ~/Vault/savage_vault/wiki/ and can be overridden with STE_VAULT_DIR;
      a missing vault degrades to project docs only.
@@ -28,11 +28,11 @@ CORPUS_FILES: tuple[str, ...] = (
     "docs/NAIVE_BASELINE.md",
     "docs/STATS_CATALOG.md",
     "docs/EXPERIMENT_PROTOCOL.md",
-    "docs/V2_DESIGN.md",
-    "docs/DATA_SOURCE_PROBE.md",
+    "docs/archive/V2_DESIGN.md",
+    "docs/archive/DATA_SOURCE_PROBE.md",
 )
 
-# Vault wiki directory — outside the project root, overridable for other machines.
+# Vault wiki directory, outside the project root, overridable for other machines.
 VAULT_DIR = Path(os.environ.get("STE_VAULT_DIR", Path.home() / "Vault" / "savage_vault" / "wiki"))
 
 _HEADING = re.compile(r"^(#{1,4})\s+(.*)$")
@@ -122,7 +122,7 @@ def load_chunks(root: Path | None = None, *, include_vault: bool | None = None) 
         root: Project root to resolve corpus paths against. Defaults to
             ``config.PROJECT_ROOT``.
         include_vault: Whether to append vault wiki chunks. Defaults to True
-            only when ``root`` is the real project root — an explicit root
+            only when ``root`` is the real project root. An explicit root
             (tests, alternate corpora) stays hermetic unless requested.
 
     Returns:

@@ -1,8 +1,8 @@
-# Skill Routing — savage-trade-evaluator
+# Skill routing
 
 Which of Rob's skills to invoke when. This is project-specific routing on top of the global skill set at `~/.claude/skills/`. Only skills actually present in Rob's ecosystem are listed.
 
-**Convention:** trigger → skill. When the trigger matches, invoke the skill via the `Skill` tool (or the `/skill-name` slash-command shorthand) **before** generating a substantive response.
+**Convention:** trigger, then skill. When the trigger matches, invoke the skill via the `Skill` tool (or the `/skill-name` slash-command shorthand) **before** generating a substantive response.
 
 ---
 
@@ -11,7 +11,7 @@ Which of Rob's skills to invoke when. This is project-specific routing on top of
 | Trigger | Skill | Why |
 |---|---|---|
 | Any task on this project | `rob-context` | Loads Rob's identity, role, stack defaults; foundation for every other skill |
-| Any Python file edit / creation | `py-conventions` | Enforces Python 3.12 / uv / ruff / pyright / src layout / `from __future__ import annotations` / Google docstrings / no `print()` / etc. — non-negotiable |
+| Any Python file edit / creation | `py-conventions` | Enforces Python 3.12 / uv / ruff / pyright / src layout / `from __future__ import annotations` / Google docstrings / no `print()` / etc. Non-negotiable. |
 
 ---
 
@@ -89,7 +89,7 @@ Which of Rob's skills to invoke when. This is project-specific routing on top of
 
 | Trigger | Skill |
 |---|---|
-| **If we ever decide to unblock FanGraphs** for prospect FV grades (Phase 2 prospect work) | `playwright` — the only viable route per the Cloudflare findings (see LESSONS.md) |
+| FanGraphs scraping work beyond the current Firecrawl route | `playwright`. FanGraphs is no longer blocked: leaderboards and The Board are ingested via a Firecrawl stealth proxy. See `docs/STATS_CATALOG.md`. |
 
 ---
 
@@ -97,7 +97,7 @@ Which of Rob's skills to invoke when. This is project-specific routing on top of
 
 | Trigger | Skill |
 |---|---|
-| Session was friction-heavy — capture lessons | `session-debrief` |
+| Session was friction-heavy, capture lessons | `session-debrief` |
 | Review just-written code for reuse / quality / efficiency | `simplify` |
 | Persist a key decision across sessions | `mem9` |
 | Discover a missing skill / improve an existing one | `skill-forge` |
@@ -122,14 +122,14 @@ Which of Rob's skills to invoke when. This is project-specific routing on top of
 
 These skills exist globally but **do not auto-route here.** If they fire on a confusion trigger, redirect away:
 
-- `shc-workout`, `cover-letter`, `linkedin-audit`, `resume-coach`, `jd-fit`, `career-pipeline`, `job-hunt` — Rob's health/career projects, not baseball.
-- `productivity:*` — task management. We have our own task tracking via the planning brief + decisions log.
-- `marketing:*`, `sales:*`, `legal:*`, `finance:*`, `operations:*`, `product-management:*` (except `product-management:brainstorm` for early thesis work) — wrong domain.
+- `shc-workout`, `cover-letter`, `linkedin-audit`, `resume-coach`, `jd-fit`, `career-pipeline`, `job-hunt`: Rob's health and career projects, not baseball.
+- `productivity:*`: task management. We track tasks in the planning brief and decisions log.
+- `marketing:*`, `sales:*`, `legal:*`, `finance:*`, `operations:*`, `product-management:*` (except `product-management:brainstorm` for early thesis work): wrong domain.
 
 ---
 
 ## How this routing is enforced
 
-Claude reads this file at session start (it's a project-root .md, loaded with CLAUDE.md). When a trigger matches, **invoke the Skill tool** with the listed skill name as a **blocking step** before generating a substantive response — same convention as the global skill auto-invocation rule.
+This file lives in `.claude/` alongside the slash commands. When a trigger matches, **invoke the Skill tool** with the listed skill name as a **blocking step** before generating a substantive response. Same convention as the global skill auto-invocation rule.
 
 If a trigger fires that's not listed here, default to Rob's global routing in `~/.claude/CLAUDE.md` + `~/.claude/skills/`.
