@@ -7,7 +7,8 @@ The Ryan Pressly MIN-to-HOU 2018-07-27 trade (`trade_event_id=371509`, player_id
 Canonical values (CLAUDE.md, "The Pressly canonical case" section):
 
 - **bWAR by season**: T-1 (2017) = -0.04, T@MIN (2018 MIN stint) = 0.73, T@HOU (2018 HOU stint) = 1.34, T+1 (2019) = 1.68, T+2 (2020) = 0.22, T+3 (2021) = 1.87
-- **Arsenal percentiles, 2017 to 2018**: fb_spin 97 to 98, curve_spin 100 to 100, K% 65 to 94, whiff% 69 to 95
+- **Arsenal percentiles, T-1 (2017) to T+1 (2019)**: fb_spin 97 to 98, curve_spin 100 to 100, K% 65 to 94, whiff% 69 to 95
+- **Arsenal percentiles, T-1 (2017) to T (2018)**, the trade season itself: fb_spin 97 to 98, curve_spin 100 to 99, K% 65 to 95, whiff% 69 to 98
 - **Personnel HOU 2018**: Luhnow (GM/POBO), Hinch (manager), Strom (pitching coach)
 - **Personnel MIN 2018**: Falvey (POBO), Levine (GM), Molitor (manager), Alston (pitching coach)
 
@@ -32,7 +33,7 @@ Steps (run in order, stop on data error):
 
    Compare each row against canonical bWAR values. Tolerance: +/-0.05.
 
-3. **Arsenal percentile shift.** Query `statcast_pitcher_percentile_ranks` for player_id 519151, years 2017 and 2018. Check the fb_spin, curve_spin, K%, and whiff% columns. Tolerance: +/-2 percentile points.
+3. **Arsenal percentile shift.** Query `statcast_pitcher_percentile_ranks` for player_id 519151, years 2017, 2018, and 2019. The canonical T-1 to T+1 comparison is 2017 against 2019; the trade-season row (2018) is listed above so a mismatch is attributed to the right year. Check the fb_spin, curve_spin, K%, and whiff% columns. Tolerance: +/-2 percentile points.
 
 4. **Verdict.** If all three checks pass, end with `Pressly smoke test PASS`. If any check fails, end with `Pressly smoke test FAIL: <which checks>` and surface the deltas.
 

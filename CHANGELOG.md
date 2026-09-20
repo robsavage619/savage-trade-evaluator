@@ -5,7 +5,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions track
 ## [Unreleased]: trust and explainability release (2026-07-05)
 
 ### Phase A: housekeeping
-- Verified and committed War Room route refactor: `WarRoom.tsx` (−1704 lines) extracted into
+- Verified and committed War Room route refactor: `WarRoom.tsx` (-1704 lines) extracted into
   `frontend/src/routes/warroom/` as 11 component files (`AiBrief`, `TradeWorkshop`, `PayrollSection`,
   `RosterShape`, `WindowClock`, `IntelligenceFeed`, `PartnerPanel`, `PostureBanner`, `LeagueTicker`,
   `primitives`, `shared`). Build verified clean (zero TS errors). (`refactor(frontend): extract War Room route into warroom/ modules`)
@@ -37,7 +37,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions track
 
 ### Phase D: model-touching change and revalidation (D-55)
 - `v3.py::predict` gains `multiple_imputation: bool = False` API. When enabled, missing features
-  receive per-sample draws from N(0,1) clipped to ±5 (z-space) before the noise draw. Complete
+  receive per-sample draws from N(0,1) clipped to +/-5 (z-space) before the noise draw. Complete
   rows are bit-identical to the prior path. (`feat(modeling): predict-time multiple imputation`)
 - D-38 revalidation in `docs/revalidation/2026-07-post-mi.md`: **NO-GO**. Marginal MI degraded
   CRPS +14.5% (war_delta) and +16.8% (surplus_wins) on sparse rows due to independent feature draws

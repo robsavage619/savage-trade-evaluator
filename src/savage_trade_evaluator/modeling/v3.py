@@ -1,4 +1,4 @@
-"""V3 single-level Bayesian regression — the post-R-33/34/35 architecture.
+"""V3 single-level Bayesian regression, the post-R-33/34/35 architecture.
 
 R-33: regime nesting adds zero signal over team-only pooling.
 R-34: team pooling adds zero signal over flat pop-intercept regression.
@@ -8,16 +8,18 @@ Conclusion: drop the multilevel scaffolding. Single-level Bayesian
 regression with per-outcome feature selection (D-27) is the architecture.
 
 Pieces shared with V2 (no need to re-implement):
-- ``v2.features.build_feature_matrix`` — feature DataFrame
-- ``v2.outcomes.build_outcomes`` — 4-outcome target matrix
-- ``v2.backtest.assemble_combined`` — the merged feature+outcome matrix
-- ``v2.backtest._crps_empirical`` — CRPS scoring
+- ``v2.features.build_feature_matrix``: feature DataFrame
+- ``v2.outcomes.build_outcomes``: target matrix
+- ``v2.backtest.assemble_combined``: the merged feature and outcome matrix
+- ``v2.backtest._crps_empirical``: CRPS scoring
 
-Per-outcome feature subset (set empirically by R-35):
-- xwoba_delta, kpct_delta: player-only (8 features) — small-n outcomes
-  overfit on team-aggregate features
-- war_delta, dollar_surplus: all features (16) — large-n outcomes get
-  signal from team-aggregate features
+Per-outcome feature subset, set empirically by R-35 (see V3_OUTCOME_FEATURES
+for the authoritative mapping):
+- Small-n rate outcomes (xwoba_delta, kpct_delta, wrc_delta, fip_delta,
+  xfip_delta, siera_delta) use the acquired-player subset, because they
+  overfit on team-aggregate features.
+- Large-n outcomes (war_delta, dollar_surplus, surplus_wins) use the full
+  feature set and do get signal from the team-aggregate features.
 """
 
 # pyright: reportAttributeAccessIssue=false, reportCallIssue=false, reportArgumentType=false
@@ -45,8 +47,9 @@ from savage_trade_evaluator.modeling.v2.outcomes import (
     build_outcomes_windowed,
 )
 
-# Q-07: war_delta skips the transition year (T+1) — 30% MAE improvement.
-# Q-02: extending to T+5 adds further credible features (11 vs 6 at T+1..T+3).
+# Q-07: war_delta skips the transition year (T+1); the season a player changes
+# teams is mostly playing-time disruption.
+# Q-02: extending to T+5 adds further credible features over T+1..T+3.
 # Combined T+2..T+5 is the V3 default for war_delta.  Dollar_surplus keeps
 # T+1..T+3 because cap obligations in year 1 are real.
 V3_WAR_WINDOW: tuple[int, int] = (2, 5)
@@ -136,7 +139,7 @@ def assemble_v3_combined(
 
 # Per-outcome feature subsets.
 #
-# war_delta and dollar_surplus use ALL_FEATURES (23 features). R-57 walk-forward CV
+# war_delta and dollar_surplus use ALL_FEATURES. R-57 walk-forward CV
 # was run on the full set; the confirmed betas listed below are valid in the full-model
 # context (Bayesian regularization via N(0,0.3) prior handles the null features).
 # Pruning to a 4-feature model changes the model context — confirmed betas from the

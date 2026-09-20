@@ -206,7 +206,7 @@ Files: `scripts/dev_credit_attribution.py` (v1, kept for transparency), `scripts
 
 **Result.** Ten new sources landed, with row counts in the project DB:
 
-| Source | Rows | What it unlocks |
+| Source | Rows | What it makes possible |
 |---|---|---|
 | **Chadwick register** | 127,526 | Player birth dates plus ID cross-walks (bbref, retro, mlbam, fg) |
 | **MLB Stats API people** | 23,617 | Birth country, handedness, height/weight, position: full player profiles |
@@ -247,7 +247,7 @@ Files: `scripts/dev_credit_attribution.py` (v1, kept for transparency), `scripts
 - **Replaces the post-1995 not-in-draft-picks international heuristic** from R-31. The dev-credit 2D map should be rerun with birth-country-based attribution before being shipped as a product artifact (D-30 candidate).
 - **D-30 candidate (new): salary-based surplus-value baseline.** With Spotrac contracts landing, the FanGraphs $/WAR baseline target can be replaced with a salary-grounded surplus-value model, a stronger and more defensible benchmark.
 - **Phase 2 V2 model build is now unblocked** with rate-based outcomes (pitch-movement deltas, framing runs, park-adjusted xwOBA/xERA), corrected demographics (real age, real birth country), and team-context features (roster construction, season aggregates).
-- **New outcome views (`d4bb475`):** four added that leverage the fortification data. Documented in the affected views section.
+- **New outcome views (`d4bb475`):** four added that draw on the fortification data. Documented in the affected views section.
 
 Caveats:
 

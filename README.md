@@ -1,273 +1,263 @@
 <p align="center">
-  <img src="banner.svg" alt="Savage Analytics — Context-aware MLB trade valuation" width="100%"/>
+  <img src="banner.svg" alt="Savage Analytics, context-aware MLB trade valuation" width="100%"/>
 </p>
 
-<p align="center">
-  <b>A front-office decision platform that answers one question:</b><br/>
-  <i>"Was this trade a good move for <b>this</b> team, in <b>this</b> contention window, under <b>this</b> front office?"</i>
-</p>
+# Savage Trade Evaluator
 
-<p align="center">
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.12-blue.svg" alt="python 3.12"/></a>
-  <a href="https://duckdb.org/"><img src="https://img.shields.io/badge/store-DuckDB-fff100" alt="DuckDB"/></a>
-  <a href="frontend/"><img src="https://img.shields.io/badge/frontend-React%2019-61dafb" alt="React 19"/></a>
-  <a href="frontend/"><img src="https://img.shields.io/badge/build-Vite%208-646cff" alt="Vite 8"/></a>
-  <a href="src/savage_trade_evaluator/storage/schemas.py"><img src="https://img.shields.io/badge/duckdb_schema-v34-informational" alt="schema"/></a>
-  <a href="docs/STATS_CATALOG.md"><img src="https://img.shields.io/badge/duckdb_rows-1.29M%2B-informational" alt="rows"/></a>
-  <a href="RESEARCH_LOG.md"><img src="https://img.shields.io/badge/research_rounds-35-success" alt="rounds"/></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-source--available-lightgrey" alt="license"/></a>
-</p>
+Most trade-value tools price a player once and sell that number to all 30 clubs.
+This one prices him 30 times. A cost-controlled mid-rotation starter is a luxury
+to a rebuilder and a pennant to a contender two games up in August with a hole in
+the rotation, so the valuation takes the acquiring club's contention window,
+payroll room, roster holes, farm depth, and front-office history as inputs. The
+output is a posterior distribution over what the trade does for *that* club, not
+a dollar figure. Around the model sits a deadline War Room, a trade builder, an
+organization scout, and a retrieval layer over the project's own research log.
 
 ---
 
-## The 60-second pitch
+## The constraints that forced the design
 
-Most "trade value" tools give every player a single number — a $/WAR price tag that's the same whether the Dodgers or the Pirates are buying. That's wrong. **The same player is worth different things to different clubs.** A cost-controlled mid-rotation starter is a luxury to a rebuilder and a pennant to a contender two games up in August with a hole in the rotation.
+Every structural choice here follows from four facts about the problem. None of
+them are preferences.
 
-**Savage Analytics** is a full-stack platform that prices that context. It pulls **1.29M+ rows** of transaction, performance, contract, and personnel data into a single store, then surfaces it through a **War Room** — a deadline command center that reads a club's record, payroll, CBT headroom, roster holes, and contention window, and tells the GM what to *do* about it.
+**There are almost no trades, and there will never be more.** The modeling table
+is 5,308 trade-side rows across 2010-2024. Only 3,977 carry a realized WAR
+outcome. The rate-based outcomes are far worse: 629 labeled rows for xwOBA-delta
+and 255 for K%-delta, because Statcast starts in 2015 and most traded players
+never accumulate a qualifying season on both sides of the move. MLB produces a
+few hundred trades a year and the Stats API has essentially nothing usable before
+2010. No amount of engineering makes more of them.
 
-It is built as a working demonstration of baseball-operations thinking end to end: data engineering, valuation modeling under uncertainty, and a product a decision-maker would actually open at the trade deadline.
+**The noise is roughly twenty times the effect.** Per-trade residual sigma is
+1.41 WAR. Between-organization variance is 0.066. Fitting anything flexible to
+this is fitting noise, and it shows: an OLS fit with five features scored 30%
+worse than predicting zero on held-out data, driven by a single spurious -7.10
+coefficient, while the Bayesian fit on identical data landed within 1% of the
+baseline.
 
-> **For evaluators:** the screenshots below are live application output — no setup required. Start with [What the research actually says](#what-the-research-actually-says) for the empirical spine, then [AI engineering](#ai-engineering----retrieval-agents-and-grounding) for the technical depth. Every claim links to a reproducible script.
+*Consequence:* Bayesian regression with priors tight enough to shrink weak
+coefficients to zero, posterior distributions rather than point estimates, and
+scoring on CRPS and interval coverage rather than R-squared. A feature counts as real
+only when its 90% CI excludes zero **and** at least 95% of posterior mass sits on
+one side. Under walk-forward CV the bar rises to 97.5% across folds.
 
----
+**Every data source is public, and several actively resist being read.**
+No paid feeds. Baseball Reference rate-limits to about 20 requests a minute, so
+the 450-request front-office scrape takes 26 minutes. FanGraphs returns 403 to
+pybaseball, to httpx with browser headers, to `curl_cffi` with Chrome TLS
+impersonation, and to `cloudscraper`.
 
-## The War Room
+*Consequence:* a source catalog that records each source's status explicitly
+(`ingest/catalog.py`, 50 sources: 42 ingested, 4 available, 4 blocked), one
+adapter per source, raw pulls cached to disk so a failed run never re-scrapes,
+and ingests that are restartable by season.
 
-> *The deadline command center. Pick your club, read your situation, make the call.*
+**One user, one laptop, no server, and a 31-second model fit.** The store is a
+single 405MB DuckDB file. A cold PyMC fit takes 31 to 33 seconds per outcome.
+Interactive scoring cannot wait for that. DuckDB also holds an exclusive write
+lock, so one ingest blocks every reader in the process.
 
-The War Room opens on a **window assessment** — is this club a buyer or a seller, and how confident are we? It reads the record, games back, and live playoff odds, then frames everything else around that posture.
-
-<p align="center">
-  <img src="docs/screenshots/warroom-sell.png" alt="War Room — sell-mode assessment for a club out of contention" width="100%"/>
-</p>
-
-Below the verdict sits **payroll intelligence** — committed dollars against the Competitive Balance Tax line, the tax tier, headroom (or, above), and a three-year payroll projection broken out by pre-arb / arbitration / free-agent commitments. Then **roster shape**: positional needs scored and ranked, tradeable surpluses surfaced, and a contention-timeline heatmap projecting the window forward.
-
-### The AI Intelligence Brief
-
-The War Room's headline feature is a **GM-grade strategic brief** generated for the selected club. It reads the live roster, payroll, and need model and produces an executive summary, a single highest-leverage move *to make today*, ranked recommendations, concrete trade packages with both sides' surplus accounting, counterparty leverage reads, and a risk radar.
-
-<p align="center">
-  <img src="docs/screenshots/warroom-brief.png" alt="War Room buy-window assessment plus AI Intelligence Brief for a contender" width="100%"/>
-</p>
-
-*Above: a contender in BUY mode with $53M of CBT headroom, an injury-gutted rotation, and a brief that opens with a specific call — acquire a named, cost-controlled arm before a bidding war forms.* The brief is grounded in the same data the rest of the app uses; it is a reasoning layer over the model, not a chatbot bolted on.
-
----
-
-## Build and price a trade
-
-> *Construct a deal leg by leg. The valuation updates live, from the acquiring club's point of view.*
-
-<p align="center">
-  <img src="docs/screenshots/trade-builder.png" alt="Trade Builder — your roster on the left, the partner's on the right" width="100%"/>
-</p>
-
-Pick a partner, drag players across, and the deal is scored **from your club's context** — your window, your payroll situation, your positional needs — not from a context-free market rate. The same package gets a different verdict depending on who's buying. That's the whole thesis, made interactive.
-
----
-
-## Scout all 30 organizations
-
-> *Two empirical axes: how good is the farm, and how good is the front office at trading out of it?*
-
-<p align="center">
-  <img src="docs/screenshots/org-explorer.png" alt="Org Explorer — all 30 clubs on the 2D development-vs-trade map" width="100%"/>
-</p>
-
-The backtest produced a finding that reframes the "system tax" narrative: **player-development quality and trade-execution quality are roughly uncorrelated.** Being elite at growing talent doesn't predict being good at trading it. The Org Explorer plots all 30 clubs on that 2D map and lets you open any one for a full scouting profile.
-
-<p align="center">
-  <img src="docs/screenshots/org-scout.png" alt="Org Scout — deep organizational profile for the Houston Astros" width="100%"/>
-</p>
-
-Each org profile carries a development-WAR trajectory, a "dev signature" multiplier, the active payroll stack against the CBT, and the full 40-man roster wired to live stats.
+*Consequence:* DuckDB rather than Postgres, no service and no ORM. Posterior
+traces are cached to disk keyed on `(MODEL_VERSION, SCHEMA_VERSION)` and
+invalidated when either moves, which turns a 31-second fit into a 0.13-second
+load. Ingests serialize; everything else opens `read_only=True`. The frontend
+reads committed JSON exports and never talks to Python at runtime, so the whole
+product runs from a clone with no database at all.
 
 ---
 
-## Profile any player
+## Architecture
 
-> *Career WAR trajectory, Statcast percentile fingerprint, and every trade they've ever been part of.*
-
-<p align="center">
-  <img src="docs/screenshots/player-profile.png" alt="Player Profile — Bobby Witt Jr. with WAR trajectory and Statcast percentile radar" width="100%"/>
-</p>
-
-Production trajectory plotted against salary, a Statcast percentile radar (the "fingerprint"), rate-stat trends over time, and a trade history that links back into the workspace. Built to answer "who is this player, really?" in one screen.
-
----
-
-## The case study: Ryan Pressly, reconstructed from data
-
-> *Can the platform reconstruct a known development win without being told the answer?*
-
-<p align="center">
-  <img src="docs/screenshots/pressly.png" alt="Case Study — the 2018 Pressly trade from Minnesota to Houston" width="100%"/>
-</p>
-
-The Pressly trade (MIN → HOU, July 2018) is the canonical validation case. The thesis from *The MVP Machine* (Ch. 9) is that Houston changed Pressly's pitch *usage* — not his stuff — and turned a useful reliever into an elite one. The platform reconstructs exactly that from raw data: his fastball and curve spin barely moved (97th, 100th percentile both before and after), but his strikeout and whiff rates leapt from the 65th/69th percentile to the 94th/95th. **The Astros didn't fix his mechanics. They fixed how he used them.**
-
----
-
-## What the research actually says
-
-> *The model is only as credible as the work behind it. This is the honest version.*
-
-<p align="center">
-  <img src="docs/screenshots/research.png" alt="Research log — what the data actually says after 35 rounds" width="100%"/>
-</p>
-
-The project began with one specific, falsifiable thesis: **the Dodgers' development system inflates prospects who then regress after being traded out.** After **35 research rounds**, that thesis was **empirically rejected** — young traded players gain WAR regardless of which org they leave. Rejecting it cleanly is the point: the discipline is in following the data, not the hunch.
-
-What survived rigorous testing:
-
-| Finding | Magnitude | Receipts |
-|---|---|---|
-| **A front office with genuine sell-high skill** | 9 veterans traded at career peak, mean −2.54 WAR afterward. The cleanest specific-actor finding in the project. | [R-29/30](RESEARCH_LOG.md) |
-| **Pitcher K%-trajectory predicts post-trade decline** | −10.8 K-percentile-points per +1 SD pre-trade trajectory; 90% CI [−17.1, −4.3]; directional mass 100%. The strongest predictive signal in the program. | [R-22](RESEARCH_LOG.md) |
-| **Rate stats surface signal WAR hides** | On an xwOBA-delta outcome, three features cross the credibility bar that are invisible when WAR is the target. | [R-19](RESEARCH_LOG.md) |
-| **Dev quality ≠ trade quality** | The two organizational axes are roughly orthogonal across all 30 clubs. | [R-31](RESEARCH_LOG.md) |
-
-Five methodology corrections (rate-based outcomes over WAR for research; cluster on front-office regime, not team; credibility = CI-excludes-zero **and** ≥95% directional mass; replicate across ≥2 metrics; decompose sell-high vs. system-tax) are documented in [`docs/PHASE1_SYNTHESIS.md`](docs/PHASE1_SYNTHESIS.md). A late three-way bracket test ([R-33/34/35](RESEARCH_LOG.md)) showed multilevel team/regime pooling added **zero** predictive signal over a flat model — so the active model was simplified accordingly. Negative results are reported as readily as positive ones.
-
----
-
-## AI engineering — retrieval, agents, and grounding
-
-> *Two production-shaped AI surfaces, both built on one discipline: **retrieve before you generate**, and never let the model be the source of a fact.*
-
-### 1. RAG over the project's own research corpus
-
-A full retrieval-augmented-generation pipeline — **ingest → chunk → embed → index → retrieve → generate** — over the 35-round research log and design docs. Ask a natural-language question; get a grounded, cited answer.
-
-```bash
-uv sync --extra rag
-uv run ste research index                       # chunk + embed + build the vector index
-uv run ste research ask "Was the system-tax thesis confirmed or rejected?"
+```
+public sources            ingest/ (19 adapters)        storage/
+  MLB Stats API           rate-limited, cached,        DuckDB, one file, 405MB
+  Baseball Reference  ->  restartable per season   ->  54 tables + 44 views
+  Baseball Savant                                      versioned DDL (v39)
+  Retrosheet, Spotrac                                  outcome_views.py:
+  FanGraphs, Chadwick                                  one window view per metric
+  TJStats                                              (WAR, xwOBA, xERA, arsenal)
+                                                              |
+                                                              v
+                             feature_assembler.py  <--  trade_views.py
+                                     |
+                                     v
+                              modeling/v3.py
+                              Bayesian regression, 9 outcomes
+                              34 features large-n / 25 small-n
+                                     |
+                                     v
+                          production_fit.py -> data/model_cache/*.nc
+                          keyed on (MODEL_VERSION, SCHEMA_VERSION)
+                          cold fit 31s, cached load 0.13s
+                                     |
+                +--------------------+--------------------+
+                v                                         v
+       ste CLI (8 sub-apps)                     scripts/export_*.py
+       score-trade, suggest-trades,                       |
+       backtest, v3, brief, research                      v
+                                              React SPA, 10 routes,
+                                              committed JSON seeds,
+                                              no backend at runtime
 ```
 
-| Stage | Implementation |
+---
+
+## Hard problems
+
+**A primary key that silently dropped half the data.** The transactions table
+used `transaction_id` alone as its primary key. MLB's API reuses that id across
+every leg of a trade, so the Pressly deal arrives as three rows sharing id
+371509. `ON CONFLICT` quietly discarded the second and third legs of every
+multi-player trade in the dataset, which is most of the interesting ones. The fix
+is a composite key `(transaction_id, leg_index)` plus a normalizer that assigns
+sequential leg indices per shared id ([`schemas.py:57`](src/savage_trade_evaluator/storage/schemas.py)).
+The failure mode is the dangerous kind: no error, no warning, just a smaller
+table than it should have been.
+
+**A 3.2-sigma finding that was entirely regression to the mean.** The project
+started from a specific thesis: that the Dodgers' development system inflates
+players who then regress once traded out. The raw high-cohort split supported it
+at 3.2 sigma. Adding pedigree controls in a multilevel fit collapsed the effect
+25x and pushed the interval across zero. Roughly 97% of the raw signal was
+regression to the mean, and any test that fails to condition on pre-trade tier
+will attribute that RTM to the origin organization
+([R-10](docs/research/part-2-origin-org-and-the-metric-correction.md)). Later
+rounds rejected the thesis outright: young traded players gain WAR regardless of
+which organization they leave.
+
+**The outcome variable was hiding the features.** Five straight rounds of feature
+engineering returned nulls against a WAR-surplus target. Rerunning the identical
+ablation against an xwOBA-delta target moved three features across the
+credibility bar at once, and R-22 later produced the largest credible coefficient
+in the project (-10.8 K-percentile points per standard deviation of pre-trade
+K%-trajectory, 90% CI [-17.1, -4.3], 100% directional mass) on a K% target where
+the same feature was invisible on WAR
+([R-19, R-22](docs/research/part-2-origin-org-and-the-metric-correction.md)). The
+outcome window mattered too: `war_delta` now skips the transition year T+1
+entirely and runs T+2 to T+5, because the year a player changes teams is mostly
+playing-time disruption.
+
+**Surplus inflated by the length of the window.** The three-term valuation
+averaged salary across a player's control window instead of summing it. On a
+four-year window at $10M per year it reported $10M of cost against a correct
+$40M, a 4x understatement of what a contract actually costs, and two-way players
+had their salary counted twice on top of that. Caught in the 2026-07 trust pass
+and fixed with a dedup to one row per `(mlb_id, season)` and `SUM` over the
+window ([D-53](docs/decision-drafts/2026-07-trust-release.md)).
+
+**A fix that improved the headline metric and was rejected anyway.** Missing
+features were being mean-filled, which produces intervals that are too narrow on
+sparse rows. Predict-time multiple imputation fixed exactly that: 90% coverage on
+sparse rows moved from 0.87 to 0.94 for `war_delta` and 0.88 to 0.95 for
+`surplus_wins`, right onto nominal. It also degraded CRPS by 14.5% and 16.8%,
+because drawing each missing feature independently ignores the correlations
+between them, and a row with eight missing Statcast features gets eight
+independent draws of something that moves together. Verdict: **NO-GO**. The
+`multiple_imputation=True` API stays in `v3.py` for a future conditional-draw
+experiment, and the scoring path reverted to mean-fill
+([revalidation report](docs/revalidation/2026-07-post-mi.md)).
+
+---
+
+## How it is verified
+
+| Check | Result |
 |---|---|
-| **Ingest + chunk** | Heading-aware markdown sectioning with word-windowed overlap, preserving a citable heading trail — [`rag/corpus.py`](src/savage_trade_evaluator/rag/corpus.py) |
-| **Embed** | `model2vec` static embeddings (256-dim, CPU-only, no API key) behind a swappable `Embedder` protocol — [`rag/embed.py`](src/savage_trade_evaluator/rag/embed.py) |
-| **Index + retrieve** | **DuckDB `vss` HNSW** vector index, cosine ranking, model-version pinned to the index — [`rag/store.py`](src/savage_trade_evaluator/rag/store.py) |
-| **Generate** | Grounded synthesis with inline `[n]` citations; **retrieval-only fallback** when no LLM key is set, so the model never answers without retrieved context — [`rag/answer.py`](src/savage_trade_evaluator/rag/answer.py) |
+| Unit and parser tests | 154 passing, 2.0s |
+| CI on every push to main | `ruff format --check`, `ruff check`, `pyright`, `pytest` |
+| V3 vs a train-mean null, MAE | 0.892 vs 1.242, **28.2% better** |
+| V3 vs a Marcel linear projection, MAE | 0.892 vs 1.400, **36.3% better** |
+| 90% interval coverage on holdout | 80.5% (gate requires 80%) |
+| Holdout | 2018-2021, n=1100, trained pre-2018 |
+| Walk-forward CV | 5 folds per outcome, CRPS mean and spread recorded |
 
-The whole thing runs cold after one clone — no key, no GPU. The HNSW choice mirrors how vector search is done at scale (e.g. Databricks Vector Search); here it stays DuckDB-native to match the rest of the stack.
+`scripts/benchmark_vs_naive.py` is the GO gate and exits nonzero if V3 fails to
+beat both baselines or coverage drops under 80%. Model-touching changes are
+revalidated against the D-38 protocol and the result is committed with its git
+SHA, pass or fail, in [`docs/revalidation/`](docs/revalidation/). The
+[NO-GO report](docs/revalidation/2026-07-post-mi.md) is committed for the same
+reason the passing one is.
 
-### 2. Agentic, structured-output report generation
-
-The War Room's **AI Intelligence Brief** is an agentic workflow: it reads a club's live roster, payroll, and need model, then emits a **strict structured-JSON** GM brief (executive summary → highest-leverage move → ranked recommendations → trade packages with two-sided surplus accounting → counterparty leverage → risk radar). The frontend renders that JSON directly — see [`analysisPrompt.ts`](frontend/src/lib/analysisPrompt.ts), [`IntelligenceReport.tsx`](frontend/src/components/IntelligenceReport.tsx).
-
-Delivery is an **MCP-style connector**: a skill generates the brief and drops a JSON file into a watched inbox (`frontend/public/brief-inbox/<TEAM>.json`) that the app picks up automatically — tool-mediated, file-boundary integration rather than a hardcoded API call. The Python side persists and re-exports briefs via [`warroom/briefs.py`](src/savage_trade_evaluator/warroom/briefs.py) (`ste brief ingest` / `ste brief export`).
-
-### Grounding discipline
-
-Both surfaces follow the same rule the rest of the pipeline does: **outputs carry provenance, generation is gated on retrieval, and the schema is enforced.** It's the public, runnable version of the retrieve-before-generate / structured-output / guardrailed-agent patterns this kind of work demands in production.
-
----
-
-## The data layer
-
-**51 tables · 4.19M+ rows · DuckDB · schema v34**
-
-| Source | Coverage | Rows | Role |
-|---|---|---|---|
-| MLB Stats API transactions | 2010–2024 | 703K | Modern trade record |
-| Retrosheet transactions | 1880–2009 | 16.9K legs | Fills the pre-2010 gap |
-| bWAR (batting + pitching) | 1871+ | 182K | The all-era value spine |
-| Statcast expected stats | 2015+ | 16.6K | xwOBA, xERA, xBA, xSLG |
-| Statcast percentile ranks | 2015+ | 13.3K | K%, whiff, chase, velocity, OAA, sprint |
-| Statcast arsenal + movement | 2015–2024 | 31K | Per-pitch-type stuff & physics |
-| Draft picks | 1990–2024 | 46K | Round, bonus, scouting report |
-| Spotrac contracts | 2000–2024 | ~17K | $49B; empirical $/WAR curve |
-| Front-office personnel | 1990–2024 | 2K+ | GM / POBO / Farm / Scouting director |
-| Coaching staffs | 2010–2024 | 5.4K | Manager + assistants per team-season |
-| Chadwick register | all-time | 127K | Cross-ID + birth dates |
-| + rosters, awards, standings, parks, venues, framing, MiLB | various | — | Supporting context |
-
-Everything lives in a single-file DuckDB store with versioned DDL in [`schemas.py`](src/savage_trade_evaluator/storage/schemas.py). FanGraphs is deliberately excluded (Cloudflare-gated); equivalent signal is sourced from Baseball Savant and Baseball Reference.
+The Pressly trade is a data-layer check rather than a model check. Across the
+canonical T-1 to T+1 window (2017 to 2019) his fastball and curve spin barely
+moved, 97th to 98th and 100th to 100th percentile, while K% went 65th to 94th and
+whiff% 69th to 95th. Houston changed how he used his pitches, not the pitches. If
+those numbers drift, the ingest regressed.
 
 ---
 
-## Under the hood
+## Known limitations
 
-**Backend** — Python 3.12, DuckDB, PyMC. A `typer` CLI (`ste <verb>`) drives ingestion, schema management, analysis, and export. Modeling is Bayesian throughout: posterior distributions, not point estimates, scored on calibration and CRPS. The valuation model is metric-agnostic by design — WAR, xwOBA, xERA, and arsenal percentiles all plug into the same interface.
+- **The model prices trades; it cannot tell you whether one would be accepted.**
+  An acceptance-probability layer needs negative examples, and refused trade
+  proposals are not public. 86 GM behavioral profiles and 5 archetypes ship as
+  context, but the acceptance model is deferred indefinitely.
+- **The rate-based outcomes are underpowered.** 629 labeled rows for xwOBA-delta
+  and 255 for K%-delta. The R-19 and R-22 findings are the most interesting in
+  the project and also the least replicated. Treat them as directional.
+- **Multiple imputation is a measured failure**, described above. Sparse-row
+  intervals are still too narrow; each scenario carries an A-to-D coverage grade
+  so you can see when you are extrapolating, which is a label on the problem
+  rather than a fix for it.
+- **There are two valuation engines and they disagree.** The Python V3 posterior
+  is the model. The frontend trade workshop uses a TypeScript heuristic whose
+  uncertainty band is `sqrt(n) * 1.2`, not a posterior. The UI labels it as a
+  heuristic estimate, but one engine is the right answer and this is not it.
+- **These are ATT estimates, not ATE.** GMs chose the trades in the sample.
+  Selection on gains biases every naive comparison by construction, and the
+  synthetic-control work that would address it is not built.
+- **Single-split coverage sits at 85-88% against a nominal 90%**, so intervals
+  run slightly tight even on dense rows. Walk-forward CRPS varies substantially
+  across folds.
+- **Pre-2010 coverage is thin.** Retrosheet fills transactions back to 1880, but
+  the outcome and contract joins that make a trade scorable mostly do not reach
+  that far.
+- **The frontend has no tests.** 14,290 lines of TypeScript, zero test files. It
+  is checked by `tsc` and by looking at it.
+- **The original thesis was wrong.** The system-tax hypothesis this project was
+  built to test was rejected. What replaced it is a two-axis organizational map
+  on which development quality and trade-execution quality turn out to be roughly
+  uncorrelated.
 
-**Frontend** — React 19, TypeScript 6, Vite 8, Tailwind 4, Zustand, Framer Motion, Recharts. A single-page app with eight routes. It runs fully client-side off exported JSON seed data — no live backend required to demo it.
+---
 
-| Route | View |
+## Running it
+
+The frontend runs from a clone, with no database and no keys:
+
+```bash
+cd frontend && npm install && npm run dev    # http://localhost:5173
+```
+
+Rebuilding the store from source APIs takes hours and is only needed to inspect
+the pipeline: `uv sync`, then `uv run ste init`, `uv run ste ingest
+transactions`, `uv run ste status`, `uv run ste catalog --status ingested`.
+
+---
+
+## Documentation
+
+[`docs/README.md`](docs/README.md) is the index. The short list:
+
+| Doc | What it covers |
 |---|---|
-| `/warroom` | War Room — deadline command center + AI brief |
-| `/build` | Trade Builder — construct and price a deal |
-| `/orgs` | Org Explorer — the 2D org-quality map |
-| `/orgs/:bref` | Org Scout — single-org deep profile |
-| `/player/:id` | Player Profile — trajectory + Statcast fingerprint |
-| `/case/pressly` | Case Study — the Pressly reconstruction |
-| `/research` | Research — the findings, narrated |
-| `/trade/:id` | Trade Workspace — side-by-side comparison |
+| [`docs/architecture.md`](docs/architecture.md) | Module layout, CLI surface, the ingest-to-product path |
+| [`docs/evaluation.md`](docs/evaluation.md) | Benchmark design, credibility bar, revalidation protocol |
+| [`docs/STATS_CATALOG.md`](docs/STATS_CATALOG.md) | Every data source, its status, and live row counts |
+| [`docs/research/`](docs/research/README.md) | 26 rounds of experiments, indexed, mostly nulls |
+| [`docs/PHASE1_SYNTHESIS.md`](docs/PHASE1_SYNTHESIS.md) | What survived the research phase and what did not |
+| [`docs/product-tour.md`](docs/product-tour.md) | Screenshots and what each route does |
 
-```
-src/savage_trade_evaluator/
-├── ingest/      # 20+ source adapters (MLB API, Retrosheet, Statcast, Spotrac, BR…)
-├── storage/     # DuckDB schema, team-code mapping, outcome-window views
-├── modeling/    # Bayesian valuation, feature engineering, $/WAR baseline
-├── warroom/     # strategic-brief assembly
-├── analysis/    # trade lookups, backtest harness
-└── reports/     # HTML report generation
-frontend/        # React SPA (runs off exported JSON seeds)
-scripts/         # reproducible R-NN analyses + data exports
-docs/            # synthesis, stats catalog, baseline design
-```
-
----
-
-## Local setup (optional)
-
-The screenshots above are live application output from committed seed data. The frontend runs fully client-side off those seeds — no database, no API keys, no backend required.
-
-```bash
-# Frontend — runs off committed seed data, no backend needed
-cd frontend
-npm install
-npm run dev          # → http://localhost:5173
-```
-
-The backend steps below are included for completeness. They reproduce the full 1.29M-row database from source APIs — useful if you want to inspect the ingestion pipeline or re-run an analysis, but not required to evaluate the project.
-
-```bash
-# Backend data spine (rebuilds the database from scratch)
-uv sync
-uv run ste init                  # initialize DuckDB schema
-uv run ste ingest transactions   # MLB Stats API trades
-uv run ste ingest bwar           # Baseball Reference WAR
-uv run ste ingest statcast       # Baseball Savant
-uv run ste status                # row counts
-uv run ste catalog --status ingested
-
-# Regenerate the frontend seed data from the database
-uv run python scripts/export_seed.py
-```
-
----
-
-## How to read this repo
-
-This is a personal project built to demonstrate end-to-end baseball-operations capability — data engineering, Bayesian valuation, and product — not a tool distributed for others to use. The screenshots and analysis throughout are the artifact.
-
-- **15 min** — this README. The screenshots are the live application; the findings table under [What the research actually says](#what-the-research-actually-says) is the empirical spine.
-- **30 min** — add [`docs/PHASE1_SYNTHESIS.md`](docs/PHASE1_SYNTHESIS.md) for the full narrative arc, and skim [`RESEARCH_LOG.md`](RESEARCH_LOG.md) (R-19, R-22, R-30, R-31, R-33/34/35 are the highlights).
-- **An afternoon** — pick a `scripts/*.py`, read its docstring, run it, inspect the output. Every finding is reproducible.
-
-The analytical framing draws on *The MVP Machine* (dev-fit), *Baseball Between the Numbers* ($/WAR currency, log-5 playoff odds), *Statistical Rethinking* (multilevel Bayes), and *Causal Inference: The Mixtape* (treatment-effect framing for trades that actually happened).
+Analytical framing draws on *The MVP Machine* (development fit), *Baseball
+Between the Numbers* ($/WAR, log-5 playoff odds), *Statistical Rethinking*
+(multilevel Bayes), and *Causal Inference: The Mixtape* (treatment effects on
+trades that actually happened).
 
 ---
 
 ## License
 
-This repository is **source-available** for evaluation, research, and education. Viewing and reading are permitted; copying, redistribution, commercial use, and ML-training on the source are not, without prior written permission. See [`LICENSE`](LICENSE). For commercial licensing or questions: **rob.savage@me.com**.
-
----
-
-*Built end to end — data engineering, Bayesian modeling, and product — as a demonstration of baseball-operations capability. Every modeling decision is logged in the ADR; every finding is reproducible from a script; negative results are reported alongside positive ones. This is the work, not a packaged tool.*
+Source-available for evaluation, research, and education. Reading is permitted;
+copying, redistribution, commercial use, and ML training on the source are not,
+without prior written permission. See [`LICENSE`](LICENSE). For commercial
+licensing: **rob.savage@me.com**.

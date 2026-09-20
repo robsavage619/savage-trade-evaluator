@@ -10,7 +10,7 @@ Part of the [research log](README.md). Entries run oldest first.
 
 ## [2026-05-16] R-20/21/22/23: omnibus four-outcome ablation. R-22 surfaces the largest credible coefficient in the entire project
 
-**Question (plain English).** R-19 showed rate-based outcomes unlock features that WAR-outcomes hide. Generalize: run the full 15-feature multilevel model against multiple rate-based outcomes (xERA, K%, xwOBA-surplus) and the original WAR-surplus baseline. Do we see different features become credible depending on outcome choice? Also: do the new pitcher arsenal features (k_trajectory, arsenal_volatility added in R-24 setup) show up?
+**Question (plain English).** R-19 showed rate-based outcomes surface features that WAR-outcomes hide. Generalize: run the full 15-feature multilevel model against multiple rate-based outcomes (xERA, K%, xwOBA-surplus) and the original WAR-surplus baseline. Do we see different features become credible depending on outcome choice? Also: do the new pitcher arsenal features (k_trajectory, arsenal_volatility added in R-24 setup) show up?
 
 **Setup.** Single omnibus script (`scripts/ablation_multi_outcome_omnibus.py`) runs the same 15-feature multilevel against five outcomes:
 - WAR-surplus (R-20; sanity check + re-analysis of prior WAR-null features)
@@ -206,7 +206,7 @@ R-17 (team-level) comparisons: LAD vs HOU = 70% (WAR) / 69% (xwOBA); LAD vs CLE 
 
 1. **WAR-based LAD < HOU pairwise WEAKENED from 70% to 59%** under regime control. The team-HOU number was averaging four regimes (Wade/Luhnow/Click/Brown). The clean Luhnow-specific intercept is +0.005, essentially zero. The R-17 effect was partly a "non-Luhnow HOU regimes pulling team-HOU down" artifact.
 
-2. **xwOBA-based LAD < HOU pairwise SURVIVES** regime control: 69% -> 65%. The rate-based version of the comparison is more robust. This was already the cleaner test per D-26; it stays cleaner.
+2. **xwOBA-based LAD < HOU pairwise SURVIVES** regime control: 69% -> 65%. The rate-based version of the comparison survives more of the controls. This was already the cleaner test per D-26; it stays cleaner.
 
 3. **Modern CLE shows NO dev-travels signal** in regime-controlled view. Shapiro 2010-2015 = -0.002; Antonetti 2016+ = -0.009. Both near zero. The R-12/R-17 CLE-positive finding was almost certainly driven by pre-2010 Shapiro-era trades that contributed to the team-level aggregate but predated our front_office data window.
 
@@ -218,7 +218,7 @@ R-17 (team-level) comparisons: LAD vs HOU = 70% (WAR) / 69% (xwOBA); LAD vs CLE 
 
 **Affects.**
 
-- **Reframes R-17 findings as half-surviving regime control.** The xwOBA-based LAD < HOU/CLE pairwise is robust. The WAR-based version is weakened, particularly for CLE where modern regimes show no signal at all.
+- **Reframes R-17 findings as half-surviving regime control.** The xwOBA-based LAD < HOU/CLE pairwise survives. The WAR-based version is weakened, particularly for CLE where modern regimes show no signal at all.
 - **OAK-Beane is now the project's cleanest specific-regime finding.** Should be foregrounded in any product-facing summary alongside the still-tentative LAD-Friedman vs HOU-Luhnow xwOBA comparison.
 - **Reframes the HOU dev-travels narrative.** It's a *partial* Luhnow-era effect that may include both pre-Luhnow setup and post-Luhnow inheritance. Cleaner framing: "Beane-era OAK pitchers gained K% after departure with the strongest credibility we can measure" rather than "Luhnow-HOU is the dev-travels champion."
 - **Modern CLE drops out of the analytics-leader-cluster framing entirely.** Their 2010-2024 regimes show zero dev-travels signal. The reputation predates our data window.

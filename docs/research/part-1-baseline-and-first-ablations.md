@@ -192,7 +192,7 @@ Also notable: both fits' CRPS is **worse** than predict-zero on this subset (-3.
 
 ## [2026-05-16] R-08-prep: Future Value methodology ingested. Prospect-feature design candidates surfaced
 
-**Question.** Per D-20, the next-highest-leverage feature work is prospect-side. Longenhagen & McDaniel's *Future Value* (2020) is the canonical public reference for the FV-grade-to-WAR mapping. What concrete features does the book suggest we add to the multilevel Bayesian model, and what data would we need to compute them?
+**Question.** Per D-20, the feature work with the most left to gain is prospect-side. Longenhagen & McDaniel's *Future Value* (2020) is the canonical public reference for the FV-grade-to-WAR mapping. What concrete features does the book suggest we add to the multilevel Bayesian model, and what data would we need to compute them?
 
 **Setup.** Not an experiment, a methodology read. Ingested three chapters:
 - Ch 1 (four scouting markets context)
@@ -243,7 +243,7 @@ Confidence: medium. Strongly suspect #1 + #3 dominate. Cannot distinguish withou
 
 **Affects.**
 - Supports D-19/D-20 generalization: at V1 sample size, individual feature additions consistently sit below the noise floor on the matched-subset test. Pattern is now 3-for-3 (R-06, R-07, R-09).
-- Suggests the next high-leverage move is *sample size*, not more features: Retrosheet pre-2010 transaction ingest or Playwright-based MLB Pipeline scrape.
+- Suggests the next move that pays is *sample size*, not more features: a Retrosheet pre-2010 transaction ingest, or a Playwright-based MLB Pipeline scrape.
 - Catalog new draft_picks source as ingested.
 - Keep `receiver_best_draft_pick` in FEATURE_COLUMNS. It is harmless now and relevant once the sample grows.
 

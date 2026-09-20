@@ -61,7 +61,7 @@ Confidence: high on the controlled-test conclusion (n=577, tight beta_pre poster
 
 - Documented as [[trade-eval--origin-org-system-tax-v1]] in vault. Closes R-10.
 - Reinforces the V1 sample-size bottleneck identified in R-06/07/09: per-org effects at this scale are detectable only as the marginal `tau` posterior, not as per-org separations.
-- Strengthens the case for Retrosheet pre-2010 transaction ingest as the highest-leverage next move (raised in R-09 affects too).
+- Strengthens the case for a Retrosheet pre-2010 transaction ingest as the next move worth making (raised in R-09 affects too).
 - New candidate research thread: **HOU origin-side dev-fit-travels**, the symmetric reading of MVP Machine Ch 9 from the departure direction. Larger and cleaner signal than the LAD test.
 - New candidate research thread: **NYM inverse-system-tax**, where players who leave the Mets outperform expectations. Could be sell-at-trough selection or genuinely suppressive environment.
 
@@ -355,7 +355,7 @@ Selected per-origin intercepts (sorted most negative):
 
 **Interpretation (plain English).**
 
-1. **Only HOU stays consistent across all three metrics.** Positive in xwOBA, positive in WAR, positive in K%. The "Strom dev-travels" reading of MVP Machine Ch 9 is the single most metric-robust origin-org finding from R-10/11/12/13/16.
+1. **Only HOU stays consistent across all three metrics.** Positive in xwOBA, positive in WAR, positive in K%. The "Strom dev-travels" reading of MVP Machine Ch 9 is the origin-org finding that holds across the most metrics in R-10/11/12/13/16.
 
 2. **CLE flipped between metrics.** Strongly positive in xwOBA (+0.003) and WAR (+0.039), slightly negative on K% (-0.79). CLE's dev-fit shows up in hitter quality-of-contact and overall WAR but not in pitcher strikeout rate. They might be a hitter-dev-strong org but pitcher-dev-different.
 
@@ -388,10 +388,10 @@ Files: `scripts/origin_org_arsenal_k_pct.py`.
 
 **Result.**
 
-| LAD vs | xwOBA | WAR | K% | Cross-metric robust? |
+| LAD vs | xwOBA | WAR | K% | Holds cross-metric? |
 |---|---|---|---|---|
-| HOU | **69%** | **70%** | (n<5 LAD) | **ROBUST** |
-| CLE | **67%** | **75%** | (n<5 LAD) | **ROBUST** |
+| HOU | **69%** | **70%** | (n<5 LAD) | **HOLDS** |
+| CLE | **67%** | **75%** | (n<5 LAD) | **HOLDS** |
 | TBR | 61% | 43% | n/a | partial (flipped) |
 | SDP | 64% | 44% | n/a | partial (flipped) |
 | BOS | 55% | 53% | n/a | no signal |
