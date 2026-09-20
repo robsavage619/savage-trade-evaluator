@@ -97,7 +97,7 @@ A Jupyter notebook (or script) that:
 
 1. Loads `trade_player_war_window` for all 2010-2024 trades
 2. Computes naïve surplus for every trade event
-3. Ranks the biggest model errors (cases where realized ≫ predicted or ≪ predicted)
+3. Ranks the biggest model errors (cases where realized far exceeds the prediction or falls far below it)
 4. Categorizes the error patterns (dev-fit wins, FA-bust losses, prospect-bust losses, etc.). Those become V2 model features
 
 Per the planning brief's Phase 1 deliverable spec: *"a Jupyter notebook / report ranking the biggest model errors and looking for patterns. These patterns are the features for V2."*

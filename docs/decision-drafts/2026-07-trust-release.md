@@ -47,7 +47,7 @@ the Term-3 calculation so the correct era branch is used for historical trades.
 ## D-55: Predict-time multiple imputation, opt-in, marginal, no-go for production (2026-07-05)
 
 **Decision:** `v3.py::predict` gains `multiple_imputation: bool = False`. When enabled, missing
-features for each test row receive per-sample draws from N(0,1) clipped to ±5 (z-space), rather
+features for each test row receive per-sample draws from N(0,1) clipped to +/-5 (z-space), rather
 than the pre-imputation feature mean. This mechanically widens posterior intervals for sparse rows
 (rookies, pre-Statcast-era players, players with thin context history).
 

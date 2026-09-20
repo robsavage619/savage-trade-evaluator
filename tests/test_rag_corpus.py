@@ -31,10 +31,12 @@ def test_window_overlaps_long_sections() -> None:
 
 
 def test_load_chunks_reads_corpus_files(tmp_path: Path) -> None:
-    (tmp_path / "RESEARCH_LOG.md").write_text("# Log\n## R-01\nfirst finding body")
+    part = tmp_path / "docs/research/part-1-baseline-and-first-ablations.md"
+    part.parent.mkdir(parents=True)
+    part.write_text("# Log\n## R-01\nfirst finding body")
     chunks = corpus.load_chunks(root=tmp_path)
     assert chunks
-    assert all(c.source == "RESEARCH_LOG.md" for c in chunks)
+    assert all(c.source == "docs/research/part-1-baseline-and-first-ablations.md" for c in chunks)
     assert "first finding" in chunks[-1].text
 
 
@@ -66,7 +68,9 @@ def test_load_vault_chunks_missing_dir_returns_empty(tmp_path: Path) -> None:
 
 
 def test_load_chunks_explicit_root_stays_hermetic(tmp_path: Path) -> None:
-    (tmp_path / "RESEARCH_LOG.md").write_text("# Log\nbody")
+    part = tmp_path / "docs/research/part-1-baseline-and-first-ablations.md"
+    part.parent.mkdir(parents=True)
+    part.write_text("# Log\nbody")
     chunks = corpus.load_chunks(root=tmp_path)
     assert all(not c.source.startswith("vault:") for c in chunks)
 
@@ -78,6 +82,8 @@ def test_load_chunks_can_include_vault_with_explicit_root(
     vault.mkdir()
     (vault / "concept.md").write_text("# Concept\nvault passage")
     monkeypatch.setattr(corpus, "VAULT_DIR", vault)
-    (tmp_path / "RESEARCH_LOG.md").write_text("# Log\nbody")
+    part = tmp_path / "docs/research/part-1-baseline-and-first-ablations.md"
+    part.parent.mkdir(parents=True)
+    part.write_text("# Log\nbody")
     chunks = corpus.load_chunks(root=tmp_path, include_vault=True)
     assert any(c.source == "vault:concept.md" for c in chunks)

@@ -12,13 +12,13 @@ The project started with one specific thesis: **the Dodgers' MLB-leading dev sys
 
 1. **The original system-tax thesis is empirically rejected.** Across all 16 regimes tested, the YOUNG-PROSPECT bucket is *positive* in every single one. Young players who get traded *gain* WAR afterward, regardless of which org they leave. No regime in V1 data shows the predicted pattern. (R-30, D-29)
 
-2. **The Dodgers aren't anomalous.** They're #4 in dev, near-median in trade Δ. Top-tier on both axes, but not exceptional on either. The "elite system" reputation overstates them. (R-31)
+2. **The Dodgers aren't anomalous.** They're #4 in dev, near-median in trade delta. Top-tier on both axes, but not exceptional on either. The "elite system" reputation overstates them. (R-31)
 
 3. **The strongest specific-regime finding is TEX-Jon Daniels' sell-high skill.** 9 vets traded with mean delta -2.54 WAR (Lucroy, Minor, Michael Young, Darvish, Chirinos). Different mechanism than the original thesis but the cleanest single-person finding in the project. (R-29, R-30)
 
 4. **The strongest pure-predictive finding is R-22's pitcher K%-trajectory coefficient.** Mass 100%, mean -10.8 K-percentile-points, 90% CI [-17.1, -4.3]. Plain English: pitchers coming off K%-jump seasons regress hard post-trade. Largest credible coefficient in the entire ablation program. (R-22)
 
-5. **The product-relevant artifact is the 2D org-quality map.** Each franchise gets a (dev WAR, trade Δ) coordinate. Quadrants identify strategic implications. HOU is unique in being HIGH-DEV / TRULY-POSITIVE-TRADE; SFG and SDP are bottom-quadrant on both axes. (R-31)
+5. **The product-relevant artifact is the 2D org-quality map.** Each franchise gets a (dev WAR, trade delta) coordinate. Quadrants identify strategic implications. HOU is unique in being HIGH-DEV / TRULY-POSITIVE-TRADE; SFG and SDP are bottom-quadrant on both axes. (R-31)
 
 ---
 
@@ -48,7 +48,7 @@ Each correction emerged from a specific empirical surprise.
 
 After all the corrections, three things survive at conventional credibility thresholds:
 
-**Specific-regime finding (R-30):** TEX-Jon Daniels has a credible sell-high skill. 9 veterans traded with mean pre-WAR +3.96 and mean post-trade Δ -2.54. The pattern survives trimming the 3 worst and 3 best trades. Not driven by outliers.
+**Specific-regime finding (R-30):** TEX-Jon Daniels has a credible sell-high skill. 9 veterans traded with mean pre-WAR +3.96 and mean post-trade delta -2.54. The pattern survives trimming the 3 worst and 3 best trades. Not driven by outliers.
 
 **Specific-coefficient finding (R-22):** Pitcher K%-trajectory predicts post-trade K% decline. Mass=100%, mean -10.8 K-percentile-points, 90% CI [-17.1, -4.3]. The largest credible coefficient in the project. Mechanism: heavy regression-to-the-mean at the pitcher arsenal-trajectory level.
 
@@ -57,7 +57,7 @@ After all the corrections, three things survive at conventional credibility thre
 - acquired_player_avg_war_trajectory: 98% negative mass, a momentum effect
 - acquired_player_quality: 96% positive mass, talent carryover with RTM partially absorbed
 
-**Specific-team observation (R-31):** Only HOU is HIGH-DEV / TRULY-POSITIVE-TRADE. Only STL is LOW-DEV / strongly-POSITIVE-TRADE (best trade Δ in baseball at +0.10). Only SFG is dead-last-on-both-axes. The 2D map cleanly characterizes franchise strategy without requiring a system-tax narrative.
+**Specific-team observation (R-31):** Only HOU is HIGH-DEV / TRULY-POSITIVE-TRADE. Only STL is LOW-DEV / strongly-POSITIVE-TRADE (best trade delta in baseball at +0.10). Only SFG is dead-last-on-both-axes. The 2D map cleanly characterizes franchise strategy without requiring a system-tax narrative.
 
 ---
 
@@ -66,9 +66,9 @@ After all the corrections, three things survive at conventional credibility thre
 ### Coordinates (1990+ debutees, current 30 franchises only)
 
 DEV WAR = career WAR of MLB debutees who first played for this franchise (draft + international, franchise-history-aliased).
-TRADE Δ = mean change in WAR of departed players from t-1 to t+1 (1990+ trades, regime-aliased).
+TRADE DELTA = mean change in WAR of departed players from t-1 to t+1 (1990+ trades, regime-aliased).
 
-| Rank | Team | Dev | Intl | Total | Trade Δ | Quadrant |
+| Rank | Team | Dev | Intl | Total | Trade delta | Quadrant |
 |---|---|---|---|---|---|---|
 | 1 | CLE | 1353 | 401 | 1754 | -0.14 | HIGH-DEV / ABOVE-MEDIAN-TRADE |
 | 2 | NYY | 1109 | 423 | 1532 | -0.07 | HIGH-DEV / ABOVE-MEDIAN-TRADE |
@@ -94,14 +94,14 @@ TRADE Δ = mean change in WAR of departed players from t-1 to t+1 (1990+ trades,
 | 22 | BAL | 809 | 113 | 922 | -0.19 | LOW-DEV / BELOW-MEDIAN-TRADE |
 | 23 | DET | 753 | 146 | 899 | -0.05 | LOW-DEV / ABOVE-MEDIAN-TRADE |
 | 24 | CHC | 707 | 173 | 880 | -0.17 | LOW-DEV / BELOW-MEDIAN-TRADE |
-| 25 | TBR | 776 | 104 | 880 | -0.37 | LOW-DEV / WORST-TRADE-Δ |
+| 25 | TBR | 776 | 104 | 880 | -0.37 | LOW-DEV / WORST-TRADE-DELTA |
 | 26 | ARI | 732 | 137 | 869 | +0.05 | LOW-DEV / POS-TRADE |
 | 27 | CIN | 715 | 152 | 868 | -0.20 | LOW-DEV / BELOW-MEDIAN-TRADE |
 | 28 | COL | 744 | 119 | 863 | -0.12 | LOW-DEV / ABOVE-MEDIAN-TRADE |
 | 29 | SDP | 691 | 118 | 809 | -0.24 | LOW-DEV / BELOW-MEDIAN-TRADE |
-| **30** | **SFG** | **624** | **48** | **671** | **-0.35** | **WORST-DEV / WORST-TRADE-Δ (unique)** |
+| **30** | **SFG** | **624** | **48** | **671** | **-0.35** | **WORST-DEV / WORST-TRADE-DELTA (unique)** |
 
-Medians: total dev = 1200; trade Δ = -0.157.
+Medians: total dev = 1200; trade delta = -0.157.
 
 ### Quadrant strategic implications
 
@@ -125,7 +125,7 @@ The two axes are roughly orthogonal. Being good at dev does not predict being go
 - **GM regimes explain roughly 3x more variance than team identity** in origin-org effects (R-25).
 - **CLE has the best amateur+international dev pipeline** at 1754 WAR (R-31).
 - **HOU is the only HIGH-DEV / POS-TRADE franchise** in the 2D map (R-31).
-- **STL has the best trade-Δ in baseball** at +0.10 (R-31).
+- **STL has the best trade delta in baseball** at +0.10 (R-31).
 
 ### Rejected by V1 data
 
@@ -152,7 +152,7 @@ The two axes are roughly orthogonal. Being good at dev does not predict being go
 
 4. **Career WAR is a counting stat.** Long-stable franchises accumulate more dev-WAR partly from continuity. "WAR per debutee" is the cleaner efficiency measure.
 
-5. **Trade Δ uses raw WAR change, not pedigree-controlled residual.** Mixed with aging curves and PT recovery; the bucket decomposition (R-30) is the right way to interpret per-regime trade Δ.
+5. **Trade delta uses raw WAR change, not pedigree-controlled residual.** Mixed with aging curves and PT recovery; the bucket decomposition (R-30) is the right way to interpret per-regime trade delta.
 
 6. **15-feature matched-subset hits a wall around n=20-25** on the rate-based outcomes. Further feature additions need either imputation, missing-indicator features, or outcome-specific feature subsets.
 
@@ -192,7 +192,7 @@ The two axes are roughly orthogonal. Being good at dev does not predict being go
 
 ## Files of record
 
-- `RESEARCH_LOG.md`: the chronological R-01 through R-32 log with reproducibility details.
+- `docs/research/`: the chronological R-01 through R-32 log with reproducibility details.
 - `~/Vault/savage_vault/wiki/trade-eval--decisions.md`: D-01 through D-29 modeling and scope decisions.
 - `scripts/`: one runnable script per round's analysis.
 - `src/savage_trade_evaluator/`: V1 data spine and model code.

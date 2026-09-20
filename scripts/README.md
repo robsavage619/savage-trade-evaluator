@@ -27,7 +27,7 @@ One-off and repeatable scripts, grouped by role. Everything runs as
 
 ## Numbered research rounds (`r33` to `r62`, historical, one-off)
 
-Rounds R-01 to R-32 are written up in [`RESEARCH_LOG.md`](../RESEARCH_LOG.md).
+Rounds R-01 to R-32 are written up in [`docs/research/`](../docs/research/README.md).
 R-33 onward were never written up there: the script and its printed output
 are the record. Each backs a decision in the ADR log. They are kept for
 reproducibility of the published findings, not maintained as product code.

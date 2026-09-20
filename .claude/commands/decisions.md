@@ -10,4 +10,4 @@ Read the decisions log and surface its current state:
    - **Open questions**: full Q-NN table with status.
 3. If any decision references the Pressly trade (D-16), flag that as the V1 validation anchor.
 
-Don't paraphrase decisions — keep titles verbatim. Format compactly.
+Don't paraphrase decisions; keep titles verbatim. Format compactly.

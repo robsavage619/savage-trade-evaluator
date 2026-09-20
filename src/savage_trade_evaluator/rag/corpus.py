@@ -23,7 +23,10 @@ from savage_trade_evaluator.config import PROJECT_ROOT
 
 # Files that make up the project-docs layer, relative to the project root.
 CORPUS_FILES: tuple[str, ...] = (
-    "RESEARCH_LOG.md",
+    "docs/research/part-1-baseline-and-first-ablations.md",
+    "docs/research/part-2-origin-org-and-the-metric-correction.md",
+    "docs/research/part-3-omnibus-ablations-and-regime-control.md",
+    "docs/research/part-4-decomposition-dev-credit-and-fortification.md",
     "docs/PHASE1_SYNTHESIS.md",
     "docs/NAIVE_BASELINE.md",
     "docs/STATS_CATALOG.md",

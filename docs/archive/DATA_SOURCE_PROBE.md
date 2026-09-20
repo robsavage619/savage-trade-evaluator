@@ -73,7 +73,7 @@ Documented for future iteration. URL + format confirmed but ingest deferred to k
 
 Before this pass, age was proxied via `trade_season - first_mlb_year` (years-since-debut). With Chadwick we now have actual age = `trade_season - birth_year`. This:
 
-- Removes the late-bloomer / early-debut bias from R-13's `β_exp` covariate
+- Removes the late-bloomer / early-debut bias from R-13's `beta_exp` covariate
 - Enables a proper "age curve" feature distinct from MLB experience
 - Lets us re-bucket VET-AT-PEAK and YOUNG-PROSPECT (D-29) on age, not just experience
 - Coverage: 22,821 of 23,622 bWAR players (96.6%) have full birth-year. Pre-1900 / Negro League / unverified records make up the remaining 3%.

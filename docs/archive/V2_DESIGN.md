@@ -17,10 +17,10 @@ For any proposed trade `(team_A, team_B, players A to B, players B to A)`, V2 ou
 
 | Outcome | Coverage | Type | Use |
 |---|---|---|---|
-| Δ xwOBA (3yr) | Statcast era 2015+ | rate-based hitter | quality-of-contact change |
-| Δ K%-percentile (3yr) | Statcast era 2015+ | rate-based pitcher | strikeout-rate change (R-22 finding lives here) |
-| Δ WAR (3yr cumulative) | 1990+ | aggregate | broad performance signal |
-| Δ $-surplus (3yr) | 2011+ | dollar | trade-value bottom line |
+| delta xwOBA (3yr) | Statcast era 2015+ | rate-based hitter | quality-of-contact change |
+| delta K%-percentile (3yr) | Statcast era 2015+ | rate-based pitcher | strikeout-rate change (R-22 finding lives here) |
+| delta WAR (3yr cumulative) | 1990+ | aggregate | broad performance signal |
+| delta $-surplus (3yr) | 2011+ | dollar | trade-value bottom line |
 
 Each is its own multilevel Bayesian fit per D-27 (feature importance is outcome-specific). The product surface shows median + 90% CI + per-quartile predictions per outcome.
 
@@ -78,8 +78,8 @@ Replaces the naive flat $8M/WAR baseline with:
 
 ```
 $_surplus = sum over years of [WAR_t * league_$/WAR_t] received
-          − Σ_{years} cap_hit_t_received
-          − [same accounting for given-up players, sign-flipped]
+          - sum_{years} cap_hit_t_received
+          - [same accounting for given-up players, sign-flipped]
 ```
 
 Sources:

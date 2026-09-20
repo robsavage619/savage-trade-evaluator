@@ -11,4 +11,4 @@ uv run pyright src/ tests/
 uv run pytest
 ```
 
-Report each step's outcome (pass / fail with the diagnostic line). If everything passes, end with `✅ all clean`.
+Report each step's outcome (pass / fail with the diagnostic line). If everything passes, end with `all clean`.

@@ -1095,7 +1095,7 @@ def report_backtest(
 
 @research_app.command(name="index")
 def research_index() -> None:
-    """Build the vector index over the research corpus (RESEARCH_LOG + docs)."""
+    """Build the vector index over the research corpus (docs/research + docs)."""
     configure_logging()
     from savage_trade_evaluator.rag import store
     from savage_trade_evaluator.rag.embed import Model2VecEmbedder

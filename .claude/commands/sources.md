@@ -1,5 +1,5 @@
 ---
-description: Browse stat-source catalog — what's ingested, what's available, what's blocked.
+description: Browse the stat-source catalog: what's ingested, what's available, what's blocked.
 argument-hint: [optional filter terms]
 ---
 
