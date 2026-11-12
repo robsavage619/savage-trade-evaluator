@@ -249,3 +249,8 @@ data/experiments/
 
 # Production model cache — ArviZ NetCDF + JSON sidecars; regenerate locally after schema bump
 data/model_cache/
+
+# daily refresh state and swap dirs
+data/refresh/
+frontend/dist.next/
+frontend/dist.prev/

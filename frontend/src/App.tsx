@@ -12,6 +12,7 @@ import TradeBuilder from './routes/TradeBuilder'
 import OrgScout from './routes/OrgScout'
 import PlayerProfile from './routes/PlayerProfile'
 import { TeamIdentitySwitcher } from './components/TeamIdentitySwitcher'
+import DataStatus from './components/DataStatus'
 
 function ClaudeLogo({ size = 14 }: { size?: number }) {
   return (
@@ -147,6 +148,7 @@ export default function App() {
           <span>
             Sources: MLB Stats API · Baseball Reference · Baseball Savant Statcast · 27 tables · 1.29M rows
           </span>
+          <DataStatus />
           <span className="mono">
             Savage Analytics · Model page = real V3 held-out posteriors · Trade Builder posteriors still illustrative
           </span>
