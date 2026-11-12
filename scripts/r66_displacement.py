@@ -35,6 +35,7 @@ Run:
 """
 
 # pyright: reportCallIssue=false, reportArgumentType=false, reportReturnType=false
+# pyright: reportIndexIssue=false, reportAttributeAccessIssue=false, reportOperatorIssue=false
 
 from __future__ import annotations
 
