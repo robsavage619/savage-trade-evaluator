@@ -665,8 +665,8 @@ CATALOG: tuple[StatSource, ...] = (
     ),
     StatSource(
         name="bref-contracts",
-        source="baseball-reference",
-        granularity="player-snapshot",
+        source="bref-other",
+        granularity="player-season",
         era_start=2026,
         era_end=None,
         fetcher="savage_trade_evaluator.ingest.bref_contracts.ingest_all",
@@ -958,6 +958,134 @@ CATALOG: tuple[StatSource, ...] = (
             "Per-hitter 20-80 grades: hit / power / decisions / speed / defense, "
             "present + future. Current snapshot only."
         ),
+    ),
+    # === Candidates probed live on 2026-11-12, not yet wired (see docs/STATS_CATALOG.md) ===
+    StatSource(
+        name="mlb-free-agents",
+        source="mlb-stats-api",
+        granularity="transaction",
+        era_start=2010,
+        era_end=None,
+        fetcher="statsapi.mlb.com/api/v1/people/freeAgents?season=YYYY",
+        primary_columns=("player", "dateDeclared", "dateSigned", "newTeam", "notes"),
+        notes=(
+            "Official list of who reached free agency and where they signed, back to 2010 "
+            "(385 players in 2010, 516 in 2015, 356 so far for 2026). Notes carry contract "
+            "length and option decisions for about 10% of rows, never dollars. The only "
+            "reachable history of when control actually ended."
+        ),
+    ),
+    StatSource(
+        name="mlb-depth-charts",
+        source="mlb-stats-api",
+        granularity="team-season",
+        era_start=2019,
+        era_end=None,
+        fetcher="statsapi.mlb.com/api/v1/teams/{id}/roster?rosterType=depthChart&season=YYYY",
+        primary_columns=("person", "position", "status"),
+        notes="Depth chart by position per club; 2019 also answers. Feeds displacement.",
+    ),
+    StatSource(
+        name="mlb-fielding-by-position",
+        source="mlb-stats-api",
+        granularity="player-season",
+        era_start=1901,
+        era_end=None,
+        fetcher="statsapi.mlb.com/api/v1/people/{id}/stats?stats=yearByYear&group=fielding",
+        primary_columns=("season", "position", "games", "innings"),
+        notes=(
+            "Games and innings at each position per season. Replaces career primary position "
+            "in the displacement feature. The hitting variant is an independent check on bWAR "
+            "games and plate appearances."
+        ),
+    ),
+    StatSource(
+        name="mlb-xref-ids",
+        source="mlb-stats-api",
+        granularity="reference",
+        era_start=1871,
+        era_end=None,
+        fetcher="statsapi.mlb.com/api/v1/people/{id}?hydrate=xrefId",
+        primary_columns=("retrosheet", "lahman", "fangraphs", "bis"),
+        notes="Cross-reference ids per player. Fills ids missing from the Chadwick register.",
+    ),
+    StatSource(
+        name="fangraphs-projections",
+        source="fangraphs",
+        granularity="player-season",
+        era_start=2026,
+        era_end=None,
+        fetcher="fangraphs.com/api/projections?type=steamer&stats=bat|pit",
+        primary_columns=("xMLBAMID", "G", "PA", "WAR"),
+        notes=(
+            "Steamer projections with playing time and MLBAM ids (4,165 hitters). Current "
+            "projections only: no archive answered, so history must be built by snapshot. "
+            "ZiPS returned an empty list on the probe date. Unofficial JSON endpoint."
+        ),
+    ),
+    StatSource(
+        name="fangraphs-roster-resource",
+        source="fangraphs",
+        granularity="team-season",
+        era_start=2026,
+        era_end=None,
+        fetcher="fangraphs.com/api/depth-charts/roster?teamid=N",
+        primary_columns=("mlbamid", "position", "role", "options", "servicetime", "injurynotes"),
+        notes=(
+            "Depth chart with options remaining, exact service time, injury notes and level, "
+            "about 170 rows per club. Current state only. Unofficial JSON endpoint."
+        ),
+    ),
+    StatSource(
+        name="fangraphs-board-api",
+        source="fangraphs",
+        granularity="player-season",
+        era_start=2017,
+        era_end=None,
+        fetcher="fangraphs.com/api/prospects/board/prospects-list?statType=player&draft=YYYYprospect",
+        primary_columns=("PlayerId", "FV_Current", "ETA_Current", "tool grades"),
+        notes=(
+            "The full prospect board: 736 prospects for 2018, 1,254 for 2022, 1,290 for 2026, "
+            "against 50 a year in prospect_rankings. No MLBAM id; bridge on the FanGraphs id."
+        ),
+    ),
+    StatSource(
+        name="fangraphs-leaders-api",
+        source="fangraphs",
+        granularity="player-season",
+        era_start=2010,
+        era_end=None,
+        fetcher="fangraphs.com/api/leaders/major-league/data?season=YYYY&type=8",
+        primary_columns=("xMLBAMID", "WAR"),
+        notes="fWAR per season with MLBAM ids; 2025 and 2026 answer. Our tables stop at 2024.",
+    ),
+    StatSource(
+        name="savant-extra-leaderboards",
+        source="baseball-savant",
+        granularity="player-season",
+        era_start=2023,
+        era_end=None,
+        fetcher="baseballsavant.mlb.com/leaderboard/{bat-tracking,arm-strength,baserunning-run-value,catcher-blocking}?csv=true",
+        primary_columns=(
+            "avg_bat_speed",
+            "arm_strength",
+            "runner_runs_tot",
+            "catcher_blocking_runs",
+        ),
+        notes=(
+            "Four CSV leaderboards that answered. Fielding run value and park factors returned "
+            "HTML, not CSV, and the minor-league search returned no rows: all three unverified."
+        ),
+    ),
+    StatSource(
+        name="retrosheet-chadwick-mirror",
+        source="retrosheet",
+        granularity="player-game",
+        era_start=1910,
+        era_end=None,
+        fetcher="raw.githubusercontent.com/chadwickbureau/retrosheet/master/seasons/YYYY/",
+        primary_columns=("event files",),
+        notes="2025 event files answer from the GitHub mirror. Our Retrosheet tables stop at 2024.",
     ),
     StatSource(
         name="tjstats-draft-rankings",
