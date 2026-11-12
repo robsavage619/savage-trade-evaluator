@@ -105,10 +105,11 @@ def _ingest_bwar(df: pd.DataFrame, table: str, col_map: dict[str, str]) -> int:
         schemas.initialize(conn)
         conn.register("_staging_bwar", renamed)
         try:
-            conn.execute(
+            db.execute_refreshing(
+                conn,
                 f"INSERT INTO {table} ({col_list}) "
                 f"SELECT {col_list} FROM _staging_bwar "
-                f"ON CONFLICT (bref_id, year_id, stint_id) DO NOTHING"
+                f"ON CONFLICT (bref_id, year_id, stint_id) DO NOTHING",
             )
         finally:
             conn.unregister("_staging_bwar")
@@ -185,10 +186,11 @@ def _ingest_savant_table(
                     f"INSERT INTO {table} ({col_list}) SELECT {col_list} FROM _staging_savant"
                 )
             else:
-                conn.execute(
+                db.execute_refreshing(
+                    conn,
                     f"INSERT INTO {table} ({col_list}) "
                     f"SELECT {col_list} FROM _staging_savant "
-                    f"ON CONFLICT (player_id, year) DO NOTHING"
+                    f"ON CONFLICT (player_id, year) DO NOTHING",
                 )
         finally:
             conn.unregister("_staging_savant")

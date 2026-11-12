@@ -106,7 +106,8 @@ def _upsert_batter_percentile_ranks(
     df = pd.DataFrame(rows)
     conn.register("_staging_bpr", df)
     try:
-        conn.execute(
+        db.execute_refreshing(
+            conn,
             "INSERT INTO statcast_batter_percentile_ranks "
             "(player_id, player_name, year, xwoba, xba, xslg, xiso, xobp, brl, "
             "brl_percent, exit_velocity, max_ev, hard_hit_percent, k_percent, "
@@ -117,7 +118,7 @@ def _upsert_batter_percentile_ranks(
             "bb_percent, whiff_percent, chase_percent, arm_strength, sprint_speed, "
             "oaa, bat_speed, squared_up_rate, swing_length, source "
             "FROM _staging_bpr "
-            "ON CONFLICT (player_id, year) DO NOTHING"
+            "ON CONFLICT (player_id, year) DO NOTHING",
         )
     finally:
         conn.unregister("_staging_bpr")
@@ -177,7 +178,8 @@ def _upsert_pitcher_arsenal(conn: duckdb.DuckDBPyConnection, rows: list[dict[str
     df = pd.DataFrame(rows)
     conn.register("_staging_par", df)
     try:
-        conn.execute(
+        db.execute_refreshing(
+            conn,
             "INSERT INTO statcast_pitcher_arsenal_stats "
             "(player_id, player_name, team_name, year, pitch_type, pitch_name, "
             "run_value_per_100, run_value, pitches, pitch_usage, pa, ba, slg, woba, "
@@ -188,7 +190,7 @@ def _upsert_pitcher_arsenal(conn: duckdb.DuckDBPyConnection, rows: list[dict[str
             "whiff_percent, k_percent, put_away, est_ba, est_slg, est_woba, "
             "hard_hit_percent, source "
             "FROM _staging_par "
-            "ON CONFLICT (player_id, year, pitch_type) DO NOTHING"
+            "ON CONFLICT (player_id, year, pitch_type) DO NOTHING",
         )
     finally:
         conn.unregister("_staging_par")
@@ -261,7 +263,8 @@ def _upsert_oaa(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> 
     df = pd.DataFrame(rows)
     conn.register("_staging_oaa", df)
     try:
-        conn.execute(
+        db.execute_refreshing(
+            conn,
             "INSERT INTO statcast_outs_above_average "
             "(player_id, player_name, team_name, year, primary_pos, "
             "fielding_runs_prevented, oaa, oaa_infront, oaa_lateral_toward3b, "
@@ -272,7 +275,7 @@ def _upsert_oaa(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, Any]]) -> 
             "oaa_lateral_toward1b, oaa_behind, oaa_rhh, oaa_lhh, "
             "actual_success_rate, adj_estimated_success_rate, diff_success_rate, source "
             "FROM _staging_oaa "
-            "ON CONFLICT (player_id, year, primary_pos) DO NOTHING"
+            "ON CONFLICT (player_id, year, primary_pos) DO NOTHING",
         )
     finally:
         conn.unregister("_staging_oaa")
@@ -315,12 +318,13 @@ def _upsert_sprint_speed(conn: duckdb.DuckDBPyConnection, rows: list[dict[str, A
     df = pd.DataFrame(rows)
     conn.register("_staging_ss", df)
     try:
-        conn.execute(
+        db.execute_refreshing(
+            conn,
             "INSERT INTO statcast_sprint_speed "
             "(player_id, player_name, year, sprint_speed, competitive_runs, source) "
             "SELECT player_id, player_name, year, sprint_speed, competitive_runs, source "
             "FROM _staging_ss "
-            "ON CONFLICT (player_id, year) DO NOTHING"
+            "ON CONFLICT (player_id, year) DO NOTHING",
         )
     finally:
         conn.unregister("_staging_ss")
@@ -366,14 +370,15 @@ def _upsert_batter_exitvelo(conn: duckdb.DuckDBPyConnection, rows: list[dict[str
     df = pd.DataFrame(rows)
     conn.register("_staging_ev", df)
     try:
-        conn.execute(
+        db.execute_refreshing(
+            conn,
             "INSERT INTO statcast_batter_exitvelo_barrels "
             "(player_id, player_name, year, attempts, avg_hit_speed, max_hit_speed, "
             "barrels, brl_percent, source) "
             "SELECT player_id, player_name, year, attempts, avg_hit_speed, max_hit_speed, "
             "barrels, brl_percent, source "
             "FROM _staging_ev "
-            "ON CONFLICT (player_id, year) DO NOTHING"
+            "ON CONFLICT (player_id, year) DO NOTHING",
         )
     finally:
         conn.unregister("_staging_ev")
@@ -438,9 +443,10 @@ def _upsert_catcher_poptime(conn: duckdb.DuckDBPyConnection, rows: list[dict[str
     df = pd.DataFrame(rows)
     conn.register("_staging_pt", df)
     try:
-        conn.execute(
+        db.execute_refreshing(
+            conn,
             f"INSERT INTO statcast_catcher_poptime ({cols}) SELECT {cols} "
-            f"FROM _staging_pt ON CONFLICT (player_id, year) DO NOTHING"
+            f"FROM _staging_pt ON CONFLICT (player_id, year) DO NOTHING",
         )
     finally:
         conn.unregister("_staging_pt")
@@ -499,9 +505,10 @@ def _upsert_outfielder_jump(conn: duckdb.DuckDBPyConnection, rows: list[dict[str
     df = pd.DataFrame(rows)
     conn.register("_staging_ofj", df)
     try:
-        conn.execute(
+        db.execute_refreshing(
+            conn,
             f"INSERT INTO statcast_outfielder_jump ({cols}) SELECT {cols} "
-            f"FROM _staging_ofj ON CONFLICT (player_id, year) DO NOTHING"
+            f"FROM _staging_ofj ON CONFLICT (player_id, year) DO NOTHING",
         )
     finally:
         conn.unregister("_staging_ofj")

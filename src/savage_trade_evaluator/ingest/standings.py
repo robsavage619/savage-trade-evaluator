@@ -100,11 +100,13 @@ def upsert(
 
     conn.register("_staging_std", merged)
     try:
-        conn.execute(
+        sql = (
             "INSERT INTO standings (team_id, bref_code, season, wins, losses, win_pct, source) "
             "SELECT team_id, bref_code, season, wins, losses, win_pct, source "
             "FROM _staging_std " + ("" if replace else "ON CONFLICT (team_id, season) DO NOTHING")
         )
+        # replace=True already cleared the season above; otherwise refresh existing rows.
+        conn.execute(sql) if replace else db.execute_refreshing(conn, sql)
     finally:
         conn.unregister("_staging_std")
     return int(merged.shape[0])

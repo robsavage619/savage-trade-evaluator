@@ -254,10 +254,11 @@ def _upsert_catcher_framing(conn: duckdb.DuckDBPyConnection, rows: list[dict[str
             "rv_11, pct_11, rv_12, pct_12, rv_13, pct_13, rv_14, pct_14, "
             "rv_16, pct_16, rv_17, pct_17, rv_18, pct_18, rv_19, pct_19, source"
         )
-        conn.execute(
+        db.execute_refreshing(
+            conn,
             f"INSERT INTO statcast_catcher_framing ({cols}) "
             f"SELECT {cols} FROM _staging_cf "
-            "ON CONFLICT (player_id, year) DO NOTHING"
+            "ON CONFLICT (player_id, year) DO NOTHING",
         )
     finally:
         conn.unregister("_staging_cf")
@@ -534,10 +535,11 @@ def ingest_team_season_stats_range(start: int = 1990, end: int = 2024) -> int:
                     "innings_pitched, earned_runs, stolen_bases, caught_stealing, "
                     "fielding_pct, errors, source"
                 )
-                conn.execute(
+                db.execute_refreshing(
+                    conn,
                     f"INSERT INTO team_season_stats ({cols}) "
                     f"SELECT {cols} FROM _staging_ts "
-                    "ON CONFLICT (team_id, season, stat_group) DO NOTHING"
+                    "ON CONFLICT (team_id, season, stat_group) DO NOTHING",
                 )
             finally:
                 conn.unregister("_staging_ts")
@@ -777,10 +779,11 @@ def ingest_pitch_movement_range(start: int = 2015, end: int = 2024) -> int:
                         "league_horizontal_break, diff_horizontal, "
                         "percentile_diff_vertical, percentile_diff_horizontal, source"
                     )
-                    conn.execute(
+                    db.execute_refreshing(
+                        conn,
                         f"INSERT INTO statcast_pitch_movement ({cols}) "
                         f"SELECT {cols} FROM _staging_pm "
-                        "ON CONFLICT (player_id, year, pitch_type) DO NOTHING"
+                        "ON CONFLICT (player_id, year, pitch_type) DO NOTHING",
                     )
                 finally:
                     conn.unregister("_staging_pm")
@@ -869,9 +872,10 @@ def ingest_rosters_range(start: int = 2010, end: int = 2024) -> int:
                     "player_name, position_code, position_name, status, "
                     "jersey_number, source"
                 )
-                conn.execute(
+                db.execute_refreshing(
+                    conn,
                     f"INSERT INTO team_rosters ({cols}) SELECT {cols} FROM _staging_rs "
-                    "ON CONFLICT (team_id, season, roster_type, player_id) DO NOTHING"
+                    "ON CONFLICT (team_id, season, roster_type, player_id) DO NOTHING",
                 )
             finally:
                 conn.unregister("_staging_rs")
