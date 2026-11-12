@@ -1,19 +1,21 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeftRight, Brain, Terminal, Trash2, BadgePlus, TrendingUp, TrendingDown, XCircle, Minus } from 'lucide-react'
+import { ArrowLeftRight, Brain, Terminal, Trash2, BadgePlus, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { type CurrentPlayer, type CurrentTeam } from '../data/players'
 import { useRoster, useTeamsByBref } from '../lib/rosterStore'
 import { useIdentityStore, TEAM_THEME } from '../lib/identityStore'
 import { TeamIdentitySwitcher } from '../components/TeamIdentitySwitcher'
 import { PlayerPicker, BasketCard } from '../components/PlayerPicker'
 import { RefreshRostersButton } from '../components/RefreshRostersButton'
-import { PosteriorViolin } from '../components/PosteriorViolin'
+import { ForecastDistribution } from '../components/ForecastDistribution'
+import { ForecastFootnote } from '../components/ForecastFootnote'
 import { Section, Stat } from '../components/Section'
 import { TeamLogo } from '../components/TeamLogo'
-import { computeVerdict, type Verdict } from '../lib/hypothetical'
 import { composeHypotheticalPrompt } from '../lib/composeHypothetical'
-import { fmtSigned, fmtMoney } from '../lib/format'
+import { fmtMoney } from '../lib/format'
 import { forecastArb, isControlled } from '../lib/arbForecast'
+import { comparePackages, fmtWar, leanOf, validationFacts, type Lean } from '../lib/structuralData'
+import { packageFacts } from '../lib/tradeFacts'
 import { playerIndex } from '../lib/comps'
 import { useReasoningStore, parseReasoningResponse } from '../lib/reasoningStore'
 import { AnimatePresence } from 'framer-motion'
@@ -24,12 +26,12 @@ import { X, Copy, ClipboardCheck, AlertCircle, CheckCircle2, RotateCcw, Sparkles
 const HYPO_BASE = -1_000_000
 
 type SignalEntry = { label: string; Icon: React.ElementType; color: string; bg: string; border: string; glyph: string }
-const SIGNAL_CONFIG: Record<Verdict['recommendation'], SignalEntry> = {
-  'strong-buy':  { label: 'ACCEPT THIS TRADE',      Icon: CheckCircle2, color: 'text-positive-500', bg: 'bg-positive-500/10',     border: 'border-positive-500/30', glyph: '✓' },
-  'lean-buy':    { label: 'LEAN ACCEPT',             Icon: TrendingUp,   color: 'text-positive-500', bg: 'bg-positive-500/[0.06]', border: 'border-positive-500/20', glyph: '↑' },
-  'neutral':     { label: 'HOLD — REQUEST COUNTER',  Icon: Minus,        color: 'text-ink-200',      bg: 'bg-ink-700/20',          border: 'border-ink-600/30',      glyph: '—' },
-  'lean-pass':   { label: 'COUNTER OR WALK',         Icon: TrendingDown, color: 'text-accent-400',   bg: 'bg-accent-500/[0.06]',  border: 'border-accent-500/20',   glyph: '↓' },
-  'strong-pass': { label: 'DO NOT ACCEPT',           Icon: XCircle,      color: 'text-negative-500', bg: 'bg-negative-500/10',    border: 'border-negative-500/30', glyph: '✗' },
+// The forecast earns a lean, not a call: the higher-forecast side won about 54% ± 6
+// of historical two-sided trades, so the banner does not say accept or reject.
+const SIGNAL_CONFIG: Record<Lean, SignalEntry> = {
+  receive: { label: 'LEANS TOWARD WHAT YOU RECEIVE', Icon: TrendingUp,   color: 'text-positive-500', bg: 'bg-positive-500/[0.06]', border: 'border-positive-500/20', glyph: '↑' },
+  even:    { label: 'CLOSE TO EVEN',                 Icon: Minus,        color: 'text-ink-200',      bg: 'bg-ink-700/20',          border: 'border-ink-600/30',      glyph: '—' },
+  send:    { label: 'LEANS TOWARD WHAT YOU SEND',    Icon: TrendingDown, color: 'text-negative-500', bg: 'bg-negative-500/[0.06]', border: 'border-negative-500/20', glyph: '↓' },
 }
 
 function fpColor(pct: number): string {
@@ -51,13 +53,15 @@ function TradeComparison({
   receivingPlayers,
   yourBref,
   partnerBref,
-  verdict,
+  costSent,
+  costReceived,
 }: {
   sendingPlayers: CurrentPlayer[]
   receivingPlayers: CurrentPlayer[]
   yourBref: string
   partnerBref: string
-  verdict: Verdict
+  costSent: number
+  costReceived: number
 }) {
   const allWars = [...sendingPlayers, ...receivingPlayers].map((p) => p.last_war ?? 0.5)
   const maxWar = Math.max(...allWars, 1)
@@ -162,7 +166,7 @@ function TradeComparison({
 
   return (
     <div>
-      <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Player-by-player comparison</div>
+      <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Player-by-player comparison · raw last-season WAR, not the forecast</div>
       <div className="grid gap-4 md:grid-cols-2">
         {/* Sending */}
         <div>
@@ -181,7 +185,7 @@ function TradeComparison({
               <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Total</span>
               <div className="flex items-center gap-4">
                 <span className="mono text-[12px] font-semibold text-negative-500">−{rawWarSent.toFixed(1)} WAR</span>
-                <span className="mono text-[12px] text-ink-300">{fmtMoney(verdict.costSent)}</span>
+                <span className="mono text-[12px] text-ink-300">{fmtMoney(costSent)}</span>
               </div>
             </div>
           )}
@@ -204,7 +208,7 @@ function TradeComparison({
               <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Total</span>
               <div className="flex items-center gap-4">
                 <span className="mono text-[12px] font-semibold text-positive-500">+{rawWarReceived.toFixed(1)} WAR</span>
-                <span className="mono text-[12px] text-ink-300">{fmtMoney(verdict.costReceived)}</span>
+                <span className="mono text-[12px] text-ink-300">{fmtMoney(costReceived)}</span>
               </div>
             </div>
           )}
@@ -217,7 +221,7 @@ function TradeComparison({
           <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-ink-400">
             <span>{yourBref} sends more</span>
             <span className={`mono font-semibold ${warDelta >= 0 ? 'text-positive-500' : 'text-negative-500'}`}>
-              Net WAR: {warDelta >= 0 ? '+' : ''}{warDelta.toFixed(1)}
+              Raw WAR Δ: {warDelta >= 0 ? '+' : ''}{warDelta.toFixed(1)}
             </span>
             <span>{partnerBref} sends more</span>
           </div>
@@ -268,10 +272,14 @@ export default function TradeBuilder() {
     [receivedIds, partnerTeam],
   )
 
-  const verdict = useMemo(
-    () => computeVerdict({ sending: { team: yourTeam, players: sendingPlayers }, receiving: { team: partnerTeam, players: receivingPlayers } }),
-    [yourTeam, partnerTeam, sendingPlayers, receivingPlayers],
+  const forecast = useMemo(
+    () => sendingPlayers.length + receivingPlayers.length > 0
+      ? comparePackages(receivingPlayers.map((p) => p.mlb_player_id), sendingPlayers.map((p) => p.mlb_player_id))
+      : null,
+    [sendingPlayers, receivingPlayers],
   )
+  const factsIn = useMemo(() => packageFacts(receivingPlayers), [receivingPlayers])
+  const factsOut = useMemo(() => packageFacts(sendingPlayers), [sendingPlayers])
 
   function addToSent(p: CurrentPlayer, t: CurrentTeam) {
     if (t.bref !== yourBref) return // ignore if user picks from non-self
@@ -318,8 +326,13 @@ export default function TradeBuilder() {
   const setReasoning = useReasoningStore((s) => s.set)
 
   const prompt = useMemo(
-    () => verdict ? composeHypotheticalPrompt({ yourTeam, partnerTeam, sending: sendingPlayers, receiving: receivingPlayers, verdict }) : '',
-    [yourTeam, partnerTeam, sendingPlayers, receivingPlayers, verdict],
+    () => forecast
+      ? composeHypotheticalPrompt({
+          yourTeam, partnerTeam, sending: sendingPlayers, receiving: receivingPlayers,
+          forecast, costIn: factsIn.yr1Cost, costOut: factsOut.yr1Cost,
+        })
+      : '',
+    [yourTeam, partnerTeam, sendingPlayers, receivingPlayers, forecast, factsIn, factsOut],
   )
 
   async function copyPrompt() {
@@ -360,7 +373,7 @@ export default function TradeBuilder() {
             <div>
               <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Trade Builder · You are</div>
               <div className="text-[16px] font-semibold tracking-tight text-ink-100">{yourTeam.name}</div>
-              <div className="text-[11px] text-ink-400">Workshop a hypothetical against any club. All verdicts framed from {yourBref}'s side.</div>
+              <div className="text-[11px] text-ink-400">Workshop a hypothetical against any club. All forecasts framed from {yourBref}'s side.</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -387,22 +400,18 @@ export default function TradeBuilder() {
 
       {/* Verdict band */}
       <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="card mb-6 overflow-hidden">
-        {verdict ? (() => {
-          const signal = SIGNAL_CONFIG[verdict.recommendation]
+        {forecast ? (() => {
+          const { net, received, sent } = forecast
+          const lean = leanOf(net)
+          const signal = SIGNAL_CONFIG[lean]
           const SignalIcon = signal.Icon
-          const rawWarSent = sendingPlayers.reduce((a, p) => a + (p.last_war ?? 0.5), 0)
-          const rawWarReceived = receivingPlayers.reduce((a, p) => a + (p.last_war ?? 0.5), 0)
-          const dollarPerWarSent = rawWarSent > 0 ? verdict.costSent / rawWarSent / 1_000_000 : null
-          const dollarPerWarReceived = rawWarReceived > 0 ? verdict.costReceived / rawWarReceived / 1_000_000 : null
-          const salaryDelta = verdict.costReceived - verdict.costSent
-          const receivedArbTotal = receivingPlayers.reduce((acc, p) => {
-            const a = forecastArb(p.contract_status, p.last_war, p.cap_hit)
-            return acc + (isControlled(a.currentClass) ? a.totalCost3yr : 0)
-          }, 0)
-          const sentArbTotal = sendingPlayers.reduce((acc, p) => {
-            const a = forecastArb(p.contract_status, p.last_war, p.cap_hit)
-            return acc + (isControlled(a.currentClass) ? a.totalCost3yr : 0)
-          }, 0)
+          const tone = lean === 'receive' ? 'pos' : lean === 'send' ? 'neg' : 'neutral'
+          const salaryDelta = factsIn.yr1Cost - factsOut.yr1Cost
+          const missing = received.missing + sent.missing
+          const band = (f: { mean: number; p5: number; p95: number }) => ({
+            value: fmtWar(f.mean),
+            sub: `90% [${fmtWar(f.p5)}, ${fmtWar(f.p95)}]`,
+          })
           return (
             <>
               {/* GM Signal Banner */}
@@ -415,7 +424,9 @@ export default function TradeBuilder() {
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">GM Decision Signal · {yourBref} perspective</div>
                       <div className={`text-[26px] font-bold tracking-tight leading-tight ${signal.color}`}>{signal.label}</div>
-                      <div className="text-[12px] text-ink-400">{verdict.recommendationLabel} · dev-multiplier {verdict.acquirerDevMultiplier.toFixed(2)}× applied to incoming players</div>
+                      <div className="text-[12px] text-ink-400">
+                        P(receive side ahead) {Math.round(net.pPositive * 100)}% · the higher-forecast side won {validationFacts.favouredWin}% ± {validationFacts.favouredHalf} of {validationFacts.favouredTrades} past two-sided trades: a lean, not a call
+                      </div>
                     </div>
                   </div>
                   <div className={`select-none font-black leading-none ${signal.color} opacity-[0.13]`} style={{ fontSize: 72 }}>{signal.glyph}</div>
@@ -425,36 +436,19 @@ export default function TradeBuilder() {
               {/* Metrics row */}
               <div className="flex flex-wrap items-end justify-between gap-6 p-5">
                 <div className="flex flex-wrap items-end gap-7">
-                  <Stat label="3-yr surplus" value={fmtSigned(verdict.surplusMean)} sub={`90% [${verdict.surplusLo.toFixed(2)}, ${verdict.surplusHi.toFixed(2)}]`} tone={verdict.reasoningTone} />
-                  <Stat label="P(accept)" value={`${Math.round(verdict.pPositive * 100)}%`} sub="Posterior > 0" tone={verdict.reasoningTone} />
-                  <Stat label="WAR in (adj)" value={`+${verdict.warReceived.toFixed(1)}`} sub={`raw ${rawWarReceived.toFixed(1)} × dev ${verdict.acquirerDevMultiplier.toFixed(2)}×`} tone="pos" />
-                  <Stat label="WAR out (adj)" value={`−${verdict.warSent.toFixed(1)}`} sub={`partner dev-adjusted`} tone="neg" />
-                  <Stat label="Net WAR Δ" value={fmtSigned(verdict.warReceived - verdict.warSent, 1)} sub="dev-adjusted" tone={verdict.reasoningTone} />
-                  <Stat label="Salary Δ" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(verdict.costReceived)} · Out ${fmtMoney(verdict.costSent)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
-                  {dollarPerWarSent != null && <Stat label="$/WAR out" value={`$${dollarPerWarSent.toFixed(1)}M`} sub="cost/WAR of players sent" tone="neutral" />}
-                  {dollarPerWarReceived != null && <Stat label="$/WAR in" value={`$${dollarPerWarReceived.toFixed(1)}M`} sub={dollarPerWarReceived < 9 ? 'below market ~$9M ✓' : 'above market ~$9M'} tone={dollarPerWarReceived < 9 ? 'pos' : 'neg'} />}
-                  {receivedArbTotal > 0 && <Stat label="3yr arb cost (in)" value={fmtMoney(receivedArbTotal)} sub={sentArbTotal > 0 ? `vs ${fmtMoney(sentArbTotal)} out` : 'proj. controlled cost'} tone={receivedArbTotal < sentArbTotal || sentArbTotal === 0 ? 'pos' : 'neutral'} />}
+                  <Stat label="Net WAR" {...band(net)} tone={tone} />
+                  <Stat label="P(receive side ahead)" value={`${Math.round(net.pPositive * 100)}%`} sub="chance your side captures more" tone={tone} />
+                  <Stat label="WAR in" {...band(received)} tone="pos" />
+                  <Stat label="WAR out" {...band(sent)} tone="neg" />
+                  <Stat label="Salary Δ (yr 1)" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(factsIn.yr1Cost)} · Out ${fmtMoney(factsOut.yr1Cost)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
+                  {factsIn.controlledCost3yr > 0 && <Stat label="3yr arb cost (in)" value={fmtMoney(factsIn.controlledCost3yr)} sub={factsOut.controlledCost3yr > 0 ? `vs ${fmtMoney(factsOut.controlledCost3yr)} out` : 'proj. controlled cost'} tone={factsIn.controlledCost3yr < factsOut.controlledCost3yr || factsOut.controlledCost3yr === 0 ? 'pos' : 'neutral'} />}
                 </div>
                 <div className="w-full pt-1 md:w-[420px]">
-                  <PosteriorViolin
-                    mean={verdict.surplusMean}
-                    sd={verdict.surplusSd}
-                    min={Math.min(verdict.surplusLo, -3)}
-                    max={Math.max(verdict.surplusHi, 3)}
-                    accent={verdict.reasoningTone}
-                    unit=" WAR surplus"
-                    width={420}
-                    height={70}
-                  />
+                  <ForecastDistribution atoms={forecast.netAtoms} width={420} height={70} />
                 </div>
               </div>
 
-              {/* Heuristic method badge */}
-              {verdict.method === 'heuristic' && (
-                <div className="border-t border-ink-700/40 px-5 py-2 font-mono text-[9px] text-ink-400">
-                  Heuristic estimate — uncertainty band is a rule-of-thumb (√n·1.2), not a model posterior
-                </div>
-              )}
+              <ForecastFootnote missing={missing} className="border-t border-ink-700/40 px-5 py-2" />
 
               {/* Player comparison */}
               {(sendingPlayers.length > 0 || receivingPlayers.length > 0) && (
@@ -464,7 +458,8 @@ export default function TradeBuilder() {
                     receivingPlayers={receivingPlayers}
                     yourBref={yourBref}
                     partnerBref={partnerBref}
-                    verdict={verdict}
+                    costSent={factsOut.yr1Cost}
+                    costReceived={factsIn.yr1Cost}
                   />
                 </div>
               )}
@@ -473,7 +468,7 @@ export default function TradeBuilder() {
         })() : (
           <div className="flex items-center gap-3 p-5 text-[13px] text-ink-300">
             <BadgePlus className="h-4 w-4 text-accent-400" />
-            Add a player to either basket below to begin. The verdict updates live as you build.
+            Add a player to either basket below to begin. The forecast updates live as you build.
           </div>
         )}
       </motion.div>
@@ -495,7 +490,7 @@ export default function TradeBuilder() {
         </div>
         <button
           onClick={() => setDrawerOpen(true)}
-          disabled={!verdict}
+          disabled={!forecast}
           className="inline-flex items-center gap-1.5 rounded-md bg-accent-500 px-3 py-1.5 text-[12px] font-semibold text-ink-950 transition-colors hover:bg-accent-400 disabled:cursor-not-allowed disabled:bg-ink-700 disabled:text-ink-500"
         >
           <Terminal className="h-3.5 w-3.5" /> Reason with Claude Code
@@ -601,7 +596,7 @@ export default function TradeBuilder() {
 
       {/* Reasoning drawer (inline lightweight version) */}
       <AnimatePresence>
-        {drawerOpen && verdict && (
+        {drawerOpen && forecast && (
           <>
             <motion.div className="fixed inset-0 z-40 bg-ink-950/70 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} onClick={() => setDrawerOpen(false)} />
             <motion.aside
@@ -623,7 +618,7 @@ export default function TradeBuilder() {
                   <div className="mb-2 flex items-center justify-between">
                     <div>
                       <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 1 · Generated prompt</div>
-                      <div className="text-[12px] text-ink-300">Bundles trade structure, model snapshot, and ADRs.</div>
+                      <div className="text-[12px] text-ink-300">Bundles trade structure, the model forecast, and what the model cannot see.</div>
                     </div>
                     <button onClick={copyPrompt} className="inline-flex items-center gap-1.5 rounded-md bg-accent-500 px-3 py-1.5 text-[12px] font-semibold text-ink-950 hover:bg-accent-400">
                       {copied ? <ClipboardCheck className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}

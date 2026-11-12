@@ -3,9 +3,10 @@ import { motion } from 'framer-motion'
 import { ArrowLeftRight, Trash2, X, BadgePlus, Radio } from 'lucide-react'
 import { PlayerPicker, BasketCard } from '../../components/PlayerPicker'
 import { Stat } from '../../components/Section'
-import { forecastArb, isControlled } from '../../lib/arbForecast'
-import { baseWar, effectivePos, fvToWar } from '../../lib/hypothetical'
-import { comparePackages, structuralAsOf, validation } from '../../lib/structuralData'
+import { ForecastFootnote } from '../../components/ForecastFootnote'
+import { fvToWar } from '../../lib/hypothetical'
+import { LEAN_LABEL, comparePackages, fmtWar, leanOf } from '../../lib/structuralData'
+import { packageFacts } from '../../lib/tradeFacts'
 import type { ProspectEntry, VerdictContext } from '../../lib/hypothetical'
 import type { CurrentPlayer } from '../../data/players'
 import type { ScenarioCard } from '../../data/warroom/types'
@@ -223,44 +224,21 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
     [sendingPlayers, receivingPlayers],
   )
 
-  // Salary and control facts, straight from the contract data. They are costs to
-  // set beside the forecast, not part of it.
-  const yr1Cost = (ps: CurrentPlayer[]) =>
-    ps.reduce((a, p) => a + forecastArb(p.contract_status, baseWar(p), p.cap_hit, effectivePos(p)).projections[0], 0)
-  const extensionIn = receivingPlayers.reduce((a, p) => {
-    const arb = forecastArb(p.contract_status, baseWar(p), p.cap_hit, effectivePos(p))
-    return a + (arb.yearsControlled > 0 ? arb.extensionEst3yr : 0)
-  }, 0)
+  const factsIn = useMemo(() => packageFacts(receivingPlayers), [receivingPlayers])
+  const factsOut = useMemo(() => packageFacts(sendingPlayers), [sendingPlayers])
   const prospectWar = (ps: ProspectEntry[]) => ps.reduce((a, q) => a + fvToWar(q.fvGrade), 0)
-
-  const receivedArbTotal = useMemo(() =>
-    receivingPlayers.reduce((acc, p) => {
-      const a = forecastArb(p.contract_status, p.last_war, p.cap_hit, p.position_abbr)
-      return acc + (isControlled(a.currentClass) ? a.totalCost3yr : 0)
-    }, 0), [receivingPlayers],
-  )
-  const sentArbTotal = useMemo(() =>
-    sendingPlayers.reduce((acc, p) => {
-      const a = forecastArb(p.contract_status, p.last_war, p.cap_hit, p.position_abbr)
-      return acc + (isControlled(a.currentClass) ? a.totalCost3yr : 0)
-    }, 0), [sendingPlayers],
-  )
 
   if (!yourTeam || !partnerTeam) return null
 
   const { currentW = 0, currentL = 0, gamesBack = 0, playoffProb = 0.4 } = verdictCtx as {
     currentW?: number; currentL?: number; gamesBack?: number; playoffProb?: number
   }
-  const costIn = yr1Cost(receivingPlayers)
-  const costOut = yr1Cost(sendingPlayers)
+  const costIn = factsIn.yr1Cost
+  const costOut = factsOut.yr1Cost
   const salaryDelta = costIn - costOut
   const net = forecast?.net
-  const lean = !net ? 'even' : net.mean > 0 && net.pPositive >= 0.6 ? 'receive' : net.mean < 0 && net.pPositive <= 0.4 ? 'send' : 'even'
-  const leanLabel = lean === 'receive'
-    ? 'Forecast leans toward what you receive'
-    : lean === 'send'
-    ? 'Forecast leans toward what you send'
-    : 'Forecast is close to even'
+  const lean = net ? leanOf(net) : 'even'
+  const leanLabel = LEAN_LABEL[lean]
   const recBorder = lean === 'receive'
     ? 'border-positive-500/30 bg-positive-500/5'
     : lean === 'send'
@@ -269,7 +247,6 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
   const netColor = (net?.mean ?? 0) >= 0 ? 'text-positive-400' : 'text-negative-400'
   const pct = (v: number) => `${Math.round(v * 100)}%`
   const missing = (forecast?.received.missing ?? 0) + (forecast?.sent.missing ?? 0)
-  const fmtWar = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}`
   const band = (f: { mean: number; p5: number; p95: number }) => ({
     value: fmtWar(f.mean),
     sub: `90% ${fmtWar(f.p5)} to ${fmtWar(f.p95)}`,
@@ -325,11 +302,11 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
             <Stat label="WAR in" {...band(forecast.received)} tone="pos" />
             <Stat label="WAR out" {...band(forecast.sent)} tone="neg" />
             <Stat label="Salary Δ" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(costIn)} · Out ${fmtMoney(costOut)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
-            {receivedArbTotal > 0 && (
-              <Stat label="Arb path (in)" value={fmtMoney(receivedArbTotal)} sub={sentArbTotal > 0 ? `vs ${fmtMoney(sentArbTotal)} out` : '3yr proj.'} tone="neutral" />
+            {factsIn.controlledCost3yr > 0 && (
+              <Stat label="Arb path (in)" value={fmtMoney(factsIn.controlledCost3yr)} sub={factsOut.controlledCost3yr > 0 ? `vs ${fmtMoney(factsOut.controlledCost3yr)} out` : '3yr proj.'} tone="neutral" />
             )}
-            {extensionIn > 0 && (
-              <Stat label="Extension est (in)" value={fmtMoney(extensionIn)} sub="realistic lock-up cost · agent leverage" tone="neg" />
+            {factsIn.extensionEst > 0 && (
+              <Stat label="Extension est (in)" value={fmtMoney(factsIn.extensionEst)} sub="realistic lock-up cost · agent leverage" tone="neg" />
             )}
             {(receivedProspects.length > 0 || sentProspects.length > 0) && (
               <Stat
@@ -347,16 +324,7 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
             gamesBack={gamesBack}
             playoffProb={playoffProb}
           />
-          <div className="mt-2 rounded border border-ink-700/50 bg-ink-800/40 px-2.5 py-1.5 font-mono text-[9px] leading-relaxed text-ink-400">
-            WAR is gross: salary is shown beside it, not netted out. {structuralAsOf.note || `Priced as of ${structuralAsOf.date}`}.
-            {' '}Tested on {validation.holdout} trades the model never saw
-            ({validation.n_sides.toLocaleString()} sides): the 90% band held {pct(validation.coverage_90)} of outcomes and
-            beat a constant guess by {pct(1 - validation.crps / validation.crps_climatology)} on CRPS. Picking the side
-            with the higher forecast won {pct(validation.favoured_side_win_rate)} ± {Math.round(validation.favoured_side_half_width * 100)} of{' '}
-            {validation.favoured_side_trades} two-sided trades, so read the sign as a lean, not a call. No club context
-            or dev-system effect is included: none has been shown to help.
-            {missing > 0 ? ` ${missing} player(s) not in the model export were left out.` : ''}
-          </div>
+          <ForecastFootnote missing={missing} className="mt-2 rounded border border-ink-700/50 bg-ink-800/40 px-2.5 py-1.5" />
         </div>
       ) : (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-dashed border-ink-700 px-3 py-2.5 text-[11px] text-ink-400">

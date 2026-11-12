@@ -77,3 +77,13 @@ export function summarize({ values, weights }: Atoms): Summary {
   }
   return { mean, median: quantile(0.5), p5: quantile(0.05), p95: quantile(0.95), pPositive }
 }
+
+/** Probability mass per bin; atoms outside [lo, hi] fall into the end bins. */
+export function histogram({ values, weights }: Atoms, lo: number, hi: number, bins: number): number[] {
+  const out = new Array<number>(bins).fill(0)
+  const width = (hi - lo) / bins
+  for (let i = 0; i < values.length; i++) {
+    out[Math.min(bins - 1, Math.max(0, Math.floor((values[i] - lo) / width)))] += weights[i]
+  }
+  return out
+}

@@ -1,19 +1,26 @@
 import type { CurrentPlayer, CurrentTeam } from '../data/players'
-import type { Verdict } from './hypothetical'
+import { LEAN_LABEL, fmtWar, leanOf, structuralAsOf, validationFacts as v, type PackageComparison } from './structuralData'
 
 export function composeHypotheticalPrompt({
   yourTeam,
   partnerTeam,
   sending,
   receiving,
-  verdict,
+  forecast,
+  costIn,
+  costOut,
 }: {
   yourTeam: CurrentTeam
   partnerTeam: CurrentTeam
   sending: CurrentPlayer[]
   receiving: CurrentPlayer[]
-  verdict: Verdict
+  forecast: PackageComparison
+  costIn: number
+  costOut: number
 }): string {
+  const band = (f: { mean: number; p5: number; p95: number }) =>
+    `${fmtWar(f.mean)} WAR, 90% band ${fmtWar(f.p5)} to ${fmtWar(f.p95)}`
+  const missing = forecast.received.missing + forecast.sent.missing
   const senders = sending
     .map((p) => `  - ${p.name} (${p.position_abbr ?? '—'}, age ${p.age ?? '?'}, ${p.last_war != null ? `${p.last_war >= 0 ? '+' : ''}${p.last_war.toFixed(1)} WAR ${p.last_year}` : 'no recent WAR'}, ${p.last_salary != null ? `$${(p.last_salary / 1e6).toFixed(1)}M` : 'arb-eligible/pre-arb'})`)
     .join('\n')
@@ -25,12 +32,10 @@ export function composeHypotheticalPrompt({
 
 You are the analytical reasoning layer of the Savage Trade Evaluator. The ${yourTeam.name} front office is workshopping the following hypothetical trade with the ${partnerTeam.name}. Provide a structured analysis from ${yourTeam.bref}'s perspective.
 
-## Modeling principles (project ADR log)
-- **D-09 (three-valuation framework):** every player has current-roster, trade-acquirer, and next-FA-acquirer value. Trade-acquirer column conditions on receiving team's contention window, payroll, farm depth, positional need, dev-system signature.
-- **D-11 (naive baseline):** $/WAR coefficient is the explicit benchmark.
-- **D-13 (posterior outputs):** distribution-native, not points.
-- **D-27 (K%-trajectory):** pitcher K%-trajectory predicts T+1 K% delta (coef ≈ −10.8).
-- **MVP Machine ch. 9:** receiving-team dev infrastructure can flip arsenal-utilization gaps.
+## What the model is, and is not
+- The forecast is the WAR each package is expected to earn for ${yourTeam.bref} from this season through T+5, with a full distribution. It comes from a four-feature model: each player's recent WAR (3-2-1 weighted), the seasons of team control he has left, whether he has MLB history, and the size of the package.
+- Tested on ${v.holdout} trades it never saw (${v.nSides.toLocaleString()} sides): the 90% band held ${v.coverage}% of outcomes and beat a constant guess by ${v.crpsGain}% on CRPS. The side with the higher forecast won ${v.favouredWin}% ± ${v.favouredHalf} of ${v.favouredTrades} two-sided trades, so the sign is a lean, not a call.
+- NOT in the model: club context (contention window, payroll, farm depth, dev-system signature: tested, no detectable effect), roster displacement (suggestive, not established), prospects, injuries, and salary. WAR is gross; the salary figures below are data, not netted out. Do not claim the model captures any of these.
 
 ## Trade structure
 
@@ -40,14 +45,12 @@ ${senders || '  (no players selected)'}
 **${yourTeam.name} receives:**
 ${receivers || '  (no players selected)'}
 
-## Model snapshot (synthetic v1)
-- Receiving-team dev multiplier (${yourTeam.bref}): ${verdict.acquirerDevMultiplier.toFixed(2)}
-- Adjusted WAR sent: ${verdict.warSent.toFixed(2)}
-- Adjusted WAR received: ${verdict.warReceived.toFixed(2)}
-- 3-yr surplus posterior: mean ${verdict.surplusMean.toFixed(2)} WAR, sd ${verdict.surplusSd.toFixed(2)}, 90% CI [${verdict.surplusLo.toFixed(2)}, ${verdict.surplusHi.toFixed(2)}]
-- P(surplus > 0): ${(verdict.pPositive * 100).toFixed(0)}%
-- Cost sent: $${(verdict.costSent / 1e6).toFixed(1)}M · Cost received: $${(verdict.costReceived / 1e6).toFixed(1)}M
-- Model recommendation: ${verdict.recommendationLabel}
+## Model forecast (${structuralAsOf.note || `priced as of ${structuralAsOf.date}`})
+- WAR received: ${band(forecast.received)}
+- WAR sent: ${band(forecast.sent)}
+- Net for ${yourTeam.bref}: ${band(forecast.net)}; P(receive side ahead) ${(forecast.net.pPositive * 100).toFixed(0)}%
+- Year-1 salary received: $${(costIn / 1e6).toFixed(1)}M · sent: $${(costOut / 1e6).toFixed(1)}M
+- Forecast read: ${LEAN_LABEL[leanOf(forecast.net)]}${missing > 0 ? `\n- ${missing} player(s) are not in the model export and were left out.` : ''}
 
 ## Your task
 
@@ -56,9 +59,9 @@ Produce a JSON object matching the schema below. Output ONLY a single fenced \`\
 \`\`\`json
 {
   "headline": "Single sharp sentence from ${yourTeam.bref}'s perspective. <= 200 chars.",
-  "thesis": "One paragraph stating the core analytical claim. 3-5 sentences. Reference ADRs (D-09, D-11, D-13, D-27) where they sharpen the argument.",
+  "thesis": "One paragraph stating the core analytical claim. 3-5 sentences. Anchor it in the forecast numbers above and say plainly what the model cannot see.",
   "keyDrivers": [
-    { "chip": "Short label", "title": "4-8 word title", "body": "2-3 sentences grounded in the numbers above." }
+    { "chip": "Short label", "title": "4-8 word title", "body": "2-3 sentences grounded in the numbers above, or flagged as outside the model." }
   ],
   "watchOuts": [
     { "title": "Risk title", "body": "1-2 sentence concrete risk." }

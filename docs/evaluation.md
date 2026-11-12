@@ -286,9 +286,21 @@ numbers. The card's headline is gross WAR with salary beside it: the dev-system
 multiplier, deadline premium, dollar conversion and recommendation labels are gone
 because none was validated.
 
-Still on the old browser-side heuristic: the standalone Trade Builder route, the
-buy-low and deals-that-clear engines, and the package skeletons that feed the AI
-brief. `suggest-trades` and trade cycles still rank on V3 `war_delta`. The
+The standalone Trade Builder shows the same forecast and the same footnote, through
+shared code (`comparePackages`, `leanOf`, `ForecastFootnote`), so one trade gives
+one answer on both screens. Its banner says "leans toward what you receive", "close
+to even" or "leans toward what you send" instead of accept or reject, because the
+higher-forecast side won only 54% ± 6 of past two-sided trades. The distribution
+plot is drawn from the model's own atoms, so the exact-zero case and the skew are
+visible. The AI reasoning prompt carries the forecast, its interval and the
+validation facts, and tells the model what the forecast cannot see (club context,
+roster displacement, prospects, injuries, salary) instead of citing ADR principles
+that the evidence no longer supports. The browser-side `computeVerdict`, its
+heuristic helpers and the pseudo-posterior violin were deleted.
+
+Still on the old browser-side heuristic: the buy-low and deals-that-clear engines
+and the package skeletons that feed the AI brief. `suggest-trades` and trade
+cycles still rank on V3 `war_delta`. The
 structural model has no club-context term, so it cannot rank the same player
 differently for different clubs; those tools depend on exactly that, and they are
 unvalidated until a context effect beats the structural model on the folds.

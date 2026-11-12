@@ -37,6 +37,7 @@ export type PackageComparison = {
   sent: SideForecast
   /** Received minus sent, treating the two sides as independent. */
   net: Summary
+  netAtoms: Atoms
 }
 
 function side(ids: readonly number[]): { forecast: SideForecast; atoms: Atoms } {
@@ -59,9 +60,36 @@ export function comparePackages(
 ): PackageComparison {
   const received = side(receivedIds)
   const sent = side(sentIds)
-  return {
-    received: received.forecast,
-    sent: sent.forecast,
-    net: summarize(differenceAtoms(received.atoms, sent.atoms)),
-  }
+  const netAtoms = differenceAtoms(received.atoms, sent.atoms)
+  return { received: received.forecast, sent: sent.forecast, net: summarize(netAtoms), netAtoms }
+}
+
+export type Lean = 'receive' | 'even' | 'send'
+
+/** One rule for how far the forecast has to tilt before the UI says it leans. */
+export function leanOf(net: Summary): Lean {
+  if (net.mean > 0 && net.pPositive >= 0.6) return 'receive'
+  if (net.mean < 0 && net.pPositive <= 0.4) return 'send'
+  return 'even'
+}
+
+export const LEAN_LABEL: Record<Lean, string> = {
+  receive: 'Forecast leans toward what you receive',
+  even: 'Forecast is close to even',
+  send: 'Forecast leans toward what you send',
+}
+
+export const fmtWar = (v: number) => `${v >= 0 ? '+' : '\u2212'}${Math.abs(v).toFixed(1)}`
+
+const pct = (v: number) => Math.round(v * 100)
+
+/** Holdout facts, formatted once so every surface says the same thing. */
+export const validationFacts = {
+  holdout: validation.holdout,
+  nSides: validation.n_sides,
+  coverage: (validation.coverage_90 * 100).toFixed(1),
+  crpsGain: pct(1 - validation.crps / validation.crps_climatology),
+  favouredWin: pct(validation.favoured_side_win_rate),
+  favouredHalf: pct(validation.favoured_side_half_width),
+  favouredTrades: validation.favoured_side_trades,
 }
