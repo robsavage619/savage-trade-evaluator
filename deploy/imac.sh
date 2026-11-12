@@ -12,7 +12,7 @@ trap 'rm -rf "$STAGE"' EXIT
 git archive HEAD | tar -x -C "$STAGE"
 ssh "$HOST" "mkdir -p '$DIR'"
 rsync -a --delete \
-  --exclude 'data/' --exclude '.env*' --exclude '.venv/' \
+  --exclude '/data/' --exclude '.env*' --exclude '.venv/' \
   --exclude 'frontend/node_modules/' --exclude 'frontend/dist*/' \
   "$STAGE/" "$HOST:$DIR/"
 
