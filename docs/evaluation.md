@@ -164,9 +164,43 @@ the folds and the holdout number is reported as it fell.
 
 The 34 context features carry no detectable signal in this model class. Alone
 (D) they are worse than the median null on MAE; added to the structural
-features (E) they do not improve on C (fold CRPS 0.963 against 0.961). That is a result about
-additive linear effects. Interactions, such as contention window with a rental,
-were not tested.
+features (E) they do not improve on C (fold CRPS 0.963 against 0.961). Only 11 of
+the 34 have usable coverage; the acquired-player ones are almost entirely
+mean-imputed (FanGraphs FV 1%, Statcast 6%).
+
+### Club context on top of the structural model (R-65)
+
+`scripts/r65_context_on_structural.py` tests context in the form where it should
+matter, as a multiplier on how much of a player's talent the club captures
+(playing time) or keeps after control ends (retention). The specs, the five
+team-level columns and the decision rule were fixed before any spec was scored:
+a spec earns one look at the holdout only if its paired per-side CRPS gain over
+the structural model has a 99% interval above zero (five comparisons) and it
+wins at least 3 of 4 folds. The five columns are the contention-window score,
+prior-year pythagorean percentage, payroll as a share of the cap, and hitting
+and pitching development fit. Pre-2018 walk-forward folds, n=1169 sides:
+
+| Spec | CRPS | Gain vs structural | 99% half-width | Folds better |
+|---|---|---|---|---|
+| S0. Structural | 0.9607 | | | |
+| S1. + context, additive | 0.9646 | -0.0040 | 0.0051 | 0 of 4 |
+| S2. + context x held WAR | 0.9631 | -0.0025 | 0.0125 | 1 of 4 |
+| S3. + context x post-control held WAR | 0.9602 | +0.0005 | 0.0109 | 2 of 4 |
+| S4. + contention x held WAR | 0.9591 | +0.0016 | 0.0088 | 3 of 4 |
+| S5. + payroll x post-control held WAR | 0.9605 | +0.0002 | 0.0066 | 3 of 4 |
+
+No spec earned a holdout look, so the holdout was not touched. Club context, in
+these five columns and these two multiplicative forms, adds nothing detectable.
+
+What that does and does not rule out. Planting a known effect in the same
+pipeline, a context column that moves captured WAR by 10% of held WAR per
+standard deviation (about 0.26 WAR per side) is detected (CRPS gain 0.023
+against a 0.021 half-width); 5% is not. So an effect of that size or larger in
+one of these columns would have shown up. Smaller effects cannot be excluded at
+this sample size. Not tested: positional need and roster displacement (who the
+acquired player would actually replace), because no depth-chart data is in the
+model, and team-level random effects, which R-33 to R-35 already found add
+nothing.
 
 The decision-level score does not separate any of these. Per-trade gain has a
 95% half-width of about 0.45 to 0.50 WAR at n of 300 to 360 trades:
