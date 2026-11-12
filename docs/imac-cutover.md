@@ -5,7 +5,7 @@ The iMac runs a daily refresh at 05:30 and serves the built site on the tailnet.
 ## What runs there
 
 - `com.savage.ste-refresh`: `scripts/refresh-ste.sh` at 05:30. Ingests, runs the quality gates, exports, builds, swaps the site.
-- `com.savage.ste-web`: `deploy/serve_spa.py` on `127.0.0.1:8097`, exposed by `tailscale serve --bg 8097`.
+- `com.savage.ste-web`: `deploy/serve_spa.py` on `127.0.0.1:8097`, exposed by `tailscale serve --bg --https=8444 8097`, which gives https://shc-imac.tail9735c5.ts.net:8444 (443 and 8443 already belong to other apps; never serve on the default port).
 
 ## The gates (src/savage_trade_evaluator/quality.py)
 
@@ -25,7 +25,7 @@ The footer pill reads `/status.json`: green ok, amber degraded or older than 36 
 1. Commit your pending work. The deploy ships `HEAD` only, so uncommitted changes do not travel.
 2. Copy the database once, by hand: `data/duckdb/trades.db` to the same path on the iMac (about the size of the file; stop any laptop ingest first, DuckDB holds a write lock).
 3. `deploy/imac.sh user@imac-host` syncs the tree, installs deps, builds, and prints the sudo block.
-4. Run the printed sudo block on the iMac (installs both LaunchDaemons, then `tailscale serve --bg 8097`).
+4. Run the printed sudo block on the iMac (installs both LaunchDaemons, then `tailscale serve --bg --https=8444 8097`, which gives https://shc-imac.tail9735c5.ts.net:8444 (443 and 8443 already belong to other apps; never serve on the default port)).
 5. Check: `uv run python scripts/refresh_daily.py --gates-only --since <today>T00:00:00` on the iMac, then open the tailnet URL.
 
 ## After cutover

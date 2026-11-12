@@ -28,5 +28,5 @@ Code is on $HOST:$DIR and the site is built. Remaining steps are yours (sudo):
   ssh -t $HOST
   cd $DIR
   for j in refresh web; do sed -e "s#__USER__#\$USER#g" -e "s#__APP_DIR__#\$PWD#g" deploy/com.savage.ste-\$j.plist | sudo tee /Library/LaunchDaemons/com.savage.ste-\$j.plist >/dev/null; sudo chown root:wheel /Library/LaunchDaemons/com.savage.ste-\$j.plist; sudo launchctl bootstrap system /Library/LaunchDaemons/com.savage.ste-\$j.plist; done
-  tailscale serve --bg 8097
+  tailscale serve --bg --https=8444 8097
 EOF
