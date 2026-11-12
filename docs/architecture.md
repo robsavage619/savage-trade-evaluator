@@ -109,7 +109,9 @@ along in the scenario payload so the UI can show when it is extrapolating.
 
 The CLI (`ste`) is the Python entry point: 9 top-level commands and 8 sub-apps
 (`ingest`, `analyze`, `backtest`, `v2`, `v3`, `report`, `brief`, `research`).
-`score-trade` and `suggest-trades` both run through `assemble_hypothetical` and
+`score-trade` reports captured WAR from the structural two-part model
+(`modeling/structural.py`), which is the model the benchmark gates, alongside
+the V3 rows. `score-trade` and `suggest-trades` both run through `assemble_hypothetical` and
 `score_hypothetical` against the cached V3 fit.
 
 The frontend never calls Python at runtime. `scripts/export_*.py` read DuckDB and

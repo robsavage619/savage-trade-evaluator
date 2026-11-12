@@ -1169,13 +1169,23 @@ def score_trade(
     sender: str = typer.Option(..., "--sender", "-s", help="Sending team bref code."),
     players: str = typer.Option(..., "--players", "-p", help="Comma-separated MLBAM player IDs."),
     season: int = typer.Option(2025, "--season", help="Trade season."),
+    trade_date: str | None = typer.Option(
+        None, "--date", help="Trade date, YYYY-MM-DD. Sets how much of the season is left."
+    ),
 ) -> None:
-    """Score a hypothetical trade with the V3 context-aware model.
+    """Score a hypothetical trade: captured WAR (structural model) plus V3 context rows.
 
     Example:
-        ste score-trade --receiver HOU --sender NYY --players 592450 --season 2025
+        ste score-trade --receiver HOU --sender MIN --players 519151 --season 2018 --date 2018-07-27
     """
+    from datetime import date
+
     configure_logging()
+    try:
+        when = date.fromisoformat(trade_date) if trade_date else None
+    except ValueError:
+        typer.echo("--date must be YYYY-MM-DD", err=True)
+        raise typer.Exit(code=1) from None
     receiver = receiver.upper()
     sender = sender.upper()
 
@@ -1238,9 +1248,14 @@ def score_trade(
     typer.echo(f"assembling features for {receiver} ← {sender}…")
     features = assemble_hypothetical(receiver, sender, player_ids, season)
 
-    typer.echo("scoring with V3.2…")
+    typer.echo("scoring…")
     result = score_hypothetical(
-        features, receiver_bref=receiver, sender_bref=sender, trade_season=season
+        features,
+        receiver_bref=receiver,
+        sender_bref=sender,
+        trade_season=season,
+        player_mlb_ids=player_ids,
+        trade_date=when,
     )
 
     player_strs = [f"{name_map.get(pid, f'#{pid}')} ({pid})" for pid in player_ids]
@@ -1266,6 +1281,7 @@ def score_trade(
     typer.echo("  " + "─" * 58)
 
     for key, label in [
+        ("captured_war", "Captured WAR"),
         ("war_delta", "WAR Delta"),
         ("dollar_surplus", "Dollar Surplus"),
         ("surplus_wins", "Surplus Wins"),
@@ -1289,6 +1305,15 @@ def score_trade(
 
         typer.echo(f"  {label:<17}  {mean_s:>8}  {p5_s:>9}  {p95_s:>9}  {p_pos:>5.0%}")
 
+    typer.echo("")
+    typer.echo(
+        f"  Captured WAR = WAR for {receiver}, trade season through T+5 "
+        "(structural model, beats baselines out-of-sample)."
+    )
+    typer.echo("  Other rows = V3 context model, not validated out-of-sample.")
+    captured_note = result.get("captured_war", {}).get("note")
+    if captured_note:
+        typer.echo(f"  ⚠ {captured_note}")
     typer.echo("")
 
     if gm_rcv:

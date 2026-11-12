@@ -166,20 +166,21 @@ experiment, and the scoring path reverted to mean-fill
 | Unit and parser tests | 154 passing, 2.0s |
 | CI on every push to main | `ruff format --check`, `ruff check`, `pyright`, `pytest` |
 | Target | WAR earned for the acquiring club, T to T+5, per trade side |
-| V3 vs a train-median null, MAE | 1.143 vs 1.127, **1.4% worse** (NO-GO) |
-| V3 vs the training distribution, CRPS | 1.027 vs 0.975, **5.3% worse** |
-| V3 vs a Marcel linear projection, MAE | 1.143 vs 1.851, 38.2% better |
-| Favoured side of 314 two-sided trades | 55.7% ± 5.5, +0.02 WAR per trade (coin flip: 50%, 0) |
-| 90% interval coverage on holdout | 83.3% (gate requires 80%) |
-| Four-feature structural baseline (R-64, research) | MAE 1.065 vs 1.127 null, CRPS 0.865 vs 0.975, 91.6% coverage |
+| Production model | Structural two-part, four features (`modeling/structural.py`) |
+| Structural vs a train-median null, MAE | 1.079 vs 1.127, **4.3% better** (GO) |
+| Structural vs the training distribution, CRPS | 0.867 vs 0.975, **11.1% better** |
+| 90% interval coverage on holdout | 91.5% (gate requires 80%) |
+| V3, 34 context features, same rows | MAE 1.143, CRPS 1.026: worse than both nulls |
+| Favoured side of two-sided trades | No model separable from a coin flip at this sample size |
 | Holdout | 2018-2021, n=1100, trained pre-2018 |
 | Walk-forward CV | 5 folds per outcome, CRPS mean and spread recorded |
 
-`scripts/benchmark_vs_naive.py` is the GO gate and exits nonzero if V3 fails to
-beat every baseline or coverage drops under 80%. It currently fails: an earlier
-version scored the production fit, which trains through 2022, on this holdout
-and reported a 28.2% beat over the train mean. Refit on pre-2018 rows and
-compared with the median, V3 does not beat predicting zero. Model-touching changes are
+`scripts/benchmark_vs_naive.py` is the GO gate and exits nonzero if the
+production model fails to beat every baseline or coverage drops under 80%. An
+earlier version scored the V3 production fit, which trains through 2022, on this
+holdout and reported a 28.2% beat over the train mean. Refit on pre-2018 rows
+and compared with the median, V3 does not beat predicting zero; the structural
+model does. Model-touching changes are
 revalidated against the D-38 protocol and the result is committed with its git
 SHA, pass or fail, in [`docs/revalidation/`](docs/revalidation/). The
 [NO-GO report](docs/revalidation/2026-07-post-mi.md) is committed for the same

@@ -1,8 +1,10 @@
 """D-51 benchmark: V3 context-aware model vs naïve WAR baselines.
 
 Target: captured_war, the WAR acquired players earned for the receiving club
-from T through T+5, summed per trade side (R-63). Pass ``war_delta`` as the first
-argument to grade the old any-club T+2..T+5 target instead.
+from T through T+5, summed per trade side (R-63). The gate grades the production
+model for that target, the structural two-part model (R-64); V3 is reported for
+comparison. Pass ``war_delta`` as the first argument to grade V3 on the old
+any-club T+2..T+5 target instead.
 
 Holdout period: 2018-2021. T+5 for 2021 trades is 2026, a partial season.
 Train: 2010-2017 for every model, V3 included. V3 is refit here on the
@@ -32,6 +34,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import linregress
 
+from savage_trade_evaluator.modeling import structural
 from savage_trade_evaluator.modeling.metrics import crps_empirical, favoured_side_score
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
@@ -101,6 +104,35 @@ def _score_holdout(
     }, posterior_mean
 
 
+def _score_structural(
+    train_df: pd.DataFrame, held_out: pd.DataFrame
+) -> tuple[dict[str, float], np.ndarray]:
+    """Fit the production structural model on the pre-holdout rows and score the holdout.
+
+    Args:
+        train_df: Pre-holdout rows with realized OUTCOME column.
+        held_out: Held-out rows with realized OUTCOME column.
+
+    Returns:
+        Dict of MAE (predictive median), CRPS, cov90, and the expected value per row.
+    """
+    feats = structural.side_features(structural.TRAIN_START_SEASON, HOLDOUT_END)
+    # DuckDB row order is not stable; the inner CV splits depend on it.
+    train = train_df.merge(feats, on=structural.KEYS, how="left").sort_values(structural.KEYS)
+    test = held_out.merge(feats, on=structural.KEYS, how="left")
+    model = structural.fit(
+        train[list(structural.FEATURES)], train[OUTCOME].to_numpy(dtype="float64")
+    )
+    draws, expected = structural.predict(model, test, np.random.default_rng(137))
+    realized = held_out[OUTCOME].to_numpy(dtype="float64")
+    lo, hi = np.percentile(draws, [5, 95], axis=1)
+    return {
+        "mae": float(np.abs(realized - np.median(draws, axis=1)).mean()),
+        "crps": crps_empirical(realized, draws),
+        "cov90": float(np.mean((realized >= lo) & (realized <= hi))),
+    }, expected
+
+
 _SIDES_SQL = f"""
 WITH legs AS (
     SELECT trade_event_id, leg_index, to_team_bref AS receiver_bref, trade_season, mlb_player_id
@@ -122,7 +154,9 @@ SELECT * FROM windowed
 """
 
 
-def _decision_report(held_out: pd.DataFrame, pred_mean: np.ndarray) -> None:
+def _decision_report(
+    held_out: pd.DataFrame, pred_mean: np.ndarray, structural_pred: np.ndarray | None
+) -> None:
     """Print the decision-level score: did the favoured side of a trade win?
 
     Only trades with exactly two receiving sides in the holdout are scored. Two
@@ -133,21 +167,26 @@ def _decision_report(held_out: pd.DataFrame, pred_mean: np.ndarray) -> None:
     Args:
         held_out: Holdout rows, aligned with ``pred_mean``.
         pred_mean: V3 posterior-mean ``OUTCOME`` per row.
+        structural_pred: Structural expected value per row, when it was scored.
     """
     with db.connect(read_only=True) as conn:
         sides = conn.execute(_SIDES_SQL).df()
     scored = held_out[["trade_event_id", "receiver_bref", "captured_war"]].copy()
     scored["pred_mean"] = pred_mean
+    scored["structural"] = 0.0 if structural_pred is None else structural_pred
     sides = sides.merge(scored, on=["trade_event_id", "receiver_bref"], how="inner")
     # war_delta is a per-leg mean; captured_war is already a side total.
     sides["v3"] = sides["pred_mean"] * (sides["n_legs"] if OUTCOME == "war_delta" else 1)
     sides = sides[sides.groupby("trade_event_id")["receiver_bref"].transform("count") == 2]
     sides = sides.sort_values(["trade_event_id", "receiver_bref"])
-    cols = ["v3", "prior_war", "window_war", "captured_war"]
+    cols = ["v3", "structural", "prior_war", "window_war", "captured_war"]
     a = sides.groupby("trade_event_id")[cols].first()
     b = sides.groupby("trade_event_id")[cols].last()
     margin = (a - b).to_numpy(dtype="float64")
-    v3_m, prior_m, window_m, captured_m = margin.T
+    v3_m, structural_m, prior_m, window_m, captured_m = margin.T
+    pickers = [("V3", v3_m), ("More prior-year WAR", prior_m)]
+    if structural_pred is not None:
+        pickers.insert(0, ("Structural two-part", structural_m))
 
     print("=" * 72)
     print(f"  DECISION LEVEL: favoured side of {len(margin)} two-sided holdout trades")
@@ -158,7 +197,7 @@ def _decision_report(held_out: pd.DataFrame, pred_mean: np.ndarray) -> None:
         ("any-team WAR T+2..T+5", window_m),
         ("captured WAR T..T+5", captured_m),
     ):
-        for picker_name, pred in (("V3", v3_m), ("More prior-year WAR", prior_m)):
+        for picker_name, pred in pickers:
             win, gained, n = favoured_side_score(pred, truth)
             half = 1.96 * (win * (1 - win) / n) ** 0.5 if n else float("nan")
             print(
@@ -170,7 +209,8 @@ def _decision_report(held_out: pd.DataFrame, pred_mean: np.ndarray) -> None:
 
 def main() -> None:
     print("Loading V3 combined dataset…")
-    df = assemble_v3_combined()
+    # DuckDB row order is not stable; sort so every run scores the same rows in the same order.
+    df = assemble_v3_combined().sort_values(structural.KEYS).reset_index(drop=True)
 
     held_out = (
         df[(df["trade_season"] >= HOLDOUT_START) & (df["trade_season"] <= HOLDOUT_END)]
@@ -215,6 +255,10 @@ def main() -> None:
     # ── V3 model ──────────────────────────────────────────────────────────────
     print("Fitting V3 on pre-holdout rows and scoring the holdout…")
     v3, v3_pred = _score_holdout(train_df, held_out)
+    # The structural model is the production model for captured_war.
+    st, st_pred = (
+        _score_structural(train_df, held_out) if OUTCOME == structural.TARGET else (None, None)
+    )
 
     # ── Report ────────────────────────────────────────────────────────────────
     print()
@@ -238,6 +282,10 @@ def main() -> None:
     print(
         f"  {'V3 (posterior mean)':<22} {v3['mae']:>6.3f}  {v3['crps']:>6.3f}  {v3['cov90']:>6.1%}  {v3['p_correct']:>6.1%}  {v3['n']:>5}"
     )
+    if st is not None:
+        print(
+            f"  {'Structural two-part':<22} {st['mae']:>6.3f}  {st['crps']:>6.3f}  {st['cov90']:>6.1%}  {'—':>6}  {len(held_out):>5}"
+        )
     print(f"  {'=' * 65}")
     best_null = min(null_mae, median_mae)
     delta_null = best_null - v3["mae"]
@@ -251,19 +299,29 @@ def main() -> None:
     print(
         f"  V3 vs climatology: CRPS Δ = {clim_crps - v3['crps']:+.3f}  ({(clim_crps - v3['crps']) / clim_crps:.1%} improvement)"
     )
+    if st is not None:
+        print(
+            f"  Structural vs best null: MAE {(best_null - st['mae']) / best_null:+.1%}  "
+            f"vs climatology: CRPS {(clim_crps - st['crps']) / clim_crps:+.1%}"
+        )
     print(f"  Marcel r² vs train: {r_marcel**2:.3f}")
     print()
 
     # Go/No-Go
-    beat_null = v3["mae"] < best_null
-    beat_marcel = v3["mae"] < marcel_mae
-    cov_ok = v3["cov90"] >= 0.80
-    verdict = "GO" if (beat_null and beat_marcel and cov_ok) else "NO-GO"
-    print(f"  Verdict: {verdict}")
-    print(f"    beat null:   {beat_null}  beat Marcel: {beat_marcel}  cov90 ≥ 80%: {cov_ok}")
+    gated, name = (st, "structural two-part") if st is not None else (v3, "V3")
+    beat_null = gated["mae"] < best_null
+    beat_marcel = gated["mae"] < marcel_mae
+    beat_clim = gated["crps"] < clim_crps
+    cov_ok = gated["cov90"] >= 0.80
+    verdict = "GO" if (beat_null and beat_marcel and beat_clim and cov_ok) else "NO-GO"
+    print(f"  Verdict ({name}): {verdict}")
+    print(
+        f"    beat null: {beat_null}  beat Marcel: {beat_marcel}  "
+        f"beat climatology: {beat_clim}  cov90 ≥ 80%: {cov_ok}"
+    )
     print()
 
-    _decision_report(held_out, v3_pred)
+    _decision_report(held_out, v3_pred, st_pred)
 
     sys.exit(0 if verdict == "GO" else 1)
 

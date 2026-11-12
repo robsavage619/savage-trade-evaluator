@@ -9,8 +9,10 @@ diagnostics are held-out calibration, CRPS, and credible-feature counts.
 
 ## The benchmark
 
-`scripts/benchmark_vs_naive.py` is the GO gate. It scores V3 against two
-baselines on a holdout the model never trained on and exits nonzero on failure.
+`scripts/benchmark_vs_naive.py` is the GO gate. It scores the production model,
+the structural two-part model in `modeling/structural.py`, against the baselines
+on a holdout it never trained on, and exits nonzero on failure. V3 is scored in
+the same run for comparison.
 
 - **Holdout:** 2018-2021 trade seasons, n=1100.
 - **Train:** pre-2018, n=1874, for every model. V3 is refit inside the script;
@@ -26,11 +28,14 @@ baselines on a holdout the model never trained on and exits nonzero on failure.
 | **Null (train median = 0)** | **1.127** | | | 33.2% |
 | **Climatology (train distribution)** | | **0.975** | | |
 | Marcel linear | 1.851 | | | 40.5% |
-| V3 (posterior mean) | 1.143 | 1.027 | 83.3% | 37.4% |
+| V3 (posterior mean) | 1.143 | 1.026 | 83.5% | 38.1% |
+| **Structural two-part (production)** | **1.079** | **0.867** | 91.5% | |
 
-Verdict: **NO-GO**. V3 is 1.4% worse than the median null on MAE and 5.3% worse
-than climatology on CRPS. Changing the target fixed what is being measured. It
-did not give the model skill.
+Verdict: **GO** for the structural model: 4.3% better than the median null on
+MAE, 11.1% better than climatology on CRPS, and 91.5% coverage of the 90%
+interval. V3 on the same rows is 1.4% worse than the median null and 5.3% worse
+than climatology. Changing the target fixed what is being measured; it did not
+give V3 skill.
 
 The same script on the old target, for the record:
 
@@ -42,9 +47,10 @@ The same script on the old target, for the record:
 | Marcel linear | 1.400 | | | 37.0% |
 | V3 (posterior mean) | 0.914 | 0.827 | 81.3% | 31.9% |
 
-Also NO-GO: 2.3% worse than the median null on MAE and about 7% worse than
-climatology on CRPS. The gate on either target is beating every baseline and
-holding 90% coverage at or above 80%. MAE moves by about 0.001 between runs.
+V3 is NO-GO there too: 2.3% worse than the median null on MAE and about 7%
+worse than climatology on CRPS. The gate on either target is beating the median
+null and Marcel on MAE, climatology on CRPS, and holding 90% coverage at or
+above 80%. MAE moves by about 0.001 between runs.
 
 CRPS is computed with `metrics.crps_empirical`, which is tested against the
 closed form. The script's earlier local CRPS function was wrong (0.82 where the
@@ -132,26 +138,33 @@ Specs were compared on pre-2018 walk-forward folds only (test seasons 2014 to
 |---|---|---|---|
 | Null (median / climatology) | 1.324 | 1.128 | |
 | A. T-1 WAR, plain regression | 1.279 | 1.030 | 90.7% |
-| B. T-1 WAR, two-part | 1.252 | 1.009 | 90.6% |
+| B. T-1 WAR, two-part | 1.241 | 0.984 | 91.7% |
 | **C. Structural, two-part** | **1.207** | **0.961** | 90.3% |
-| D. The 34 context features, two-part | 1.342 | 1.095 | 90.0% |
-| E. Structural + 34 context, two-part | 1.240 | 0.972 | 90.5% |
+| D. The 34 context features, two-part | 1.342 | 1.096 | 90.1% |
+| E. Structural + 34 context, two-part | 1.237 | 0.963 | 90.5% |
 
 C had the best fold CRPS and was scored on the 2018-2021 holdout (n=1100):
 
 | Model | MAE | CRPS | Cov90 |
 |---|---|---|---|
 | Null (median / climatology) | 1.127 | 0.975 | |
-| V3, 34 features, Student-t | 1.143 | 1.027 | 83.3% |
-| **C. Structural, two-part** | **1.065** | **0.865** | 91.6% |
+| V3, 34 features, Student-t | 1.143 | 1.026 | 83.5% |
+| **C. Structural, two-part** | **1.079** | **0.867** | 91.5% |
 
-Four features beat both nulls out-of-sample, by 5.5% on MAE and 11.3% on CRPS,
+Four features beat both nulls out-of-sample, by 4.3% on MAE and 11.1% on CRPS,
 with intervals that cover at the stated rate. This is the first model in the
 repo to do so.
 
+One change was made after the first holdout score. The zero/non-zero classifier
+was tuning its regularization on accuracy, which a unit test on separable data
+showed gives poorly calibrated probabilities. It now tunes on log-loss. On the
+folds, spec C is unchanged to three decimals and B and E improve. On the
+holdout, C moved from 1.065 / 0.865 to 1.079 / 0.867. The decision was made on
+the folds and the holdout number is reported as it fell.
+
 The 34 context features carry no detectable signal in this model class. Alone
 (D) they are worse than the median null on MAE; added to the structural
-features (E) they make the fit slightly worse than C. That is a result about
+features (E) they do not improve on C (fold CRPS 0.963 against 0.961). That is a result about
 additive linear effects. Interactions, such as contention window with a rental,
 were not tested.
 
@@ -160,7 +173,7 @@ The decision-level score does not separate any of these. Per-trade gain has a
 
 | Picker | Folds: won, WAR per trade | Holdout: won, WAR per trade |
 |---|---|---|
-| C. Structural, two-part | 48.6%, +0.31 | 54.6%, +0.10 |
+| C. Structural, two-part | 48.6%, +0.31 | 54.3%, -0.05 |
 | More T-1 WAR | 55.4%, +0.05 | 55.5%, +0.51 |
 | More held WAR (unfitted) | 50.4%, -0.17 | 61.7%, +0.64 |
 
@@ -172,6 +185,22 @@ the benchmark as a diagnostic. The proper scores above are the gate.
 Known limits: service time is counted in MLB seasons played, not days, and no
 historical contract data is used, so a veteran on a multi-year deal looks like a
 rental. The 2020 season was 60 games and sits inside every holdout window.
+
+## In production
+
+`ste score-trade` reports `Captured WAR` from `structural.score_players` as the
+headline row, with `--date` setting how much of the season is left. The
+production fit trains on trades from 2010 through 2020, the last season whose
+T+5 window is complete in bWAR. If the latest bWAR season is still in progress,
+a trade dated after it is priced as an in-season trade as of the data, and the
+output says so.
+
+The V3 rows (`WAR Delta`, `Dollar Surplus`, `Surplus Wins`) are still printed and
+are labelled as not validated. `suggest-trades`, trade cycles and the frontend
+exports still rank on V3 `war_delta`. The structural model has no club-context
+term, so it cannot rank the same player differently for different clubs; those
+tools depend on exactly that, and they are unvalidated until a context effect
+beats the structural model on the folds.
 
 ## The credibility bar
 

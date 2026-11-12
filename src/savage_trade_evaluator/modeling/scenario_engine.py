@@ -29,11 +29,13 @@ All posterior samples returned by ``predict()`` are in original outcome units
 from __future__ import annotations
 
 import logging
+from datetime import date
 from typing import Any, cast
 
 import numpy as np
 import pandas as pd
 
+from savage_trade_evaluator.modeling import structural
 from savage_trade_evaluator.modeling.production_fit import (
     MODEL_VERSION,
     TRAIN_END_SEASON,
@@ -332,6 +334,8 @@ def score_hypothetical(
     receiver_bref: str | None = None,
     sender_bref: str | None = None,
     trade_season: int | None = None,
+    player_mlb_ids: list[int] | None = None,
+    trade_date: date | None = None,
 ) -> dict[str, Any]:
     """Score a hypothetical trade from a pre-assembled feature row.
 
@@ -345,6 +349,11 @@ def score_hypothetical(
         receiver_bref: Optional receiving team label for the returned dict.
         sender_bref: Optional sending team label for the returned dict.
         trade_season: Optional trade season label for the returned dict.
+        player_mlb_ids: Players being acquired. When given, the result also
+            carries ``captured_war`` from the structural model, which is the
+            validated headline number.
+        trade_date: Trade date for the structural model. Defaults to today for
+            the current year, else the start of ``trade_season``.
 
     Returns:
         Dict with metadata + per-outcome posterior summaries. Each outcome summary
@@ -370,6 +379,13 @@ def score_hypothetical(
         outcome_summary["coverage"] = coverage_report(features, fit)
         outcome_summary["attribution"] = attribute_score(fit, features, top_k=5)
         result[outcome] = outcome_summary
+
+    if player_mlb_ids:
+        today = date.today()
+        when = trade_date or (
+            today if trade_season in (None, today.year) else date(int(trade_season), 1, 1)
+        )
+        result["captured_war"] = structural.score_players(player_mlb_ids, when)
 
     # Top-level convenience key: war_delta coverage (the primary outcome).
     war_fit = fits.get("war_delta")
