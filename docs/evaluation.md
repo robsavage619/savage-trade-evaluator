@@ -14,25 +14,30 @@ baselines on a holdout the model never trained on and exits nonzero on failure.
 
 - **Holdout:** 2018-2021 trade seasons, n=1100, chosen because those windows have
   fully realized 3-year outcomes.
-- **Train:** pre-2018, n=1874. The split is explicit rather than reusing the
-  production fit's 2010-2022 range, so the comparators cannot leak.
+- **Train:** pre-2018, n=1874, for every model. V3 is refit inside the script;
+  the cached production fit trains through 2022 and has seen the holdout.
 - **Outcome:** `war_delta`.
 
 | Model | MAE | CRPS | Cov90 | P(direction) |
 |---|---|---|---|---|
 | Null (train mean) | 1.242 | | | 37.2% |
+| **Null (train median = 0)** | **0.894** | | | 42.8% |
 | Marcel linear | 1.400 | | | 37.0% |
-| **V3 (posterior mean)** | **0.892** | 0.995 | 80.5% | 36.5% |
+| V3 (posterior mean) | 0.914 | 1.037 | 81.5% | 31.5% |
 
-V3 beats the null by 28.2% MAE and Marcel by 36.3%. Verdict: **GO**, gated on
-beating both baselines and holding 90% coverage at or above 80%.
+Verdict: **NO-GO**. V3 is 2.3% worse than the median null. The gate is beating
+every baseline and holding 90% coverage at or above 80%.
 
-Two things worth noticing in that table. Marcel is *worse* than predicting the
-training mean, which is what a signal-to-noise ratio of roughly 20:1 does to a
-naive linear projection. And directional accuracy sits near 37% for all three
-models, including V3: the model is calibrated on magnitude but is not a
-sign-prediction machine. It is honest about that rather than tuned to look good
-on it.
+This replaces an earlier GO (2026-11-12 correction). That run had two faults.
+It scored the cached production fit, trained through 2022, on the 2018-2021
+holdout, so V3 was in-sample. And its only constant baseline was the train
+mean, while 42.8% of holdout legs have `war_delta` exactly 0, which makes the
+median the MAE-optimal constant. The reported 28.2% beat came from those two
+together.
+
+What the table says now: the outcome is zero-inflated, and a single Student-t
+regression does not separate "this leg never produced MLB value" from "how much
+value it produced". That is the modeling gap to close before any feature work.
 
 ## The credibility bar
 

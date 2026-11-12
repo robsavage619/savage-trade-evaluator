@@ -1,8 +1,13 @@
 """D-51 benchmark: V3 context-aware model vs naïve WAR baselines.
 
 Holdout period: 2018-2021 (fully realized 3yr outcome windows).
-Train: 2010-2017 (V3 production fit uses 2010-2022; this script uses an
-explicit pre-holdout split to avoid leakage for the null/Marcel comparators).
+Train: 2010-2017 for every model, V3 included. V3 is refit here on the
+pre-holdout rows; the cached production fit trains through 2022 and has seen the
+holdout, so it must not be scored on it.
+
+war_delta is zero-inflated (about 43% of holdout legs are exactly 0), so the
+MAE-optimal constant is the train median, not the train mean. Both nulls are
+reported and the gate is against the better one.
 
 Metrics reported:
   MAE         — posterior mean vs realized war_delta
@@ -23,8 +28,12 @@ import numpy as np
 import pandas as pd
 from scipy.stats import linregress
 
-from savage_trade_evaluator.modeling.production_fit import get_fit
-from savage_trade_evaluator.modeling.v3 import assemble_v3_combined, predict
+from savage_trade_evaluator.modeling.v3 import (
+    V3_OUTCOME_FEATURES,
+    assemble_v3_combined,
+    fit_v3,
+    predict,
+)
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -58,20 +67,25 @@ def crps_sorted(samples: np.ndarray, obs: np.ndarray) -> float:
 
 
 def _score_holdout(
-    df: pd.DataFrame,
+    train_df: pd.DataFrame,
     held_out: pd.DataFrame,
 ) -> dict[str, float]:
-    """Load production fit and score the holdout rows.
+    """Fit V3 on the pre-holdout rows only and score the holdout rows.
 
     Args:
-        df: Full combined DataFrame (for feature_means fallback).
+        train_df: Pre-holdout rows with realized OUTCOME column.
         held_out: Held-out rows with realized OUTCOME column.
 
     Returns:
         Dict of MAE, CRPS, cov90, p_correct, n.
     """
-    fit = get_fit(OUTCOME)
-    feat_cols = list(fit.feature_cols)
+    feat_cols = list(V3_OUTCOME_FEATURES[OUTCOME])
+    train = train_df.copy()
+    for c in feat_cols:
+        col = train[c].astype("float64")
+        fill = float(np.nanmean(col.to_numpy())) if col.notna().any() else 0.0
+        train[c] = col.fillna(fill)
+    fit = fit_v3(train, OUTCOME, tuple(feat_cols))
     scored = pd.DataFrame(index=held_out.index)
     for c in feat_cols:
         if c in held_out.columns:
@@ -129,6 +143,10 @@ def main() -> None:
     # ── Null: predict training mean ──────────────────────────────────────────
     null_mae = float(np.abs(realized - train_mean).mean())
     null_p_correct = float(np.mean(np.sign(train_mean) == np.sign(realized)))
+    train_median = float(np.median(train_df[OUTCOME].to_numpy()))
+    median_mae = float(np.abs(realized - train_median).mean())
+    median_p_correct = float(np.mean(np.sign(train_median) == np.sign(realized)))
+    print(f"holdout legs with {OUTCOME} == 0: {float(np.mean(realized == 0)):.1%}")
 
     # ── Marcel naive: linear regression on pre-trade WAR quality ─────────────
     train_q = train_df.dropna(subset=["receiver_acquired_player_quality"])
@@ -141,8 +159,8 @@ def main() -> None:
     marcel_p_correct = float(np.mean(np.sign(marcel_pred.values) == np.sign(realized)))
 
     # ── V3 model ──────────────────────────────────────────────────────────────
-    print("Scoring V3 posteriors on holdout…")
-    v3 = _score_holdout(df, held_out)
+    print("Fitting V3 on pre-holdout rows and scoring the holdout…")
+    v3 = _score_holdout(train_df, held_out)
 
     # ── Report ────────────────────────────────────────────────────────────────
     print()
@@ -155,15 +173,19 @@ def main() -> None:
         f"  {'Null (train mean)':<22} {null_mae:>6.3f}  {'—':>6}  {'—':>6}  {null_p_correct:>6.1%}  {len(held_out):>5}"
     )
     print(
+        f"  {'Null (train median)':<22} {median_mae:>6.3f}  {'—':>6}  {'—':>6}  {median_p_correct:>6.1%}  {len(held_out):>5}"
+    )
+    print(
         f"  {'Marcel linear':<22} {marcel_mae:>6.3f}  {'—':>6}  {'—':>6}  {marcel_p_correct:>6.1%}  {len(held_out):>5}"
     )
     print(
         f"  {'V3 (posterior mean)':<22} {v3['mae']:>6.3f}  {v3['crps']:>6.3f}  {v3['cov90']:>6.1%}  {v3['p_correct']:>6.1%}  {v3['n']:>5}"
     )
     print(f"  {'=' * 65}")
-    delta_null = null_mae - v3["mae"]
+    best_null = min(null_mae, median_mae)
+    delta_null = best_null - v3["mae"]
     print(
-        f"  V3 vs Null:     MAE Δ = {delta_null:+.3f} WAR  ({delta_null / null_mae:.1%} improvement)"
+        f"  V3 vs best null: MAE Δ = {delta_null:+.3f} WAR  ({delta_null / best_null:.1%} improvement)"
     )
     delta_marcel = marcel_mae - v3["mae"]
     print(
@@ -173,7 +195,7 @@ def main() -> None:
     print()
 
     # Go/No-Go
-    beat_null = v3["mae"] < null_mae
+    beat_null = v3["mae"] < best_null
     beat_marcel = v3["mae"] < marcel_mae
     cov_ok = v3["cov90"] >= 0.80
     verdict = "GO" if (beat_null and beat_marcel and cov_ok) else "NO-GO"

@@ -165,14 +165,18 @@ experiment, and the scoring path reverted to mean-fill
 |---|---|
 | Unit and parser tests | 154 passing, 2.0s |
 | CI on every push to main | `ruff format --check`, `ruff check`, `pyright`, `pytest` |
-| V3 vs a train-mean null, MAE | 0.892 vs 1.242, **28.2% better** |
-| V3 vs a Marcel linear projection, MAE | 0.892 vs 1.400, **36.3% better** |
-| 90% interval coverage on holdout | 80.5% (gate requires 80%) |
+| V3 vs a train-median null, MAE | 0.914 vs 0.894, **2.3% worse** (NO-GO) |
+| V3 vs a train-mean null, MAE | 0.914 vs 1.242 (the mean is the wrong constant: 43% of legs are exactly 0) |
+| V3 vs a Marcel linear projection, MAE | 0.914 vs 1.400, 34.7% better |
+| 90% interval coverage on holdout | 81.5% (gate requires 80%) |
 | Holdout | 2018-2021, n=1100, trained pre-2018 |
 | Walk-forward CV | 5 folds per outcome, CRPS mean and spread recorded |
 
 `scripts/benchmark_vs_naive.py` is the GO gate and exits nonzero if V3 fails to
-beat both baselines or coverage drops under 80%. Model-touching changes are
+beat every baseline or coverage drops under 80%. It currently fails: an earlier
+version scored the production fit, which trains through 2022, on this holdout
+and reported a 28.2% beat over the train mean. Refit on pre-2018 rows and
+compared with the median, V3 does not beat predicting zero. Model-touching changes are
 revalidated against the D-38 protocol and the result is committed with its git
 SHA, pass or fail, in [`docs/revalidation/`](docs/revalidation/). The
 [NO-GO report](docs/revalidation/2026-07-post-mi.md) is committed for the same
