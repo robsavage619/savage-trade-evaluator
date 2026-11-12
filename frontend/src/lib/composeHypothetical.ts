@@ -35,7 +35,7 @@ You are the analytical reasoning layer of the Savage Trade Evaluator. The ${your
 ## What the model is, and is not
 - The forecast is the WAR each package is expected to earn for ${yourTeam.bref} from this season through T+5, with a full distribution. It comes from a four-feature model: each player's recent WAR (3-2-1 weighted), the seasons of team control he has left, whether he has MLB history, and the size of the package.
 - Tested on ${v.holdout} trades it never saw (${v.nSides.toLocaleString()} sides): the 90% band held ${v.coverage}% of outcomes and beat a constant guess by ${v.crpsGain}% on CRPS. The side with the higher forecast won ${v.favouredWin}% ± ${v.favouredHalf} of ${v.favouredTrades} two-sided trades, so the sign is a lean, not a call.
-- NOT in the model: club context (contention window, payroll, farm depth, dev-system signature: tested, no detectable effect), roster displacement (suggestive, not established), prospects, injuries, and salary. WAR is gross; the salary figures below are data, not netted out. Do not claim the model captures any of these.
+- NOT in the model: contract length and options (a long guaranteed deal is priced like a typical veteran; a rental or opt-out candidate is priced as if he stays) and injury status, so check both by hand; club context (contention window, payroll, farm depth, dev-system signature: tested, no detectable effect), roster displacement (suggestive, not established), prospects, injuries, and salary. WAR is gross; the salary figures below are data, not netted out. Do not claim the model captures any of these.
 
 ## Trade structure
 
