@@ -13,4 +13,4 @@ rm -rf "$HOME/.local/node"
 mkdir -p "$HOME/.local/node"
 tar -xzf "$FILE" -C "$HOME/.local/node" --strip-components=1
 "$HOME/.local/node/bin/node" -v
-"$HOME/.local/node/bin/npm" -v
+PATH="$HOME/.local/node/bin:$PATH" npm -v
