@@ -16,7 +16,8 @@ rsync -a --delete \
   --exclude 'frontend/node_modules/' --exclude 'frontend/dist*/' \
   "$STAGE/" "$HOST:$DIR/"
 
-ssh -t "$HOST" "cd '$DIR' && export PATH=\$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:\$PATH && uv sync && (cd frontend && npm ci) && mkdir -p data/duckdb data/refresh && test -f data/duckdb/trades.db || echo 'NOTE: data/duckdb/trades.db missing: copy it first'"
+ssh -t "$HOST" "cd '$DIR' && export PATH=\$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:\$PATH && uv sync --locked && (cd frontend && npm ci) && mkdir -p data/duckdb data/refresh"
+ssh "$HOST" "test -f '$DIR/data/duckdb/trades.db'" || { echo "trades.db missing on $HOST: copy it first" >&2; exit 1; }
 ssh "$HOST" "cd '$DIR' && export PATH=\$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:\$PATH && uv run python scripts/refresh_daily.py --build-only"
 
 cat <<EOF

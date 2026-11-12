@@ -86,3 +86,10 @@ pythonVersion = "3.12"
 typeCheckingMode = "basic"
 include = ["src", "tests"]
 exclude = ["**/__pycache__", ".venv"]
+
+[tool.uv]
+# The iMac is Intel: llvmlite 0.46+ ships no x86_64 macOS wheel and would need cmake plus LLVM to build.
+constraint-dependencies = [
+    "llvmlite<0.46; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "numba<0.63; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
