@@ -70,6 +70,12 @@ Adapter conventions that came out of the rate-limit constraint:
   about 1.
 - Season-keyed sources use partition-replace so a re-ingest of one season does
   not disturb the others.
+- Tables that hold the current, still-growing season (bWAR, the Savant leaderboards,
+  standings, team stats, rosters) write through `db.execute_refreshing`, which turns
+  `ON CONFLICT DO NOTHING` into an update of the inserted columns and bumps
+  `ingested_at`. Plain DO NOTHING freezes a row at its first ingest: a daily re-run
+  adds players and leaves every existing figure stale. Rows that disappear from a
+  source are not deleted, so rosters keep departed players until a season rolls over.
 
 ## Modeling
 
