@@ -13,6 +13,8 @@ Run:
 
 from __future__ import annotations
 
+import gzip
+import http.client
 import json
 import logging
 import time
@@ -77,18 +79,42 @@ TEAM_ROSTER: list[tuple[str, int, str]] = [
 ]
 
 
-def _http_json(url: str, retries: int = 3) -> dict[str, Any]:
+def _http_json(url: str, retries: int = 5) -> dict[str, Any]:
     last_err: Exception | None = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers=HEADERS)
+            # Identity-encoded responses from this API arrive truncated about three
+            # times in four from the sandbox (IncompleteRead); gzip ones do not.
+            req = urllib.request.Request(url, headers={**HEADERS, "Accept-Encoding": "gzip"})
             with urllib.request.urlopen(req, timeout=15) as resp:
-                return json.loads(resp.read().decode("utf-8"))
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
+                body = resp.read()
+                if resp.headers.get("Content-Encoding") == "gzip":
+                    body = gzip.decompress(body)
+                return json.loads(body.decode("utf-8"))
+        # IncompleteRead (a truncated body) is an http.client error, not a URLError.
+        except (urllib.error.URLError, TimeoutError, http.client.HTTPException) as e:
             last_err = e
             time.sleep(0.5 * (attempt + 1))
     assert last_err is not None
     raise last_err
+
+
+MIN_ROSTER = 25  # below an active roster means the fetch, not the club, is short
+
+
+def validate_rosters(team_rosters: dict[str, list[dict[str, Any]]]) -> None:
+    """Refuse to continue with a partial league.
+
+    Raises:
+        SystemExit: If any club is missing or has fewer than ``MIN_ROSTER`` players.
+    """
+    short = {b: len(r) for b, r in team_rosters.items() if len(r) < MIN_ROSTER}
+    missing = [b for b, _, _ in TEAM_ROSTER if b not in team_rosters]
+    if short or missing:
+        raise SystemExit(
+            f"refusing to write a partial seed: clubs under {MIN_ROSTER} players {short}, "
+            f"missing {missing}. The existing seed was left untouched."
+        )
 
 
 def fetch_roster(team_id: int) -> list[dict[str, Any]]:
@@ -360,6 +386,8 @@ def main() -> None:
             except Exception as e:
                 logger.warning("roster fetch failed for %s: %s", bref, e)
                 team_rosters[bref] = []
+
+    validate_rosters(team_rosters)
 
     # Collect all player ids
     all_ids: list[int] = []
