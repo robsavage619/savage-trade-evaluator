@@ -4,6 +4,7 @@ import { Search, Plus, AlertCircle, BadgePlus, X, User } from 'lucide-react'
 import type { CurrentPlayer, CurrentTeam } from '../data/players'
 import { useRoster, useTeamsByBref } from '../lib/rosterStore'
 import { TeamLogo } from './TeamLogo'
+import { ContractChips } from './ContractChips'
 import { fmtMoney } from '../lib/format'
 import { forecastArb, parseArbClass, isControlled } from '../lib/arbForecast'
 import type { ArbClass } from '../lib/arbForecast'
@@ -238,6 +239,7 @@ export function BasketCard({
                       ? ` · ${fmtMoney(arb.projections[0])} next · ${fmtMoney(arb.totalCost3yr)} 3yr`
                       : p.cap_hit != null ? ` · ${fmtMoney(p.cap_hit)}` : p.last_salary != null ? ` · ${fmtMoney(p.last_salary)}` : ''}
                   </div>
+                  <ContractChips id={p.mlb_player_id} />
                 </Link>
                 <button
                   onClick={() => onRemove(p.mlb_player_id)}

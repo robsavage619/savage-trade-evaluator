@@ -8,6 +8,7 @@ import { TeamIdentitySwitcher } from '../components/TeamIdentitySwitcher'
 import { PlayerPicker, BasketCard } from '../components/PlayerPicker'
 import { RefreshRostersButton } from '../components/RefreshRostersButton'
 import { ForecastDistribution } from '../components/ForecastDistribution'
+import { ForecastBlindSpots } from '../components/ForecastBlindSpots'
 import { ForecastFootnote } from '../components/ForecastFootnote'
 import { Section, Stat } from '../components/Section'
 import { TeamLogo } from '../components/TeamLogo'
@@ -448,6 +449,9 @@ export default function TradeBuilder() {
                 </div>
               </div>
 
+              <div className="border-t border-ink-700/40 px-5 py-3">
+                <ForecastBlindSpots players={[...receivingPlayers, ...sendingPlayers]} />
+              </div>
               <ForecastFootnote missing={missing} className="border-t border-ink-700/40 px-5 py-2" />
 
               {/* Player comparison */}

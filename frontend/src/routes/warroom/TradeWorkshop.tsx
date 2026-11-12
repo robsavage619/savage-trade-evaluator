@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeftRight, Trash2, X, BadgePlus, Radio } from 'lucide-react'
 import { PlayerPicker, BasketCard } from '../../components/PlayerPicker'
 import { Stat } from '../../components/Section'
+import { ForecastBlindSpots } from '../../components/ForecastBlindSpots'
 import { ForecastFootnote } from '../../components/ForecastFootnote'
 import { fvToWar } from '../../lib/hypothetical'
 import { LEAN_LABEL, comparePackages, fmtWar, leanOf } from '../../lib/structuralData'
@@ -324,6 +325,7 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
             gamesBack={gamesBack}
             playoffProb={playoffProb}
           />
+          <ForecastBlindSpots players={[...receivingPlayers, ...sendingPlayers]} className="mt-2" />
           <ForecastFootnote missing={missing} className="mt-2 rounded border border-ink-700/50 bg-ink-800/40 px-2.5 py-1.5" />
         </div>
       ) : (

@@ -298,6 +298,19 @@ roster displacement, prospects, injuries, salary) instead of citing ADR principl
 that the evidence no longer supports. The browser-side `computeVerdict`, its
 heuristic helpers and the pseudo-posterior violin were deleted.
 
+Both screens also show what the forecast cannot see, per player. `scripts/export_contract_flags.py`
+writes `frontend/src/data/model/contract_flags.json` from the Baseball-Reference
+contract snapshot (guaranteed-through season, first option with type, value and
+fallback), `spotrac_conflicts` (listed on a Spotrac deal but on no club page), and
+the roster seed (injured-list code, last season with MLB WAR). The basket cards show
+them as chips, and the forecast card names the players in the trade whose flags can
+change the answer: a player or mutual option, a guaranteed deal running to 2030 or
+later, an IL status, a long absence, or a contract Baseball-Reference no longer
+lists. The panel states the snapshot dates, because the roster seed is from
+2026-07-12 and an IL code or a roster spot from then is not current. Flags are
+facts shown beside the number; they do not adjust it, and the model has not been
+shown to improve when they are used as inputs.
+
 Still on the old browser-side heuristic: the buy-low and deals-that-clear engines
 and the package skeletons that feed the AI brief. `suggest-trades` and trade
 cycles still rank on V3 `war_delta`. The
