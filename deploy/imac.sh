@@ -15,6 +15,8 @@ rsync -a --delete \
   --exclude '/data/' --exclude '.env*' --exclude '.venv/' \
   --exclude 'frontend/node_modules/' --exclude 'frontend/dist*/' \
   "$STAGE/" "$HOST:$DIR/"
+# Tracked data/ files (prospect FV caches etc.) ship without --delete, so the DB and refresh state stay put.
+(cd "$STAGE" && find data -type f -not -name '*.db' -not -name '*.wal') | rsync -a --files-from=- "$STAGE/" "$HOST:$DIR/"
 
 ssh -t "$HOST" "cd '$DIR' && export PATH=\$HOME/.local/node/bin:\$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:\$PATH && uv sync --locked && (cd frontend && npm ci) && mkdir -p data/duckdb data/refresh"
 ssh "$HOST" "test -f '$DIR/data/duckdb/trades.db'" || { echo "trades.db missing on $HOST: copy it first" >&2; exit 1; }
