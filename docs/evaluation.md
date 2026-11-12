@@ -269,11 +269,31 @@ a trade dated after it is priced as an in-season trade as of the data, and the
 output says so.
 
 The V3 rows (`WAR Delta`, `Dollar Surplus`, `Surplus Wins`) are still printed and
-are labelled as not validated. `suggest-trades`, trade cycles and the frontend
-exports still rank on V3 `war_delta`. The structural model has no club-context
-term, so it cannot rank the same player differently for different clubs; those
-tools depend on exactly that, and they are unvalidated until a context effect
-beats the structural model on the folds.
+are labelled as not validated.
+
+The War Room trade workshop shows the same forecast. `scripts/export_structural.py`
+writes the model parameters and each rostered player's features to
+`frontend/src/data/model/structural_model.json`, and the card evaluates the
+package in the browser (`frontend/src/lib/structural.ts`). Both sides use one
+analytic summary: the residual pool is compressed to 200 quantile atoms, so the
+mean, interval and P(receive side ahead) need no random draws and are identical in
+Python and TypeScript. `npm run check:structural` runs the TypeScript against 55
+Python-computed golden cases (max absolute error 5e-13) and fails if they
+diverge; corrupting one parameter makes it fail. The holdout facts printed under
+the card (coverage, CRPS gain, favoured-side win rate) are written by the
+benchmark to `structural_validation.json`, so the card shows the benchmark's
+numbers. The card's headline is gross WAR with salary beside it: the dev-system
+multiplier, deadline premium, dollar conversion and recommendation labels are gone
+because none was validated.
+
+Still on the old browser-side heuristic: the standalone Trade Builder route, the
+buy-low and deals-that-clear engines, and the package skeletons that feed the AI
+brief. `suggest-trades` and trade cycles still rank on V3 `war_delta`. The
+structural model has no club-context term, so it cannot rank the same player
+differently for different clubs; those tools depend on exactly that, and they are
+unvalidated until a context effect beats the structural model on the folds.
+Prospects are not in the validated forecast (the model has no prospect term);
+the card shows their FV-table value on a separate line, marked unvalidated.
 
 ## The credibility bar
 

@@ -116,7 +116,11 @@ the V3 rows. `score-trade` and `suggest-trades` both run through `assemble_hypot
 
 The frontend never calls Python at runtime. `scripts/export_*.py` read DuckDB and
 write typed JSON into `frontend/src/data/`, which the SPA hydrates at build time.
-That is what lets the whole product run from a clone with no database.
+That is what lets the whole product run from a clone with no database. The
+structural captured-WAR model is the exception that proves the rule: its
+parameters are exported (`export_structural.py`) and evaluated in the browser by
+`frontend/src/lib/structural.ts`, with `npm run check:structural` proving the
+TypeScript matches Python on golden cases.
 
 The War Room's AI brief crosses the boundary as a file, not an API call: a skill
 writes `frontend/public/brief-inbox/<TEAM>.json` and the app polls for it.

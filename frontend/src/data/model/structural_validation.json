@@ -1,0 +1,12 @@
+{
+  "holdout": "2018-2021",
+  "n_sides": 1100,
+  "mae": 1.079,
+  "mae_null": 1.127,
+  "crps": 0.867,
+  "crps_climatology": 0.975,
+  "coverage_90": 0.915,
+  "favoured_side_win_rate": 0.543,
+  "favoured_side_half_width": 0.056,
+  "favoured_side_trades": 302
+}

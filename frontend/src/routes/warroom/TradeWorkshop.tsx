@@ -4,7 +4,8 @@ import { ArrowLeftRight, Trash2, X, BadgePlus, Radio } from 'lucide-react'
 import { PlayerPicker, BasketCard } from '../../components/PlayerPicker'
 import { Stat } from '../../components/Section'
 import { forecastArb, isControlled } from '../../lib/arbForecast'
-import { computeVerdict, fvToWar } from '../../lib/hypothetical'
+import { baseWar, effectivePos, fvToWar } from '../../lib/hypothetical'
+import { comparePackages, structuralAsOf, validation } from '../../lib/structuralData'
 import type { ProspectEntry, VerdictContext } from '../../lib/hypothetical'
 import type { CurrentPlayer } from '../../data/players'
 import type { ScenarioCard } from '../../data/warroom/types'
@@ -215,18 +216,22 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
     [receivedIds, partnerTeam],
   )
 
-  const verdict = useMemo(
-    () => yourTeam && partnerTeam
-      ? computeVerdict(
-          {
-            sending: { team: yourTeam, players: sendingPlayers, prospects: sentProspects },
-            receiving: { team: partnerTeam, players: receivingPlayers, prospects: receivedProspects },
-          },
-          verdictCtx,
-        )
+  const forecast = useMemo(
+    () => sendingPlayers.length + receivingPlayers.length > 0
+      ? comparePackages(receivingPlayers.map(p => p.mlb_player_id), sendingPlayers.map(p => p.mlb_player_id))
       : null,
-    [yourTeam, partnerTeam, sendingPlayers, receivingPlayers, sentProspects, receivedProspects, verdictCtx],
+    [sendingPlayers, receivingPlayers],
   )
+
+  // Salary and control facts, straight from the contract data. They are costs to
+  // set beside the forecast, not part of it.
+  const yr1Cost = (ps: CurrentPlayer[]) =>
+    ps.reduce((a, p) => a + forecastArb(p.contract_status, baseWar(p), p.cap_hit, effectivePos(p)).projections[0], 0)
+  const extensionIn = receivingPlayers.reduce((a, p) => {
+    const arb = forecastArb(p.contract_status, baseWar(p), p.cap_hit, effectivePos(p))
+    return a + (arb.yearsControlled > 0 ? arb.extensionEst3yr : 0)
+  }, 0)
+  const prospectWar = (ps: ProspectEntry[]) => ps.reduce((a, q) => a + fvToWar(q.fvGrade), 0)
 
   const receivedArbTotal = useMemo(() =>
     receivingPlayers.reduce((acc, p) => {
@@ -246,14 +251,29 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
   const { currentW = 0, currentL = 0, gamesBack = 0, playoffProb = 0.4 } = verdictCtx as {
     currentW?: number; currentL?: number; gamesBack?: number; playoffProb?: number
   }
-  const salaryDelta = (verdict?.costReceived ?? 0) - (verdict?.costSent ?? 0)
-  const rec = verdict?.recommendation
-  const recBorder = rec === 'strong-buy' || rec === 'lean-buy'
+  const costIn = yr1Cost(receivingPlayers)
+  const costOut = yr1Cost(sendingPlayers)
+  const salaryDelta = costIn - costOut
+  const net = forecast?.net
+  const lean = !net ? 'even' : net.mean > 0 && net.pPositive >= 0.6 ? 'receive' : net.mean < 0 && net.pPositive <= 0.4 ? 'send' : 'even'
+  const leanLabel = lean === 'receive'
+    ? 'Forecast leans toward what you receive'
+    : lean === 'send'
+    ? 'Forecast leans toward what you send'
+    : 'Forecast is close to even'
+  const recBorder = lean === 'receive'
     ? 'border-positive-500/30 bg-positive-500/5'
-    : rec === 'strong-pass' || rec === 'lean-pass'
+    : lean === 'send'
     ? 'border-negative-500/30 bg-negative-500/5'
     : 'border-ink-700 bg-ink-800/40'
-  const dollarColor = (verdict?.netValueDollars ?? 0) >= 0 ? 'text-positive-400' : 'text-negative-400'
+  const netColor = (net?.mean ?? 0) >= 0 ? 'text-positive-400' : 'text-negative-400'
+  const pct = (v: number) => `${Math.round(v * 100)}%`
+  const missing = (forecast?.received.missing ?? 0) + (forecast?.sent.missing ?? 0)
+  const fmtWar = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}`
+  const band = (f: { mean: number; p5: number; p95: number }) => ({
+    value: fmtWar(f.mean),
+    sub: `90% ${fmtWar(f.p5)} to ${fmtWar(f.p95)}`,
+  })
 
   return (
     <motion.div
@@ -281,73 +301,67 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
         </button>
       </div>
 
-      {/* Verdict */}
-      {verdict ? (
+      {/* Forecast */}
+      {forecast && net ? (
         <div className={`mb-4 rounded-lg border p-4 ${recBorder}`}>
           <div className="mb-3 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">
-            GM Decision Signal
+            Captured-WAR forecast · this season through T+5
           </div>
-          {/* Primary: single dollar value */}
           <div className="mb-3 flex items-end gap-4">
             <div>
-              <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">Net surplus value</div>
-              <div className={`font-mono text-[40px] font-black leading-none tabular ${dollarColor}`}>
-                {(verdict.netValueDollars >= 0 ? '+' : '−')}
-                <AnimatedNumber
-                  end={Math.abs(verdict.netValueDollars) / 1_000_000}
-                  decimals={1}
-                  prefix="$"
-                  suffix="M"
-                />
+              <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">Net WAR for {yourBref}</div>
+              <div className={`font-mono text-[40px] font-black leading-none tabular ${netColor}`}>
+                {net.mean >= 0 ? '+' : '−'}
+                <AnimatedNumber end={Math.abs(net.mean)} decimals={1} suffix=" WAR" />
               </div>
               <div className="mt-0.5 font-mono text-[10px] text-ink-400">
-                {verdict.surplusMean >= 0 ? '+' : ''}{verdict.surplusMean.toFixed(1)} WAR 3yr ·
-                P(+) <span className={dollarColor}>{Math.round(verdict.pPositive * 100)}%</span> ·
-                {' '}{verdict.recommendationLabel}
+                90% {fmtWar(net.p5)} to {fmtWar(net.p95)} ·
+                P(receive side ahead) <span className={netColor}>{pct(net.pPositive)}</span> ·
+                {' '}{leanLabel}
               </div>
             </div>
           </div>
-          {/* Secondary decomposition */}
           <div className="flex flex-wrap gap-4 border-t border-ink-700/40 pt-2.5">
-            <Stat label="WAR Δ (3yr)" value={`${(verdict.warReceived - verdict.warSent) >= 0 ? '+' : ''}${(verdict.warReceived - verdict.warSent).toFixed(1)}`} sub="aging + dev adjusted" tone={verdict.reasoningTone} />
-            <Stat label="Salary Δ" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(verdict.costReceived)} · Out ${fmtMoney(verdict.costSent)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
+            <Stat label="WAR in" {...band(forecast.received)} tone="pos" />
+            <Stat label="WAR out" {...band(forecast.sent)} tone="neg" />
+            <Stat label="Salary Δ" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(costIn)} · Out ${fmtMoney(costOut)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
             {receivedArbTotal > 0 && (
               <Stat label="Arb path (in)" value={fmtMoney(receivedArbTotal)} sub={sentArbTotal > 0 ? `vs ${fmtMoney(sentArbTotal)} out` : '3yr proj.'} tone="neutral" />
             )}
-            {verdict.extensionEstReceived > 0 && (
+            {extensionIn > 0 && (
+              <Stat label="Extension est (in)" value={fmtMoney(extensionIn)} sub="realistic lock-up cost · agent leverage" tone="neg" />
+            )}
+            {(receivedProspects.length > 0 || sentProspects.length > 0) && (
               <Stat
-                label="Extension est (in)"
-                value={fmtMoney(verdict.extensionEstReceived)}
-                sub="realistic lock-up cost · agent leverage"
-                tone="neg"
+                label="Prospects"
+                value={`+${prospectWar(receivedProspects).toFixed(1)} / −${prospectWar(sentProspects).toFixed(1)}`}
+                sub="FV table · not in the forecast · unvalidated"
+                tone="neutral"
               />
             )}
-            {verdict.deadlinePremiumApplied && (
-              <div className="flex flex-col gap-0.5">
-                <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">Deadline premium</div>
-                <div className="font-mono text-[11px] font-bold text-accent-300">Applied</div>
-                <div className="text-[10px] text-ink-500">playoff probability uplift included</div>
-              </div>
-            )}
           </div>
-          {/* Win impact */}
           <WinImpact
-            warDelta={verdict.warReceived - verdict.warSent}
+            warDelta={forecast.received.ratePerSeason - forecast.sent.ratePerSeason}
             currentW={currentW}
             currentL={currentL}
             gamesBack={gamesBack}
             playoffProb={playoffProb}
           />
-          {verdict.method === 'heuristic' && (
-            <div className="mt-2 rounded border border-ink-700/50 bg-ink-800/40 px-2.5 py-1.5 font-mono text-[9px] text-ink-400">
-              Heuristic estimate — uncertainty band is a rule-of-thumb (√n·1.2), not a model posterior
-            </div>
-          )}
+          <div className="mt-2 rounded border border-ink-700/50 bg-ink-800/40 px-2.5 py-1.5 font-mono text-[9px] leading-relaxed text-ink-400">
+            WAR is gross: salary is shown beside it, not netted out. {structuralAsOf.note || `Priced as of ${structuralAsOf.date}`}.
+            {' '}Tested on {validation.holdout} trades the model never saw
+            ({validation.n_sides.toLocaleString()} sides): the 90% band held {pct(validation.coverage_90)} of outcomes and
+            beat a constant guess by {pct(1 - validation.crps / validation.crps_climatology)} on CRPS. Picking the side
+            with the higher forecast won {pct(validation.favoured_side_win_rate)} ± {Math.round(validation.favoured_side_half_width * 100)} of{' '}
+            {validation.favoured_side_trades} two-sided trades, so read the sign as a lean, not a call. No club context
+            or dev-system effect is included: none has been shown to help.
+            {missing > 0 ? ` ${missing} player(s) not in the model export were left out.` : ''}
+          </div>
         </div>
       ) : (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-dashed border-ink-700 px-3 py-2.5 text-[11px] text-ink-400">
           <BadgePlus className="h-3.5 w-3.5 text-accent-400/60" />
-          Add players to both baskets to activate the verdict.
+          Add players to a basket to see the forecast. Prospects are not in the validated model.
         </div>
       )}
 

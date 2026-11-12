@@ -10,7 +10,7 @@ export const MARKET_RATE = 8_500_000
  * relievers to 'RP' so both salary projection and the $/WAR rate match the
  * canonical value_player (reliever $6M/WAR vs starter $7.2M).
  */
-function effectivePos(p: CurrentPlayer): string | null {
+export function effectivePos(p: CurrentPlayer): string | null {
   if (p.is_reliever) return 'RP'
   return p.position_abbr
 }

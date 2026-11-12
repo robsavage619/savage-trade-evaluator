@@ -23,12 +23,18 @@ Metrics reported:
 
 Run:
   uv run python scripts/benchmark_vs_naive.py [war_delta]
+
+Side effect: when the structural model is scored, the holdout facts the War Room
+shows next to every forecast are written to
+frontend/src/data/model/structural_validation.json.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -156,7 +162,7 @@ SELECT * FROM windowed
 
 def _decision_report(
     held_out: pd.DataFrame, pred_mean: np.ndarray, structural_pred: np.ndarray | None
-) -> None:
+) -> dict[str, float] | None:
     """Print the decision-level score: did the favoured side of a trade win?
 
     Only trades with exactly two receiving sides in the holdout are scored. Two
@@ -168,6 +174,10 @@ def _decision_report(
         held_out: Holdout rows, aligned with ``pred_mean``.
         pred_mean: V3 posterior-mean ``OUTCOME`` per row.
         structural_pred: Structural expected value per row, when it was scored.
+
+    Returns:
+        The structural picker's score against captured WAR (win rate, 95% half-width,
+        WAR gained per trade, trades), or None when the structural model was not scored.
     """
     with db.connect(read_only=True) as conn:
         sides = conn.execute(_SIDES_SQL).df()
@@ -188,6 +198,7 @@ def _decision_report(
     if structural_pred is not None:
         pickers.insert(0, ("Structural two-part", structural_m))
 
+    structural_score: dict[str, float] | None = None
     print("=" * 72)
     print(f"  DECISION LEVEL: favoured side of {len(margin)} two-sided holdout trades")
     print("=" * 72)
@@ -200,11 +211,48 @@ def _decision_report(
         for picker_name, pred in pickers:
             win, gained, n = favoured_side_score(pred, truth)
             half = 1.96 * (win * (1 - win) / n) ** 0.5 if n else float("nan")
+            if picker_name == "Structural two-part" and truth is captured_m:
+                structural_score = {"win_rate": win, "half_width": half, "gain": gained, "n": n}
             print(
                 f"  {picker_name:<22} {truth_name:<26} {win:>6.1%}  {half:>5.1%}  {gained:>+9.2f}  {n:>4}"
             )
     print("  Coin flip: 50.0% and +0.00 WAR/trade by construction.")
     print()
+    return structural_score
+
+
+_VALIDATION_PATH = (
+    Path(__file__).resolve().parents[1] / "frontend/src/data/model/structural_validation.json"
+)
+
+
+def _write_validation(
+    st: dict[str, float],
+    decision: dict[str, float],
+    best_null: float,
+    median_mae: float,
+    clim_crps: float,
+    n_sides: int,
+) -> None:
+    """Write the holdout facts the War Room card shows next to every forecast."""
+    _VALIDATION_PATH.write_text(
+        json.dumps(
+            {
+                "holdout": f"{HOLDOUT_START}-{HOLDOUT_END}",
+                "n_sides": n_sides,
+                "mae": round(st["mae"], 3),
+                "mae_null": round(min(best_null, median_mae), 3),
+                "crps": round(st["crps"], 3),
+                "crps_climatology": round(clim_crps, 3),
+                "coverage_90": round(st["cov90"], 3),
+                "favoured_side_win_rate": round(decision["win_rate"], 3),
+                "favoured_side_half_width": round(decision["half_width"], 3),
+                "favoured_side_trades": int(decision["n"]),
+            },
+            indent=2,
+        )
+        + "\n"
+    )
 
 
 def main() -> None:
@@ -321,7 +369,9 @@ def main() -> None:
     )
     print()
 
-    _decision_report(held_out, v3_pred, st_pred)
+    decision = _decision_report(held_out, v3_pred, st_pred)
+    if st is not None and decision is not None:
+        _write_validation(st, decision, best_null, median_mae, clim_crps, len(held_out))
 
     sys.exit(0 if verdict == "GO" else 1)
 

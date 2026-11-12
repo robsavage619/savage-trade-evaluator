@@ -126,6 +126,7 @@ def player_features(legs: pd.DataFrame, conn: duckdb.DuckDBPyConnection) -> pd.D
     out["held_post_war"] = rate * held_post
     out["n_no_mlb"] = (out["n_prior_seasons"] == 0).astype(int)
     out["n_legs"] = 1
+    out["rate"] = rate
     return out
 
 
@@ -148,8 +149,10 @@ def side_features(start_season: int = TRAIN_START_SEASON, end_season: int = 2024
     return feats.groupby(KEYS, as_index=False)[_SIDE_COLS].sum()
 
 
-def hypothetical_features(player_mlb_ids: list[int], trade_date: date) -> tuple[pd.DataFrame, str]:
-    """One-row structural features for a package of players traded on a date.
+def hypothetical_legs(
+    player_mlb_ids: list[int], trade_date: date
+) -> tuple[pd.DataFrame, str, date]:
+    """Per-player structural features for players acquired on a date.
 
     If the season before the player's first season with the new club is still in
     progress in bWAR, the trade is priced as an in-season trade as of the data,
@@ -160,7 +163,7 @@ def hypothetical_features(player_mlb_ids: list[int], trade_date: date) -> tuple[
         trade_date: Date of the hypothetical trade.
 
     Returns:
-        (one-row DataFrame with ``FEATURES``, note describing any date adjustment).
+        (one row per player, note describing any date adjustment, date used).
     """
     note = ""
     with db.connect(read_only=True) as conn:
@@ -180,6 +183,20 @@ def hypothetical_features(player_mlb_ids: list[int], trade_date: date) -> tuple[
             )
         legs = pd.DataFrame({"mlb_player_id": player_mlb_ids, "date": pd.Timestamp(trade_date)})
         feats = player_features(legs, conn)
+    return feats, note, trade_date
+
+
+def hypothetical_features(player_mlb_ids: list[int], trade_date: date) -> tuple[pd.DataFrame, str]:
+    """One-row structural features for a package of players traded on a date.
+
+    Args:
+        player_mlb_ids: MLBAM ids of the players being acquired.
+        trade_date: Date of the hypothetical trade.
+
+    Returns:
+        (one-row DataFrame with ``FEATURES``, note describing any date adjustment).
+    """
+    feats, note, _ = hypothetical_legs(player_mlb_ids, trade_date)
     return feats[_SIDE_COLS].sum().to_frame().T, note
 
 
@@ -290,6 +307,90 @@ def production_fit() -> StructuralFit:
     return fit(sides[list(FEATURES)], sides[TARGET].to_numpy(dtype="float64"))
 
 
+def export_params(model: StructuralFit, n_quantiles: int = 200) -> dict[str, Any]:
+    """Everything needed to forecast a package without sklearn, as plain numbers.
+
+    The residual pool is compressed to ``n_quantiles`` midpoint quantiles, so the
+    predictive distribution becomes a small set of weighted atoms that can be
+    summarized exactly, with no random draws. The browser runs the same arithmetic.
+
+    Args:
+        model: Fitted model.
+        n_quantiles: Number of residual quantile atoms.
+
+    Returns:
+        Dict with feature order, scaler, ridge, classifier, residual-scale and
+        ``z_q`` entries.
+    """
+    if model.clf is None:
+        raise ValueError("export_params needs the two-part model")
+    probs = (np.arange(n_quantiles) + 0.5) / n_quantiles
+    return {
+        "features": list(model.feature_cols),
+        "x_mean": np.asarray(model.scaler.mean_).tolist(),
+        "x_scale": np.asarray(model.scaler.scale_).tolist(),
+        "reg_coef": np.asarray(model.reg.coef_).tolist(),
+        "reg_intercept": float(model.reg.intercept_),
+        "clf_coef": model.clf.coef_[0].tolist(),
+        "clf_intercept": float(model.clf.intercept_[0]),
+        "resid_slope": model.slope,
+        "resid_intercept": model.intercept,
+        "resid_floor": model.floor,
+        "z_q": np.quantile(model.z_pool, probs).tolist(),
+    }
+
+
+def side_atoms(params: dict[str, Any], features: dict[str, float]) -> tuple[np.ndarray, np.ndarray]:
+    """Predictive distribution of one trade side as weighted atoms.
+
+    Args:
+        params: Output of :func:`export_params`.
+        features: Summed structural features for the side, keyed by feature name.
+
+    Returns:
+        (values, weights): a point mass at zero with weight 1 - P(non-zero), plus
+        one atom per residual quantile.
+    """
+    xs = (np.array([features[f] for f in params["features"]]) - params["x_mean"]) / params[
+        "x_scale"
+    ]
+    p_nonzero = 1.0 / (
+        1.0 + np.exp(-(params["clf_intercept"] + float(np.dot(params["clf_coef"], xs))))
+    )
+    mu = params["reg_intercept"] + float(np.dot(params["reg_coef"], xs))
+    scale = max(params["resid_intercept"] + params["resid_slope"] * abs(mu), params["resid_floor"])
+    z = np.asarray(params["z_q"])
+    values = np.concatenate([[0.0], mu + scale * z])
+    weights = np.concatenate([[1.0 - p_nonzero], np.full(len(z), p_nonzero / len(z))])
+    return values, weights
+
+
+def _quantile(values: np.ndarray, weights: np.ndarray, q: float) -> float:
+    order = np.argsort(values, kind="stable")
+    cum = np.cumsum(weights[order])
+    return float(values[order][min(int(np.searchsorted(cum, q - 1e-12)), len(values) - 1)])
+
+
+def summarize_atoms(values: np.ndarray, weights: np.ndarray) -> dict[str, float]:
+    """Mean, median, 5th and 95th percentile, and P(> 0) of a weighted-atom distribution."""
+    return {
+        "mean": float(np.dot(values, weights)),
+        "median": _quantile(values, weights, 0.5),
+        "p5": _quantile(values, weights, 0.05),
+        "p95": _quantile(values, weights, 0.95),
+        "p_positive": float(weights[values > 0].sum()),
+    }
+
+
+def difference_atoms(
+    a: tuple[np.ndarray, np.ndarray], b: tuple[np.ndarray, np.ndarray]
+) -> tuple[np.ndarray, np.ndarray]:
+    """Atoms of A - B for independent A and B."""
+    values = (a[0][:, None] - b[0][None, :]).ravel()
+    weights = (a[1][:, None] * b[1][None, :]).ravel()
+    return values, weights
+
+
 def score_players(player_mlb_ids: list[int], trade_date: date) -> dict[str, Any]:
     """Captured-WAR forecast for a package of players acquired on a date.
 
@@ -298,19 +399,16 @@ def score_players(player_mlb_ids: list[int], trade_date: date) -> dict[str, Any]
         trade_date: Date of the hypothetical trade.
 
     Returns:
-        Dict with mean (analytic expected value), median, p5, p95, p_positive,
-        the structural ``features`` used, and a ``note`` if the date was adjusted.
+        Dict with mean, median, p5, p95, p_positive (all from the analytic atom
+        summary the browser also uses), the structural ``features`` used, and a
+        ``note`` if the date was adjusted.
     """
     feats, note = hypothetical_features(player_mlb_ids, trade_date)
-    draws, expected = predict(production_fit(), feats, np.random.default_rng(137), n_draws=4000)
-    row = draws[0]
+    features = {c: float(feats[c].iloc[0]) for c in FEATURES}
+    atoms = side_atoms(export_params(production_fit()), features)
     return {
-        "mean": float(expected[0]),
-        "median": float(np.median(row)),
-        "p5": float(np.percentile(row, 5)),
-        "p95": float(np.percentile(row, 95)),
-        "p_positive": float((row > 0).mean()),
-        "features": {c: float(feats[c].iloc[0]) for c in FEATURES},
+        **summarize_atoms(*atoms),
+        "features": features,
         "train_end_season": TRAIN_END_SEASON,
         "note": note,
     }

@@ -220,8 +220,9 @@ those numbers drift, the ingest regressed.
 - **Pre-2010 coverage is thin.** Retrosheet fills transactions back to 1880, but
   the outcome and contract joins that make a trade scorable mostly do not reach
   that far.
-- **The frontend has no tests.** 14,290 lines of TypeScript, zero test files. It
-  is checked by `tsc` and by looking at it.
+- **The frontend has one test.** 14,290 lines of TypeScript. The only check beyond
+  `tsc` is `npm run check:structural`, which proves the browser forecast matches
+  Python; the rest is checked by `tsc` and by looking at it.
 - **The original thesis was wrong.** The system-tax hypothesis this project was
   built to test was rejected. What replaced it is a two-axis organizational map
   on which development quality and trade-execution quality turn out to be roughly
