@@ -1,4 +1,5 @@
 import type { CurrentPlayer, CurrentTeam } from '../data/players'
+import { dollarsAsOf } from './contractDollars'
 import { LEAN_LABEL, fmtWar, leanOf, structuralAsOf, validationFacts as v, type PackageComparison } from './structuralData'
 
 export function composeHypotheticalPrompt({
@@ -49,7 +50,7 @@ ${receivers || '  (no players selected)'}
 - WAR received: ${band(forecast.received)}
 - WAR sent: ${band(forecast.sent)}
 - Net for ${yourTeam.bref}: ${band(forecast.net)}; P(receive side ahead) ${(forecast.net.pPositive * 100).toFixed(0)}%
-- Year-1 salary received: $${(costIn / 1e6).toFixed(1)}M · sent: $${(costOut / 1e6).toFixed(1)}M
+- ${dollarsAsOf.season} salary received: $${(costIn / 1e6).toFixed(1)}M · sent: $${(costOut / 1e6).toFixed(1)}M (Baseball-Reference where it lists a figure, else projected; an option year is priced as exercised)
 - Forecast read: ${LEAN_LABEL[leanOf(forecast.net)]}${missing > 0 ? `\n- ${missing} player(s) are not in the model export and were left out.` : ''}
 
 ## Your task

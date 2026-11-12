@@ -19,7 +19,7 @@
  */
 
 /** Current MLB minimum salary (2026 season). */
-const MLB_MIN = 740_000
+export const MLB_MIN = 740_000
 
 /**
  * Open-market $/WAR by player type, calibrated to 2024–26 free-agent actuals.

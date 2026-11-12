@@ -7,7 +7,8 @@ import { ForecastBlindSpots } from '../../components/ForecastBlindSpots'
 import { ForecastFootnote } from '../../components/ForecastFootnote'
 import { fvToWar } from '../../lib/hypothetical'
 import { LEAN_LABEL, comparePackages, fmtWar, leanOf } from '../../lib/structuralData'
-import { packageFacts } from '../../lib/tradeFacts'
+import { dollarsAsOf } from '../../lib/contractDollars'
+import { packageFacts, salarySource } from '../../lib/tradeFacts'
 import type { ProspectEntry, VerdictContext } from '../../lib/hypothetical'
 import type { CurrentPlayer } from '../../data/players'
 import type { ScenarioCard } from '../../data/warroom/types'
@@ -302,7 +303,7 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
           <div className="flex flex-wrap gap-4 border-t border-ink-700/40 pt-2.5">
             <Stat label="WAR in" {...band(forecast.received)} tone="pos" />
             <Stat label="WAR out" {...band(forecast.sent)} tone="neg" />
-            <Stat label="Salary Δ" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(costIn)} · Out ${fmtMoney(costOut)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
+            <Stat label={`Salary Δ (${dollarsAsOf.season})`} value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(costIn)} · Out ${fmtMoney(costOut)} · ${salarySource(factsIn, factsOut)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
             {factsIn.controlledCost3yr > 0 && (
               <Stat label="Arb path (in)" value={fmtMoney(factsIn.controlledCost3yr)} sub={factsOut.controlledCost3yr > 0 ? `vs ${fmtMoney(factsOut.controlledCost3yr)} out` : '3yr proj.'} tone="neutral" />
             )}

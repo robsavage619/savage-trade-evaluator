@@ -16,7 +16,8 @@ import { composeHypotheticalPrompt } from '../lib/composeHypothetical'
 import { fmtMoney } from '../lib/format'
 import { forecastArb, isControlled } from '../lib/arbForecast'
 import { comparePackages, fmtWar, leanOf, validationFacts, type Lean } from '../lib/structuralData'
-import { packageFacts } from '../lib/tradeFacts'
+import { dollarsAsOf } from '../lib/contractDollars'
+import { packageFacts, salarySource } from '../lib/tradeFacts'
 import { playerIndex } from '../lib/comps'
 import { useReasoningStore, parseReasoningResponse } from '../lib/reasoningStore'
 import { AnimatePresence } from 'framer-motion'
@@ -441,7 +442,7 @@ export default function TradeBuilder() {
                   <Stat label="P(receive side ahead)" value={`${Math.round(net.pPositive * 100)}%`} sub="chance your side captures more" tone={tone} />
                   <Stat label="WAR in" {...band(received)} tone="pos" />
                   <Stat label="WAR out" {...band(sent)} tone="neg" />
-                  <Stat label="Salary Δ (yr 1)" value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(factsIn.yr1Cost)} · Out ${fmtMoney(factsOut.yr1Cost)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
+                  <Stat label={`Salary Δ (${dollarsAsOf.season})`} value={`${salaryDelta <= 0 ? '−' : '+'}${fmtMoney(Math.abs(salaryDelta))}`} sub={`In ${fmtMoney(factsIn.yr1Cost)} · Out ${fmtMoney(factsOut.yr1Cost)} · ${salarySource(factsIn, factsOut)}`} tone={salaryDelta <= 0 ? 'pos' : 'neg'} />
                   {factsIn.controlledCost3yr > 0 && <Stat label="3yr arb cost (in)" value={fmtMoney(factsIn.controlledCost3yr)} sub={factsOut.controlledCost3yr > 0 ? `vs ${fmtMoney(factsOut.controlledCost3yr)} out` : 'proj. controlled cost'} tone={factsIn.controlledCost3yr < factsOut.controlledCost3yr || factsOut.controlledCost3yr === 0 ? 'pos' : 'neutral'} />}
                 </div>
                 <div className="w-full pt-1 md:w-[420px]">

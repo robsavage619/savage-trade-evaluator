@@ -311,6 +311,17 @@ lists. The panel states the snapshot dates, because the roster seed is from
 facts shown beside the number; they do not adjust it, and the model has not been
 shown to improve when they are used as inputs.
 
+The Salary Δ line on both cards uses next-season dollars from the Baseball-Reference
+contract snapshot (`scripts/export_contract_dollars.py` writes
+`frontend/src/data/model/contract_dollars.json`): guaranteed salary, an option year
+at its option value (exercise assumed), Baseball-Reference's arbitration estimate,
+or the league minimum for a year it marks pre-arbitration. Players it states no
+figure for, including 86 Baseball-Reference rows that could not be matched to an
+MLBAM id, keep the old arbitration-forecast projection, and the card says how many
+of the players came from each source. This replaced a year-one cost built from
+Spotrac's cap hit, which priced Kyle Tucker at $1.0M against $81.9M, and from an
+arbitration forecast that priced a pre-arbitration player at $7.7M.
+
 Still on the old browser-side heuristic: the buy-low and deals-that-clear engines
 and the package skeletons that feed the AI brief. `suggest-trades` and trade
 cycles still rank on V3 `war_delta`. The
