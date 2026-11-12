@@ -46,7 +46,8 @@ def favoured_side_score(
         (win rate of the favoured side, mean realized margin gained by taking
         the favoured side, number of decisive trades).
     """
-    decisive = (pred_margin != 0) & (real_margin != 0)
+    # Summed WAR margins that should be 0 come back as +/-1e-16; treat them as ties.
+    decisive = (np.abs(pred_margin) > 1e-9) & (np.abs(real_margin) > 1e-9)
     n = int(decisive.sum())
     if n == 0:
         return float("nan"), float("nan"), 0

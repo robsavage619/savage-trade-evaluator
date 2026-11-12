@@ -181,3 +181,16 @@ def test_fold_train_seasons_are_strictly_before_test_seasons() -> None:
         train_max = int(cast("int", train_rows["trade_season"].max()))
         test_min = int(cast("int", test_rows["trade_season"].min()))
         assert train_max < test_min, f"{s.label}: train data leaks into test window"
+
+
+@_skip_no_db
+def test_captured_war_counts_only_stints_with_the_receiver() -> None:
+    """Pressly trade (371509): HOU gets his HOU WAR 2018-2023, not career WAR."""
+    from savage_trade_evaluator.modeling.v2.outcomes import build_captured_war
+
+    df = build_captured_war(2018, 2018)
+    assert len(df.drop_duplicates(["trade_event_id", "receiver_bref"])) == len(df)
+    assert len(df.dropna(subset=["captured_war"])) == len(df)
+    trade = df[df["trade_event_id"] == 371509].set_index("receiver_bref")["captured_war"]
+    assert trade["HOU"] == pytest.approx(6.08, abs=0.01)
+    assert trade["MIN"] == pytest.approx(0.83, abs=0.01)

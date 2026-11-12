@@ -12,13 +12,29 @@ diagnostics are held-out calibration, CRPS, and credible-feature counts.
 `scripts/benchmark_vs_naive.py` is the GO gate. It scores V3 against two
 baselines on a holdout the model never trained on and exits nonzero on failure.
 
-- **Holdout:** 2018-2021 trade seasons, n=1100, chosen because those windows have
-  fully realized 3-year outcomes.
+- **Holdout:** 2018-2021 trade seasons, n=1100.
 - **Train:** pre-2018, n=1874, for every model. V3 is refit inside the script;
   the cached production fit trains through 2022 and has seen the holdout.
-- **Outcome:** `war_delta`.
+- **Outcome:** `captured_war`, the WAR acquired players earned for the receiving
+  club from T through T+5, summed per trade side. It replaced `war_delta` as the
+  graded target on 2026-11-12; the reason is in "What the target measures"
+  below. `benchmark_vs_naive.py war_delta` still grades the old one.
 
-| Model | MAE | CRPS | Cov90 | P(direction) |
+| Model, target `captured_war` | MAE | CRPS | Cov90 | P(direction) |
+|---|---|---|---|---|
+| Null (train mean) | 1.619 | | | 40.4% |
+| **Null (train median = 0)** | **1.127** | | | 33.2% |
+| **Climatology (train distribution)** | | **0.975** | | |
+| Marcel linear | 1.851 | | | 40.5% |
+| V3 (posterior mean) | 1.143 | 1.027 | 83.3% | 37.4% |
+
+Verdict: **NO-GO**. V3 is 1.4% worse than the median null on MAE and 5.3% worse
+than climatology on CRPS. Changing the target fixed what is being measured. It
+did not give the model skill.
+
+The same script on the old target, for the record:
+
+| Model, target `war_delta` | MAE | CRPS | Cov90 | P(direction) |
 |---|---|---|---|---|
 | Null (train mean) | 1.242 | | | 37.2% |
 | **Null (train median = 0)** | **0.894** | | | 42.8% |
@@ -26,9 +42,9 @@ baselines on a holdout the model never trained on and exits nonzero on failure.
 | Marcel linear | 1.400 | | | 37.0% |
 | V3 (posterior mean) | 0.914 | 0.827 | 81.3% | 31.9% |
 
-Verdict: **NO-GO**. V3 is 2.3% worse than the median null on MAE and 6.9% worse
-than climatology on CRPS. The gate is beating every baseline and holding 90%
-coverage at or above 80%. MAE moves by about 0.001 between runs.
+Also NO-GO: 2.3% worse than the median null on MAE and about 7% worse than
+climatology on CRPS. The gate on either target is beating every baseline and
+holding 90% coverage at or above 80%. MAE moves by about 0.001 between runs.
 
 CRPS is computed with `metrics.crps_empirical`, which is tested against the
 closed form. The script's earlier local CRPS function was wrong (0.82 where the
@@ -53,15 +69,15 @@ the model favoured come out ahead?
 
 | Picker | Truth | Favoured side won | WAR gained per trade | n |
 |---|---|---|---|---|
-| V3 | any-team WAR, T+2 to T+5 (the model's target) | 49.1% ± 5.9 | +0.14 | 277 |
-| More prior-year WAR | same | 51.0% ± 6.1 | +0.56 | 255 |
-| V3 | WAR earned for the receiving club, T to T+5 | 49.2% ± 5.5 | -0.14 | 315 |
-| More prior-year WAR | same | 55.3% ± 5.7 | +0.51 | 293 |
+| V3 trained on `captured_war` | WAR earned for the receiving club, T to T+5 | 55.7% ± 5.5 | +0.02 | 314 |
+| V3 trained on `war_delta` | same | 50.6% ± 5.5 | -0.06 | 314 |
+| More prior-year WAR | same | 55.5% ± 5.7 | +0.51 | 292 |
 
-A coin flip scores 50% and zero. V3 is inside that range on both truths, and its
-picks are not stable: a second fit with the same seed scored 51.6% on the first
-row. The one-line heuristic is not significantly better than a coin either, but
-it gains about half a win per trade. Trades with no predicted or no realized
+A coin flip scores 50% and zero. Training on the right target moved V3 from a
+coin flip to the level of the one-line heuristic on win rate (54.1% to 55.7%
+across three same-seed fits), but it gains nothing per trade: it gets the small
+trades right and the large ones wrong. The heuristic gains about half a win per
+trade. Neither is yet clearly better than a coin on win rate alone. Trades with no predicted or no realized
 winner are dropped, which is why n differs by row. WAR only; salary is not
 netted out.
 

@@ -42,6 +42,7 @@ from savage_trade_evaluator.modeling.v2.features import (
     ALL_FEATURES,
 )
 from savage_trade_evaluator.modeling.v2.outcomes import (
+    build_captured_war,
     build_outcomes,
     build_outcomes_fg,
     build_outcomes_windowed,
@@ -85,7 +86,8 @@ def _build_v3_outcomes() -> pd.DataFrame:
             "siera_delta",
         ]
     ]
-    return merged.merge(fg, on=["trade_event_id", "receiver_bref", "trade_season"], how="left")
+    keys = ["trade_event_id", "receiver_bref", "trade_season"]
+    return merged.merge(fg, on=keys, how="left").merge(build_captured_war(), on=keys, how="left")
 
 
 def assemble_v3_combined(
@@ -155,6 +157,8 @@ def assemble_v3_combined(
 # team features from R-53/R-55. Limited to 1 CV fold (Statcast era) → EXPLORATORY.
 V3_OUTCOME_FEATURES: dict[str, tuple[str, ...]] = {
     "war_delta": ALL_FEATURES,
+    # WAR earned for the receiving club, T..T+5, summed per side (R-63).
+    "captured_war": ALL_FEATURES,
     "dollar_surplus": ALL_FEATURES,
     # surplus_wins = dollar_surplus / $/WAR — wins above what was paid (Phase B).
     # Uses ALL_FEATURES; same contextual signal as dollar_surplus but wins-denominated.

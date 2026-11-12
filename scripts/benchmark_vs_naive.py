@@ -1,22 +1,26 @@
 """D-51 benchmark: V3 context-aware model vs naïve WAR baselines.
 
-Holdout period: 2018-2021 (fully realized 3yr outcome windows).
+Target: captured_war, the WAR acquired players earned for the receiving club
+from T through T+5, summed per trade side (R-63). Pass ``war_delta`` as the first
+argument to grade the old any-club T+2..T+5 target instead.
+
+Holdout period: 2018-2021. T+5 for 2021 trades is 2026, a partial season.
 Train: 2010-2017 for every model, V3 included. V3 is refit here on the
 pre-holdout rows; the cached production fit trains through 2022 and has seen the
 holdout, so it must not be scored on it.
 
-war_delta is zero-inflated (about 43% of holdout legs are exactly 0), so the
-MAE-optimal constant is the train median, not the train mean. Both nulls are
+Both targets have a median of 0 (a third or more of holdout sides are exactly
+0), so the MAE-optimal constant is the train median, not the train mean. Both nulls are
 reported and the gate is against the better one.
 
 Metrics reported:
-  MAE         — posterior mean vs realized war_delta
+  MAE         — posterior mean vs realized target
   CRPS        — calibration-aware scoring rule for the full posterior
   Cov90       — empirical coverage of 90% credible intervals
   P(correct)  — directional accuracy (sign of surplus correct)
 
 Run:
-  uv run python scripts/benchmark_vs_naive.py
+  uv run python scripts/benchmark_vs_naive.py [war_delta]
 """
 
 from __future__ import annotations
@@ -42,7 +46,8 @@ logger = logging.getLogger(__name__)
 
 HOLDOUT_START = 2018
 HOLDOUT_END = 2021
-OUTCOME = "war_delta"
+# captured_war is the primary target (R-63); pass war_delta to grade the old one.
+OUTCOME = sys.argv[1] if len(sys.argv) > 1 else "captured_war"
 
 
 def _score_holdout(
@@ -103,16 +108,6 @@ WITH legs AS (
     WHERE to_team_bref IS NOT NULL
       AND trade_season BETWEEN {HOLDOUT_START} AND {HOLDOUT_END}
 ),
-captured AS (
-    -- WAR earned for the receiving club, trade season through T+5.
-    SELECT l.trade_event_id, l.receiver_bref, SUM(b.war) AS captured_war
-    FROM legs l
-    JOIN bwar_player_seasons b
-      ON b.mlb_id = l.mlb_player_id
-     AND b.year_id BETWEEN l.trade_season AND l.trade_season + 5
-     AND CASE WHEN b.team_id = 'ATH' THEN 'OAK' ELSE b.team_id END = l.receiver_bref
-    GROUP BY 1, 2
-),
 windowed AS (
     SELECT l.trade_event_id, l.receiver_bref,
            COUNT(DISTINCT l.leg_index) AS n_legs,
@@ -123,8 +118,7 @@ windowed AS (
     LEFT JOIN trade_player_war_window w USING (trade_event_id, leg_index)
     GROUP BY 1, 2
 )
-SELECT w.*, COALESCE(c.captured_war, 0) AS captured_war
-FROM windowed w LEFT JOIN captured c USING (trade_event_id, receiver_bref)
+SELECT * FROM windowed
 """
 
 
@@ -138,14 +132,15 @@ def _decision_report(held_out: pd.DataFrame, pred_mean: np.ndarray) -> None:
 
     Args:
         held_out: Holdout rows, aligned with ``pred_mean``.
-        pred_mean: V3 posterior-mean ``war_delta`` (per-leg mean) per row.
+        pred_mean: V3 posterior-mean ``OUTCOME`` per row.
     """
     with db.connect(read_only=True) as conn:
         sides = conn.execute(_SIDES_SQL).df()
-    scored = held_out[["trade_event_id", "receiver_bref"]].copy()
+    scored = held_out[["trade_event_id", "receiver_bref", "captured_war"]].copy()
     scored["pred_mean"] = pred_mean
     sides = sides.merge(scored, on=["trade_event_id", "receiver_bref"], how="inner")
-    sides["v3"] = sides["pred_mean"] * sides["n_legs"]
+    # war_delta is a per-leg mean; captured_war is already a side total.
+    sides["v3"] = sides["pred_mean"] * (sides["n_legs"] if OUTCOME == "war_delta" else 1)
     sides = sides[sides.groupby("trade_event_id")["receiver_bref"].transform("count") == 2]
     sides = sides.sort_values(["trade_event_id", "receiver_bref"])
     cols = ["v3", "prior_war", "window_war", "captured_war"]
@@ -205,7 +200,7 @@ def main() -> None:
     print(f"holdout sides with {OUTCOME} == 0: {float(np.mean(realized == 0)):.1%}")
     # Distributional null: every row forecast with the training outcome distribution.
     train_y = train_df[OUTCOME].to_numpy(dtype="float64")
-    clim_crps = crps_empirical(realized, np.tile(train_y[::3], (len(realized), 1)))
+    clim_crps = crps_empirical(realized, np.tile(np.sort(train_y), (len(realized), 1)))
 
     # ── Marcel naive: linear regression on pre-trade WAR quality ─────────────
     train_q = train_df.dropna(subset=["receiver_acquired_player_quality"])

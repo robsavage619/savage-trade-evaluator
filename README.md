@@ -165,10 +165,12 @@ experiment, and the scoring path reverted to mean-fill
 |---|---|
 | Unit and parser tests | 154 passing, 2.0s |
 | CI on every push to main | `ruff format --check`, `ruff check`, `pyright`, `pytest` |
-| V3 vs a train-median null, MAE | 0.914 vs 0.894, **2.3% worse** (NO-GO) |
-| V3 vs a train-mean null, MAE | 0.914 vs 1.242 (the mean is the wrong constant: 43% of legs are exactly 0) |
-| V3 vs a Marcel linear projection, MAE | 0.914 vs 1.400, 34.7% better |
-| 90% interval coverage on holdout | 81.5% (gate requires 80%) |
+| Target | WAR earned for the acquiring club, T to T+5, per trade side |
+| V3 vs a train-median null, MAE | 1.143 vs 1.127, **1.4% worse** (NO-GO) |
+| V3 vs the training distribution, CRPS | 1.027 vs 0.975, **5.3% worse** |
+| V3 vs a Marcel linear projection, MAE | 1.143 vs 1.851, 38.2% better |
+| Favoured side of 314 two-sided trades | 55.7% ± 5.5, +0.02 WAR per trade (coin flip: 50%, 0) |
+| 90% interval coverage on holdout | 83.3% (gate requires 80%) |
 | Holdout | 2018-2021, n=1100, trained pre-2018 |
 | Walk-forward CV | 5 folds per outcome, CRPS mean and spread recorded |
 

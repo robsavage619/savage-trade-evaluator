@@ -56,9 +56,9 @@ def test_crps_matches_analytic_normal(m: int) -> None:
 
 
 def test_favoured_side_score_counts_only_decisive_trades() -> None:
-    pred = np.array([2.0, -1.0, 1.0, 0.0, 3.0])
-    real = np.array([5.0, 4.0, -2.0, 9.0, 0.0])
-    # right (+5), wrong (-4), wrong (-2); last two have no predicted / realized winner
+    pred = np.array([2.0, -1.0, 1.0, 0.0, 3.0, 1.0])
+    real = np.array([5.0, 4.0, -2.0, 9.0, 0.0, -1e-16])
+    # right (+5), wrong (-4), wrong (-2); the rest have no predicted / realized winner
     win_rate, gained, n = favoured_side_score(pred, real)
     assert n == 3
     assert win_rate == pytest.approx(1 / 3)

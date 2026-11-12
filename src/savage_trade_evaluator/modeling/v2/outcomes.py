@@ -203,6 +203,45 @@ def build_outcomes_windowed(
     )
 
 
+def build_captured_war(
+    start_season: int = 1990, end_season: int = 2024, last_year: int = 5
+) -> pd.DataFrame:
+    """WAR the acquired players earned for the receiving club, T through T+last_year.
+
+    Summed per trade side, not averaged per leg. Unlike ``war_delta`` this counts
+    only stints with the club that made the trade, and includes the trade season.
+
+    Args:
+        start_season: First trade season to include.
+        end_season: Last trade season to include.
+        last_year: Last T+N season to include.
+
+    Returns:
+        DataFrame keyed on (trade_event_id, receiver_bref, trade_season) with
+        ``captured_war``; sides whose players never appeared for the club get 0.
+    """
+    with db.connect(read_only=True) as conn:
+        df = conn.execute(
+            f"""
+            SELECT
+                t.trade_event_id,
+                t.to_team_bref AS receiver_bref,
+                t.trade_season,
+                COALESCE(SUM(b.war), 0)::DOUBLE AS captured_war
+            FROM trade_player_unified t
+            LEFT JOIN bwar_player_seasons b
+                ON b.mlb_id = t.mlb_player_id
+                AND b.year_id BETWEEN t.trade_season AND t.trade_season + {int(last_year)}
+                -- bWAR codes the Athletics as ATH from 2025; teams.bref_code keeps OAK.
+                AND CASE WHEN b.team_id = 'ATH' THEN 'OAK' ELSE b.team_id END = t.to_team_bref
+            WHERE t.to_team_bref IS NOT NULL
+                AND t.trade_season BETWEEN {int(start_season)} AND {int(end_season)}
+            GROUP BY t.trade_event_id, t.to_team_bref, t.trade_season
+            """
+        ).df()
+    return cast("pd.DataFrame", df)
+
+
 def build_outcomes(start_season: int = 1990, end_season: int = 2024) -> pd.DataFrame:
     """Build the four-outcome target matrix.
 
