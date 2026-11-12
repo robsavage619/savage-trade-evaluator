@@ -967,8 +967,13 @@ CATALOG: tuple[StatSource, ...] = (
         era_start=2010,
         era_end=None,
         fetcher="statsapi.mlb.com/api/v1/people/freeAgents?season=YYYY",
+        target_table="mlb_free_agents",
+        ingested=True,
         primary_columns=("player", "dateDeclared", "dateSigned", "newTeam", "notes"),
         notes=(
+            "Ingested 2026-11-12 (8,249 rows, 2010-2026): `ste ingest mlb-free-agents`. "
+            "Rows carry a kind (free_agency, option_decision, trade, waiver): the list "
+            "also holds off-season trades. "
             "Official list of who reached free agency and where they signed, back to 2010 "
             "(385 players in 2010, 516 in 2015, 356 so far for 2026). Notes carry contract "
             "length and option decisions for about 10% of rows, never dollars. The only "
@@ -1016,8 +1021,12 @@ CATALOG: tuple[StatSource, ...] = (
         era_start=2026,
         era_end=None,
         fetcher="fangraphs.com/api/projections?type=steamer&stats=bat|pit",
+        target_table="fg_projections",
+        ingested=True,
         primary_columns=("xMLBAMID", "G", "PA", "WAR"),
         notes=(
+            "Ingested 2026-11-12: `ste ingest fangraphs-projections`, Steamer only, "
+            "stored as dated snapshots (9,331 rows). "
             "Steamer projections with playing time and MLBAM ids (4,165 hitters). Current "
             "projections only: no archive answered, so history must be built by snapshot. "
             "ZiPS returned an empty list on the probe date. Unofficial JSON endpoint."

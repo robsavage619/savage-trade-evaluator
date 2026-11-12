@@ -34,9 +34,11 @@ from savage_trade_evaluator.ingest import (
     coaches,
     draft,
     fangraphs_leaders,
+    fangraphs_projections,
     fortification,
     front_office,
     milb_stats,
+    mlb_free_agents,
     mlb_pipeline,
     mlbtr,
     prospects,
@@ -401,6 +403,25 @@ def ingest_bref_contracts(
         with db.connect(read_only=True) as conn:
             flagged = bref_contracts.spotrac_conflicts(conn)
         typer.echo(flagged.to_string(index=False) if len(flagged) else "no conflicts")
+
+
+@ingest_app.command("mlb-free-agents")
+def ingest_mlb_free_agents(
+    start: int = typer.Option(2010, help="First offseason."),
+    end: int = typer.Option(CURRENT_SEASON, help="Last offseason."),
+) -> None:
+    """Pull MLB's official free-agent lists: who left, where they signed, contract notes."""
+    configure_logging()
+    n = mlb_free_agents.ingest_range(start, end)
+    typer.echo(f"ingested {n} free-agent rows for {start}-{end}")
+
+
+@ingest_app.command("fangraphs-projections")
+def ingest_fangraphs_projections() -> None:
+    """Snapshot FanGraphs Steamer projections (hitters and pitchers) under today's date."""
+    configure_logging()
+    n = fangraphs_projections.ingest_all()
+    typer.echo(f"ingested {n} projection rows")
 
 
 @ingest_app.command("team-season-stats")
