@@ -22,11 +22,17 @@ baselines on a holdout the model never trained on and exits nonzero on failure.
 |---|---|---|---|---|
 | Null (train mean) | 1.242 | | | 37.2% |
 | **Null (train median = 0)** | **0.894** | | | 42.8% |
+| **Climatology (train distribution)** | | **0.773** | | |
 | Marcel linear | 1.400 | | | 37.0% |
-| V3 (posterior mean) | 0.914 | 1.037 | 81.5% | 31.5% |
+| V3 (posterior mean) | 0.914 | 0.827 | 81.3% | 31.9% |
 
-Verdict: **NO-GO**. V3 is 2.3% worse than the median null. The gate is beating
-every baseline and holding 90% coverage at or above 80%.
+Verdict: **NO-GO**. V3 is 2.3% worse than the median null on MAE and 6.9% worse
+than climatology on CRPS. The gate is beating every baseline and holding 90%
+coverage at or above 80%. MAE moves by about 0.001 between runs.
+
+CRPS is computed with `metrics.crps_empirical`, which is tested against the
+closed form. The script's earlier local CRPS function was wrong (0.82 where the
+tested one gives 0.55 on standard-normal draws) and has been deleted.
 
 This replaces an earlier GO (2026-11-12 correction). That run had two faults.
 It scored the cached production fit, trained through 2022, on the 2018-2021
@@ -38,6 +44,60 @@ together.
 What the table says now: the outcome is zero-inflated, and a single Student-t
 regression does not separate "this leg never produced MLB value" from "how much
 value it produced". That is the modeling gap to close before any feature work.
+
+## Decision level
+
+MAE grades a number. A front office is graded on the decision, so the benchmark
+also asks: across the 330 holdout trades with two receiving sides, did the side
+the model favoured come out ahead?
+
+| Picker | Truth | Favoured side won | WAR gained per trade | n |
+|---|---|---|---|---|
+| V3 | any-team WAR, T+2 to T+5 (the model's target) | 49.1% ± 5.9 | +0.14 | 277 |
+| More prior-year WAR | same | 51.0% ± 6.1 | +0.56 | 255 |
+| V3 | WAR earned for the receiving club, T to T+5 | 49.2% ± 5.5 | -0.14 | 315 |
+| More prior-year WAR | same | 55.3% ± 5.7 | +0.51 | 293 |
+
+A coin flip scores 50% and zero. V3 is inside that range on both truths, and its
+picks are not stable: a second fit with the same seed scored 51.6% on the first
+row. The one-line heuristic is not significantly better than a coin either, but
+it gains about half a win per trade. Trades with no predicted or no realized
+winner are dropped, which is why n differs by row. WAR only; salary is not
+netted out.
+
+## What the target measures
+
+`scripts/r63_zero_outcome_audit.py` buckets every 2018-2021 leg (n=1388):
+
+| Bucket | Legs |
+|---|---|
+| Nonzero WAR in the T+2 to T+5 window | 773 |
+| Never reached MLB | 327 |
+| MLB career ended before the window opened | 273 |
+| Debuted after the window | 10 |
+| Played in the window, WAR sums to zero | 3 |
+| Absent inside the window only | 2 |
+
+The zeros are real, not join failures: no bWAR row lacks a player id, and only 3
+of the 327 never-reached names match a bWAR name. The career-ended group carried
+almost nothing in the excluded years either (mean -0.08 WAR across T and T+1).
+
+The target itself is the problem. `war_delta` is not a delta. It is the acquired
+players' total WAR in T+2 to T+5 for any club, averaged per leg.
+
+| Years after trade | WAR, any club | WAR for the receiving club | Share |
+|---|---|---|---|
+| 0 | 402.2 | 176.5 | 44% |
+| 1 | 372.5 | 264.2 | 71% |
+| 2 | 283.2 | 174.7 | 62% |
+| 3 | 291.9 | 163.3 | 56% |
+| 4 | 275.2 | 138.4 | 50% |
+| 5 | 197.6 | 75.2 | 38% |
+
+Of the 1,048 WAR in the target window, 552 (53%) was earned for the club that
+made the trade. The window also leaves out T and T+1, where 441 of the 992 WAR
+the receiving clubs actually captured (44%) was earned. Year 5 is partly
+censored: 2026 is an in-progress season in the database.
 
 ## The credibility bar
 

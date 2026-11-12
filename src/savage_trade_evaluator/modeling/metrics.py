@@ -28,3 +28,27 @@ def crps_empirical(observed: np.ndarray, samples: np.ndarray) -> float:
     term2 = 0.5 * np.mean(2.0 * spread / m**2)
 
     return float(term1 - term2)
+
+
+def favoured_side_score(
+    pred_margin: np.ndarray, real_margin: np.ndarray
+) -> tuple[float, float, int]:
+    """Decision-level score for two-sided trades.
+
+    A margin is side A minus side B. The favoured side is the sign of the
+    predicted margin. Trades with no predicted or no realized winner are dropped.
+
+    Args:
+        pred_margin: Predicted value margin per trade, shape (n,).
+        real_margin: Realized value margin per trade, shape (n,).
+
+    Returns:
+        (win rate of the favoured side, mean realized margin gained by taking
+        the favoured side, number of decisive trades).
+    """
+    decisive = (pred_margin != 0) & (real_margin != 0)
+    n = int(decisive.sum())
+    if n == 0:
+        return float("nan"), float("nan"), 0
+    gained = np.sign(pred_margin[decisive]) * real_margin[decisive]
+    return float(np.mean(gained > 0)), float(np.mean(gained)), n

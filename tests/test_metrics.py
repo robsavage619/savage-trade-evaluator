@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from scipy.stats import norm
 
-from savage_trade_evaluator.modeling.metrics import crps_empirical
+from savage_trade_evaluator.modeling.metrics import crps_empirical, favoured_side_score
 
 
 def _crps_analytic_normal(mu: float, sigma: float, y: float) -> float:
@@ -53,3 +53,13 @@ def test_crps_matches_analytic_normal(m: int) -> None:
     # At m=30 Monte Carlo noise is higher; m=6000 should be very tight.
     tol = 0.05 if m == 30 else 0.01
     np.testing.assert_allclose(canonical, analytic, atol=tol)
+
+
+def test_favoured_side_score_counts_only_decisive_trades() -> None:
+    pred = np.array([2.0, -1.0, 1.0, 0.0, 3.0])
+    real = np.array([5.0, 4.0, -2.0, 9.0, 0.0])
+    # right (+5), wrong (-4), wrong (-2); last two have no predicted / realized winner
+    win_rate, gained, n = favoured_side_score(pred, real)
+    assert n == 3
+    assert win_rate == pytest.approx(1 / 3)
+    assert gained == pytest.approx((5 - 4 - 2) / 3)

@@ -28,12 +28,14 @@ import numpy as np
 import pandas as pd
 from scipy.stats import linregress
 
+from savage_trade_evaluator.modeling.metrics import crps_empirical, favoured_side_score
 from savage_trade_evaluator.modeling.v3 import (
     V3_OUTCOME_FEATURES,
     assemble_v3_combined,
     fit_v3,
     predict,
 )
+from savage_trade_evaluator.storage import db
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -43,33 +45,10 @@ HOLDOUT_END = 2021
 OUTCOME = "war_delta"
 
 
-def crps_sorted(samples: np.ndarray, obs: np.ndarray) -> float:
-    """CRPS via the sorted-samples identity (O(n m log m), no pairwise).
-
-    Args:
-        samples: (n_obs, n_samples) posterior draws.
-        obs: (n_obs,) realized outcomes.
-
-    Returns:
-        Mean CRPS across observations.
-    """
-    s = np.sort(samples, axis=1)
-    m = s.shape[1]
-    i = np.arange(1, m + 1, dtype=float)
-    step = (2.0 * i / m) - 1.0
-    residuals = s - obs[:, None]
-    indicator = (obs[:, None] <= s).astype(float)
-    # CRPS = E|X - y| + (contribution from step function vs indicator)
-    crps_per_obs = np.mean(np.abs(residuals), axis=1) - np.mean(
-        step * (s - obs[:, None] - indicator * (s - obs[:, None])), axis=1
-    )
-    return float(crps_per_obs.mean())
-
-
 def _score_holdout(
     train_df: pd.DataFrame,
     held_out: pd.DataFrame,
-) -> dict[str, float]:
+) -> tuple[dict[str, float], np.ndarray]:
     """Fit V3 on the pre-holdout rows only and score the holdout rows.
 
     Args:
@@ -77,7 +56,7 @@ def _score_holdout(
         held_out: Held-out rows with realized OUTCOME column.
 
     Returns:
-        Dict of MAE, CRPS, cov90, p_correct, n.
+        Dict of MAE, CRPS, cov90, p_correct, n, and the posterior mean per row.
     """
     feat_cols = list(V3_OUTCOME_FEATURES[OUTCOME])
     train = train_df.copy()
@@ -103,7 +82,7 @@ def _score_holdout(
     p95 = np.percentile(samples, 95, axis=1)
 
     mae = float(np.abs(realized - posterior_mean).mean())
-    crps = crps_sorted(samples_sub, realized)
+    crps = crps_empirical(realized, samples_sub)
     cov90 = float(np.mean((realized >= p5) & (realized <= p95)))
     # directional: both predict positive or both negative (sign match)
     p_correct = float(np.mean(np.sign(posterior_mean) == np.sign(realized)))
@@ -114,7 +93,84 @@ def _score_holdout(
         "cov90": cov90,
         "p_correct": p_correct,
         "n": len(held_out),
-    }
+    }, posterior_mean
+
+
+_SIDES_SQL = f"""
+WITH legs AS (
+    SELECT trade_event_id, leg_index, to_team_bref AS receiver_bref, trade_season, mlb_player_id
+    FROM trade_player_unified
+    WHERE to_team_bref IS NOT NULL
+      AND trade_season BETWEEN {HOLDOUT_START} AND {HOLDOUT_END}
+),
+captured AS (
+    -- WAR earned for the receiving club, trade season through T+5.
+    SELECT l.trade_event_id, l.receiver_bref, SUM(b.war) AS captured_war
+    FROM legs l
+    JOIN bwar_player_seasons b
+      ON b.mlb_id = l.mlb_player_id
+     AND b.year_id BETWEEN l.trade_season AND l.trade_season + 5
+     AND CASE WHEN b.team_id = 'ATH' THEN 'OAK' ELSE b.team_id END = l.receiver_bref
+    GROUP BY 1, 2
+),
+windowed AS (
+    SELECT l.trade_event_id, l.receiver_bref,
+           COUNT(DISTINCT l.leg_index) AS n_legs,
+           SUM(COALESCE(w.war_t_minus_1, 0)) AS prior_war,
+           SUM(COALESCE(w.war_t_plus_2, 0) + COALESCE(w.war_t_plus_3, 0)
+             + COALESCE(w.war_t_plus_4, 0) + COALESCE(w.war_t_plus_5, 0)) AS window_war
+    FROM legs l
+    LEFT JOIN trade_player_war_window w USING (trade_event_id, leg_index)
+    GROUP BY 1, 2
+)
+SELECT w.*, COALESCE(c.captured_war, 0) AS captured_war
+FROM windowed w LEFT JOIN captured c USING (trade_event_id, receiver_bref)
+"""
+
+
+def _decision_report(held_out: pd.DataFrame, pred_mean: np.ndarray) -> None:
+    """Print the decision-level score: did the favoured side of a trade win?
+
+    Only trades with exactly two receiving sides in the holdout are scored. Two
+    truths are reported: the model's own target (any-team WAR, T+2..T+5) and
+    captured value (WAR earned for the receiving club, T..T+5). WAR only; salary
+    is not netted out.
+
+    Args:
+        held_out: Holdout rows, aligned with ``pred_mean``.
+        pred_mean: V3 posterior-mean ``war_delta`` (per-leg mean) per row.
+    """
+    with db.connect(read_only=True) as conn:
+        sides = conn.execute(_SIDES_SQL).df()
+    scored = held_out[["trade_event_id", "receiver_bref"]].copy()
+    scored["pred_mean"] = pred_mean
+    sides = sides.merge(scored, on=["trade_event_id", "receiver_bref"], how="inner")
+    sides["v3"] = sides["pred_mean"] * sides["n_legs"]
+    sides = sides[sides.groupby("trade_event_id")["receiver_bref"].transform("count") == 2]
+    sides = sides.sort_values(["trade_event_id", "receiver_bref"])
+    cols = ["v3", "prior_war", "window_war", "captured_war"]
+    a = sides.groupby("trade_event_id")[cols].first()
+    b = sides.groupby("trade_event_id")[cols].last()
+    margin = (a - b).to_numpy(dtype="float64")
+    v3_m, prior_m, window_m, captured_m = margin.T
+
+    print("=" * 72)
+    print(f"  DECISION LEVEL: favoured side of {len(margin)} two-sided holdout trades")
+    print("=" * 72)
+    print(f"  {'Picker':<22} {'Truth':<26} {'Win%':>6}  {'±95%':>5}  {'WAR/trade':>9}  {'n':>4}")
+    print(f"  {'-' * 68}")
+    for truth_name, truth in (
+        ("any-team WAR T+2..T+5", window_m),
+        ("captured WAR T..T+5", captured_m),
+    ):
+        for picker_name, pred in (("V3", v3_m), ("More prior-year WAR", prior_m)):
+            win, gained, n = favoured_side_score(pred, truth)
+            half = 1.96 * (win * (1 - win) / n) ** 0.5 if n else float("nan")
+            print(
+                f"  {picker_name:<22} {truth_name:<26} {win:>6.1%}  {half:>5.1%}  {gained:>+9.2f}  {n:>4}"
+            )
+    print("  Coin flip: 50.0% and +0.00 WAR/trade by construction.")
+    print()
 
 
 def main() -> None:
@@ -146,7 +202,10 @@ def main() -> None:
     train_median = float(np.median(train_df[OUTCOME].to_numpy()))
     median_mae = float(np.abs(realized - train_median).mean())
     median_p_correct = float(np.mean(np.sign(train_median) == np.sign(realized)))
-    print(f"holdout legs with {OUTCOME} == 0: {float(np.mean(realized == 0)):.1%}")
+    print(f"holdout sides with {OUTCOME} == 0: {float(np.mean(realized == 0)):.1%}")
+    # Distributional null: every row forecast with the training outcome distribution.
+    train_y = train_df[OUTCOME].to_numpy(dtype="float64")
+    clim_crps = crps_empirical(realized, np.tile(train_y[::3], (len(realized), 1)))
 
     # ── Marcel naive: linear regression on pre-trade WAR quality ─────────────
     train_q = train_df.dropna(subset=["receiver_acquired_player_quality"])
@@ -160,7 +219,7 @@ def main() -> None:
 
     # ── V3 model ──────────────────────────────────────────────────────────────
     print("Fitting V3 on pre-holdout rows and scoring the holdout…")
-    v3 = _score_holdout(train_df, held_out)
+    v3, v3_pred = _score_holdout(train_df, held_out)
 
     # ── Report ────────────────────────────────────────────────────────────────
     print()
@@ -174,6 +233,9 @@ def main() -> None:
     )
     print(
         f"  {'Null (train median)':<22} {median_mae:>6.3f}  {'—':>6}  {'—':>6}  {median_p_correct:>6.1%}  {len(held_out):>5}"
+    )
+    print(
+        f"  {'Climatology (train)':<22} {'—':>6}  {clim_crps:>6.3f}  {'—':>6}  {'—':>6}  {len(held_out):>5}"
     )
     print(
         f"  {'Marcel linear':<22} {marcel_mae:>6.3f}  {'—':>6}  {'—':>6}  {marcel_p_correct:>6.1%}  {len(held_out):>5}"
@@ -191,6 +253,9 @@ def main() -> None:
     print(
         f"  V3 vs Marcel:   MAE Δ = {delta_marcel:+.3f} WAR  ({delta_marcel / marcel_mae:.1%} improvement)"
     )
+    print(
+        f"  V3 vs climatology: CRPS Δ = {clim_crps - v3['crps']:+.3f}  ({(clim_crps - v3['crps']) / clim_crps:.1%} improvement)"
+    )
     print(f"  Marcel r² vs train: {r_marcel**2:.3f}")
     print()
 
@@ -202,6 +267,8 @@ def main() -> None:
     print(f"  Verdict: {verdict}")
     print(f"    beat null:   {beat_null}  beat Marcel: {beat_marcel}  cov90 ≥ 80%: {cov_ok}")
     print()
+
+    _decision_report(held_out, v3_pred)
 
     sys.exit(0 if verdict == "GO" else 1)
 
