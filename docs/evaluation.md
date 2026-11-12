@@ -198,9 +198,48 @@ standard deviation (about 0.26 WAR per side) is detected (CRPS gain 0.023
 against a 0.021 half-width); 5% is not. So an effect of that size or larger in
 one of these columns would have shown up. Smaller effects cannot be excluded at
 this sample size. Not tested: positional need and roster displacement (who the
-acquired player would actually replace), because no depth-chart data is in the
-model, and team-level random effects, which R-33 to R-35 already found add
-nothing.
+acquired player would actually replace), tested next in R-66 below, and
+team-level random effects, which R-33 to R-35 already found add nothing.
+
+### Roster displacement (R-66)
+
+`scripts/r66_displacement.py` tests the mechanism the contention columns could
+not: a player is worth less to a club that already has someone good at his
+position. For each acquired player the script takes the receiving club's
+incumbent strength, the mean WAR of the top-k players in his position group the
+season before he arrives (C, 1B, 2B, 3B and SS one slot each, OF three, SP five,
+RP six; pitchers are SP if they started at least half their games), excluding
+him. Three specs were fixed before scoring, with the same rule as R-65: a 99%
+paired CRPS interval above zero and at least 3 of 4 folds to earn one holdout
+look. Pre-2018 folds, n=1169 sides, 44% of which have the feature (position
+known and MLB history):
+
+| Spec | CRPS | Gain vs structural | 99% half-width | Folds better |
+|---|---|---|---|---|
+| S0. Structural | 0.9607 | | | |
+| P1. + mean incumbent strength | 0.9584 | +0.0022 | 0.0058 | 3 of 4 |
+| P2. + incumbent strength x held WAR | 0.9585 | +0.0022 | 0.0057 | 3 of 4 |
+| P3. + displaced WAR | 0.9503 | +0.0104 | 0.0175 | 3 of 4 |
+
+No spec earned a holdout look, so the holdout was not touched. P3, displaced WAR
+(held WAR times the incumbent's share of the player's own rate, capped at one),
+is the largest gain any context test has produced, about 1.1% of CRPS, but its
+interval runs from roughly -0.007 to +0.028.
+
+The direction matches the mechanism, which was not part of the decision rule.
+With held WAR fixed, the ridge coefficient on displaced WAR is negative (-0.93
+standardized), and the median of captured WAR over held WAR falls from 0.26 to
+0.05 as the displaced share rises from none to over 60%. The classifier
+coefficient is positive (+0.97) because displaced WAR is zero for players with no
+MLB track record, so it partly encodes having one. The mean ratio is flat
+(0.36, 0.38, 0.40, 0.30) because a few large seasons dominate it, and the
+lowest-share buckets have 29 and 49 sides.
+
+Read as: displacement is plausibly real and not yet demonstrable at 1,169 test
+sides. Spending the holdout on P3 now would not meet the rule set in advance.
+Limits: incumbents come from the previous season's bWAR, not the roster on the
+trade date; position is career primary position; depth beyond the top slots,
+injuries and platoons are ignored.
 
 The decision-level score does not separate any of these. Per-trade gain has a
 95% half-width of about 0.45 to 0.50 WAR at n of 300 to 360 trades:
