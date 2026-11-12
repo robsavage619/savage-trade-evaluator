@@ -664,6 +664,30 @@ CATALOG: tuple[StatSource, ...] = (
         ),
     ),
     StatSource(
+        name="bref-contracts",
+        source="baseball-reference",
+        granularity="player-snapshot",
+        era_start=2026,
+        era_end=None,
+        fetcher="savage_trade_evaluator.ingest.bref_contracts.ingest_all",
+        primary_columns=(
+            "mlb_player_id",
+            "team_bref",
+            "as_of",
+            "service_time",
+            "summary_years",
+            "summary_total",
+        ),
+        target_table="bref_contract_players",
+        ingested=True,
+        notes=(
+            "Current contracts per club: per-season guaranteed / option / arb / FA with "
+            "option type (team, player, mutual, vesting), buyouts, exact service time. "
+            "Current-state snapshots keyed by as_of; history builds from the first ingest. "
+            "Detail rows in bref_contract_years."
+        ),
+    ),
+    StatSource(
         name="spotrac-team-payroll",
         source="spotrac",
         granularity="team-season",

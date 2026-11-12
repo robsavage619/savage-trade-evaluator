@@ -54,6 +54,7 @@ Row counts are live as of the last measurement.
 | `retrosheet-transactions` | retrosheet | transaction | 1880-2022 | `transactions` | 832,505 |
 | `spotrac-player-contracts` | spotrac | player-season | 2011-now | `spotrac_player_contracts` | 1,152 |
 | `spotrac-team-payroll` | spotrac | team-season | 2011-now | `spotrac_team_payroll` | 480 |
+| `bref-contracts` | baseball-reference | player-snapshot | 2026-now | `bref_contract_players` (+ `bref_contract_years`, 5,000+ per-season cells) | 1,107 |
 | `tjstats-scout-batters` | tjstats | player-career | 2026-now | `tjstats_scout_batters` | 364 |
 | `tjstats-scout-pitchers` | tjstats | player-career | 2026-now | `tjstats_scout_pitchers` | 251 |
 | `tjstats-tjbat` | tjstats | player-season | 2024-now | `tjstats_tjbat` | 497 |

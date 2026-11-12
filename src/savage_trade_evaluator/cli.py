@@ -29,6 +29,7 @@ from savage_trade_evaluator.config import (
     configure_logging,
 )
 from savage_trade_evaluator.ingest import (
+    bref_contracts,
     catalog,
     coaches,
     draft,
@@ -382,6 +383,24 @@ def ingest_spotrac(
     else:
         n = spotrac.ingest_range(start=start, end=end)
     typer.echo(f"ingested {n} spotrac contract rows")
+
+
+@ingest_app.command("bref-contracts")
+def ingest_bref_contracts(
+    conflicts: bool = typer.Option(False, help="Also list players whose Spotrac window conflicts."),
+) -> None:
+    """Snapshot every club's contracts, options and service time from Baseball Reference.
+
+    Rate-limited to BR's guidelines; about two minutes for 30 clubs. Re-running a day
+    reuses the on-disk cache under data/bref_contracts_cache/.
+    """
+    configure_logging()
+    n = bref_contracts.ingest_all()
+    typer.echo(f"ingested {n} baseball-reference contract rows")
+    if conflicts:
+        with db.connect(read_only=True) as conn:
+            flagged = bref_contracts.spotrac_conflicts(conn)
+        typer.echo(flagged.to_string(index=False) if len(flagged) else "no conflicts")
 
 
 @ingest_app.command("team-season-stats")

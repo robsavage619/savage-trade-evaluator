@@ -238,6 +238,9 @@ data/static/retrosheet/
 data/static/retrosheet_gl/
 data/retrosheet_events/
 
+# Baseball Reference contract pages, one dated folder per snapshot
+data/bref_contracts_cache/
+
 # FanGraphs leaderboard raw Firecrawl cache (large staging JSON; DB is the artifact)
 data/fangraphs_cache/
 
