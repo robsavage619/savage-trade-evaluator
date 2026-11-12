@@ -115,6 +115,64 @@ made the trade. The window also leaves out T and T+1, where 441 of the 992 WAR
 the receiving clubs actually captured (44%) was earned. Year 5 is partly
 censored: 2026 is an in-progress season in the database.
 
+## Baseline-up (R-64)
+
+`scripts/r64_baseline_up.py` rebuilds the model from the simplest thing that
+could work. Per acquired player: a 3-2-1 weighted WAR rate over the last three
+completed seasons, times the seasons the receiving club can expect to hold him
+inside the window, split into seasons under team control and seasons after it.
+Summed per side, plus the number of players and the number with no MLB time.
+Each spec is a two-part model: the chance a side produces non-zero WAR, times a
+ridge regression on the non-zero sides, with an empirical residual distribution.
+
+Specs were compared on pre-2018 walk-forward folds only (test seasons 2014 to
+2017, n=1169 sides):
+
+| Spec | MAE | CRPS | Cov90 |
+|---|---|---|---|
+| Null (median / climatology) | 1.324 | 1.128 | |
+| A. T-1 WAR, plain regression | 1.279 | 1.030 | 90.7% |
+| B. T-1 WAR, two-part | 1.252 | 1.009 | 90.6% |
+| **C. Structural, two-part** | **1.207** | **0.961** | 90.3% |
+| D. The 34 context features, two-part | 1.342 | 1.095 | 90.0% |
+| E. Structural + 34 context, two-part | 1.240 | 0.972 | 90.5% |
+
+C had the best fold CRPS and was scored on the 2018-2021 holdout (n=1100):
+
+| Model | MAE | CRPS | Cov90 |
+|---|---|---|---|
+| Null (median / climatology) | 1.127 | 0.975 | |
+| V3, 34 features, Student-t | 1.143 | 1.027 | 83.3% |
+| **C. Structural, two-part** | **1.065** | **0.865** | 91.6% |
+
+Four features beat both nulls out-of-sample, by 5.5% on MAE and 11.3% on CRPS,
+with intervals that cover at the stated rate. This is the first model in the
+repo to do so.
+
+The 34 context features carry no detectable signal in this model class. Alone
+(D) they are worse than the median null on MAE; added to the structural
+features (E) they make the fit slightly worse than C. That is a result about
+additive linear effects. Interactions, such as contention window with a rental,
+were not tested.
+
+The decision-level score does not separate any of these. Per-trade gain has a
+95% half-width of about 0.45 to 0.50 WAR at n of 300 to 360 trades:
+
+| Picker | Folds: won, WAR per trade | Holdout: won, WAR per trade |
+|---|---|---|
+| C. Structural, two-part | 48.6%, +0.31 | 54.6%, +0.10 |
+| More T-1 WAR | 55.4%, +0.05 | 55.5%, +0.51 |
+| More held WAR (unfitted) | 50.4%, -0.17 | 61.7%, +0.64 |
+
+Every picker looks good in one period and flat in the other. Trades that happen
+are ones both clubs judged close to fair, so "who won" on completed trades is
+near a coin flip by construction and has a low ceiling as a test. It stays in
+the benchmark as a diagnostic. The proper scores above are the gate.
+
+Known limits: service time is counted in MLB seasons played, not days, and no
+historical contract data is used, so a veteran on a multi-year deal looks like a
+rental. The 2020 season was 60 games and sits inside every holdout window.
+
 ## The credibility bar
 
 A feature is reported as credibly real only when both hold:
