@@ -1,7 +1,8 @@
 # Product tour
 
-Screenshots are live application output from committed seed data. The frontend
-runs from a clone with no database, no keys, and no backend:
+Screenshots are live output from the deployed app, taken 2026-11-12 after that
+morning's data refresh. The frontend runs from a clone with no database, no
+keys, and no backend:
 
 ```bash
 cd frontend && npm install && npm run dev
@@ -14,7 +15,11 @@ buyer or a seller, and how confident is that read? Record, games back, and
 playoff odds set the posture, and everything below is framed around it.
 
 <p align="center">
-  <img src="screenshots/warroom-sell.png" alt="War Room sell-mode assessment for a club out of contention" width="100%"/>
+  <img src="screenshots/warroom-sell.png" alt="War Room sell-mode assessment for the Mets, out of contention and over the CBT" width="100%"/>
+</p>
+
+<p align="center">
+  <img src="screenshots/warroom-buy.png" alt="War Room buy-window assessment for the Dodgers, in the division lead" width="100%"/>
 </p>
 
 Below the verdict: committed payroll against the Competitive Balance Tax line,
@@ -29,10 +34,6 @@ today, ranked recommendations, trade packages with both sides' surplus
 accounting, counterparty reads, and a risk radar. The frontend renders that JSON
 directly (`lib/analysisPrompt.ts`, `components/IntelligenceReport.tsx`).
 
-<p align="center">
-  <img src="screenshots/warroom-brief.png" alt="War Room buy-window assessment with the AI brief for a contender" width="100%"/>
-</p>
-
 Delivery crosses the Python boundary as a file rather than an API call: a skill
 writes `frontend/public/brief-inbox/<TEAM>.json` and the app polls for it. The
 Python side persists and re-exports through `warroom/briefs.py`.
@@ -40,18 +41,24 @@ Python side persists and re-exports through `warroom/briefs.py`.
 ## Trade Builder (`/build`)
 
 <p align="center">
-  <img src="screenshots/trade-builder.png" alt="Trade Builder with your roster on the left and the partner's on the right" width="100%"/>
+  <img src="screenshots/trade-builder.png" alt="Trade Builder: Soto to Tampa Bay for Rasmussen and Caminero, with the forecast distribution and contract blind spots" width="100%"/>
 </p>
 
-Pick a partner, move players across, and the deal is priced from your club's
-context: your window, your payroll situation, your positional needs. The same
-package gets a different verdict depending on who is buying, which is the whole
-thesis made interactive.
+Pick a partner and move players across. The forecast panel prices the deal with
+the same structural model the Python side is graded on: WAR each side captures
+for its new club, a 90% interval for each, the full distribution of the
+difference, and the chance your side comes out ahead. The verdict is worded as a
+lean, because the higher-forecast side won only 54% ± 6 of 302 past two-sided
+trades.
 
-One caveat the UI states on screen: the live what-if runs a TypeScript heuristic
-whose uncertainty band is `sqrt(n) * 1.2`, not a model posterior. Historical
-scenarios carry the real V3 posterior with a coverage grade. The badge is there
-because two engines that disagree should say so.
+Two things sit beside the number rather than inside it. Salary comes from
+Baseball-Reference, shown next to WAR rather than netted against it. And a
+**Not in this forecast** box lists the players whose contracts the model cannot
+see (long guarantees, opt-outs, options), so a star on a long deal is flagged
+instead of silently priced like a typical veteran.
+
+The browser runs a TypeScript port of the model, checked against Python on 55
+golden cases (`npm run check:structural`).
 
 ## Org Explorer (`/orgs`) and Org Scout (`/orgs/:bref`)
 

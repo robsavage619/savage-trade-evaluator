@@ -1,232 +1,201 @@
 <p align="center">
-  <img src="banner.svg" alt="Savage Analytics, context-aware MLB trade valuation" width="100%"/>
+  <img src="docs/banner.png" alt="Savage Trade Lab, context-aware MLB trade valuation" width="100%"/>
 </p>
 
-# Savage Trade Evaluator
+# Savage Trade Lab
 
 Most trade-value tools price a player once and sell that number to all 30 clubs.
-This one prices him 30 times. A cost-controlled mid-rotation starter is a luxury
-to a rebuilder and a pennant to a contender two games up in August with a hole in
-the rotation, so the valuation takes the acquiring club's contention window,
-payroll room, roster holes, farm depth, and front-office history as inputs. The
-output is a posterior distribution over what the trade does for *that* club, not
-a dollar figure. Around the model sits a deadline War Room, a trade builder, an
-organization scout, and a retrieval layer over the project's own research log.
+This one prices the trade for the club that receives him. A cost-controlled
+starter is worth more to a contender with a hole in the rotation than to a
+rebuilder, and a player is only worth what the acquiring club will actually get
+from him before he leaves. The output is a forecast distribution of the WAR each
+side captures, scored on trades the model never saw. Around it sit a deadline War
+Room, a Trade Builder, an organization explorer, and a pipeline that refreshes
+the data every morning and refuses to publish when the data looks wrong.
+
+<p align="center">
+  <img src="docs/screenshots/trade-builder.png" alt="Trade Builder: Soto to Tampa Bay for Rasmussen and Caminero, with the forecast distribution, interval, and contract blind spots" width="100%"/>
+</p>
+
+---
+
+## What it found
+
+The honest result is smaller than the first one, and more useful.
+
+| Question | Answer |
+|---|---|
+| Can a model beat simple baselines on trades it never saw? | Yes. A four-feature structural model beats both a median null and the training distribution on a 2018-2021 holdout: MAE 1.079 vs 1.127 (4.3% better), CRPS 0.867 vs 0.975 (11.1% better), with 91.5% of outcomes inside the 90% interval. n = 1,100 trade sides, trained on pre-2018 only. |
+| Does club context help? | Not measurably. The 34 context features (contention window, payroll, farm depth, front-office history) are worse than the median null on their own and add nothing on top of the structural model. Pre-registered tests of context as a multiplier on playing time and retention, and of roster displacement (the closest call, +1.1% CRPS with an interval spanning zero), never earned a look at the holdout. A planted effect of 10% of held WAR is detected by the same pipeline, so anything that large would have shown. |
+| Can it tell you who wins a trade? | Barely. The side with the higher forecast captured more WAR in 54% ± 6 of 302 two-sided trades. The app shows that as a lean, never a call. |
+| Was the original 28.2% "beat" real? | No. It scored a model trained through 2022 on 2018-2021 trades and compared it to the training mean. Refit out of sample and compared to the median, that model loses to predicting zero. The correction is committed alongside the result it replaced. |
+
+The target is the WAR a player earns **for the receiving club** from the trade
+season through five years after, summed per side. The earlier target counted WAR
+earned anywhere, skipped the first two seasons where 44% of captured value lands,
+and was 43% zeros. Details and every intermediate table:
+[`docs/evaluation.md`](docs/evaluation.md).
+
+---
+
+## The product
+
+<p align="center">
+  <img src="docs/screenshots/warroom-sell.png" alt="War Room for the Mets in sell mode: window assessment, payroll against the CBT, payroll projection, roster needs" width="100%"/>
+</p>
+
+- **War Room.** Pick a club and get its window (buy, hold, sell) from record,
+  games back and playoff odds, payroll against the luxury-tax tiers, a three-year
+  payroll projection, positional needs against farm depth, and a five-year
+  contention grid.
+- **Trade Builder.** Build any trade between two clubs. The forecast panel shows
+  each side's captured WAR with a 90% interval, the probability your side comes
+  out ahead, salary from Baseball-Reference, and a **Not in this forecast**
+  list: opt-outs, options and long guarantees the model cannot see.
+- **Org Explorer and Org Scout.** All 30 clubs on a development-versus-trade map,
+  with front-office personnel and GM behavior profiles.
+- **Player Profile, Case Study, Research.** WAR trajectories and Statcast
+  percentiles, a worked trade, and the research log behind every modeling choice.
+
+The browser forecast is a TypeScript port of the Python model, held to it by 55
+golden cases with a maximum absolute error of 5e-13 (`npm run check:structural`).
+One model, two runtimes, no drift. More screens in the
+[product tour](docs/product-tour.md).
+
+---
+
+## Data you can trust on a Tuesday
+
+Every source is public. 61 sources are cataloged in
+[`ingest/catalog.py`](src/savage_trade_evaluator/ingest/catalog.py): 45 ingested,
+12 available but not wired, 4 blocked, each with the reason. Statcast comes from
+Baseball Savant, WAR and contracts from Baseball-Reference, transactions,
+rosters, standings and free agency from the MLB Stats API, Steamer projections
+and prospect grades from FanGraphs, payroll from Spotrac.
+
+A daily job on an always-on Mac runs at 05:30:
+
+1. **Ingest** 16 steps. A command that exits 0 but reports zero rows counts as a failure.
+2. **Gate** on what the database now holds, not on what the commands said:
+   every current-season table must have been rewritten by this run, standings
+   must show 30 clubs with possible records, every roster must have 25 or more
+   players, the newest transaction must be under a week old, and no table, WAR
+   total, games-played maximum or win total may shrink against the last good run.
+3. **Export and build** only if no blocking gate failed. The new site replaces
+   the old one with two renames, so a failed run leaves yesterday's site serving.
+4. **Publish a status file** either way. The footer shows its age and any lagging
+   source, so a refresh that quietly did nothing cannot look healthy.
+
+Sources that are allowed to lag (Spotrac, contract terms) warn instead of block.
+The gates exist because each one caught a real failure: current-season rows that
+re-ingests had silently stopped updating, a roster fetch that truncated to 183
+players and exited 0, and a payroll source that went stale.
 
 ---
 
 ## The constraints that forced the design
 
-Every structural choice here follows from four facts about the problem. None of
-them are preferences.
-
-**There are almost no trades, and there will never be more.** The modeling table
-is 5,308 trade-side rows across 2010-2024. Only 3,977 carry a realized WAR
-outcome. The rate-based outcomes are far worse: 629 labeled rows for xwOBA-delta
-and 255 for K%-delta, because Statcast starts in 2015 and most traded players
-never accumulate a qualifying season on both sides of the move. MLB produces a
-few hundred trades a year and the Stats API has essentially nothing usable before
-2010. No amount of engineering makes more of them.
+**There are almost no trades.** About 5,300 trade sides across 2010-2024, a few
+hundred new ones a year, and the MLB Stats API has essentially nothing usable
+before 2010. No engineering makes more of them.
 
 **The noise is roughly twenty times the effect.** Per-trade residual sigma is
-1.41 WAR. Between-organization variance is 0.066. Fitting anything flexible to
-this is fitting noise, and it shows: an OLS fit with five features scored 30%
-worse than predicting zero on held-out data, driven by a single spurious -7.10
-coefficient, while the Bayesian fit on identical data landed within 1% of the
-baseline.
+1.41 WAR; between-organization variance is 0.066. So: shrinkage, distributions
+rather than point estimates, scoring on CRPS and interval coverage rather than
+R-squared, and a feature counts only when its 90% interval excludes zero with at
+least 95% of posterior mass on one side.
 
-*Consequence:* Bayesian regression with priors tight enough to shrink weak
-coefficients to zero, posterior distributions rather than point estimates, and
-scoring on CRPS and interval coverage rather than R-squared. A feature counts as real
-only when its 90% CI excludes zero **and** at least 95% of posterior mass sits on
-one side. Under walk-forward CV the bar rises to 97.5% across folds.
+**Every source is public and several resist being read.** Baseball-Reference
+rate-limits to about 20 requests a minute; FanGraphs blocks scrapers outright.
+So: one adapter per source, raw pulls cached to disk, ingests restartable by
+season, and fetchers that refuse partial results instead of writing them.
 
-**Every data source is public, and several actively resist being read.**
-No paid feeds. Baseball Reference rate-limits to about 20 requests a minute, so
-the 450-request front-office scrape takes 26 minutes. FanGraphs returns 403 to
-pybaseball, to httpx with browser headers, to `curl_cffi` with Chrome TLS
-impersonation, and to `cloudscraper`.
-
-*Consequence:* a source catalog that records each source's status explicitly
-(`ingest/catalog.py`, 50 sources: 42 ingested, 4 available, 4 blocked), one
-adapter per source, raw pulls cached to disk so a failed run never re-scrapes,
-and ingests that are restartable by season.
-
-**One user, one laptop, no server, and a 31-second model fit.** The store is a
-single 405MB DuckDB file. A cold PyMC fit takes 31 to 33 seconds per outcome.
-Interactive scoring cannot wait for that. DuckDB also holds an exclusive write
-lock, so one ingest blocks every reader in the process.
-
-*Consequence:* DuckDB rather than Postgres, no service and no ORM. Posterior
-traces are cached to disk keyed on `(MODEL_VERSION, SCHEMA_VERSION)` and
-invalidated when either moves, which turns a 31-second fit into a 0.13-second
-load. Ingests serialize; everything else opens `read_only=True`. The frontend
-reads committed JSON exports and never talks to Python at runtime, so the whole
-product runs from a clone with no database at all.
+**One person, one database file, no server.** A single DuckDB file with 58
+tables and 44 views. The frontend reads committed JSON exports and never talks to
+Python at runtime, so the product runs from a clone with no database and no keys.
 
 ---
 
 ## Architecture
 
 ```
-public sources            ingest/ (19 adapters)        storage/
-  MLB Stats API           rate-limited, cached,        DuckDB, one file, 405MB
-  Baseball Reference  ->  restartable per season   ->  54 tables + 44 views
-  Baseball Savant                                      versioned DDL (v39)
-  Retrosheet, Spotrac                                  outcome_views.py:
-  FanGraphs, Chadwick                                  one window view per metric
-  TJStats                                              (WAR, xwOBA, xERA, arsenal)
-                                                              |
-                                                              v
-                             feature_assembler.py  <--  trade_views.py
+public sources              ingest/ (one adapter each)      storage/
+  MLB Stats API             cached, restartable,            DuckDB, one file
+  Baseball-Reference   ->   refuse partial results     ->   58 tables + 44 views
+  Baseball Savant                                           current-season rows
+  FanGraphs, Spotrac                                        refresh on re-ingest
+  Retrosheet, Chadwick
                                      |
                                      v
-                              modeling/v3.py
-                              Bayesian regression, 9 outcomes
-                              34 features large-n / 25 small-n
+             quality.py gates  <-  refresh.py (daily, launchd 05:30)
                                      |
                                      v
-                          production_fit.py -> data/model_cache/*.nc
-                          keyed on (MODEL_VERSION, SCHEMA_VERSION)
-                          cold fit 31s, cached load 0.13s
+                      modeling/structural.py
+                      two-part: P(side captures any WAR)
+                      x ridge on the rest + empirical residuals
+                      graded by scripts/benchmark_vs_naive.py
                                      |
                 +--------------------+--------------------+
                 v                                         v
-       ste CLI (8 sub-apps)                     scripts/export_*.py
-       score-trade, suggest-trades,                       |
-       backtest, v3, brief, research                      v
-                                              React SPA, 10 routes,
-                                              committed JSON seeds,
-                                              no backend at runtime
+       ste CLI: score-trade,                     scripts/export_*.py
+       suggest-trades, ingest, ...                        |
+                                                          v
+                                          React SPA, committed JSON,
+                                          same model in TypeScript,
+                                          served on the tailnet
 ```
 
 ---
 
 ## Hard problems
 
-**A primary key that silently dropped half the data.** The transactions table
-used `transaction_id` alone as its primary key. MLB's API reuses that id across
-every leg of a trade, so the Pressly deal arrives as three rows sharing id
-371509. `ON CONFLICT` quietly discarded the second and third legs of every
-multi-player trade in the dataset, which is most of the interesting ones. The fix
-is a composite key `(transaction_id, leg_index)` plus a normalizer that assigns
-sequential leg indices per shared id ([`schemas.py:57`](src/savage_trade_evaluator/storage/schemas.py)).
-The failure mode is the dangerous kind: no error, no warning, just a smaller
-table than it should have been.
+**A primary key that silently dropped half the data.** MLB's API reuses one
+transaction id across every leg of a trade, and the table keyed on that id alone.
+`ON CONFLICT` quietly discarded the second and third legs of every multi-player
+trade. Fixed with a composite key and a per-trade leg index. No error, no
+warning, just a smaller table.
 
-**A 3.2-sigma finding that was entirely regression to the mean.** The project
-started from a specific thesis: that the Dodgers' development system inflates
-players who then regress once traded out. The raw high-cohort split supported it
-at 3.2 sigma. Adding pedigree controls in a multilevel fit collapsed the effect
-25x and pushed the interval across zero. Roughly 97% of the raw signal was
-regression to the mean, and any test that fails to condition on pre-trade tier
-will attribute that RTM to the origin organization
-([R-10](docs/research/part-2-origin-org-and-the-metric-correction.md)). Later
-rounds rejected the thesis outright: young traded players gain WAR regardless of
-which organization they leave.
+**A benchmark that graded itself.** The headline 28.2% improvement scored a
+model on trades it had trained on and compared it to a mean when the honest
+baseline was a median. Refit out of sample, it lost to predicting zero. The fix
+was to rebuild from the simplest model that could work and only add what beat
+it on pre-2018 folds before touching the holdout.
 
-**The outcome variable was hiding the features.** Five straight rounds of feature
-engineering returned nulls against a WAR-surplus target. Rerunning the identical
-ablation against an xwOBA-delta target moved three features across the
-credibility bar at once, and R-22 later produced the largest credible coefficient
-in the project (-10.8 K-percentile points per standard deviation of pre-trade
-K%-trajectory, 90% CI [-17.1, -4.3], 100% directional mass) on a K% target where
-the same feature was invisible on WAR
-([R-19, R-22](docs/research/part-2-origin-org-and-the-metric-correction.md)). The
-outcome window mattered too: `war_delta` now skips the transition year T+1
-entirely and runs T+2 to T+5, because the year a player changes teams is mostly
-playing-time disruption.
+**A 3.2-sigma finding that was regression to the mean.** The project began from
+a thesis that one club's development system inflates players who then regress
+once traded. Adding pedigree controls collapsed the effect 25x. About 97% of the
+raw signal was regression to the mean
+([R-10](docs/research/part-2-origin-org-and-the-metric-correction.md)).
 
-**Surplus inflated by the length of the window.** The three-term valuation
-averaged salary across a player's control window instead of summing it. On a
-four-year window at $10M per year it reported $10M of cost against a correct
-$40M, a 4x understatement of what a contract actually costs, and two-way players
-had their salary counted twice on top of that. Caught in the 2026-07 trust pass
-and fixed with a dedup to one row per `(mlb_id, season)` and `SUM` over the
-window ([D-53](docs/decision-drafts/2026-07-trust-release.md)).
+**Re-ingests that never updated anything.** `INSERT ... ON CONFLICT DO NOTHING`
+meant the current season froze at whatever the first pull of the year saw. Every
+re-ingest reported success. Current-season tables now upsert, and the freshness
+gate checks that the rows were actually rewritten.
 
-**A fix that improved the headline metric and was rejected anyway.** Missing
-features were being mean-filled, which produces intervals that are too narrow on
-sparse rows. Predict-time multiple imputation fixed exactly that: 90% coverage on
-sparse rows moved from 0.87 to 0.94 for `war_delta` and 0.88 to 0.95 for
-`surplus_wins`, right onto nominal. It also degraded CRPS by 14.5% and 16.8%,
-because drawing each missing feature independently ignores the correlations
-between them, and a row with eight missing Statcast features gets eight
-independent draws of something that moves together. Verdict: **NO-GO**. The
-`multiple_imputation=True` API stays in `v3.py` for a future conditional-draw
-experiment, and the scoring path reverted to mean-fill
-([revalidation report](docs/revalidation/2026-07-post-mi.md)).
-
----
-
-## How it is verified
-
-| Check | Result |
-|---|---|
-| Unit and parser tests | 154 passing, 2.0s |
-| CI on every push to main | `ruff format --check`, `ruff check`, `pyright`, `pytest` |
-| Target | WAR earned for the acquiring club, T to T+5, per trade side |
-| Production model | Structural two-part, four features (`modeling/structural.py`) |
-| Structural vs a train-median null, MAE | 1.079 vs 1.127, **4.3% better** (GO) |
-| Structural vs the training distribution, CRPS | 0.867 vs 0.975, **11.1% better** |
-| 90% interval coverage on holdout | 91.5% (gate requires 80%) |
-| V3, 34 context features, same rows | MAE 1.143, CRPS 1.026: worse than both nulls |
-| Favoured side of two-sided trades | No model separable from a coin flip at this sample size |
-| Holdout | 2018-2021, n=1100, trained pre-2018 |
-| Walk-forward CV | 5 folds per outcome, CRPS mean and spread recorded |
-
-`scripts/benchmark_vs_naive.py` is the GO gate and exits nonzero if the
-production model fails to beat every baseline or coverage drops under 80%. An
-earlier version scored the V3 production fit, which trains through 2022, on this
-holdout and reported a 28.2% beat over the train mean. Refit on pre-2018 rows
-and compared with the median, V3 does not beat predicting zero; the structural
-model does. Model-touching changes are
-revalidated against the D-38 protocol and the result is committed with its git
-SHA, pass or fail, in [`docs/revalidation/`](docs/revalidation/). The
-[NO-GO report](docs/revalidation/2026-07-post-mi.md) is committed for the same
-reason the passing one is.
-
-The Pressly trade is a data-layer check rather than a model check. Across the
-canonical T-1 to T+1 window (2017 to 2019) his fastball and curve spin barely
-moved, 97th to 98th and 100th to 100th percentile, while K% went 65th to 94th and
-whiff% 69th to 95th. Houston changed how he used his pitches, not the pitches. If
-those numbers drift, the ingest regressed.
+**A fix that improved the headline metric and was rejected.** Multiple
+imputation brought sparse-row interval coverage onto nominal and made CRPS 15-17%
+worse, because independent draws ignore how missing features move together.
+Verdict NO-GO, and the [report](docs/revalidation/2026-07-post-mi.md) is
+committed for the same reason passing ones are.
 
 ---
 
 ## Known limitations
 
-- **The model prices trades; it cannot tell you whether one would be accepted.**
-  An acceptance-probability layer needs negative examples, and refused trade
-  proposals are not public. 86 GM behavioral profiles and 5 archetypes ship as
-  context, but the acceptance model is deferred indefinitely.
-- **The rate-based outcomes are underpowered.** 629 labeled rows for xwOBA-delta
-  and 255 for K%-delta. The R-19 and R-22 findings are the most interesting in
-  the project and also the least replicated. Treat them as directional.
-- **Multiple imputation is a measured failure**, described above. Sparse-row
-  intervals are still too narrow; each scenario carries an A-to-D coverage grade
-  so you can see when you are extrapolating, which is a label on the problem
-  rather than a fix for it.
-- **There are two valuation engines and they disagree.** The Python V3 posterior
-  is the model. The frontend trade workshop uses a TypeScript heuristic whose
-  uncertainty band is `sqrt(n) * 1.2`, not a posterior. The UI labels it as a
-  heuristic estimate, but one engine is the right answer and this is not it.
-- **These are ATT estimates, not ATE.** GMs chose the trades in the sample.
-  Selection on gains biases every naive comparison by construction, and the
-  synthetic-control work that would address it is not built.
-- **Single-split coverage sits at 85-88% against a nominal 90%**, so intervals
-  run slightly tight even on dense rows. Walk-forward CRPS varies substantially
-  across folds.
-- **Pre-2010 coverage is thin.** Retrosheet fills transactions back to 1880, but
-  the outcome and contract joins that make a trade scorable mostly do not reach
-  that far.
-- **The frontend has one test.** 14,290 lines of TypeScript. The only check beyond
-  `tsc` is `npm run check:structural`, which proves the browser forecast matches
-  Python; the rest is checked by `tsc` and by looking at it.
-- **The original thesis was wrong.** The system-tax hypothesis this project was
-  built to test was rejected. What replaced it is a two-axis organizational map
-  on which development quality and trade-execution quality turn out to be roughly
-  uncorrelated.
+- **It prices trades; it cannot say whether one would be accepted.** Refused
+  proposals are not public, so there are no negative examples to learn from.
+- **Contracts are outside the model.** A star on a long guarantee is priced like
+  a typical veteran, and a rental or opt-out candidate as if he stays. The UI
+  lists these players under *Not in this forecast* instead of hiding the gap.
+- **Club context adds nothing measurable yet.** The thesis that one player has
+  thirty prices is what the product is built around; the data does not yet
+  support it beyond who controls the player and for how long.
+- **These are effects on trades that happened, not on trades in general.** GMs
+  chose these deals, so naive comparisons are biased by selection.
+- **The rate-based outcomes are underpowered.** 629 labeled rows for
+  xwOBA-delta and 255 for K%-delta; treat those findings as directional.
+- **Spotrac contract terms lag.** The daily run marks them degraded rather than
+  blocking on them.
 
 ---
 
@@ -238,29 +207,27 @@ The frontend runs from a clone, with no database and no keys:
 cd frontend && npm install && npm run dev    # http://localhost:5173
 ```
 
-Rebuilding the store from source APIs takes hours and is only needed to inspect
-the pipeline: `uv sync`, then `uv run ste init`, `uv run ste ingest
-transactions`, `uv run ste status`, `uv run ste catalog --status ingested`.
+The pipeline needs `uv sync`, then `uv run ste init` and the ingests
+(`uv run ste catalog --status ingested` lists them). The daily job is
+`uv run python scripts/refresh_daily.py`; `--gates-only` checks the data
+without changing anything. Deployment to an always-on Mac is in
+[`docs/imac-cutover.md`](docs/imac-cutover.md).
 
 ---
 
 ## Documentation
 
-[`docs/README.md`](docs/README.md) is the index. The short list:
-
 | Doc | What it covers |
 |---|---|
+| [`docs/evaluation.md`](docs/evaluation.md) | Benchmark design, the target redefinition, R-64 and R-65, every table |
 | [`docs/architecture.md`](docs/architecture.md) | Module layout, CLI surface, the ingest-to-product path |
-| [`docs/evaluation.md`](docs/evaluation.md) | Benchmark design, credibility bar, revalidation protocol |
-| [`docs/STATS_CATALOG.md`](docs/STATS_CATALOG.md) | Every data source, its status, and live row counts |
-| [`docs/research/`](docs/research/README.md) | 26 rounds of experiments, indexed, mostly nulls |
-| [`docs/PHASE1_SYNTHESIS.md`](docs/PHASE1_SYNTHESIS.md) | What survived the research phase and what did not |
-| [`docs/product-tour.md`](docs/product-tour.md) | Screenshots and what each route does |
+| [`docs/STATS_CATALOG.md`](docs/STATS_CATALOG.md) | Every data source, its status, and row counts |
+| [`docs/research/`](docs/research/README.md) | The experiment log, mostly nulls |
+| [`docs/product-tour.md`](docs/product-tour.md) | Every screen and what it does |
+| [`docs/imac-cutover.md`](docs/imac-cutover.md) | Daily refresh, quality gates, deployment |
 
-Analytical framing draws on *The MVP Machine* (development fit), *Baseball
-Between the Numbers* ($/WAR, log-5 playoff odds), *Statistical Rethinking*
-(multilevel Bayes), and *Causal Inference: The Mixtape* (treatment effects on
-trades that actually happened).
+Analytical framing draws on *The MVP Machine*, *Baseball Between the Numbers*,
+*Statistical Rethinking* and *Causal Inference: The Mixtape*.
 
 ---
 
