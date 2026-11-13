@@ -55,7 +55,7 @@ class Model2VecEmbedder:
             ImportError: If the optional ``rag`` extra is not installed.
         """
         try:
-            from model2vec import StaticModel
+            from model2vec import StaticModel  # pyright: ignore[reportMissingImports]
         except ImportError as exc:  # pragma: no cover - exercised via extras
             raise ImportError(
                 "RAG support requires the 'rag' extra. Install it with: uv sync --extra rag"
