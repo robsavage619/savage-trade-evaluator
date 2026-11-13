@@ -41,6 +41,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 SOURCE = "spotrac"
 RATE_LIMIT_SECONDS = 1.5  # polite — Spotrac is a small business
+MAX_CONSECUTIVE_403 = 5  # then the per-player pass stops instead of hammering a blocked site
 
 BROWSER_HEADERS = {
     # Mozilla compatibility shim is required (Spotrac rejects bare Python user-agents),
@@ -490,6 +491,30 @@ def _upsert_contract_terms(
     )
 
 
+def _veterans_stalest_first(
+    conn: duckdb.DuckDBPyConnection, season: int, min_cap_hit: int
+) -> list[tuple[int, int, str, str, object]]:
+    """Veterans to scrape, oldest terms row first.
+
+    Spotrac starts returning 403s partway through a pass, so a fixed order would
+    refresh the same players every day. Sorting by the age of each player's terms row
+    rotates the coverage. A player with no row yet counts as three days old: retried
+    soon, but not ahead of rows that are older, so players Spotrac lists without a
+    contract block cannot starve the rest.
+    """
+    return conn.execute(
+        "SELECT DISTINCT p.mlb_player_id, p.spotrac_id, p.spotrac_slug, p.player_name, "
+        "COALESCE(t.ingested_at, CAST(now() - INTERVAL 3 DAY AS TIMESTAMP)) AS last_seen "
+        "FROM spotrac_player_contracts p "
+        "LEFT JOIN spotrac_contract_terms t "
+        "ON t.mlb_player_id = p.mlb_player_id AND t.season = ? "
+        "WHERE p.season = ? AND p.table_type = 'active' AND p.status = 'Veteran' "
+        "AND p.mlb_player_id IS NOT NULL AND p.spotrac_slug IS NOT NULL "
+        "AND p.cap_hit >= ? ORDER BY last_seen, p.mlb_player_id",
+        [season, season, min_cap_hit],
+    ).fetchall()
+
+
 def ingest_contract_terms(season: int, *, min_cap_hit: int = 0) -> int:
     """Scrape per-player contract terms for veteran (guaranteed-deal) players.
 
@@ -507,26 +532,29 @@ def ingest_contract_terms(season: int, *, min_cap_hit: int = 0) -> int:
     """
     with db.connect() as conn:
         schemas.initialize(conn)
-        players = conn.execute(
-            "SELECT DISTINCT mlb_player_id, spotrac_id, spotrac_slug, player_name "
-            "FROM spotrac_player_contracts "
-            "WHERE season = ? AND table_type = 'active' AND status = 'Veteran' "
-            "AND mlb_player_id IS NOT NULL AND spotrac_slug IS NOT NULL "
-            "AND cap_hit >= ? ORDER BY mlb_player_id",
-            [season, min_cap_hit],
-        ).fetchall()
+        players = _veterans_stalest_first(conn, season, min_cap_hit)
 
     total = 0
+    blocked = 0
     with httpx.Client(headers=BROWSER_HEADERS) as client, db.connect() as conn:
         schemas.initialize(conn)
-        for i, (mlb_id, spotrac_id, slug, name) in enumerate(players):
+        for i, (mlb_id, spotrac_id, slug, name, _last_seen) in enumerate(players):
             if i > 0:
                 time.sleep(RATE_LIMIT_SECONDS)
             try:
                 terms = fetch_player_contract(client, int(spotrac_id), slug)
             except httpx.HTTPError as exc:
                 logger.warning("spotrac terms %s (%s) failed: %s", name, spotrac_id, exc)
+                is_403 = isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 403
+                blocked = blocked + 1 if is_403 else 0
+                if blocked >= MAX_CONSECUTIVE_403:
+                    logger.warning(
+                        "spotrac terms: %d 403s in a row, stopping; the rest refresh next run",
+                        blocked,
+                    )
+                    break
                 continue
+            blocked = 0
             if terms is None:
                 logger.info("spotrac terms %s: no contract block", name)
                 continue

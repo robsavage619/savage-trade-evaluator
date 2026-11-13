@@ -105,3 +105,31 @@ def test_a_new_season_or_first_run_is_not_compared_to_nothing() -> None:
     conn = _db()
     assert _run(conn, baseline=None)[0] == "ok"
     assert _run(conn, baseline={"season": 2025, "bwar_batting_war": 1e9})[0] == "ok"
+
+
+def _set_terms_ages(conn: duckdb.DuckDBPyConnection, fresh_days: int, oldest_days: int) -> None:
+    """Half the terms rows were rewritten fresh_days ago, the rest oldest_days ago."""
+    conn.execute(
+        "UPDATE spotrac_contract_terms SET ingested_at = ? WHERE rowid % 2 = 0",
+        [NOW - timedelta(days=fresh_days)],
+    )
+    conn.execute(
+        "UPDATE spotrac_contract_terms SET ingested_at = ? WHERE rowid % 2 = 1",
+        [NOW - timedelta(days=oldest_days)],
+    )
+
+
+def test_a_rotating_scrape_passes_when_no_row_is_older_than_a_week() -> None:
+    conn = _db()
+    _set_terms_ages(conn, fresh_days=0, oldest_days=4)
+    status, gates = _run(conn)
+    assert "fresh:spotrac_contract_terms" not in _failed(gates), gates
+    assert status == "ok"
+
+
+def test_a_terms_row_older_than_a_week_warns() -> None:
+    conn = _db()
+    _set_terms_ages(conn, fresh_days=0, oldest_days=9)
+    status, gates = _run(conn)
+    assert status == "degraded"
+    assert _failed(gates) == {"fresh:spotrac_contract_terms"}

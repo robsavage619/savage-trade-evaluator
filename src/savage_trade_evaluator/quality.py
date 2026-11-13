@@ -36,12 +36,15 @@ class Table:
         season_col: Column holding the season.
         min_refreshed: Share of the season's rows that must carry a fresh ``ingested_at``.
         severity: ``fail`` or ``warn``.
+        max_age_days: When set, the check is "no row older than this" instead of a share
+            rewritten this run, for sources that refresh in rotation.
     """
 
     name: str
     season_col: str
     min_refreshed: float
     severity: str = "fail"
+    max_age_days: int | None = None
 
 
 # Savant leaderboards drop players below a minimum, so not every old row is rewritten.
@@ -61,9 +64,9 @@ CURRENT_TABLES: tuple[Table, ...] = (
     Table("team_season_stats", "season", 1.0),
     Table("spotrac_player_contracts", "season", 0.9, "warn"),
     Table("spotrac_team_payroll", "season", 0.9, "warn"),
-    # Spotrac throttles with 403s partway through the per-player scrape, so some rows may
-    # not be rewritten on a given day: warn rather than block.
-    Table("spotrac_contract_terms", "season", 0.5, "warn"),
+    # Spotrac throttles with 403s partway through the per-player scrape, so the scrape
+    # rotates (stalest first) and no single run rewrites every row: judge by age instead.
+    Table("spotrac_contract_terms", "season", 0.0, "warn", max_age_days=7),
     Table("mlb_free_agents", "season", 0.5, "warn"),
 )
 
@@ -95,6 +98,21 @@ def check_freshness(conn: duckdb.DuckDBPyConnection, season: int, since: datetim
     """
     out = []
     for t in CURRENT_TABLES:
+        if t.max_age_days is not None:
+            total, old = conn.execute(
+                f"SELECT COUNT(*), COUNT(*) FILTER (WHERE ingested_at < ?) "
+                f"FROM {t.name} WHERE {t.season_col} = ?",
+                [since - timedelta(days=t.max_age_days), season],
+            ).fetchone()
+            out.append(
+                Gate(
+                    f"fresh:{t.name}",
+                    t.severity,
+                    total > 0 and old == 0,
+                    f"{old}/{total} {season} rows older than {t.max_age_days} days",
+                )
+            )
+            continue
         total, fresh = conn.execute(
             f"SELECT COUNT(*), COUNT(*) FILTER (WHERE ingested_at >= ?) "
             f"FROM {t.name} WHERE {t.season_col} = ?",

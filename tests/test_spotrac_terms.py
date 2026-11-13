@@ -70,3 +70,85 @@ def test_rewriting_a_row_refreshes_ingested_at() -> None:
     second, aav = row
     assert aav == 25
     assert second > first
+
+
+def _veteran_db(ids: list[int]):
+    import duckdb
+
+    from savage_trade_evaluator.storage import schemas
+
+    conn = duckdb.connect(":memory:")
+    schemas.initialize(conn)
+    for pid in ids:
+        conn.execute(
+            "INSERT INTO spotrac_player_contracts (spotrac_id, mlb_player_id, player_name, "
+            "team_bref, season, status, cap_hit, table_type, spotrac_slug, source) "
+            "VALUES (?, ?, ?, 'AAA', 2026, 'Veteran', 1000, 'active', ?, 't')",
+            [pid + 1000, pid, f"P{pid}", f"p{pid}"],
+        )
+    return conn
+
+
+def _terms_row(conn, pid: int, days_old: int) -> None:
+    conn.execute(
+        "INSERT INTO spotrac_contract_terms (mlb_player_id, season, spotrac_id, source, "
+        "ingested_at) VALUES (?, 2026, ?, 't', now() - to_days(?))",
+        [pid, pid + 1000, days_old],
+    )
+
+
+def test_the_stalest_terms_row_is_scraped_first() -> None:
+    from savage_trade_evaluator.ingest.spotrac import _veterans_stalest_first
+
+    conn = _veteran_db([1, 2, 3, 4])
+    _terms_row(conn, 1, 10)
+    _terms_row(conn, 2, 1)
+    _terms_row(conn, 4, 20)  # player 3 has no row yet and counts as three days old
+    order = [r[0] for r in _veterans_stalest_first(conn, 2026, 0)]
+    assert order == [4, 1, 3, 2]
+
+
+def _run_scrape(conn, outcomes: list[int | None]) -> tuple[int, int]:
+    """Run the scrape with fetch results: an HTTP status to fail with, or None to succeed."""
+    from contextlib import contextmanager
+    from unittest import mock
+
+    import httpx
+
+    from savage_trade_evaluator.ingest import spotrac
+
+    calls = {"n": 0}
+
+    def fake_fetch(client, spotrac_id, slug):
+        status = outcomes[calls["n"]]
+        calls["n"] += 1
+        if status is None:
+            return {"contract_years": 3, "contract_total": 30, "aav": 10, "free_agent_year": 2029}
+        request = httpx.Request("GET", "https://example.test")
+        raise httpx.HTTPStatusError(
+            "blocked", request=request, response=httpx.Response(status, request=request)
+        )
+
+    @contextmanager
+    def fake_connect(*args, **kwargs):
+        yield conn
+
+    with (
+        mock.patch.object(spotrac.db, "connect", fake_connect),
+        mock.patch.object(spotrac, "fetch_player_contract", fake_fetch),
+        mock.patch.object(spotrac.time, "sleep", lambda s: None),
+    ):
+        written = spotrac.ingest_contract_terms(2026)
+    return written, calls["n"]
+
+
+def test_the_scrape_stops_after_five_consecutive_403s() -> None:
+    conn = _veteran_db(list(range(1, 9)))
+    written, calls = _run_scrape(conn, [403] * 8)
+    assert (written, calls) == (0, 5)
+
+
+def test_a_success_resets_the_403_count() -> None:
+    conn = _veteran_db(list(range(1, 11)))
+    written, calls = _run_scrape(conn, [403] * 4 + [None] + [403] * 4 + [None])
+    assert (written, calls) == (2, 10)
