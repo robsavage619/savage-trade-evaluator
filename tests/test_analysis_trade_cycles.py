@@ -129,14 +129,38 @@ def test_find_cycles_blocks_decoy_two_cycle() -> None:
     # Isolated matrix: A→D has uplift 0.3 but D→A has uplift 0.05 < min_gain.
     # The A↔D 2-cycle must not appear.
     mini_rows = [
-        dict(mlb_id=1, player_name="P1", sender_bref="A", receiver_bref="A",
-             prior_war=3.0, war_delta_mean=0.0),
-        dict(mlb_id=4, player_name="P4", sender_bref="D", receiver_bref="D",
-             prior_war=2.0, war_delta_mean=0.0),
-        dict(mlb_id=1, player_name="P1", sender_bref="A", receiver_bref="D",
-             prior_war=3.0, war_delta_mean=0.3),
-        dict(mlb_id=4, player_name="P4", sender_bref="D", receiver_bref="A",
-             prior_war=2.0, war_delta_mean=0.05),
+        dict(
+            mlb_id=1,
+            player_name="P1",
+            sender_bref="A",
+            receiver_bref="A",
+            prior_war=3.0,
+            war_delta_mean=0.0,
+        ),
+        dict(
+            mlb_id=4,
+            player_name="P4",
+            sender_bref="D",
+            receiver_bref="D",
+            prior_war=2.0,
+            war_delta_mean=0.0,
+        ),
+        dict(
+            mlb_id=1,
+            player_name="P1",
+            sender_bref="A",
+            receiver_bref="D",
+            prior_war=3.0,
+            war_delta_mean=0.3,
+        ),
+        dict(
+            mlb_id=4,
+            player_name="P4",
+            sender_bref="D",
+            receiver_bref="A",
+            prior_war=2.0,
+            war_delta_mean=0.05,
+        ),
     ]
     mini = pd.DataFrame(mini_rows)
     cycles = find_cycles(mini, max_len=2, min_gain=0.25)

@@ -165,7 +165,7 @@ export function PayrollTimeline({ players, cbtThreshold }: { players: CurrentPla
           <XAxis dataKey="year" tick={{ fill: '#8a96c0', fontSize: 10, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} />
           <YAxis
             tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'DM Mono, monospace' }}
-            tickFormatter={v => `$${v}M`}
+            tickFormatter={v => `$${Math.round(v)}M`}
             axisLine={false} tickLine={false}
             domain={[0, maxVal]}
           />

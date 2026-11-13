@@ -443,6 +443,14 @@ def build_team(
     bat26, pit26 = war[str(SEASON)]
     bat25, pit25 = war[str(PRIOR_SEASON)]
 
+    # team_rosters.team_bref actually stores the MLBAM abbreviation (SD, SF, TB,
+    # AZ, KC, CWS, WSH, ATH), not the Baseball-Reference code the rest of the
+    # export keys on. Translate via the teams crosswalk so the 8 clubs whose
+    # codes differ don't silently return an empty roster (which zeroed every
+    # position and produced all-holes / no-surplus boards).
+    row = conn.execute("select mlb_abbrev from teams where bref_code = ?", [code]).fetchone()
+    roster_code = row[0] if row else code
+
     roster = conn.execute(
         """
         select r.player_id, p.primary_position_code
@@ -450,14 +458,14 @@ def build_team(
         left join mlb_people p on p.mlb_player_id = r.player_id
         where r.season = ? and r.team_bref = ? and r.roster_type = '40Man'
         """,
-        [SEASON, code],
+        [SEASON, roster_code],
     ).fetchall()
     if not roster:  # fall back if 40Man label differs
         roster = conn.execute(
             "select r.player_id, p.primary_position_code from team_rosters r "
             "left join mlb_people p on p.mlb_player_id = r.player_id "
             "where r.season = ? and r.team_bref = ?",
-            [SEASON, code],
+            [SEASON, roster_code],
         ).fetchall()
 
     def blend(d26: dict[int, float], d25: dict[int, float], pid: int) -> float:

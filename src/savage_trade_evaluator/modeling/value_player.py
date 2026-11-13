@@ -147,6 +147,53 @@ def aging_delta(age: float) -> float:
     return -0.35
 
 
+def _guaranteed_salaries(
+    conn: duckdb.DuckDBPyConnection,
+    mlb_player_id: int,
+    seasons: tuple[int, ...],
+) -> dict[int, float]:
+    """Guaranteed salary per season for a signed player over a window.
+
+    A veteran on a guaranteed multi-year deal still owes salary in future
+    seasons; those years are held (a liability), not free. The Spotrac team
+    table only carries the current season's actual cap hit, so future guaranteed
+    years are filled from ``spotrac_contract_terms`` (AAV, bounded by the
+    free-agent year). Precedence per season: actual cap hit when present, else
+    the deal AAV while the season precedes the free-agent year. A season with
+    neither marks the end of the guaranteed term (the caller stops there).
+
+    The AAV proxy flattens back/front-loaded structures across the out-years; the
+    current season always uses the authoritative actual cap hit.
+    """
+    if not seasons:
+        return {}
+    placeholders = ",".join("?" for _ in seasons)
+    actual = {
+        int(s): float(cap)
+        for s, cap in conn.execute(
+            "SELECT season, cap_hit FROM spotrac_player_contracts "
+            "WHERE mlb_player_id = ? AND table_type = 'active' "
+            f"AND cap_hit IS NOT NULL AND season IN ({placeholders})",
+            [mlb_player_id, *seasons],
+        ).fetchall()
+    }
+    terms = conn.execute(
+        "SELECT aav, free_agent_year FROM spotrac_contract_terms "
+        "WHERE mlb_player_id = ? ORDER BY season DESC LIMIT 1",
+        [mlb_player_id],
+    ).fetchone()
+    aav = float(terms[0]) if terms and terms[0] is not None else None
+    fa_year = int(terms[1]) if terms and terms[1] is not None else None
+
+    out: dict[int, float] = {}
+    for s in seasons:
+        if s in actual:
+            out[s] = actual[s]
+        elif aav is not None and fa_year is not None and s < fa_year:
+            out[s] = aav
+    return out
+
+
 def _project_salary(
     cls: str,
     war: float,
@@ -267,18 +314,37 @@ def value_player(
         control_note = f"control derived from debut {debut_year} ({current_class})"
     else:
         current_class = "fa"
-    years_controlled = min(window_years, max(0, 4 - _arb_rank(current_class)))
+
+    # Salary schedule over the held-year window. Two regimes:
+    #  - arb-controlled: the forward arb ladder projects each year's salary.
+    #  - signed veteran (arb ladder exhausted but guaranteed cap hits remain):
+    #    the guaranteed years [season, season+window) are held liabilities, so a
+    #    big deal on modest production yields NEGATIVE surplus — a player you
+    #    attach value to move, not a chip. A truly unsigned FA has no guaranteed
+    #    years and nothing to trade (empty schedule → 0 surplus).
+    salaries: list[float] = []
+    if current_class == "fa":
+        guaranteed = _guaranteed_salaries(
+            conn, mlb_player_id, tuple(range(season, season + window_years))
+        )
+        for s in range(season, season + window_years):
+            if s not in guaranteed:
+                break  # contract has ended; remaining years are true free agency
+            salaries.append(guaranteed[s])
+        if salaries:
+            control_note = f"{len(salaries)}yr guaranteed contract (liability-valued)"
+    else:
+        cls = current_class
+        for _ in range(min(window_years, max(0, 4 - _arb_rank(current_class)))):
+            cls = _next_class(cls)
+            salaries.append(_project_salary(cls, war, player_type, position_abbr, cap_hit))
 
     surplus_war = 0.0
-    salaries: list[float] = []
     running_war = valued_war
-    cls = current_class
-    for t in range(years_controlled):
+    for t, salary in enumerate(salaries):
         running_war = max(0.0, running_war + aging_delta(age + t))
-        cls = _next_class(cls)
-        salary = _project_salary(cls, war, player_type, position_abbr, cap_hit)
-        salaries.append(salary)
         surplus_war += running_war - salary / rate
+    years_controlled = len(salaries)
 
     notes = [n for n in (proj.note, leverage_note, control_note) if n]
     return PlayerValue(
