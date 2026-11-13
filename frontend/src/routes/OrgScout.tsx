@@ -98,7 +98,7 @@ export default function OrgScout() {
             </Link>
             <TeamLogo team={bref} size={64} />
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-400">Org Scout</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-accent-400">Org Scout</div>
               <div className="text-[24px] font-semibold tracking-tight text-ink-100">{teamName}</div>
               <div className="mt-0.5 text-[12px] text-ink-400">
                 Full scouting profile · {profile.trajectory.length}-yr trajectory · {profile.trade_dna.summary?.n_trades ?? 0} trades on file
@@ -214,7 +214,7 @@ export default function OrgScout() {
               <div className="grid place-items-center p-8 text-[12px] text-ink-400">No payroll data for this org.</div>
             ) : (
               <table className="w-full text-[12px]">
-                <thead className="bg-ink-800 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+                <thead className="bg-ink-800 text-[10px] uppercase tracking-[0.05em] text-ink-400">
                   <tr>
                     <th className="px-3 py-2 text-left">Player</th>
                     <th className="px-3 py-2">Role</th>
@@ -333,7 +333,7 @@ export default function OrgScout() {
                 <div className="flex items-center gap-2.5">
                   <div className="grid h-8 w-8 place-items-center rounded-md bg-accent-500/15 text-accent-400"><Terminal className="h-4 w-4" /></div>
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Scout brief with Claude Code</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Scout brief with Claude Code</div>
                     <div className="text-[14px] font-semibold text-ink-100">{bref} · {teamName}</div>
                   </div>
                 </div>
@@ -343,7 +343,7 @@ export default function OrgScout() {
                 <section className="mb-5">
                   <div className="mb-2 flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 1 · Generated prompt</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Step 1 · Generated prompt</div>
                       <div className="text-[12px] text-ink-300">Bundles 10-yr trajectory, dev signature, trade DNA, FO, and top contracts.</div>
                     </div>
                     <button onClick={copyPrompt} className="inline-flex items-center gap-1.5 rounded-md bg-accent-500 px-3 py-1.5 text-[12px] font-semibold text-ink-950 hover:bg-accent-400">
@@ -353,7 +353,7 @@ export default function OrgScout() {
                   <pre className="max-h-64 overflow-y-auto rounded-md border border-ink-700 bg-ink-950/80 p-3 text-[11px] leading-relaxed text-ink-300 mono whitespace-pre-wrap">{prompt}</pre>
                 </section>
                 <section className="mb-5 rounded-md border border-ink-700 bg-ink-800/50 p-4">
-                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400"><Sparkles className="h-3 w-3" /> Step 2 · In Claude Code</div>
+                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400"><Sparkles className="h-3 w-3" /> Step 2 · In Claude Code</div>
                   <ol className="ml-4 list-decimal space-y-1 text-[12px] text-ink-200 marker:text-ink-500">
                     <li>Paste the prompt into Claude Code chat</li>
                     <li>Claude returns a single fenced <code className="mono rounded bg-ink-700 px-1 text-[10.5px]">```json</code> block</li>
@@ -362,7 +362,7 @@ export default function OrgScout() {
                 </section>
                 <section>
                   <div className="mb-2 flex items-center justify-between">
-                    <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 3 · Paste response</div></div>
+                    <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Step 3 · Paste response</div></div>
                     {override && (
                       <button onClick={() => { useReasoningStore.getState().clear(scoutId); setPaste(''); setPasteError(null); setPasteOk(false) }} className="inline-flex items-center gap-1.5 rounded-md border border-ink-600 px-2.5 py-1 text-[11px] text-ink-300 hover:border-negative-500/50 hover:text-negative-500">
                         <RotateCcw className="h-3 w-3" /> Clear saved
@@ -390,7 +390,7 @@ function HeroKpi({ label, value, sub, tone = 'neutral' }: { label: string; value
   const cls = tone === 'pos' ? 'text-positive-500' : tone === 'neg' ? 'text-negative-500' : 'text-ink-100'
   return (
     <div>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-400">{label}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.05em] text-ink-400">{label}</div>
       <div className={`mono mt-0.5 text-[18px] font-semibold tabular leading-none ${cls}`}>{value}</div>
       {sub && <div className="mt-1 text-[10.5px] text-ink-400">{sub}</div>}
     </div>
@@ -402,15 +402,15 @@ function ScoutAnalysisCard({ reasoning, savedAt }: { reasoning: import('../data/
     <div className="card mb-6 p-5">
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Claude scout brief</div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Claude scout brief</div>
           <div className="text-[15px] font-semibold leading-snug text-ink-100">{reasoning.headline}</div>
         </div>
         <span className="chip chip-pos mono">applied {new Date(savedAt).toLocaleString()}</span>
       </div>
       <div className="mt-3 grid gap-4 md:grid-cols-[1fr_280px]">
         <div className="space-y-3 text-[13px] leading-relaxed text-ink-200">
-          <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Thesis</div><p className="mt-1">{reasoning.thesis}</p></div>
-          <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Key drivers</div>
+          <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Thesis</div><p className="mt-1">{reasoning.thesis}</p></div>
+          <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Key drivers</div>
             <ul className="mt-1 space-y-2">{reasoning.keyDrivers.map((d, i) => (
               <li key={i} className="rounded-md border border-ink-700 bg-ink-800/40 p-2.5">
                 <div className="flex items-center gap-2">{d.chip && <span className="chip chip-accent mono">{d.chip}</span>}<span className="text-[12.5px] font-semibold text-ink-100">{d.title}</span></div>
@@ -418,15 +418,15 @@ function ScoutAnalysisCard({ reasoning, savedAt }: { reasoning: import('../data/
               </li>
             ))}</ul>
           </div>
-          <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Recommendation</div><p className="mt-1 font-semibold text-ink-100">{reasoning.recommendation}</p></div>
+          <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Recommendation</div><p className="mt-1 font-semibold text-ink-100">{reasoning.recommendation}</p></div>
         </div>
         <div className="space-y-3 border-l border-ink-700 pl-4">
-          <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Watch-outs</div>
+          <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Watch-outs</div>
             <ul className="mt-1 space-y-2 text-[11px]">{reasoning.watchOuts.map((w, i) => (
               <li key={i} className="rounded-md bg-negative-500/[0.06] p-2"><div className="font-semibold text-ink-100">{w.title}</div><div className="mt-0.5 text-ink-300">{w.body}</div></li>
             ))}</ul>
           </div>
-          <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Grounding</div>
+          <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Grounding</div>
             <ul className="mt-1 space-y-2 text-[11px]">{reasoning.citations.map((c, i) => (
               <li key={i} className="rounded-md border border-ink-700 bg-ink-800/60 p-2"><div className="mono font-semibold text-accent-300">[{i + 1}] {c.label}</div><div className="mt-0.5 text-ink-300">{c.detail}</div></li>
             ))}</ul>
@@ -482,7 +482,7 @@ function FoTimeline({ fo }: { fo: import('../data/orgs').FoEntry[] }) {
   return (
     <div className="card overflow-hidden">
       <table className="w-full text-[11px]">
-        <thead className="bg-ink-800 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+        <thead className="bg-ink-800 text-[10px] uppercase tracking-[0.05em] text-ink-400">
           <tr>
             <th className="px-3 py-2 text-left">Role</th>
             {seasons.map((s) => <th key={s} className="px-2 py-2 text-right mono tabular">{s}</th>)}
@@ -601,7 +601,7 @@ function PayrollStack({ rows, contractBreakdown, themeColor }: { rows: import('.
       <div className="card p-4">
         <div className="mb-3 flex items-baseline justify-between">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Total payroll · {latest.season}</div>
+            <div className="text-[10px] uppercase tracking-[0.06em] text-ink-400">Total payroll · {latest.season}</div>
             <div className="mono text-[24px] font-semibold tabular text-ink-100">${(total / 1e6).toFixed(1)}M</div>
             <div className="text-[11px] text-ink-400">{latest.active_players ?? '—'} players on the active book</div>
           </div>
@@ -623,7 +623,7 @@ function PayrollStack({ rows, contractBreakdown, themeColor }: { rows: import('.
         </div>
       </div>
       <div className="card p-4">
-        <div className="mb-2 text-[10px] uppercase tracking-[0.14em] text-ink-400">Contract phase mix · {latest.season}</div>
+        <div className="mb-2 text-[10px] uppercase tracking-[0.06em] text-ink-400">Contract phase mix · {latest.season}</div>
         {contractBreakdown.length === 0 ? <div className="text-[12px] text-ink-400">No phase breakdown.</div> : (
           <div className="space-y-1.5">
             {contractBreakdown.slice(0, 6).map((c) => {
@@ -651,7 +651,7 @@ function PayrollStack({ rows, contractBreakdown, themeColor }: { rows: import('.
 function Seg({ color, label, value }: { color: string; label: string; value: number | null }) {
   return (
     <div>
-      <div className="mb-0.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+      <div className="mb-0.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.05em] text-ink-400">
         <span className={`inline-block h-2 w-2 rounded-full ${color}`} />{label}
       </div>
       <div className="mono text-[13px] font-semibold tabular text-ink-100">${((value ?? 0) / 1e6).toFixed(1)}M</div>
@@ -723,7 +723,7 @@ function FullRosterTable({ players }: { players: import('../data/players').Curre
       </div>
       <div className="max-h-[460px] overflow-y-auto">
         <table className="w-full text-[12px]">
-          <thead className="sticky top-0 z-10 bg-ink-800 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+          <thead className="sticky top-0 z-10 bg-ink-800 text-[10px] uppercase tracking-[0.05em] text-ink-400">
             <tr>
               <SortHead k="pos" align="left">Pos</SortHead>
               <SortHead k="name" align="left">Player</SortHead>
@@ -732,7 +732,7 @@ function FullRosterTable({ players }: { players: import('../data/players').Curre
               <SortHead k="cap">Cap hit</SortHead>
               <SortHead k="svc">Svc</SortHead>
               <SortHead k="status" align="center">Status</SortHead>
-              <th className="px-3 py-2 text-right text-[10px] uppercase tracking-[0.12em] text-ink-400">Awards</th>
+              <th className="px-3 py-2 text-right text-[10px] uppercase tracking-[0.05em] text-ink-400">Awards</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink-700/40">

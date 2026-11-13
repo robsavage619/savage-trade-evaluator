@@ -38,7 +38,7 @@ export function TeamIdentitySwitcher() {
       >
         <TeamLogo team={team.bref} size={22} />
         <div className="text-left leading-tight">
-          <div className="text-[9px] uppercase tracking-[0.16em] text-ink-400">You are</div>
+          <div className="text-[9px] uppercase tracking-[0.06em] text-ink-400">You are</div>
           <div className="text-[11px] font-semibold text-ink-100">{team.bref} · {team.name.replace(/^(New York|Los Angeles|San Francisco|San Diego|Chicago|St\. Louis|Washington|Kansas City) /, '')}</div>
         </div>
         <ChevronDown className={`h-3 w-3 text-ink-400 transition-transform ${open ? 'rotate-180' : ''}`} />

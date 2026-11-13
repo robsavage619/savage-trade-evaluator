@@ -100,7 +100,7 @@ function ModelJourney({ winsComparison }: { winsComparison: typeof modelPosterio
 
   return (
     <div className="mb-6">
-      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">
         How we got here
       </div>
       <h2 className="mb-1 text-[15px] font-semibold tracking-tight text-ink-100">
@@ -175,7 +175,7 @@ function HowToRead() {
   ]
   return (
     <div className="mb-6 rounded-lg border border-ink-700 bg-ink-900/40 p-5">
-      <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-300">
+      <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-300">
         How to read this page
       </div>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -279,7 +279,7 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
       {wPost ? (
         <>
           {/* Gaussian curve — the clean view */}
-          <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+          <div className="mb-1 text-[10px] uppercase tracking-[0.05em] text-ink-400">
             Surplus wins — Gaussian posterior (mean + sd)
           </div>
           <PosteriorCurve post={wPost} realized={card.wins_realized ?? null} formatter={fmtWAR} />
@@ -287,7 +287,7 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
           {/* Empirical histogram — raw draws */}
           {wPost.draws.length > 0 && (
             <div className="mt-4 border-t border-ink-800 pt-3">
-              <div className="mb-1 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+              <div className="mb-1 text-[10px] uppercase tracking-[0.05em] text-ink-400">
                 Empirical posterior — {wPost.draws.length} raw MCMC draws
               </div>
               <HistogramKey />
@@ -308,17 +308,17 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
           {/* Stats row */}
           <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-800 pt-3">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Mean</div>
+              <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">Mean</div>
               <div className="mono text-[15px] font-semibold tabular text-ink-100">{fmtWAR(wPost.mean, true)}</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">90% interval</div>
+              <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">90% interval</div>
               <div className="mono text-[13px] tabular text-ink-300">
                 [{fmtWAR(wPost.p05)}, {fmtWAR(wPost.p95)}]
               </div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Realized</div>
+              <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">Realized</div>
               <div className="mono text-[15px] font-semibold tabular" style={{ color: '#3ddc97' }}>
                 {card.wins_realized != null ? fmtWAR(card.wins_realized) : '—'}
               </div>
@@ -334,17 +334,17 @@ function ModelTradeCard({ card }: { card: ModelCard }) {
           <PosteriorCurve post={card.posterior} realized={card.realized} />
           <div className="mt-3 grid grid-cols-3 gap-3 border-t border-ink-700 pt-3">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Model mean</div>
+              <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">Model mean</div>
               <div className="mono text-[15px] font-semibold tabular text-ink-100">{fmtM(card.posterior.mean, true)}</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">90% interval</div>
+              <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">90% interval</div>
               <div className="mono text-[13px] tabular text-ink-300">
                 [{fmtM(card.posterior.p05)}, {fmtM(card.posterior.p95)}]
               </div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">Realized</div>
+              <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">Realized</div>
               <div className="mono text-[15px] font-semibold tabular" style={{ color: '#3ddc97' }}>{fmtM(card.realized)}</div>
             </div>
           </div>
@@ -401,7 +401,7 @@ function CoverageGauge({ coverage, target = 0.9, label }: { coverage: number; ta
         {/* Target tick */}
         <circle cx={tx} cy={ty} r={3.5} fill="rgba(138,150,192,0.6)" />
         {/* Value */}
-        <text x={cx} y={cy - 10} textAnchor="middle" fontSize={16} fontWeight="600" fill={color} fontFamily="JetBrains Mono, monospace">
+        <text x={cx} y={cy - 10} textAnchor="middle" fontSize={16} fontWeight="600" fill={color} fontFamily="DM Mono, monospace">
           {(coverage * 100).toFixed(0)}%
         </text>
       </svg>
@@ -422,7 +422,7 @@ export default function ModelValuation() {
   return (
     <main className="mx-auto max-w-[1240px] px-6 py-8">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-400">
+        <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-accent-400">
           <Sigma className="h-3.5 w-3.5" /> V3 Bayesian Model · Held-out Validation
         </div>
         <h1 className="text-[26px] font-semibold tracking-tight text-ink-100">
@@ -495,7 +495,7 @@ export default function ModelValuation() {
       >
         <div className="mb-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="card p-5">
-            <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">vs. player-quality-only</div>
+            <div className="text-[10px] uppercase tracking-[0.06em] text-ink-400">vs. player-quality-only</div>
             <div className="mono mt-1 text-[30px] font-semibold leading-none text-positive-500">
               +{(wins_comparison.mean_skill_vs_quality_ex_break * 100).toFixed(0)}%
             </div>
@@ -506,7 +506,7 @@ export default function ModelValuation() {
             </div>
           </div>
           <div className="card p-5">
-            <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">vs. predict-the-mean</div>
+            <div className="text-[10px] uppercase tracking-[0.06em] text-ink-400">vs. predict-the-mean</div>
             <div className="mono mt-1 text-[30px] font-semibold leading-none text-ink-100">
               {wins_comparison.mean_skill_vs_intercept_ex_break >= 0 ? '+' : ''}
               {(wins_comparison.mean_skill_vs_intercept_ex_break * 100).toFixed(1)}%
@@ -520,7 +520,7 @@ export default function ModelValuation() {
 
         {/* Walk-forward CRPS chart */}
         <div className="card p-5">
-          <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+          <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">
             Walk-forward CRPS by fold — wins scale (lower is better)
           </div>
           <FoldCrpsChart folds={wins_comparison.folds} />
@@ -534,7 +534,7 @@ export default function ModelValuation() {
 
         {/* Fold table — detail view */}
         <div className="mt-2 card overflow-hidden p-0">
-          <div className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-500 border-b border-ink-800">
+          <div className="px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-500 border-b border-ink-800">
             Fold detail — wins CRPS
           </div>
           <table className="w-full text-[12px]">

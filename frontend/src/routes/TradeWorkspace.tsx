@@ -57,7 +57,7 @@ function TeamSurplusCard({ team, post }: { team: string; post: TradePosterior })
         <div className="flex items-center gap-3">
           <TeamLogo team={team} size={32} />
           <div>
-            <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">
+            <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">
               {wPost ? 'Receiving team · surplus wins' : 'Receiving team · dollar surplus'}
             </div>
             <div className="text-[14px] font-semibold tracking-tight text-ink-100">
@@ -126,7 +126,7 @@ function TradeFlow({ legsLeft, legsRight, teamLeft, teamRight }: { legsLeft: Tra
         <div className="flex items-center gap-3">
           <TeamLogo team={teamLeft} size={40} />
           <div>
-            <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-ink-400">{teamLeft} sends</div>
+            <div className="text-[10px] font-medium uppercase tracking-[0.07em] text-ink-400">{teamLeft} sends</div>
             <div className="mt-0.5 text-[15px] font-semibold tracking-tight" style={{ color: teamColor(teamLeft).primary }}>
               {teamLeft}
             </div>
@@ -135,7 +135,7 @@ function TradeFlow({ legsLeft, legsRight, teamLeft, teamRight }: { legsLeft: Tra
         <ArrowRight className="h-5 w-5 text-ink-400" />
         <div className="flex items-center justify-end gap-3 text-right">
           <div>
-            <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-ink-400">{teamRight} sends</div>
+            <div className="text-[10px] font-medium uppercase tracking-[0.07em] text-ink-400">{teamRight} sends</div>
             <div className="mt-0.5 text-[15px] font-semibold tracking-tight" style={{ color: teamColor(teamRight).primary }}>
               {teamRight}
             </div>
@@ -236,7 +236,7 @@ export default function TradeWorkspace() {
             <TeamLogo team={loser} size={28} className="opacity-60" />
           </div>
           <div>
-            <div className="text-[10px] font-medium uppercase tracking-[0.18em] text-accent-400">Verdict</div>
+            <div className="text-[10px] font-medium uppercase tracking-[0.07em] text-accent-400">Verdict</div>
             <div className="mt-1 text-[20px] font-semibold tracking-tight text-ink-100">
               {winner} clears above-baseline surplus · {loser} below
             </div>
@@ -358,7 +358,7 @@ export default function TradeWorkspace() {
               <div className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-ink-300" />
                 <div>
-                  <div className="text-[11px] uppercase tracking-[0.12em] text-ink-400">P( surplus &lt; 0 )</div>
+                  <div className="text-[11px] uppercase tracking-[0.05em] text-ink-400">P( surplus &lt; 0 )</div>
                   <div className="mono text-[22px] font-semibold tabular text-ink-100">
                     {posteriors[primaryAcquirer] ? `${(pLoss(posteriors[primaryAcquirer] as TradePosterior) * 100).toFixed(0)}%` : '—'}
                   </div>
@@ -374,15 +374,15 @@ export default function TradeWorkspace() {
           <Section eyebrow="Audit" title="As-of guarantee" hint="No information from after the trade date enters any feature.">
             <div className="card p-4 text-[12px] text-ink-300">
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">As-of date</span>
+                <span className="text-[10px] uppercase tracking-[0.06em] text-ink-400">As-of date</span>
                 <span className="mono text-ink-100">{trade.trade_date}</span>
               </div>
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Feature snapshot</span>
+                <span className="text-[10px] uppercase tracking-[0.06em] text-ink-400">Feature snapshot</span>
                 <span className="mono text-ink-100">23 features · all pre-trade</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Leakage check</span>
+                <span className="text-[10px] uppercase tracking-[0.06em] text-ink-400">Leakage check</span>
                 <span className="chip chip-pos">passed</span>
               </div>
             </div>
@@ -422,7 +422,7 @@ function ArsenalGrid({ trade }: { trade: ReturnType<typeof getTrade> extends inf
         <div key={r.leg_index} className="card p-4">
           <div className="mb-2 flex items-center justify-between">
             <div className="text-[13px] font-semibold text-ink-100">{r.player_name}</div>
-            <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">{r.from_team_bref} → {r.to_team_bref} · pre vs T+1 percentile</div>
+            <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">{r.from_team_bref} → {r.to_team_bref} · pre vs T+1 percentile</div>
           </div>
           <div className="grid grid-cols-4 gap-3">
             {METRICS.map(({ k, label }) => {
@@ -433,7 +433,7 @@ function ArsenalGrid({ trade }: { trade: ReturnType<typeof getTrade> extends inf
               const tone = delta == null ? 'text-ink-300' : delta > 0 ? 'text-positive-500' : delta < 0 ? 'text-negative-500' : 'text-ink-300'
               return (
                 <div key={label}>
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">{label}</div>
+                  <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">{label}</div>
                   <div className="mono mt-0.5 text-[14px] tabular text-ink-100">
                     {pre?.toFixed(0) ?? '—'}
                     <span className="mx-1 text-ink-500">→</span>

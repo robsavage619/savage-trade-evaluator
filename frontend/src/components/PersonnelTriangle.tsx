@@ -46,7 +46,7 @@ export function PersonnelTriangle({ team, teamName, coaches, fo, side, highlight
         <div className={`flex items-center gap-3 ${side === 'right' ? 'flex-row-reverse text-right' : ''}`}>
           <TeamLogo team={team} size={36} />
           <div>
-            <div className="text-[10px] font-medium uppercase tracking-[0.16em] text-ink-400">
+            <div className="text-[10px] font-medium uppercase tracking-[0.06em] text-ink-400">
               {side === 'left' ? 'Sending' : 'Receiving'} · {team}
             </div>
             <div className="text-[14px] font-semibold tracking-tight text-ink-100">{teamName}</div>
@@ -72,7 +72,7 @@ export function PersonnelTriangle({ team, teamName, coaches, fo, side, highlight
                 : 'border-transparent bg-ink-800/40 hover:border-ink-600'
             }`}
           >
-            <div className="text-[10px] uppercase tracking-[0.12em] text-ink-400">{r.label}</div>
+            <div className="text-[10px] uppercase tracking-[0.05em] text-ink-400">{r.label}</div>
             <div className={`mono text-[12px] tabular ${r.highlight ? 'text-accent-300' : 'text-ink-100'}`}>{r.name}</div>
           </motion.div>
         ))}

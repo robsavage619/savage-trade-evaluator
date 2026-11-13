@@ -141,7 +141,7 @@ function TradeComparison({
         {/* Arb salary ramp (only for cost-controlled players) */}
         {showRamp && (
           <div className="mt-2 border-t border-ink-700/50 pt-2">
-            <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-ink-500">Projected arb cost ramp</div>
+            <div className="mb-1 text-[9px] font-semibold uppercase tracking-[0.06em] text-ink-500">Projected arb cost ramp</div>
             <div className="flex gap-2">
               {arb.projections.map((proj, i) => {
                 const pct = Math.max(0.04, proj / maxRamp)
@@ -168,11 +168,11 @@ function TradeComparison({
 
   return (
     <div>
-      <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">Player-by-player comparison · raw last-season WAR, not the forecast</div>
+      <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-400">Player-by-player comparison · raw last-season WAR, not the forecast</div>
       <div className="grid gap-4 md:grid-cols-2">
         {/* Sending */}
         <div>
-          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-negative-500">
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-negative-500">
             <span className="h-1.5 w-1.5 rounded-full bg-negative-500/70" />
             {yourBref} sends ({sendingPlayers.length})
           </div>
@@ -184,7 +184,7 @@ function TradeComparison({
           </div>
           {sendingPlayers.length > 0 && (
             <div className="mt-2 flex items-center justify-between rounded-md bg-ink-700/30 px-3 py-1.5">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Total</span>
+              <span className="text-[10px] uppercase tracking-[0.06em] text-ink-400">Total</span>
               <div className="flex items-center gap-4">
                 <span className="mono text-[12px] font-semibold text-negative-500">−{rawWarSent.toFixed(1)} WAR</span>
                 <span className="mono text-[12px] text-ink-300">{fmtMoney(costSent)}</span>
@@ -195,7 +195,7 @@ function TradeComparison({
 
         {/* Receiving */}
         <div>
-          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-positive-500">
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-positive-500">
             <span className="h-1.5 w-1.5 rounded-full bg-positive-500/70" />
             {yourBref} receives ({receivingPlayers.length})
           </div>
@@ -207,7 +207,7 @@ function TradeComparison({
           </div>
           {receivingPlayers.length > 0 && (
             <div className="mt-2 flex items-center justify-between rounded-md bg-ink-700/30 px-3 py-1.5">
-              <span className="text-[10px] uppercase tracking-[0.14em] text-ink-400">Total</span>
+              <span className="text-[10px] uppercase tracking-[0.06em] text-ink-400">Total</span>
               <div className="flex items-center gap-4">
                 <span className="mono text-[12px] font-semibold text-positive-500">+{rawWarReceived.toFixed(1)} WAR</span>
                 <span className="mono text-[12px] text-ink-300">{fmtMoney(costReceived)}</span>
@@ -220,7 +220,7 @@ function TradeComparison({
       {/* Balance bar */}
       {sendingPlayers.length > 0 && receivingPlayers.length > 0 && (
         <div className="mt-4">
-          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-ink-400">
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.06em] text-ink-400">
             <span>{yourBref} sends more</span>
             <span className={`mono font-semibold ${warDelta >= 0 ? 'text-positive-500' : 'text-negative-500'}`}>
               Raw WAR Δ: {warDelta >= 0 ? '+' : ''}{warDelta.toFixed(1)}
@@ -373,7 +373,7 @@ export default function TradeBuilder() {
           <div className="flex items-center gap-3">
             <TeamLogo team={yourBref} size={40} />
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Trade Builder · You are</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Trade Builder · You are</div>
               <div className="text-[16px] font-semibold tracking-tight text-ink-100">{yourTeam.name}</div>
               <div className="text-[11px] text-ink-400">Workshop a hypothetical against any club. All forecasts framed from {yourBref}'s side.</div>
             </div>
@@ -424,7 +424,7 @@ export default function TradeBuilder() {
                       <SignalIcon className={`h-6 w-6 ${signal.color}`} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-400">GM Decision Signal · {yourBref} perspective</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-400">GM Decision Signal · {yourBref} perspective</div>
                       <div className={`text-[26px] font-bold tracking-tight leading-tight ${signal.color}`}>{signal.label}</div>
                       <div className="text-[12px] text-ink-400">
                         P(receive side ahead) {Math.round(net.pPositive * 100)}% · the higher-forecast side won {validationFacts.favouredWin}% ± {validationFacts.favouredHalf} of {validationFacts.favouredTrades} past two-sided trades: a lean, not a call
@@ -485,7 +485,7 @@ export default function TradeBuilder() {
             <Brain className="h-4 w-4" strokeWidth={2.2} />
           </div>
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">AI Reasoning</div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">AI Reasoning</div>
             <div className="text-[13px] text-ink-200">
               {override
                 ? <span>Loaded analysis from Claude Code · saved {new Date(override.savedAt).toLocaleString()}.</span>
@@ -504,16 +504,16 @@ export default function TradeBuilder() {
 
       {override?.reasoning ? (
         <div className="card mb-6 p-5">
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Claude&apos;s headline</div>
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Claude&apos;s headline</div>
           <div className="text-[15px] font-semibold leading-snug text-ink-100">{override.reasoning.headline}</div>
           <div className="mt-4 grid gap-4 md:grid-cols-[1fr_280px]">
             <div className="space-y-3 text-[13px] leading-relaxed text-ink-200">
               <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Thesis</div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Thesis</div>
                 <p className="mt-1">{override.reasoning.thesis}</p>
               </div>
               <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Key drivers</div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Key drivers</div>
                 <ul className="mt-1 space-y-2">
                   {override.reasoning.keyDrivers.map((d, i) => (
                     <li key={i} className="rounded-md border border-ink-700 bg-ink-800/40 p-2.5">
@@ -527,13 +527,13 @@ export default function TradeBuilder() {
                 </ul>
               </div>
               <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Recommendation</div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Recommendation</div>
                 <p className="mt-1 font-semibold text-ink-100">{override.reasoning.recommendation}</p>
               </div>
             </div>
             <div className="space-y-3 border-l border-ink-700 pl-4">
               <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Watch-outs</div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Watch-outs</div>
                 <ul className="mt-1 space-y-2 text-[11px]">
                   {override.reasoning.watchOuts.map((w, i) => (
                     <li key={i} className="rounded-md bg-negative-500/[0.06] p-2">
@@ -544,7 +544,7 @@ export default function TradeBuilder() {
                 </ul>
               </div>
               <div>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Grounding</div>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Grounding</div>
                 <ul className="mt-1 space-y-2 text-[11px]">
                   {override.reasoning.citations.map((c, i) => (
                     <li key={i} className="rounded-md border border-ink-700 bg-ink-800/60 p-2">
@@ -612,7 +612,7 @@ export default function TradeBuilder() {
                 <div className="flex items-center gap-2.5">
                   <div className="grid h-8 w-8 place-items-center rounded-md bg-accent-500/15 text-accent-400"><Terminal className="h-4 w-4" /></div>
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Reason with Claude Code</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Reason with Claude Code</div>
                     <div className="text-[14px] font-semibold text-ink-100">{yourBref} ↔ {partnerBref} · {sendingPlayers.length}-for-{receivingPlayers.length} hypothetical</div>
                   </div>
                 </div>
@@ -622,7 +622,7 @@ export default function TradeBuilder() {
                 <section className="mb-5">
                   <div className="mb-2 flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 1 · Generated prompt</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Step 1 · Generated prompt</div>
                       <div className="text-[12px] text-ink-300">Bundles trade structure, the model forecast, and what the model cannot see.</div>
                     </div>
                     <button onClick={copyPrompt} className="inline-flex items-center gap-1.5 rounded-md bg-accent-500 px-3 py-1.5 text-[12px] font-semibold text-ink-950 hover:bg-accent-400">
@@ -633,7 +633,7 @@ export default function TradeBuilder() {
                   <pre className="max-h-64 overflow-y-auto rounded-md border border-ink-700 bg-ink-950/80 p-3 text-[11px] leading-relaxed text-ink-300 mono whitespace-pre-wrap">{prompt}</pre>
                 </section>
                 <section className="mb-5 rounded-md border border-ink-700 bg-ink-800/50 p-4">
-                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400"><Sparkles className="h-3 w-3" /> Step 2 · In Claude Code</div>
+                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400"><Sparkles className="h-3 w-3" /> Step 2 · In Claude Code</div>
                   <ol className="ml-4 list-decimal space-y-1 text-[12px] text-ink-200 marker:text-ink-500">
                     <li>Paste the prompt into Claude Code chat</li>
                     <li>Claude returns a single fenced <code className="mono rounded bg-ink-700 px-1 text-[10.5px]">```json</code> block</li>
@@ -643,7 +643,7 @@ export default function TradeBuilder() {
                 <section>
                   <div className="mb-2 flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 3 · Paste response</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Step 3 · Paste response</div>
                       <div className="text-[12px] text-ink-300">JSON validates against AiReasoning schema.</div>
                     </div>
                     {override && (

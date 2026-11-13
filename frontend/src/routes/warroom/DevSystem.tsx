@@ -56,7 +56,7 @@ export function DevSystem({ data }: { data: DevSystemType }) {
       {/* headline stats */}
       <div className="mt-3 flex flex-wrap gap-4">
         <div>
-          <div className="font-mono text-[8px] uppercase tracking-widest text-ink-500">Avg K% Lift</div>
+          <div className="font-mono text-[8px] uppercase tracking-[0.1em] text-ink-500">Avg K% Lift</div>
           <div className={`font-mono text-[22px] font-black leading-none tabular ${liftColor}`}>
             {data.avgKLift >= 0 ? '+' : ''}
             {data.avgKLift.toFixed(1)}
@@ -66,14 +66,14 @@ export function DevSystem({ data }: { data: DevSystemType }) {
           )}
         </div>
         <div>
-          <div className="font-mono text-[8px] uppercase tracking-widest text-ink-500">MLB Rank</div>
+          <div className="font-mono text-[8px] uppercase tracking-[0.1em] text-ink-500">MLB Rank</div>
           <div className={`font-mono text-[22px] font-black leading-none tabular ${rankColor}`}>
             #{data.rank}
           </div>
           <div className="font-mono text-[8px] text-ink-600">of {data.nOrgs} orgs</div>
         </div>
         <div>
-          <div className="font-mono text-[8px] uppercase tracking-widest text-ink-500">Sample</div>
+          <div className="font-mono text-[8px] uppercase tracking-[0.1em] text-ink-500">Sample</div>
           <div className="font-mono text-[22px] font-black leading-none tabular text-ink-300">
             {data.nTrades}
           </div>
@@ -87,7 +87,7 @@ export function DevSystem({ data }: { data: DevSystemType }) {
       {data.topTargets.length > 0 && (
         <div className="mt-4">
           <div className="mb-2 flex items-center gap-2">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">
               Low-K Targets
             </span>
             <span className="font-mono text-[8px] text-ink-600" title={TARGETS_CITE.detail}>

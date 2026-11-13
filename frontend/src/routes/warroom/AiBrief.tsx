@@ -155,7 +155,7 @@ export function AiBrief({ promptInput }: { promptInput: PromptInput }) {
     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
       <div className="flex items-center gap-2">
         <Brain className="h-4 w-4 text-accent-400" />
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-200">AI Intelligence Brief</span>
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-200">AI Intelligence Brief</span>
         <span className="font-mono text-[8.5px] text-ink-500">full-data strategic analysis</span>
       </div>
       <div className="flex items-center gap-1.5">
@@ -203,7 +203,7 @@ export function AiBrief({ promptInput }: { promptInput: PromptInput }) {
       {/* Settings: API key + model */}
       {settingsOpen && (
         <div className="mb-3 rounded-lg border border-ink-700 bg-ink-900/60 p-3">
-          <div className="mb-2 flex items-center gap-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+          <div className="mb-2 flex items-center gap-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">
             <KeyRound className="h-3 w-3" />Anthropic API
           </div>
           <div className="grid gap-2 sm:grid-cols-[2fr_1fr]">
@@ -250,7 +250,7 @@ export function AiBrief({ promptInput }: { promptInput: PromptInput }) {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 space-y-3">
           <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-3">
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">
                 ① copy prompt → run in Claude Code
               </span>
               <button onClick={copyPrompt} className="flex items-center gap-1 rounded border border-ink-700 px-1.5 py-0.5 font-mono text-[8.5px] text-ink-400 hover:text-accent-300">
@@ -261,7 +261,7 @@ export function AiBrief({ promptInput }: { promptInput: PromptInput }) {
           </div>
           <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-3">
             <div className="font-mono text-[9px] leading-relaxed text-ink-400">
-              <span className="font-semibold uppercase tracking-[0.2em] text-positive-300">② it uploads itself</span><br />
+              <span className="font-semibold uppercase tracking-[0.08em] text-positive-300">② it uploads itself</span><br />
               Run the prompt in Claude Code — or just <span className="text-ink-200">/trade-brief {team}</span> — and it persists to
               DuckDB and writes the inbox. This panel renders it automatically. No pasting.
             </div>
@@ -302,7 +302,7 @@ export function AiBrief({ promptInput }: { promptInput: PromptInput }) {
             <div className="mb-4 grid h-14 w-14 place-items-center rounded-xl border border-accent-500/25 bg-accent-500/[0.08]">
               <Brain className="h-7 w-7 text-accent-400" />
             </div>
-            <div className="mb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-300">
+            <div className="mb-1 font-mono text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-300">
               Strategic Brief — Not Yet Generated
             </div>
             <p className="mb-5 max-w-lg text-[11px] leading-relaxed text-ink-500">
@@ -313,12 +313,12 @@ export function AiBrief({ promptInput }: { promptInput: PromptInput }) {
             </p>
             <div className="flex items-center gap-3">
               <div className="flex flex-col items-start gap-1 rounded-lg border border-ink-700 bg-ink-900/80 px-4 py-3 text-left">
-                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ink-500">Claude Code</span>
+                <span className="font-mono text-[8px] uppercase tracking-[0.08em] text-ink-500">Claude Code</span>
                 <span className="font-mono text-[12px] font-bold text-accent-300">/trade-brief {promptInput.team.code}</span>
               </div>
               <span className="font-mono text-[10px] text-ink-600">or</span>
               <div className="flex flex-col items-start gap-1 rounded-lg border border-ink-700 bg-ink-900/80 px-4 py-3 text-left">
-                <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ink-500">In-app (API key required)</span>
+                <span className="font-mono text-[8px] uppercase tracking-[0.08em] text-ink-500">In-app (API key required)</span>
                 <span className="font-mono text-[12px] font-bold text-ink-300">Settings → Run In-App</span>
               </div>
             </div>

@@ -64,7 +64,7 @@ export function AiReasoning({ reasoning, resetKey, autoRun = true, onOpenClaude,
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">AI Reasoning</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">AI Reasoning</div>
               {sourceLabel ? (
                 <span className="chip chip-pos mono">
                   <Wand2 className="h-2.5 w-2.5" /> live · {sourceLabel}
@@ -122,7 +122,7 @@ export function AiReasoning({ reasoning, resetKey, autoRun = true, onOpenClaude,
       <div className="grid grid-cols-1 gap-0 lg:grid-cols-[1fr_280px]">
         <div className="p-5">
           {/* Headline */}
-          <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Headline</div>
+          <div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Headline</div>
           <div className="mb-5 text-[15px] font-semibold leading-snug text-ink-100">
             <AnimatePresence mode="wait">
               <motion.span
@@ -137,7 +137,7 @@ export function AiReasoning({ reasoning, resetKey, autoRun = true, onOpenClaude,
           </div>
 
           {/* Streaming body */}
-          <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">
+          <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">
             Reasoning trace
             {(phase === 'streaming' || phase === 'thinking') && (
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-400" />
@@ -158,7 +158,7 @@ export function AiReasoning({ reasoning, resetKey, autoRun = true, onOpenClaude,
 
         {/* Side rail: citations + meta */}
         <aside className="border-l border-ink-700 bg-ink-900/40 p-5">
-          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">
             <BookOpen className="h-3 w-3" /> Grounding
           </div>
           <ul className="mb-5 space-y-2 text-[12px]">
@@ -170,7 +170,7 @@ export function AiReasoning({ reasoning, resetKey, autoRun = true, onOpenClaude,
             ))}
           </ul>
 
-          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">
             <AlertTriangle className="h-3 w-3" /> Watch-outs
           </div>
           <ul className="space-y-2 text-[11px]">
@@ -226,7 +226,7 @@ function MarkdownLike({ text, blinking }: { text: string; blinking: boolean }) {
         const isLast = i === blocks.length - 1
         if (block.startsWith('## ')) {
           return (
-            <div key={i} className="mt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">
+            <div key={i} className="mt-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">
               {block.slice(3)}
               {blinking && isLast ? <Cursor /> : null}
             </div>

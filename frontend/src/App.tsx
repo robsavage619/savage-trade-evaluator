@@ -38,60 +38,19 @@ function TopNav() {
   ]
   return (
     <header className="sticky top-0 z-50 border-b border-ink-700 bg-ink-950/85 backdrop-blur">
-      <div className="flex items-center justify-center gap-1.5 border-b border-ink-800/50 py-1 text-[11px] text-ink-500">
-        <ClaudeLogo size={13} />
-        <span>Powered by Claude</span>
-      </div>
       <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-6 px-6 py-3">
-        <div className="flex items-center gap-4">
-        <NavLink to="/" className="group flex items-center gap-3 select-none">
-          <svg width="48" height="48" viewBox="0 0 32 32" fill="none" aria-hidden>
-            <defs>
-              <filter id="logo-glow" x="-80%" y="-80%" width="260%" height="260%">
-                <feGaussianBlur stdDeviation="3" result="blur"/>
-                <feMerge>
-                  <feMergeNode in="blur"/>
-                  <feMergeNode in="blur"/>
-                  <feMergeNode in="blur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
-            <g filter="url(#logo-glow)">
-              <path d="M 16,2 L 22,10 L 30,16 L 22,22 L 16,30 L 10,22 L 2,16 L 10,10 Z"
-                    stroke="#dce3f5" strokeWidth="1" strokeLinejoin="miter"/>
-              <path d="M 10,10 L 22,10 L 22,22 L 10,22 Z"
-                    stroke="#c8d4ee" strokeWidth="0.6" strokeOpacity="0.7"/>
-              <line x1="10" y1="10" x2="22" y2="22" stroke="#c8d4ee" strokeWidth="0.6" strokeOpacity="0.5"/>
-              <line x1="22" y1="10" x2="10" y2="22" stroke="#c8d4ee" strokeWidth="0.6" strokeOpacity="0.5"/>
-              <line x1="16" y1="2" x2="16" y2="30" stroke="#dce3f5" strokeWidth="0.4" strokeOpacity="0.35"/>
-              <line x1="2" y1="16" x2="30" y2="16" stroke="#dce3f5" strokeWidth="0.4" strokeOpacity="0.35"/>
-            </g>
-          </svg>
-          <div style={{ width: 1, height: 26, background: 'var(--color-ink-700)', flexShrink: 0 }} />
-          <div className="leading-none">
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 700, letterSpacing: '0.28em', color: 'var(--color-ink-100)', textShadow: '0 0 14px rgba(220,227,245,0.35)' }}>
-              SAVAGE
-            </div>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, fontWeight: 700, letterSpacing: '0.28em', color: 'var(--color-ink-400)', marginTop: 5 }}>
-              ANALYTICS
-            </div>
-          </div>
+        <NavLink to="/" className="shrink-0 select-none">
+          <img
+            src="/brand/savage-trade-lab.png"
+            alt="Savage Trade Lab"
+            className="h-14 w-auto"
+            style={{
+              filter:
+                'drop-shadow(0 0 1px rgba(255,255,255,0.45)) drop-shadow(0 0 5px rgba(221,227,244,0.35)) ' +
+                'drop-shadow(0 0 14px rgba(255,138,61,0.22))',
+            }}
+          />
         </NavLink>
-          <div style={{ width: 1, height: 36, background: 'var(--color-ink-700)', flexShrink: 0 }} />
-          <span style={{
-            fontFamily: "'Chakra Petch', sans-serif",
-            fontSize: 22,
-            fontWeight: 400,
-            letterSpacing: '0.1em',
-            whiteSpace: 'nowrap',
-            color: '#ff8a3d',
-            textShadow: '0 0 18px rgba(255,138,61,0.55), 0 0 6px rgba(255,138,61,0.35)',
-            textTransform: 'uppercase',
-          }}>
-            Trade Lab
-          </span>
-        </div>
         <nav className="flex items-center gap-1">
           {items.map(({ to, label, icon: Icon }) => {
             const base = to.split('/').slice(0, 3).join('/')
@@ -146,11 +105,11 @@ export default function App() {
       <footer className="border-t border-ink-700 px-6 py-6 text-[11px] text-ink-400">
         <div className="mx-auto flex max-w-[1480px] flex-wrap items-center justify-between gap-3">
           <span>
-            Sources: MLB Stats API · Baseball Reference · Baseball Savant Statcast · 27 tables · 1.29M rows
+            Sources: MLB Stats API · Baseball-Reference · Baseball Savant · FanGraphs · Spotrac
           </span>
           <DataStatus />
-          <span className="mono">
-            Savage Analytics · Model page = real V3 held-out posteriors · Trade Builder posteriors still illustrative
+          <span className="flex items-center gap-1.5">
+            Savage Trade Lab · AI briefs powered by Claude <ClaudeLogo size={12} />
           </span>
         </div>
       </footer>

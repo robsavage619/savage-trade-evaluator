@@ -107,7 +107,7 @@ export default function WarRoom() {
         <div className="flex items-center gap-3">
           <TeamLogo team={active} size={44} />
           <div>
-            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.25em] text-accent-400">
+            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-accent-400">
               WAR ROOM · SEASON INTELLIGENCE
             </div>
             <h1 className="display text-[30px] font-black leading-tight tracking-tight text-ink-100">
@@ -143,7 +143,7 @@ export default function WarRoom() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[240px_1fr]">
         {/* Left: league board */}
         <aside className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
-          <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+          <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">
             30-team board · click to analyze
           </div>
           <LeagueTicker yourBref={active} partnerBref={partnerBref} onSelect={setPartnerBref} />
@@ -176,7 +176,7 @@ export default function WarRoom() {
                   {ctx && ctx.expiringContracts.length > 0 ? (
                     <div className="grid gap-3 md:grid-cols-2">
                       <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-4">
-                        <div className="mb-3 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+                        <div className="mb-3 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">
                           Top commitments
                         </div>
                         <div className="space-y-1.5">
@@ -235,7 +235,7 @@ export default function WarRoom() {
                   <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-3.5 w-3.5 text-accent-400" />
-                      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-300">
+                      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-300">
                         Intelligence Feed
                       </span>
                       <Cite cite={{ label: 'Intelligence Feed', detail: 'Buy-low targets: players on sellers whose surplus WAR fills your positional holes. Deals that clear: teams where your surpluses fill their holes and vice versa — mutual fit.' }} />
@@ -270,7 +270,7 @@ export default function WarRoom() {
                       <div>
                         <div className="mb-2 flex items-center gap-1.5">
                           <Sparkles className="h-3 w-3 text-positive-400" />
-                          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-positive-400">
+                          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-positive-400">
                             Position Market Scan
                           </span>
                           <span className="font-mono text-[8.5px] text-ink-500">by hole · control-window surplus WAR</span>
@@ -280,7 +280,7 @@ export default function WarRoom() {
                       <div>
                         <div className="mb-2 flex items-center gap-1.5">
                           <Target className="h-3 w-3 text-accent-400" />
-                          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-accent-400">
+                          <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-accent-400">
                             Deals that clear
                           </span>
                           <span className="font-mono text-[8.5px] text-ink-500">mutual hole/surplus match</span>
@@ -350,7 +350,7 @@ export default function WarRoom() {
                 {yourPayload && (
                   <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-4">
                     <div className="mb-3 flex items-center gap-2">
-                      <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-yellow-400">
+                      <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-yellow-400">
                         Decline Watch
                       </span>
                       <span className="font-mono text-[8.5px] text-ink-500">pitch movement drift · z≥1.5σ</span>

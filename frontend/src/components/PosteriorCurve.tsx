@@ -81,13 +81,13 @@ export function PosteriorCurve({
       {realizedInView ? (
         <g>
           <line x1={x(realized)} x2={x(realized)} y1={8} y2={baseY} stroke="#3ddc97" strokeWidth={2} />
-          <text x={x(realized)} y={6} fontSize={10} textAnchor="middle" fill="#3ddc97" fontFamily="JetBrains Mono">
+          <text x={x(realized)} y={6} fontSize={10} textAnchor="middle" fill="#3ddc97" fontFamily="DM Mono, monospace">
             realized {formatter(realized)}
           </text>
         </g>
       ) : null}
       {[post.p05, post.mean, post.p95].map((v, i) => (
-        <text key={i} x={x(v)} y={height - 8} fontSize={9} textAnchor="middle" fill="rgba(138,150,192,0.8)" fontFamily="JetBrains Mono">
+        <text key={i} x={x(v)} y={height - 8} fontSize={9} textAnchor="middle" fill="rgba(138,150,192,0.8)" fontFamily="DM Mono, monospace">
           {formatter(v)}
         </text>
       ))}

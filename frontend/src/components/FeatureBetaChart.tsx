@@ -64,7 +64,7 @@ export function FeatureBetaChart({ features }: { features: CredibleFeature[] }) 
             fontSize={10.5}
             fill="rgba(185,193,222,0.88)"
             dominantBaseline="middle"
-            fontFamily="system-ui, sans-serif"
+            fontFamily="Jost, system-ui, sans-serif"
           >
             {shortLabel(f.feature)}
           </text>
@@ -94,7 +94,7 @@ export function FeatureBetaChart({ features }: { features: CredibleFeature[] }) 
             fontSize={9.5}
             fill="rgba(90,104,150,0.9)"
             dominantBaseline="middle"
-            fontFamily="JetBrains Mono, monospace"
+            fontFamily="DM Mono, monospace"
           >
             {(f.directional_mass * 100).toFixed(0)}%
           </text>
@@ -112,15 +112,15 @@ export function FeatureBetaChart({ features }: { features: CredibleFeature[] }) 
   return (
     <svg width={TOTAL_W} height={totalH} className="w-full" viewBox={`0 0 ${TOTAL_W} ${totalH}`}>
       {/* Column header */}
-      <text x={LABEL_W + zeroX} y={10} textAnchor="middle" fontSize={9} fill="rgba(138,150,192,0.45)" fontFamily="JetBrains Mono, monospace">
+      <text x={LABEL_W + zeroX} y={10} textAnchor="middle" fontSize={9} fill="rgba(138,150,192,0.45)" fontFamily="DM Mono, monospace">
         ← lowers · raises →
       </text>
-      <text x={LABEL_W + CHART_W + 8} y={10} fontSize={9} fill="rgba(138,150,192,0.45)" fontFamily="JetBrains Mono, monospace">
+      <text x={LABEL_W + CHART_W + 8} y={10} fontSize={9} fill="rgba(138,150,192,0.45)" fontFamily="DM Mono, monospace">
         confidence
       </text>
 
       {/* Player / acquired bucket */}
-      <text x={0} y={headerH + 4} fontSize={9} fontWeight="600" fill="rgba(255,138,61,0.7)" letterSpacing="0.12em" fontFamily="system-ui, sans-serif">
+      <text x={0} y={headerH + 4} fontSize={9} fontWeight="600" fill="rgba(255,138,61,0.7)" letterSpacing="0.12em" fontFamily="Jost, system-ui, sans-serif">
         ACQUIRED PLAYER
       </text>
       <g transform={`translate(0,${headerH + 8})`}>
@@ -130,7 +130,7 @@ export function FeatureBetaChart({ features }: { features: CredibleFeature[] }) 
       {/* Receiving team bucket */}
       {teamFeatures.length > 0 && (
         <>
-          <text x={0} y={headerH + 8 + playerH + groupGap} fontSize={9} fontWeight="600" fill="rgba(90,104,150,0.85)" letterSpacing="0.12em" fontFamily="system-ui, sans-serif">
+          <text x={0} y={headerH + 8 + playerH + groupGap} fontSize={9} fontWeight="600" fill="rgba(90,104,150,0.85)" letterSpacing="0.12em" fontFamily="Jost, system-ui, sans-serif">
             RECEIVING TEAM
           </text>
           <g transform={`translate(0,${headerH + 8 + playerH + groupGap + 8})`}>
@@ -142,9 +142,9 @@ export function FeatureBetaChart({ features }: { features: CredibleFeature[] }) 
       {/* Legend */}
       <g transform={`translate(${LABEL_W + 4},${totalH - 12})`}>
         <rect x={0} y={-5} width={8} height={8} fill="rgba(61,220,151,0.5)" stroke="rgba(61,220,151,0.85)" strokeWidth={0.7} rx={1} />
-        <text x={12} y={0} fontSize={9} fill="rgba(138,150,192,0.6)" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">raises trade value</text>
+        <text x={12} y={0} fontSize={9} fill="rgba(138,150,192,0.6)" dominantBaseline="middle" fontFamily="DM Mono, monospace">raises trade value</text>
         <rect x={120} y={-5} width={8} height={8} fill="rgba(255,93,115,0.5)" stroke="rgba(255,93,115,0.8)" strokeWidth={0.7} rx={1} />
-        <text x={132} y={0} fontSize={9} fill="rgba(138,150,192,0.6)" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">lowers trade value</text>
+        <text x={132} y={0} fontSize={9} fill="rgba(138,150,192,0.6)" dominantBaseline="middle" fontFamily="DM Mono, monospace">lowers trade value</text>
       </g>
     </svg>
   )

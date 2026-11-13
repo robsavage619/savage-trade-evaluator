@@ -74,7 +74,7 @@ function StatRow({ stats }: { stats: StatRowSection['stats'] }) {
     <div className="flex flex-wrap gap-3 py-2">
       {stats.map((s) => (
         <div key={s.label} className="flex flex-col gap-0.5 rounded-lg border border-ink-700 bg-ink-800/60 px-5 py-3 min-w-[140px]">
-          <span className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">{s.label}</span>
+          <span className="text-[9.5px] font-semibold uppercase tracking-[0.06em] text-ink-400">{s.label}</span>
           <span className="mono text-[15px] font-semibold text-ink-100">{s.value}</span>
           {s.subtext && <span className="text-[10px] text-ink-500">{s.subtext}</span>}
         </div>
@@ -97,7 +97,7 @@ const CALLOUT_TITLE_STYLES = {
 function Callout({ variant, title, content }: CalloutSection) {
   return (
     <div className={`rounded-lg border px-6 py-5 ${CALLOUT_STYLES[variant]}`}>
-      <div className={`mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] ${CALLOUT_TITLE_STYLES[variant]}`}>{title}</div>
+      <div className={`mb-2 text-[10px] font-semibold uppercase tracking-[0.07em] ${CALLOUT_TITLE_STYLES[variant]}`}>{title}</div>
       <p className="text-[14px] leading-relaxed text-ink-200">{content}</p>
     </div>
   )
@@ -406,7 +406,7 @@ export default function ResearchArticle() {
 
       {/* Methodology note */}
       <div className="mt-12 rounded-lg border border-ink-800 bg-ink-900 px-6 py-5">
-        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-500">Methodology</div>
+        <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-500">Methodology</div>
         <p className="text-[12px] leading-relaxed text-ink-400">{article.methodology_note}</p>
       </div>
     </main>

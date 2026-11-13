@@ -88,7 +88,7 @@ export function PlayerPicker({ team, onPickTeam, onAdd, selectedIds, title, hint
       <div className="border-b border-ink-700 p-3">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">{title}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">{title}</div>
             {hint && <div className="text-[11px] text-ink-400">{hint}</div>}
           </div>
           <select
@@ -210,7 +210,7 @@ export function BasketCard({
         <div className="flex items-center gap-2">
           {team ? <TeamLogo team={team.bref} size={22} /> : null}
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">{title}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">{title}</div>
             <div className="text-[13px] font-semibold text-ink-100">{team?.name ?? '—'}</div>
           </div>
         </div>

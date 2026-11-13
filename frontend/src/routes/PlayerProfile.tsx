@@ -117,7 +117,7 @@ export default function PlayerProfileRoute() {
               <img src={HEADSHOT(id)} alt={bio.full_name} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
             </div>
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-400">Player Workup</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-accent-400">Player Workup</div>
               <div className="flex items-center gap-2">
                 <div className="text-[26px] font-semibold tracking-tight text-ink-100">{bio.full_name}</div>
                 {liveLookup?.player.status_code && liveLookup.player.status_code !== 'A' && (
@@ -173,15 +173,15 @@ export default function PlayerProfileRoute() {
         <div className="card mb-6 p-5">
           <div className="mb-2 flex items-center justify-between">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Claude scout workup</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Claude scout workup</div>
               <div className="text-[15px] font-semibold leading-snug text-ink-100">{override.reasoning.headline}</div>
             </div>
             <span className="chip chip-pos mono">applied {new Date(override.savedAt).toLocaleString()}</span>
           </div>
           <div className="mt-3 grid gap-4 md:grid-cols-[1fr_280px]">
             <div className="space-y-3 text-[13px] leading-relaxed text-ink-200">
-              <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Thesis</div><p className="mt-1">{override.reasoning.thesis}</p></div>
-              <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Key drivers</div>
+              <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Thesis</div><p className="mt-1">{override.reasoning.thesis}</p></div>
+              <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Key drivers</div>
                 <ul className="mt-1 space-y-2">{override.reasoning.keyDrivers.map((d, i) => (
                   <li key={i} className="rounded-md border border-ink-700 bg-ink-800/40 p-2.5">
                     <div className="flex items-center gap-2">{d.chip && <span className="chip chip-accent mono">{d.chip}</span>}<span className="text-[12.5px] font-semibold text-ink-100">{d.title}</span></div>
@@ -189,15 +189,15 @@ export default function PlayerProfileRoute() {
                   </li>
                 ))}</ul>
               </div>
-              <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">Recommendation</div><p className="mt-1 font-semibold text-ink-100">{override.reasoning.recommendation}</p></div>
+              <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">Recommendation</div><p className="mt-1 font-semibold text-ink-100">{override.reasoning.recommendation}</p></div>
             </div>
             <div className="space-y-3 border-l border-ink-700 pl-4">
-              <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Watch-outs</div>
+              <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Watch-outs</div>
                 <ul className="mt-1 space-y-2 text-[11px]">{override.reasoning.watchOuts.map((w, i) => (
                   <li key={i} className="rounded-md bg-negative-500/[0.06] p-2"><div className="font-semibold text-ink-100">{w.title}</div><div className="mt-0.5 text-ink-300">{w.body}</div></li>
                 ))}</ul>
               </div>
-              <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Grounding</div>
+              <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Grounding</div>
                 <ul className="mt-1 space-y-2 text-[11px]">{override.reasoning.citations.map((c, i) => (
                   <li key={i} className="rounded-md border border-ink-700 bg-ink-800/60 p-2"><div className="mono font-semibold text-accent-300">[{i + 1}] {c.label}</div><div className="mt-0.5 text-ink-300">{c.detail}</div></li>
                 ))}</ul>
@@ -413,7 +413,7 @@ export default function PlayerProfileRoute() {
                 <div className="flex items-center gap-2.5">
                   <div className="grid h-8 w-8 place-items-center rounded-md bg-accent-500/15 text-accent-400"><Terminal className="h-4 w-4" /></div>
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Scout workup with Claude Code</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Scout workup with Claude Code</div>
                     <div className="text-[14px] font-semibold text-ink-100">{bio.full_name}</div>
                   </div>
                 </div>
@@ -423,7 +423,7 @@ export default function PlayerProfileRoute() {
                 <section className="mb-5">
                   <div className="mb-2 flex items-center justify-between">
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 1 · Generated prompt</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Step 1 · Generated prompt</div>
                       <div className="text-[12px] text-ink-300">Bio · 5-yr WAR + salary · Statcast fingerprint · arsenal · trades · 5 league comps.</div>
                     </div>
                     <button onClick={copyPrompt} className="inline-flex items-center gap-1.5 rounded-md bg-accent-500 px-3 py-1.5 text-[12px] font-semibold text-ink-950 hover:bg-accent-400">
@@ -433,7 +433,7 @@ export default function PlayerProfileRoute() {
                   <pre className="max-h-64 overflow-y-auto rounded-md border border-ink-700 bg-ink-950/80 p-3 text-[11px] leading-relaxed text-ink-300 mono whitespace-pre-wrap">{prompt}</pre>
                 </section>
                 <section className="mb-5 rounded-md border border-ink-700 bg-ink-800/50 p-4">
-                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400"><Sparkles className="h-3 w-3" /> Step 2 · In Claude Code</div>
+                  <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400"><Sparkles className="h-3 w-3" /> Step 2 · In Claude Code</div>
                   <ol className="ml-4 list-decimal space-y-1 text-[12px] text-ink-200 marker:text-ink-500">
                     <li>Paste the prompt into Claude Code chat</li>
                     <li>Claude returns a single fenced <code className="mono rounded bg-ink-700 px-1 text-[10.5px]">```json</code> block</li>
@@ -442,7 +442,7 @@ export default function PlayerProfileRoute() {
                 </section>
                 <section>
                   <div className="mb-2 flex items-center justify-between">
-                    <div><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 3 · Paste response</div></div>
+                    <div><div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Step 3 · Paste response</div></div>
                     {override && (
                       <button onClick={() => { useReasoningStore.getState().clear(scoutId); setPaste(''); setPasteError(null); setPasteOk(false) }} className="inline-flex items-center gap-1.5 rounded-md border border-ink-600 px-2.5 py-1 text-[11px] text-ink-300 hover:border-negative-500/50 hover:text-negative-500">
                         <RotateCcw className="h-3 w-3" /> Clear saved
@@ -498,7 +498,7 @@ function HeroKpi({ label, value, sub, tone = 'neutral' }: { label: string; value
   const cls = tone === 'pos' ? 'text-positive-500' : tone === 'neg' ? 'text-negative-500' : 'text-ink-100'
   return (
     <div>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-400">{label}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.05em] text-ink-400">{label}</div>
       <div className={`mono mt-0.5 text-[18px] font-semibold tabular leading-none ${cls}`}>{value}</div>
       {sub && <div className="mt-1 text-[10.5px] text-ink-400">{sub}</div>}
     </div>
@@ -659,7 +659,7 @@ function FarmOnlyProfile({ player, parentBref }: { player: import('../data/farm'
               <img src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_240,q_auto:best/v1/people/${player.mlb_player_id}/headshot/67/current`} alt={player.name ?? ''} className="h-full w-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }} />
             </div>
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-400">Prospect Workup</div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-accent-400">Prospect Workup</div>
               <div className="flex items-center gap-2">
                 <div className="text-[26px] font-semibold tracking-tight text-ink-100">{player.name}</div>
                 <span className={`chip mono ${tone === 'pos' ? 'chip-pos' : tone === 'neg' ? 'chip-neg' : ''}`}>
@@ -709,7 +709,7 @@ function FarmOnlyProfile({ player, parentBref }: { player: import('../data/farm'
       </motion.div>
 
       <div className="card p-5 text-[13px] leading-relaxed text-ink-300">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Why this grade</div>
+        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Why this grade</div>
         <p>
           The scout-grade proxy combines <strong className="text-ink-100">age vs typical-for-level</strong>{' '}
           (a {player.age ?? '?'}-yr-old at {player.level} is{' '}

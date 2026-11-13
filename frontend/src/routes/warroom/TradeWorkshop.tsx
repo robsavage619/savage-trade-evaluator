@@ -73,7 +73,7 @@ function WinImpact({
   return (
     <div className="mt-3 flex items-center gap-4 rounded-lg border border-ink-700/50 bg-ink-900/40 px-3 py-2">
       <div className="flex flex-col">
-        <span className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-600">Season W Impact</span>
+        <span className="font-mono text-[8.5px] uppercase tracking-[0.08em] text-ink-600">Season W Impact</span>
         <span className={`font-mono text-[18px] font-black leading-none tabular ${marginalWins >= 0 ? 'text-positive-400' : 'text-negative-400'}`}>
           {sign}{marginalWins.toFixed(1)}W
         </span>
@@ -265,7 +265,7 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
       <div className="mb-4 flex items-center justify-between border-b border-ink-700 pb-3">
         <div className="flex items-center gap-2.5">
           <Radio className="h-3.5 w-3.5 text-accent-400" />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-300">
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-300">
             Trade Workshop
           </span>
           <span className="font-mono text-[10px] text-ink-400">
@@ -283,12 +283,12 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
       {/* Forecast */}
       {forecast && net ? (
         <div className={`mb-4 rounded-lg border p-4 ${recBorder}`}>
-          <div className="mb-3 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">
+          <div className="mb-3 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-500">
             Captured-WAR forecast · this season through T+5
           </div>
           <div className="mb-3 flex items-end gap-4">
             <div>
-              <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">Net WAR for {yourBref}</div>
+              <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-500">Net WAR for {yourBref}</div>
               <div className={`font-mono text-[40px] font-black leading-none tabular ${netColor}`}>
                 {net.mean >= 0 ? '+' : '−'}
                 <AnimatedNumber end={Math.abs(net.mean)} decimals={1} suffix=" WAR" />
@@ -339,7 +339,7 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
       {/* Baskets */}
       <div className="mb-3 grid gap-3 md:grid-cols-2">
         <div>
-          <div className="mb-1.5 font-mono text-[8px] font-semibold uppercase tracking-[0.25em] text-negative-400">
+          <div className="mb-1.5 font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-negative-400">
             ◀ {yourBref} sends
           </div>
           <BasketCard title={`${yourBref} sends`} team={yourTeam} players={sendingPlayers}
@@ -361,7 +361,7 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
           <ProspectAdder onAdd={p => setSentProspects(prev => [...prev, p])} />
         </div>
         <div>
-          <div className="mb-1.5 font-mono text-[8px] font-semibold uppercase tracking-[0.25em] text-positive-400">
+          <div className="mb-1.5 font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-positive-400">
             ▶ {yourBref} receives
           </div>
           <BasketCard title={`${yourBref} receives`} team={partnerTeam} players={receivingPlayers}
@@ -400,7 +400,7 @@ export function TradeWorkshop({ yourBref, partnerBref, verdictCtx, scenarios = [
         if (scored.length > 0) {
           return (
             <div className="mt-3">
-              <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">
+              <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-500">
                 Historical model scenarios · v{scored[0].modelVersion}
               </div>
               <div className="flex flex-col gap-2">

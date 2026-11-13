@@ -96,7 +96,7 @@ export function ClaudeCodeDrawer({ open, onClose, trade, pipeline }: Props) {
                   <Terminal className="h-4 w-4" strokeWidth={2.4} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Reason with Claude Code</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Reason with Claude Code</div>
                   <div className="text-[14px] font-semibold tracking-tight text-ink-100">{pipeline.shortLabel}</div>
                 </div>
               </div>
@@ -131,7 +131,7 @@ export function ClaudeCodeDrawer({ open, onClose, trade, pipeline }: Props) {
               <section className="mb-6">
                 <div className="mb-2 flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 1 · Generated prompt</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Step 1 · Generated prompt</div>
                     <div className="text-[13px] text-ink-200">
                       Bundles trade legs, WAR windows, Statcast arsenal, personnel, naive baseline, and the receiving-team context features.
                     </div>
@@ -151,7 +151,7 @@ export function ClaudeCodeDrawer({ open, onClose, trade, pipeline }: Props) {
 
               {/* Step 2: how-to */}
               <section className="mb-6 rounded-md border border-ink-700 bg-ink-800/50 p-4">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">
                   <Sparkles className="h-3 w-3" />
                   Step 2 · In Claude Code
                 </div>
@@ -167,7 +167,7 @@ export function ClaudeCodeDrawer({ open, onClose, trade, pipeline }: Props) {
               <section>
                 <div className="mb-2 flex items-center justify-between">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-400">Step 3 · Paste Claude&apos;s response</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">Step 3 · Paste Claude&apos;s response</div>
                     <div className="text-[13px] text-ink-200">JSON only — fences OK. Validates against the AiReasoning schema.</div>
                   </div>
                   {hasOverride && (

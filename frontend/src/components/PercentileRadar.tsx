@@ -61,7 +61,7 @@ export function PercentileRadar({ metrics, size = 280, accent = '#ff6a13' }: { m
             x={p.labelX}
             y={p.labelY}
             fontSize={9.5}
-            fontFamily="JetBrains Mono"
+            fontFamily="DM Mono, monospace"
             fill="#b9c1de"
             textAnchor={Math.cos(p.angle) > 0.2 ? 'start' : Math.cos(p.angle) < -0.2 ? 'end' : 'middle'}
             dominantBaseline={Math.sin(p.angle) > 0.2 ? 'hanging' : Math.sin(p.angle) < -0.2 ? 'auto' : 'middle'}
@@ -73,7 +73,7 @@ export function PercentileRadar({ metrics, size = 280, accent = '#ff6a13' }: { m
               x={p.labelX}
               y={p.labelY + (Math.sin(p.angle) > 0.2 ? 12 : -10)}
               fontSize={10}
-              fontFamily="JetBrains Mono"
+              fontFamily="DM Mono, monospace"
               fontWeight={600}
               fill={p.value >= 67 ? '#3ddc97' : p.value >= 34 ? '#b9c1de' : '#ff5d73'}
               textAnchor={Math.cos(p.angle) > 0.2 ? 'start' : Math.cos(p.angle) < -0.2 ? 'end' : 'middle'}
@@ -84,8 +84,8 @@ export function PercentileRadar({ metrics, size = 280, accent = '#ff6a13' }: { m
         </g>
       ))}
       {/* Center label */}
-      <text x={cx} y={cy - 6} fontSize={10} fontFamily="JetBrains Mono" fill="#5a6896" textAnchor="middle">pctile</text>
-      <text x={cx} y={cy + 6} fontSize={10} fontFamily="JetBrains Mono" fill="#5a6896" textAnchor="middle">vs MLB</text>
+      <text x={cx} y={cy - 6} fontSize={10} fontFamily="DM Mono, monospace" fill="#5a6896" textAnchor="middle">pctile</text>
+      <text x={cx} y={cy + 6} fontSize={10} fontFamily="DM Mono, monospace" fill="#5a6896" textAnchor="middle">vs MLB</text>
     </svg>
   )
 }

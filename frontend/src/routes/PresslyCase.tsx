@@ -37,7 +37,7 @@ function Station({
             <Icon className="h-4.5 w-4.5" strokeWidth={2.2} />
           </div>
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-400">{eyebrow}</div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-accent-400">{eyebrow}</div>
             <h2 className="text-[26px] font-semibold tracking-tight text-ink-100">
               <span className="mono text-ink-500">{String(index).padStart(2, '0')} ·</span> {title}
             </h2>
@@ -76,7 +76,7 @@ export default function PresslyCase() {
             </p>
           </div>
           <div className="card p-5">
-            <div className="mb-4 text-[10px] uppercase tracking-[0.16em] text-ink-400">Pre-trade snapshot — Ryan Pressly</div>
+            <div className="mb-4 text-[10px] uppercase tracking-[0.06em] text-ink-400">Pre-trade snapshot — Ryan Pressly</div>
             <div className="grid grid-cols-2 gap-4 text-[12px]">
               {[
                 ['Age', '29'],
@@ -122,7 +122,7 @@ export default function PresslyCase() {
           <div className="grid grid-cols-3 gap-6">
             {pitches.map((p) => (
               <div key={p.pitch_type}>
-                <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">
+                <div className="text-[10px] uppercase tracking-[0.06em] text-ink-400">
                   {p.pitch_type === 'FF' ? 'Fastball' : p.pitch_type === 'SL' ? 'Slider' : 'Curveball'}
                 </div>
                 <div className="mt-2 grid grid-cols-3 gap-2 text-[12px]">
@@ -155,7 +155,7 @@ export default function PresslyCase() {
         </div>
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="card p-5">
-            <div className="mb-3 text-[11px] uppercase tracking-[0.12em] text-ink-400">Usage mix · MIN vs HOU</div>
+            <div className="mb-3 text-[11px] uppercase tracking-[0.05em] text-ink-400">Usage mix · MIN vs HOU</div>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart
                 data={pitches.map((p) => ({
@@ -177,7 +177,7 @@ export default function PresslyCase() {
             </ResponsiveContainer>
           </div>
           <div className="card p-5">
-            <div className="mb-3 text-[11px] uppercase tracking-[0.12em] text-ink-400">Percentile ranks · pre vs T+1</div>
+            <div className="mb-3 text-[11px] uppercase tracking-[0.05em] text-ink-400">Percentile ranks · pre vs T+1</div>
             <div className="space-y-3">
               {[
                 ['K%', arsenal?.k_percent_t_minus_1, arsenal?.k_percent_t_plus_1],
@@ -264,7 +264,7 @@ function Hero() {
       </div>
       <div className="relative mx-auto max-w-[1100px] px-6 py-20">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={show ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6 }}>
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-800/70 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-ink-300">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-ink-700 bg-ink-800/70 px-3 py-1 text-[11px] uppercase tracking-[0.06em] text-ink-300">
             <Sparkles className="h-3 w-3 text-accent-400" />
             Case Study · Ryan Pressly · MIN → HOU · 2018-07-27
           </div>
@@ -300,7 +300,7 @@ function Hero() {
           initial={{ opacity: 0 }}
           animate={show ? { opacity: 1 } : {}}
           transition={{ delay: 0.6 }}
-          className="mt-12 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink-400"
+          className="mt-12 flex items-center gap-2 text-[11px] uppercase tracking-[0.07em] text-ink-400"
         >
           <ArrowDown className="h-3 w-3 animate-bounce text-accent-400" />
           Five stations · 90 seconds

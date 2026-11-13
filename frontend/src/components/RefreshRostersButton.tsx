@@ -106,7 +106,7 @@ export function RefreshRostersButton({ size = 'md' }: { size?: Size }) {
       </div>
       {showHint && (
         <div className="card max-w-[520px] p-3 text-[11px] leading-relaxed text-ink-300">
-          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent-400">What this button refreshes</div>
+          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-accent-400">What this button refreshes</div>
           <ul className="ml-4 list-disc space-y-1 marker:text-ink-500">
             <li><strong className="text-ink-100">Live</strong> · 40-man rosters (30 teams) — MLB Stats API</li>
             <li><strong className="text-ink-100">Live</strong> · Bio data for all 1.3K MLB players</li>

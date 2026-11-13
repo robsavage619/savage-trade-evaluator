@@ -40,7 +40,7 @@ export default function OrgExplorer() {
   return (
     <main className="mx-auto max-w-[1480px] px-6 py-8">
       <div className="mb-8">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-400">Org Explorer</div>
+        <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-accent-400">Org Explorer</div>
         <h1 className="mt-1 text-[28px] font-semibold tracking-tight text-ink-100">Organizational quality, decomposed</h1>
         <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-ink-300">
           Two empirical findings from the v1 backtest: (1) player-development quality is uncorrelated with trade-execution quality, and
@@ -145,7 +145,7 @@ export default function OrgExplorer() {
                           return (
                             <g>
                               <circle cx={cx} cy={cy} r={7} fill={teamColor(d.team).primary} stroke="rgba(11,16,24,0.9)" strokeWidth={1.5} />
-                              <text x={cx + 10} y={cy + 3} fontSize={10} fill="#b9c1de" fontFamily="JetBrains Mono">
+                              <text x={cx + 10} y={cy + 3} fontSize={10} fill="#b9c1de" fontFamily="DM Mono, monospace">
                                 {d.team}
                               </text>
                             </g>
@@ -194,7 +194,7 @@ export default function OrgExplorer() {
         </div>
         <div className="card overflow-hidden">
           <table className="w-full text-[12px]">
-            <thead className="bg-ink-800 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+            <thead className="bg-ink-800 text-[10px] uppercase tracking-[0.05em] text-ink-400">
               <tr>
                 <th className="px-4 py-2 text-left">Decision-maker</th>
                 <th className="px-4 py-2 text-left">Team</th>

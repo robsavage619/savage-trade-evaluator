@@ -44,7 +44,7 @@ export function PositionMarketScan({ candidates, holes }: { candidates: BuyLowCa
         return (
           <div key={hole.position}>
             <div className={`mb-1.5 flex items-center gap-2 border-b pb-1 ${severityColor}`}>
-              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em]">{hole.position}</span>
+              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em]">{hole.position}</span>
               {hole.severity === 'critical' && <span className="font-mono text-[8px] font-bold text-negative-500">CRITICAL NEED</span>}
               <span className="ml-auto font-mono text-[8.5px] text-ink-600">{targets.length} targets</span>
             </div>

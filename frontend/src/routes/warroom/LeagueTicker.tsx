@@ -22,7 +22,7 @@ export function LeagueTicker({ yourBref, partnerBref, onSelect }: {
     <div className="space-y-3">
       {DIVISIONS.map((div) => (
         <div key={div}>
-          <div className="mb-1 font-mono text-[8px] font-semibold uppercase tracking-[0.25em] text-ink-500">{div}</div>
+          <div className="mb-1 font-mono text-[8px] font-semibold uppercase tracking-[0.1em] text-ink-500">{div}</div>
           <div className="space-y-0.5">
             {(byDiv[div] ?? []).map((t) => {
               const cfg = POSTURE[t.windowPosture]

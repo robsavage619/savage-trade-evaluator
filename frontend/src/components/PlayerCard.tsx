@@ -50,7 +50,7 @@ export function PlayerCard({ leg, person, career, war }: Props) {
       />
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-ink-400">
+          <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.06em] text-ink-400">
             <TeamLogo team={leg.from_team_bref} size={14} />
             {leg.from_team_bref} → {leg.to_team_bref}
             <TeamLogo team={leg.to_team_bref} size={14} />
@@ -69,7 +69,7 @@ export function PlayerCard({ leg, person, career, war }: Props) {
           </div>
         </div>
         <div className="text-right">
-          <div className="text-[10px] uppercase tracking-[0.14em] text-ink-400">T+3 WAR</div>
+          <div className="text-[10px] uppercase tracking-[0.06em] text-ink-400">T+3 WAR</div>
           <div className="mono mt-0.5 text-[18px] font-semibold tabular text-ink-100">
             {war?.war_t_plus_3 != null ? fmtSigned(war.war_t_plus_3) : '—'}
           </div>

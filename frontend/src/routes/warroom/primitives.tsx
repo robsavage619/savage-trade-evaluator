@@ -23,7 +23,7 @@ export function SectionHeader({ label, cite }: { label: string; cite?: Citation 
   return (
     <div className="flex items-center gap-3">
       <div className="h-3.5 w-[3px] rounded-full bg-accent-500/70 shrink-0" />
-      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-ink-300">{label}</span>
+      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-300">{label}</span>
       {cite && <Cite cite={cite} />}
       <div className="flex-1 h-px bg-ink-800" />
     </div>

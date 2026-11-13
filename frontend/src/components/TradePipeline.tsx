@@ -40,7 +40,7 @@ export function TradePipeline() {
       <div className="border-b border-ink-700 p-3">
         <div className="mb-2 flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Pipeline</div>
+            <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Pipeline</div>
             <div className="text-[13px] font-semibold text-ink-100">Workable trades</div>
           </div>
           <span className="chip">{PIPELINE.length} active</span>
@@ -83,7 +83,7 @@ export function TradePipeline() {
           return (
             <div key={status} className="mb-3">
               <div className="mb-1 flex items-center justify-between px-1.5">
-                <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+                <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-400">
                   <Filter className="h-2.5 w-2.5" />
                   {STATUS_LABELS[status]}
                 </div>

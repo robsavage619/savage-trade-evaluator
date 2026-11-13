@@ -14,7 +14,7 @@ const ACCEPT_CITE = {
 function StatChip({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">{label}</div>
+      <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-500">{label}</div>
       <div className="font-mono text-[13px] font-bold tabular text-ink-100">{value}</div>
       {sub && <div className="font-mono text-[9px] text-ink-500">{sub}</div>}
     </div>
@@ -35,13 +35,13 @@ export function GmContext({ gmContext }: { gmContext?: GmContextType }) {
         {/* GM name + archetype */}
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
-            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500 mb-0.5">
+            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-500 mb-0.5">
               Decision Maker
             </div>
             <div className="text-[14px] font-semibold text-ink-100">{gmContext.name}</div>
           </div>
           <div className="text-right">
-            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-accent-400 mb-0.5">
+            <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-accent-400 mb-0.5">
               Archetype
             </div>
             <div className="font-mono text-[12px] font-bold text-ink-100">{gmContext.archetype}</div>
@@ -78,7 +78,7 @@ export function GmContext({ gmContext }: { gmContext?: GmContextType }) {
           {gmContext.pAccept != null && (
             <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-1">
-                <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-500">
+                <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-500">
                   P(accept)
                 </div>
                 <Cite cite={ACCEPT_CITE} />

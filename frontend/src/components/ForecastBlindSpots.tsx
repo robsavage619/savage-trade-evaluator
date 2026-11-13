@@ -9,7 +9,7 @@ export function ForecastBlindSpots({
   if (spots.length === 0) return null
   return (
     <div className={`rounded border border-accent-500/30 bg-accent-500/5 px-2.5 py-2 ${className}`}>
-      <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-accent-400">
+      <div className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-accent-400">
         Not in this forecast · check by hand
       </div>
       <ul className="mt-1 space-y-0.5 text-[11px] text-ink-200">

@@ -66,7 +66,7 @@ export default function Research() {
       {/* Hero */}
       <div className="border-b border-ink-700 bg-ink-900 px-6 py-12">
         <div className="mx-auto max-w-[1100px]">
-          <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-400">
+          <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-accent-400">
             <FlaskConical className="h-3.5 w-3.5" />
             Savage Analytics Research
           </div>
@@ -77,19 +77,19 @@ export default function Research() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <div className="flex flex-col gap-0.5 rounded-md border border-ink-700 bg-ink-800 px-4 py-3 min-w-[140px]">
-              <span className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">Trade legs</span>
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.06em] text-ink-400">Trade legs</span>
               <span className="mono text-[13px] font-semibold tabular text-ink-200">5,308</span>
             </div>
             <div className="flex flex-col gap-0.5 rounded-md border border-ink-700 bg-ink-800 px-4 py-3 min-w-[140px]">
-              <span className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">Published articles</span>
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.06em] text-ink-400">Published articles</span>
               <span className="mono text-[13px] font-semibold tabular text-positive-500">{articles.length}</span>
             </div>
             <div className="flex flex-col gap-0.5 rounded-md border border-ink-700 bg-ink-800 px-4 py-3 min-w-[140px]">
-              <span className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">Train window</span>
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.06em] text-ink-400">Train window</span>
               <span className="mono text-[13px] font-semibold tabular text-ink-200">2010–2020</span>
             </div>
             <div className="flex flex-col gap-0.5 rounded-md border border-ink-700 bg-ink-800 px-4 py-3 min-w-[140px]">
-              <span className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">Holdout</span>
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.06em] text-ink-400">Holdout</span>
               <span className="mono text-[13px] font-semibold tabular text-ink-200">2021–2024</span>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function Research() {
 
       {/* Article grid */}
       <div className="mx-auto max-w-[1100px] px-6 py-12">
-        <h2 className="mb-6 text-[13px] font-semibold uppercase tracking-[0.18em] text-ink-400">Articles</h2>
+        <h2 className="mb-6 text-[13px] font-semibold uppercase tracking-[0.07em] text-ink-400">Articles</h2>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
           {articles.map((a) => (
             <ArticleCard key={a.slug} article={a} />
@@ -108,11 +108,11 @@ export default function Research() {
 
       {/* Research log — condensed */}
       <div className="border-t border-ink-800 mx-auto max-w-[1100px] px-6 py-10">
-        <h2 className="mb-1 text-[13px] font-semibold uppercase tracking-[0.18em] text-ink-400">Research Log</h2>
+        <h2 className="mb-1 text-[13px] font-semibold uppercase tracking-[0.07em] text-ink-400">Research Log</h2>
         <p className="mb-5 text-[13px] text-ink-500">31 rounds · 5 methodology corrections · 1 thesis rejected</p>
         <div className="card overflow-hidden">
           <table className="w-full text-[12px]">
-            <thead className="bg-ink-800 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+            <thead className="bg-ink-800 text-[10px] uppercase tracking-[0.05em] text-ink-400">
               <tr>
                 <th className="px-4 py-2.5 text-left">Decision</th>
                 <th className="px-4 py-2.5 text-left">What changed</th>

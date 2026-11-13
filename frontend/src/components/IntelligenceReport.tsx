@@ -86,7 +86,7 @@ function ConfidenceRing({ value, color }: { value: number; color: string }) {
 function SectionLabel({ children, sub }: { children: React.ReactNode; sub?: string }) {
   return (
     <div className="mb-2 flex items-center gap-2">
-      <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">{children}</span>
+      <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">{children}</span>
       {sub && <span className="font-mono text-[8.5px] text-ink-600">{sub}</span>}
     </div>
   )
@@ -108,7 +108,7 @@ function TodaysMove({ move }: { move: NonNullable<AnalysisReport['todaysMove']> 
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-0.5 flex items-center gap-2">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.25em] text-ink-500">Today's Move</span>
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-ink-500">Today's Move</span>
             <span className="rounded px-1.5 py-0.5 font-mono text-[8.5px] font-black tracking-wide" style={{ color: cfg.color, background: `${cfg.color}1a` }}>{cfg.label}</span>
           </div>
           <div className="text-[15px] font-black leading-tight text-ink-100">{move.action}</div>
@@ -137,7 +137,7 @@ function TodaysMove({ move }: { move: NonNullable<AnalysisReport['todaysMove']> 
 function PkgSide({ title, players, color, align }: { title: string; players: PackagePlayer[]; color: string; align: 'left' | 'right' }) {
   return (
     <div className="flex-1">
-      <div className={`mb-1 font-mono text-[8px] font-semibold uppercase tracking-[0.2em] ${align === 'right' ? 'text-right' : ''}`} style={{ color }}>{title}</div>
+      <div className={`mb-1 font-mono text-[8px] font-semibold uppercase tracking-[0.08em] ${align === 'right' ? 'text-right' : ''}`} style={{ color }}>{title}</div>
       <div className="space-y-1">
         {players.length === 0 && <div className="font-mono text-[10px] text-ink-600">—</div>}
         {players.map((p, i) => (
@@ -229,7 +229,7 @@ function TargetBoard({ board }: { board: AnalysisReport['targetBoard'] }) {
   return (
     <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-4">
       <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">Target Board</span>
+        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">Target Board</span>
         <span className="font-mono text-[8.5px] text-ink-600">tiered · costed fallbacks ready</span>
         <div className="ml-auto flex flex-wrap gap-1">
           {['all', ...positions].map(p => (
@@ -394,7 +394,7 @@ function MatrixTooltip({ active, payload }: { active?: boolean; payload?: { payl
 function KpiTile({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <div className="rounded-lg border border-ink-700 bg-ink-900/60 px-3 py-2">
-      <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.18em] text-ink-500">{label}</div>
+      <div className="font-mono text-[8px] font-semibold uppercase tracking-[0.07em] text-ink-500">{label}</div>
       <div className="font-mono text-[18px] font-black leading-none tabular" style={{ color: color ?? '#e6ebff' }}>{value}</div>
       {sub && <div className="mt-0.5 font-mono text-[8px] text-ink-600">{sub}</div>}
     </div>
@@ -454,7 +454,7 @@ export function IntelligenceReport({ report }: { report: AnalysisReport }) {
           <ConfidenceRing value={report.confidence} color={v.color} />
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center gap-2">
-              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.25em] text-ink-500">Brief verdict</span>
+              <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.1em] text-ink-500">Brief verdict</span>
               <span className="rounded px-1.5 py-0.5 font-mono text-[10px] font-black tracking-wide" style={{ color: v.color, background: `${v.color}1a` }}>{v.label}</span>
             </div>
             <h3 className="display text-[18px] font-black leading-tight text-ink-100">{report.headline}</h3>
@@ -556,8 +556,8 @@ export function IntelligenceReport({ report }: { report: AnalysisReport }) {
             <ResponsiveContainer width="100%" height={220}>
               <ScatterChart margin={{ top: 8, right: 12, bottom: 16, left: -8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1a2238" />
-                <XAxis type="number" dataKey="costM" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }} tickFormatter={(x: number) => `$${x}M`} axisLine={false} tickLine={false} />
-                <YAxis type="number" dataKey="impactWar" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }} tickFormatter={(x: number) => `${x}W`} axisLine={false} tickLine={false} />
+                <XAxis type="number" dataKey="costM" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'DM Mono, monospace' }} tickFormatter={(x: number) => `$${x}M`} axisLine={false} tickLine={false} />
+                <YAxis type="number" dataKey="impactWar" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'DM Mono, monospace' }} tickFormatter={(x: number) => `${x}W`} axisLine={false} tickLine={false} />
                 <ZAxis type="number" dataKey="feasibility" range={[40, 320]} />
                 <ReferenceLine y={0} stroke="#364264" />
                 <Tooltip content={<MatrixTooltip />} cursor={{ strokeDasharray: '3 3' }} />
@@ -580,7 +580,7 @@ export function IntelligenceReport({ report }: { report: AnalysisReport }) {
             <ResponsiveContainer width="100%" height={220}>
               <RadarChart data={report.riskRadar} margin={{ top: 10, right: 24, bottom: 10, left: 24 }}>
                 <PolarGrid stroke="#1a2238" />
-                <PolarAngleAxis dataKey="axis" tick={{ fill: '#8a96c0', fontSize: 8.5, fontFamily: 'JetBrains Mono' }} />
+                <PolarAngleAxis dataKey="axis" tick={{ fill: '#8a96c0', fontSize: 8.5, fontFamily: 'DM Mono, monospace' }} />
                 <Radar dataKey="score" stroke="#ff8a3d" fill="#ff8a3d" fillOpacity={0.18} strokeWidth={1.5} dot={{ r: 2.5, fill: '#ff8a3d', strokeWidth: 0 }} />
               </RadarChart>
             </ResponsiveContainer>
@@ -596,9 +596,9 @@ export function IntelligenceReport({ report }: { report: AnalysisReport }) {
                   <linearGradient id="ceilGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3ddc97" stopOpacity={0.3} /><stop offset="100%" stopColor="#3ddc97" stopOpacity={0.02} /></linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1a2238" vertical={false} />
-                <XAxis dataKey="year" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} domain={['dataMin - 5', 'dataMax + 5']} />
-                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #1a2238', borderRadius: 6, fontSize: 10, fontFamily: 'JetBrains Mono' }} labelStyle={{ color: '#cdd5f0' }} />
+                <XAxis dataKey="year" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} domain={['dataMin - 5', 'dataMax + 5']} />
+                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #1a2238', borderRadius: 6, fontSize: 10, fontFamily: 'DM Mono, monospace' }} labelStyle={{ color: '#cdd5f0' }} />
                 <ReferenceLine y={88} stroke="#ff8a3d" strokeDasharray="4 2" label={{ value: 'playoff line ~88', fill: '#ff8a3d', fontSize: 8, position: 'insideTopLeft' }} />
                 <Area type="monotone" dataKey="ceiling" stroke="#3ddc97" strokeWidth={1} fill="url(#ceilGrad)" />
                 <Area type="monotone" dataKey="expected" stroke="#5b9dff" strokeWidth={2} fill="none" />
@@ -622,9 +622,9 @@ export function IntelligenceReport({ report }: { report: AnalysisReport }) {
                   <linearGradient id="contGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ff6a13" stopOpacity={0.35} /><stop offset="100%" stopColor="#ff6a13" stopOpacity={0.02} /></linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1a2238" vertical={false} />
-                <XAxis dataKey="year" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} domain={[0, 100]} />
-                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #1a2238', borderRadius: 6, fontSize: 10, fontFamily: 'JetBrains Mono' }} labelStyle={{ color: '#cdd5f0' }}
+                <XAxis dataKey="year" tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} domain={[0, 100]} />
+                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #1a2238', borderRadius: 6, fontSize: 10, fontFamily: 'DM Mono, monospace' }} labelStyle={{ color: '#cdd5f0' }}
                   formatter={(val, _n, item) => { const note = (item?.payload as { note?: string })?.note; return [`${val}${note ? ` — ${note}` : ''}`, 'competitiveness'] }} />
                 <Area type="monotone" dataKey="competitiveness" stroke="#ff6a13" strokeWidth={2} fill="url(#contGrad)" />
               </AreaChart>

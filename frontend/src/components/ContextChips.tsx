@@ -12,7 +12,7 @@ export function ContextChips({ chips }: { chips: Chip[] }) {
           </div>
           <div className="flex-1">
             <div className="flex items-baseline justify-between gap-2">
-              <div className="text-[11px] uppercase tracking-[0.12em] text-ink-400">{c.label}</div>
+              <div className="text-[11px] uppercase tracking-[0.05em] text-ink-400">{c.label}</div>
               <div className="mono text-[12px] font-semibold tabular text-ink-100">{c.value}</div>
             </div>
             {c.sub ? <div className="mt-0.5 text-[11px] text-ink-400">{c.sub}</div> : null}

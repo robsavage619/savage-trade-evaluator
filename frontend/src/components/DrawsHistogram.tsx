@@ -127,7 +127,7 @@ export function DrawsHistogram({ draws, realized, p05, p95, mean, formatter = (v
             fontSize={9}
             textAnchor="middle"
             fill="#3ddc97"
-            fontFamily="JetBrains Mono, monospace"
+            fontFamily="DM Mono, monospace"
           >
             {formatter(realized!, false)}
           </text>
@@ -143,14 +143,14 @@ export function DrawsHistogram({ draws, realized, p05, p95, mean, formatter = (v
           fontSize={9}
           textAnchor={i === 0 ? 'start' : i === 2 ? 'end' : 'middle'}
           fill="rgba(138,150,192,0.6)"
-          fontFamily="JetBrains Mono, monospace"
+          fontFamily="DM Mono, monospace"
         >
           {formatter(v, false)}
         </text>
       ))}
 
       {/* Caption: n draws */}
-      <text x={W - PAD_X} y={PAD_TOP - 7} textAnchor="end" fontSize={8.5} fill="rgba(138,150,192,0.4)" fontFamily="JetBrains Mono, monospace">
+      <text x={W - PAD_X} y={PAD_TOP - 7} textAnchor="end" fontSize={8.5} fill="rgba(138,150,192,0.4)" fontFamily="DM Mono, monospace">
         {draws.length} posterior draws
       </text>
     </svg>

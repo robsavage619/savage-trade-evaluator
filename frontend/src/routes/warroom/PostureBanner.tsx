@@ -35,7 +35,7 @@ export function PostureBanner({ posture, rationale, playoffProb, w, l, gamesBack
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
             <PulseDot color={cfg.dot} />
-            <span className={`font-mono text-[9px] font-semibold uppercase tracking-[0.3em] ${cfg.color} opacity-80`}>
+            <span className={`font-mono text-[9px] font-semibold uppercase tracking-[0.1em] ${cfg.color} opacity-80`}>
               WINDOW ASSESSMENT
             </span>
             <Cite cite={{ label: 'Window Posture', detail: 'Derived from W-L record, division gap, games back, and payroll flexibility. Buy = contention-window team with room to add; Sell = out of contention; Hold = ambiguous.' }} />

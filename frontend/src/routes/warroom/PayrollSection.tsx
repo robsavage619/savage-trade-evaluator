@@ -30,7 +30,7 @@ export function PayrollGauge({ committed, threshold, headroom }: { committed: nu
   return (
     <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-4">
       <div className="mb-3 flex items-center justify-between">
-        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">Payroll vs CBT</span>
+        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">Payroll vs CBT</span>
         <div className="flex items-center gap-2">
           {activeTier !== null && (
             <span className="font-mono text-[9px] font-semibold" style={{ color: CBT_TIERS[activeTier].color }}>
@@ -80,7 +80,7 @@ export function PayrollGauge({ committed, threshold, headroom }: { committed: nu
       </div>
       <div className="flex items-end justify-between">
         <div>
-          <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-500 mb-0.5">Committed / Threshold</div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.08em] text-ink-500 mb-0.5">Committed / Threshold</div>
           <div className="font-mono text-[12px] text-ink-200">
             <AnimatedNumber end={committed / 1_000_000} decimals={1} prefix="$" suffix="M" />
             <span className="text-ink-600"> / </span>
@@ -89,7 +89,7 @@ export function PayrollGauge({ committed, threshold, headroom }: { committed: nu
         </div>
         <div className="text-right">
           <div className="flex items-center justify-end gap-1 mb-0.5">
-            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-500">Headroom</span>
+            <span className="font-mono text-[9px] uppercase tracking-[0.08em] text-ink-500">Headroom</span>
             <Cite cite={{ label: 'CBT Headroom', detail: 'Dollars under (positive) or over (negative) the Competitive Balance Tax threshold. Overage triggers luxury tax at the active tier — T1 20%, T2 32%, T3 62.5%.' }} />
           </div>
           <div className={`font-mono text-[28px] font-black leading-none tabular ${over ? 'text-negative-500' : 'text-positive-400'}`}>
@@ -154,7 +154,7 @@ export function PayrollTimeline({ players, cbtThreshold }: { players: CurrentPla
   return (
     <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-4">
       <div className="mb-3 flex items-center gap-2">
-        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">
+        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">
           Payroll Projection
         </span>
         <span className="font-mono text-[8.5px] text-ink-600">3-year forecast · full roster · arb path</span>
@@ -162,16 +162,16 @@ export function PayrollTimeline({ players, cbtThreshold }: { players: CurrentPla
       <ResponsiveContainer width="100%" height={160}>
         <BarChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -8 }} barCategoryGap="25%">
           <CartesianGrid strokeDasharray="3 3" stroke="#1a2238" vertical={false} />
-          <XAxis dataKey="year" tick={{ fill: '#8a96c0', fontSize: 10, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="year" tick={{ fill: '#8a96c0', fontSize: 10, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} />
           <YAxis
-            tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'JetBrains Mono' }}
+            tick={{ fill: '#8a96c0', fontSize: 9, fontFamily: 'DM Mono, monospace' }}
             tickFormatter={v => `$${v}M`}
             axisLine={false} tickLine={false}
             domain={[0, maxVal]}
           />
           <Tooltip content={<PayrollTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
           <ReferenceLine y={cbtM} stroke="#ff5d73" strokeDasharray="4 2" strokeWidth={1}
-            label={{ value: 'CBT', fill: '#ff5d73', fontSize: 9, fontFamily: 'JetBrains Mono', position: 'insideTopRight' }} />
+            label={{ value: 'CBT', fill: '#ff5d73', fontSize: 9, fontFamily: 'DM Mono, monospace', position: 'insideTopRight' }} />
           <Bar dataKey="Pre-Arb" stackId="a" fill="#3ddc97" fillOpacity={0.7} radius={[0,0,0,0]} />
           <Bar dataKey="Arb" stackId="a" fill="#ff8a3d" fillOpacity={0.7} />
           <Bar dataKey="FA/Vet" stackId="a" fill="#8a96c0" fillOpacity={0.5} radius={[3,3,0,0]} />

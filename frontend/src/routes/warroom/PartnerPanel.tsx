@@ -63,7 +63,7 @@ export function PartnerPanel({ bref, payload, onClose }: {
           />
           {payload.context.expiringContracts.length > 0 && (
             <div className="mt-3 rounded-lg border border-ink-700 bg-ink-900/60 p-3">
-              <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">Their commitments</div>
+              <div className="mb-2 font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">Their commitments</div>
               <div className="space-y-1">
                 {payload.context.expiringContracts.map(c => (
                   <div key={c.player} className="flex items-center justify-between text-[11px]">

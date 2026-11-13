@@ -32,7 +32,7 @@ export function PositionRadar({ holes, surpluses, posture }: { holes: HoleEntry[
   return (
     <div className="rounded-lg border border-ink-700 bg-ink-900/60 p-4">
       <div className="mb-2 flex items-center gap-2">
-        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-400">Position Shape</span>
+        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-400">Position Shape</span>
         <Cite cite={{ label: 'Position Shape Radar', detail: '0 = critical gap (well below replacement) · 50 = replacement level · 100 = tradeable surplus. Shape shows where your roster over- and under-produces relative to league baseline.' }} />
       </div>
       <ResponsiveContainer width="100%" height={180}>
@@ -40,7 +40,7 @@ export function PositionRadar({ holes, surpluses, posture }: { holes: HoleEntry[
           <PolarGrid stroke="#1a2238" />
           <PolarAngleAxis
             dataKey="position"
-            tick={{ fill: '#8a96c0', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+            tick={{ fill: '#8a96c0', fontSize: 10, fontFamily: 'DM Mono, monospace' }}
           />
           <Radar
             dataKey="value"
@@ -64,7 +64,7 @@ export function HolesBoard({ holes, surpluses }: { holes: HoleEntry[]; surpluses
       {holes.length > 0 && (
         <div className="mb-4">
           <div className="mb-2.5 flex items-center gap-2">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-negative-400">▼ Needs</span>
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-negative-400">▼ Needs</span>
             <Cite cite={HOLE_SCORE_CITE} />
           </div>
           <div className="space-y-2">
@@ -108,7 +108,7 @@ export function HolesBoard({ holes, surpluses }: { holes: HoleEntry[]; surpluses
       {surpluses.length > 0 && (
         <div>
           <div className="mb-2.5 flex items-center gap-2">
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-positive-400">▲ Tradeable surplus</span>
+            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.08em] text-positive-400">▲ Tradeable surplus</span>
             <Cite cite={SURPLUS_WAR_CITE} />
           </div>
           <div className="space-y-2">

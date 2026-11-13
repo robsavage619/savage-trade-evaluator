@@ -85,7 +85,7 @@ export function FarmSystem({ farm, themeColor }: Props) {
                 </button>
               )
             })}
-            <span className="ml-2 text-[10px] uppercase tracking-[0.14em] text-ink-400">{LEVEL_LABELS[activeLevel]}</span>
+            <span className="ml-2 text-[10px] uppercase tracking-[0.06em] text-ink-400">{LEVEL_LABELS[activeLevel]}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
@@ -129,7 +129,7 @@ export function FarmSystem({ farm, themeColor }: Props) {
       <div className="card p-4">
         <div className="mb-1 flex items-center gap-2">
           <Trophy className="h-3.5 w-3.5 text-accent-400" />
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-400">Org top-10 prospects · scout-grade proxy</div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-accent-400">Org top-10 prospects · scout-grade proxy</div>
         </div>
         <div className="mb-3 flex items-center gap-1.5 text-[10.5px] text-ink-400">
           <Sparkles className="h-3 w-3" />
@@ -182,7 +182,7 @@ function TopProspectRow({ player, rank, grade, themeColor }: { player: FarmPlaye
 function PlayerList({ players, title, icon: Icon, kind, themeColor }: { players: Array<{ p: FarmPlayer; grade: number }>; title: string; icon: React.ElementType; kind: 'hitter' | 'pitcher'; themeColor: string }) {
   return (
     <div>
-      <div className="flex items-center gap-1.5 border-b border-ink-700/60 bg-ink-800/40 px-3 py-1.5 text-[10px] uppercase tracking-[0.12em] text-ink-400">
+      <div className="flex items-center gap-1.5 border-b border-ink-700/60 bg-ink-800/40 px-3 py-1.5 text-[10px] uppercase tracking-[0.05em] text-ink-400">
         <Icon className="h-3 w-3" />
         {title}
       </div>

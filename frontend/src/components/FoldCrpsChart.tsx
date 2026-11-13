@@ -31,7 +31,7 @@ export function FoldCrpsChart({ folds }: { folds: ComparisonFold[] }) {
         {yticks.map((t) => (
           <g key={t} transform={`translate(${PAD.left},${PAD.top + y(t)})`}>
             <line x1={0} x2={plotW} stroke="rgba(138,150,192,0.10)" />
-            <text x={-5} dy="0.33em" textAnchor="end" fontSize={9} fill="rgba(138,150,192,0.55)" fontFamily="JetBrains Mono, monospace">
+            <text x={-5} dy="0.33em" textAnchor="end" fontSize={9} fill="rgba(138,150,192,0.55)" fontFamily="DM Mono, monospace">
               {t.toFixed(1)}W
             </text>
           </g>
@@ -64,7 +64,7 @@ export function FoldCrpsChart({ folds }: { folds: ComparisonFold[] }) {
                 )
               })}
               {/* Fold label */}
-              <text x={groupW / 2} y={plotH + 10} textAnchor="middle" fontSize={9} fill="rgba(138,150,192,0.65)" fontFamily="JetBrains Mono, monospace">
+              <text x={groupW / 2} y={plotH + 10} textAnchor="middle" fontSize={9} fill="rgba(138,150,192,0.65)" fontFamily="DM Mono, monospace">
                 {f.label}
               </text>
               {f.structural_break && (
