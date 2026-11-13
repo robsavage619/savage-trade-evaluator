@@ -314,10 +314,17 @@ def _upsert(
     df = pd.DataFrame(rows)
 
     if replace:
-        for s in df["season"].unique():
-            conn.execute(f"DELETE FROM spotrac_player_contracts WHERE season = {s}")
+        # Scope the replace to each (season, team) present in this batch. A plain
+        # per-season DELETE clobbers every other club when _upsert is called once
+        # per team inside ingest_year — which silently capped every backfill at
+        # the last team processed.
+        for s, tb in df[["season", "team_bref"]].drop_duplicates().itertuples(index=False):
+            conn.execute(
+                "DELETE FROM spotrac_player_contracts WHERE season = ? AND team_bref = ?",
+                [int(s), tb],
+            )
 
-    df = df.drop_duplicates(subset=["spotrac_id", "season", "table_type"], keep="last")
+    df = df.drop_duplicates(subset=["spotrac_id", "season", "table_type", "team_bref"], keep="last")
     conn.register("_staging_sp", df)
     try:
         cols = (
@@ -328,7 +335,11 @@ def _upsert(
         conn.execute(
             f"INSERT INTO spotrac_player_contracts ({cols}) "
             f"SELECT {cols} FROM _staging_sp "
-            + ("" if replace else "ON CONFLICT (spotrac_id, season, table_type) DO NOTHING")
+            + (
+                ""
+                if replace
+                else "ON CONFLICT (spotrac_id, season, table_type, team_bref) DO NOTHING"
+            )
         )
     finally:
         conn.unregister("_staging_sp")
@@ -404,4 +415,126 @@ def ingest_range(start: int = 2010, end: int = 2025) -> int:
     total = 0
     for year in range(start, end + 1):
         total += ingest_year(year)
+    return total
+
+
+# --- per-player contract terms (guaranteed-window shape) ----------------------
+
+PLAYER_URL = "https://www.spotrac.com/mlb/player/_/id/{spotrac_id}/{slug}"
+# "Contract Terms: 11 yr(s) / $280,000,000"
+CONTRACT_TERMS_RE = re.compile(r"Contract Terms:\s*(\d+)\s*yr\(s\)\s*/\s*\$([\d,]+)")
+AAV_RE = re.compile(r"Average Salary:\s*\$([\d,]+)")
+# "Free Agent: 2034 / UFA" — the year the guaranteed deal expires into free agency.
+FREE_AGENT_RE = re.compile(r"Free Agent:\s*(\d{4})")
+
+
+def parse_contract_terms(html: str) -> dict[str, int] | None:
+    """Parse the current-contract summary block from a Spotrac player page.
+
+    Reads the first "Contract Terms" block (Spotrac lists the active contract
+    first; later blocks are prior deals) plus the paired Average Salary and Free
+    Agent year. Returns None when no guaranteed contract block is present (e.g.
+    a pre-arb/arb player with no multi-year deal).
+    """
+    plain = re.sub(r"\s+", " ", TAG_RE.sub(" ", html))
+    terms = CONTRACT_TERMS_RE.search(plain)
+    if not terms:
+        return None
+    window = plain[terms.start() : terms.start() + 400]
+    aav_m = AAV_RE.search(window)
+    fa_m = FREE_AGENT_RE.search(window)
+    out: dict[str, int] = {
+        "contract_years": int(terms.group(1)),
+        "contract_total": int(terms.group(2).replace(",", "")),
+    }
+    if aav_m:
+        out["aav"] = int(aav_m.group(1).replace(",", ""))
+    if fa_m:
+        out["free_agent_year"] = int(fa_m.group(1))
+    return out
+
+
+def fetch_player_contract(
+    client: httpx.Client, spotrac_id: int, slug: str
+) -> dict[str, int] | None:
+    """Fetch + parse one player's contract-terms block (None on miss/failure)."""
+    url = PLAYER_URL.format(spotrac_id=spotrac_id, slug=slug)
+    resp = client.get(url, follow_redirects=True, timeout=20)
+    resp.raise_for_status()
+    return parse_contract_terms(resp.text)
+
+
+def _upsert_contract_terms(
+    conn: duckdb.DuckDBPyConnection,
+    mlb_player_id: int,
+    season: int,
+    spotrac_id: int,
+    terms: dict[str, int],
+) -> None:
+    conn.execute(
+        "INSERT OR REPLACE INTO spotrac_contract_terms "
+        "(mlb_player_id, season, spotrac_id, contract_years, contract_total, aav, "
+        " free_agent_year, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+            mlb_player_id,
+            season,
+            spotrac_id,
+            terms.get("contract_years"),
+            terms.get("contract_total"),
+            terms.get("aav"),
+            terms.get("free_agent_year"),
+            SOURCE,
+        ],
+    )
+
+
+def ingest_contract_terms(season: int, *, min_cap_hit: int = 0) -> int:
+    """Scrape per-player contract terms for veteran (guaranteed-deal) players.
+
+    Iterates the season's active ``Veteran``-status contracts (arb/pre-arb salary
+    is already modeled from service time, so only guaranteed multi-year deals need
+    the forward shape) and records each player's total value, AAV, and free-agent
+    year — the bound of the guaranteed liability window.
+
+    Args:
+        season: Reference season whose roster of veterans to scrape.
+        min_cap_hit: Skip veterans below this current cap hit (0 = all).
+
+    Returns:
+        Number of players with a parsed contract-terms row.
+    """
+    with db.connect() as conn:
+        schemas.initialize(conn)
+        players = conn.execute(
+            "SELECT DISTINCT mlb_player_id, spotrac_id, spotrac_slug, player_name "
+            "FROM spotrac_player_contracts "
+            "WHERE season = ? AND table_type = 'active' AND status = 'Veteran' "
+            "AND mlb_player_id IS NOT NULL AND spotrac_slug IS NOT NULL "
+            "AND cap_hit >= ? ORDER BY mlb_player_id",
+            [season, min_cap_hit],
+        ).fetchall()
+
+    total = 0
+    with httpx.Client(headers=BROWSER_HEADERS) as client, db.connect() as conn:
+        schemas.initialize(conn)
+        for i, (mlb_id, spotrac_id, slug, name) in enumerate(players):
+            if i > 0:
+                time.sleep(RATE_LIMIT_SECONDS)
+            try:
+                terms = fetch_player_contract(client, int(spotrac_id), slug)
+            except httpx.HTTPError as exc:
+                logger.warning("spotrac terms %s (%s) failed: %s", name, spotrac_id, exc)
+                continue
+            if terms is None:
+                logger.info("spotrac terms %s: no contract block", name)
+                continue
+            _upsert_contract_terms(conn, int(mlb_id), season, int(spotrac_id), terms)
+            total += 1
+            logger.info(
+                "spotrac terms %s: %d yr / $%s, FA %s",
+                name,
+                terms.get("contract_years", 0),
+                f"{terms.get('contract_total', 0):,}",
+                terms.get("free_agent_year", "?"),
+            )
     return total

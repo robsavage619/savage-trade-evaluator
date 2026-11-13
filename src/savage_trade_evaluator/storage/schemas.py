@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-SCHEMA_VERSION = 37
+SCHEMA_VERSION = 39
 
 DDL_STATEMENTS: tuple[str, ...] = (
     """
@@ -758,7 +758,7 @@ DDL_STATEMENTS: tuple[str, ...] = (
         spotrac_slug VARCHAR,
         source VARCHAR NOT NULL,
         ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (spotrac_id, season, table_type)
+        PRIMARY KEY (spotrac_id, season, table_type, team_bref)
     )
     """,
     """
@@ -787,6 +787,30 @@ DDL_STATEMENTS: tuple[str, ...] = (
     """
     CREATE INDEX IF NOT EXISTS idx_spotrac_team_payroll_season
         ON spotrac_team_payroll(season)
+    """,
+    """
+    -- Per-player contract terms scraped from the Spotrac player page. The team
+    -- payroll table only carries the current season's cap hit; this captures the
+    -- guaranteed-contract shape (total value, AAV, and the free-agent year that
+    -- bounds the guaranteed window) so a multi-year veteran deal can be valued as
+    -- a forward liability, not just a one-season cost. season = the scrape's
+    -- reference season (the current league season).
+    CREATE TABLE IF NOT EXISTS spotrac_contract_terms (
+        mlb_player_id INTEGER NOT NULL,
+        season INTEGER NOT NULL,
+        spotrac_id INTEGER,
+        contract_years INTEGER,
+        contract_total BIGINT,
+        aav BIGINT,
+        free_agent_year INTEGER,
+        source VARCHAR NOT NULL,
+        ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (mlb_player_id, season)
+    )
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS idx_spotrac_terms_fa
+        ON spotrac_contract_terms(free_agent_year)
     """,
     """
     -- MiLB seasonal stats from MLB Stats API sportId={11,12,13,14}.
@@ -1336,6 +1360,31 @@ def _migrate_v25_to_v26(conn: duckdb.DuckDBPyConnection) -> None:
         logger.info("migration 25→26: dropped prospect_rankings for schema update")
 
 
+def _migrate_v37_to_v38(conn: duckdb.DuckDBPyConnection) -> None:
+    """Drop spotrac_player_contracts if its PK omits team_bref.
+
+    The v37 PK ``(spotrac_id, season, table_type)`` collides when the same
+    player's dead/retained salary sits on two clubs' books, which also masked a
+    per-team DELETE clobber that capped every backfill at one team. The new PK
+    adds team_bref; the table is fully re-scrapeable, so dropping is safe.
+    """
+    exists = conn.execute(
+        "SELECT 1 FROM information_schema.tables WHERE table_name = 'spotrac_player_contracts'"
+    ).fetchone()
+    if not exists:
+        return
+    pk_cols = {
+        r[0]
+        for r in conn.execute(
+            "SELECT column_name FROM information_schema.key_column_usage "
+            "WHERE table_name = 'spotrac_player_contracts'"
+        ).fetchall()
+    }
+    if "team_bref" not in pk_cols:
+        conn.execute("DROP TABLE IF EXISTS spotrac_player_contracts")
+        logger.info("migration 37→38: dropped spotrac_player_contracts for PK update")
+
+
 def initialize(conn: duckdb.DuckDBPyConnection) -> None:
     """Apply all DDL idempotently and record the schema version.
 
@@ -1343,6 +1392,7 @@ def initialize(conn: duckdb.DuckDBPyConnection) -> None:
         conn: An open DuckDB connection.
     """
     _migrate_v25_to_v26(conn)
+    _migrate_v37_to_v38(conn)
     for stmt in DDL_STATEMENTS:
         conn.execute(stmt)
 

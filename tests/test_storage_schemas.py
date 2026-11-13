@@ -13,8 +13,8 @@ def _table_names(conn: duckdb.DuckDBPyConnection) -> set[str]:
     return {r[0] for r in rows}
 
 
-def test_schema_version_is_37() -> None:
-    assert SCHEMA_VERSION == 37
+def test_schema_version_is_39() -> None:
+    assert SCHEMA_VERSION == 39
 
 
 def test_initialize_records_schema_version() -> None:
@@ -46,6 +46,7 @@ def test_initialize_creates_core_tables() -> None:
         "gm_archetypes",
         "war_room_briefs",
         "spotrac_team_payroll",
+        "spotrac_contract_terms",
     }
     assert expected <= tables
 

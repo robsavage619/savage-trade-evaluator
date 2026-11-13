@@ -387,6 +387,17 @@ def ingest_spotrac(
     typer.echo(f"ingested {n} spotrac contract rows")
 
 
+@ingest_app.command("spotrac-terms")
+def ingest_spotrac_terms(
+    year: int = typer.Option(CURRENT_SEASON, help="Reference season of veterans to scrape."),
+    min_cap: int = typer.Option(0, help="Skip veterans below this current cap hit."),
+) -> None:
+    """Scrape per-player contract terms (guaranteed window) for the season's veterans."""
+    configure_logging()
+    n = spotrac.ingest_contract_terms(year, min_cap_hit=min_cap)
+    typer.echo(f"ingested {n} spotrac contract-terms rows")
+
+
 @ingest_app.command("bref-contracts")
 def ingest_bref_contracts(
     conflicts: bool = typer.Option(False, help="Also list players whose Spotrac window conflicts."),
