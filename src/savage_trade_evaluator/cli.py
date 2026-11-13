@@ -1568,7 +1568,7 @@ def analyze_forty_man(
     )
     typer.echo("  " + "─" * 68)
 
-    for _, r in df.iterrows():
+    for r in df.to_dict("records"):
         flag_display = r["crunch_flag"].replace("_", " ").upper()
         flag_color = flag_display if r["crunch_flag"] == "ok" else f"⚠ {flag_display}"
         name_trunc = str(r["player_name"])[:23]
