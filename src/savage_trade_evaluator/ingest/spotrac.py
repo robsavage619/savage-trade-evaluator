@@ -472,9 +472,11 @@ def _upsert_contract_terms(
     terms: dict[str, int],
 ) -> None:
     conn.execute(
+        # ingested_at is written explicitly: on a replace, DuckDB keeps the old value of
+        # any column left out of the list, which froze it and fooled the freshness gate.
         "INSERT OR REPLACE INTO spotrac_contract_terms "
         "(mlb_player_id, season, spotrac_id, contract_years, contract_total, aav, "
-        " free_agent_year, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        " free_agent_year, source, ingested_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, now())",
         [
             mlb_player_id,
             season,

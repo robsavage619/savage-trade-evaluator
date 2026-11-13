@@ -32,4 +32,4 @@ The footer pill reads `/status.json`: green ok, amber degraded or older than 36 
 
 - Two writers on two copies of the DB will diverge. Pick one for ingests; the iMac is the one that refreshes daily.
 - `frontend/dist/brief-inbox` is carried across rebuilds, but a redeploy from the laptop does not touch it.
-- Known lag: `spotrac_contract_terms` warns because its writer keeps existing rows; Spotrac can 403 under load. Both show as "degraded", not failed.
+- Known lag: Spotrac throttles with 403s partway through the per-player `spotrac_contract_terms` scrape, so on a bad day fewer than half the rows are rewritten and the run shows "degraded", not failed.

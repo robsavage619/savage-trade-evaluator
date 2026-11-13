@@ -45,3 +45,28 @@ def test_returns_none_without_contract_block() -> None:
 def test_partial_block_without_aav_or_fa() -> None:
     terms = parse_contract_terms("<span>Contract Terms:</span> 1 yr(s) / $2,000,000")
     assert terms == {"contract_years": 1, "contract_total": 2_000_000}
+
+
+def test_rewriting_a_row_refreshes_ingested_at() -> None:
+    """The freshness gate reads ingested_at, so a replace must advance it."""
+    import time
+
+    import duckdb
+
+    from savage_trade_evaluator.ingest.spotrac import _upsert_contract_terms
+    from savage_trade_evaluator.storage import schemas
+
+    conn = duckdb.connect(":memory:")
+    schemas.initialize(conn)
+    terms = {"contract_years": 5, "contract_total": 100, "aav": 20, "free_agent_year": 2030}
+    _upsert_contract_terms(conn, 1, 2026, 9, terms)
+    row = conn.execute("SELECT ingested_at FROM spotrac_contract_terms").fetchone()
+    assert row is not None
+    first = row[0]
+    time.sleep(1.1)
+    _upsert_contract_terms(conn, 1, 2026, 9, {**terms, "aav": 25})
+    row = conn.execute("SELECT ingested_at, aav FROM spotrac_contract_terms").fetchone()
+    assert row is not None
+    second, aav = row
+    assert aav == 25
+    assert second > first

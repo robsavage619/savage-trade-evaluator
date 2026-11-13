@@ -61,7 +61,8 @@ CURRENT_TABLES: tuple[Table, ...] = (
     Table("team_season_stats", "season", 1.0),
     Table("spotrac_player_contracts", "season", 0.9, "warn"),
     Table("spotrac_team_payroll", "season", 0.9, "warn"),
-    # The terms writer keeps existing rows as they were, so this warns until that is fixed.
+    # Spotrac throttles with 403s partway through the per-player scrape, so some rows may
+    # not be rewritten on a given day: warn rather than block.
     Table("spotrac_contract_terms", "season", 0.5, "warn"),
     Table("mlb_free_agents", "season", 0.5, "warn"),
 )
