@@ -203,9 +203,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.build_only:
         build_site()
-        publish_status({
-            "started": started.isoformat(), "finished": datetime.now().isoformat(), "status": "ok",
-            "data_as_of": data_as_of, "published": True, "problems": [], "gates": [],
+        # A rebuild proves nothing about the data: keep the last refresh's verdict.
+        publish_status(_load(STATUS_PATH) or {
+            "started": started.isoformat(), "finished": started.isoformat(), "status": "degraded",
+            "data_as_of": data_as_of, "published": True, "gates": [],
+            "problems": ["no refresh has completed on this machine yet"],
         })  # fmt: skip
         return 0
 
